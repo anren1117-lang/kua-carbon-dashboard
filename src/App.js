@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 function App() {
   // Base data from your spreadsheet
   const yearlyEmissions = 285.82; // mtCO₂e per year
-  const yearlyKwh = 2316469;
-  const annualCost = 347470;
 
   // Calculate rates
-  const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60); // mtCO₂e per second
+  const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60);
   const emissionsPerHour = yearlyEmissions / (365 * 24);
   const emissionsPerDay = yearlyEmissions / 365;
   const emissionsPerMonth = yearlyEmissions / 12;
@@ -18,19 +16,22 @@ function App() {
   const [todayEmissions, setTodayEmissions] = useState(0);
   const [isLive, setIsLive] = useState(true);
 
-  // Simulate real-time emissions
-  useEffect(() => {
-    if (!isLive) return;
-
-    // Start today's emissions at a random point in the day
+  // Initialize emissions
+  const initializeEmissions = useCallback(() => {
     const hoursIntoDayNow = new Date().getHours() + new Date().getMinutes() / 60;
     const startingTodayEmissions = emissionsPerHour * hoursIntoDayNow;
     setTodayEmissions(startingTodayEmissions);
 
-    // Start yearly counter at a random point in the year
     const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
     const startingYearEmissions = emissionsPerDay * dayOfYear;
     setCurrentEmissions(startingYearEmissions);
+  }, [emissionsPerHour, emissionsPerDay]);
+
+  // Simulate real-time emissions
+  useEffect(() => {
+    if (!isLive) return;
+
+    initializeEmissions();
 
     const interval = setInterval(() => {
       setCurrentEmissions(prev => prev + emissionsPerSecond);
@@ -38,9 +39,9 @@ function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isLive]);
+  }, [isLive, initializeEmissions, emissionsPerSecond]);
 
-  // Emissions by source (for breakdown)
+  // Emissions by source
   const emissionsData = [
     { source: 'Natural Gas Plants', emissions: 141.19, percentage: 49.4, color: '#ef4444' },
     { source: 'Coal Fired Plants', emissions: 119.18, percentage: 41.7, color: '#f97316' },
@@ -210,7 +211,6 @@ const styles = {
     width: '10px',
     height: '10px',
     borderRadius: '50%',
-    animation: 'pulse 1.5s infinite',
   },
   mainCounter: {
     textAlign: 'center',
@@ -386,3 +386,11 @@ const styles = {
 };
 
 export default App;
+```
+
+After pasting and saving (`Cmd + S`), run these commands in Terminal:
+```
+cd ~/kua-carbon-dashboard
+git add .
+git commit -m "Fix ESLint errors"
+git push
