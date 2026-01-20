@@ -37,10 +37,12 @@ function App() {
   }, [isLive, initializeEmissions, emissionsPerSecond]);
 
   const emissionsData = [
-    { source: 'Natural Gas Plants', emissions: 141.19, percentage: 49.4, color: '#ef4444' },
-    { source: 'Coal Fired Plants', emissions: 119.18, percentage: 41.7, color: '#f97316' },
-    { source: 'Oil-Fired Plants', emissions: 25.45, percentage: 8.9, color: '#eab308' }
-  ];
+  { source: 'Natural Gas Plants', emissions: 141.19, percentage: 45.2, color: '#ef4444' },
+  { source: 'Coal Fired Plants', emissions: 119.18, percentage: 38.2, color: '#f97316' },
+  { source: 'Oil-Fired Plants', emissions: 25.45, percentage: 8.1, color: '#eab308' },
+  { source: 'Landfill Gas Plants', emissions: 13.56, percentage: 4.3, color: '#22c55e' },
+  { source: 'Municipal Trash Plants', emissions: 13.02, percentage: 4.2, color: '#3b82f6' }
+];
 
   return (
     <div style={styles.container}>
