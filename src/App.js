@@ -12,8 +12,9 @@ function App() {
   const [expandedBuilding, setExpandedBuilding] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
 
-  // Original spreadsheet data - 312.40 mtCO2e annual
-  const yearlyEmissions = 312.40;
+  // NEW Liberty NE System Mix - 242.22 mtCO2e annual
+  const yearlyEmissions = 242.22;
+  const totalKwh = 2316469;
   const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60);
   const emissionsPerMinute = yearlyEmissions / (365 * 24 * 60);
   const emissionsPerHour = yearlyEmissions / (365 * 24);
@@ -45,149 +46,141 @@ function App() {
   const totalEnergyKwh = buildingsData.reduce((sum, b) => sum + b.energyUsed, 0);
   const totalPowerKw = buildingsData.reduce((sum, b) => sum + b.power, 0);
 
-  // Comprehensive energy source data with detailed information
+  // NEW Liberty NE System Mix Energy Sources
   const emissionsData = [
     { 
-      source: 'Natural Gas Plants', 
-      emissions: 141.19, 
-      percentage: 45.2, 
+      source: 'Natural Gas', 
+      emissions: 197.02, 
+      percentage: 81.3,
+      mixPercent: 47.25,
+      kwhUsed: 1094532,
       color: '#ef4444',
-      libertyMix: 33.83,
-      kwhUsed: 783699,
-      // Emission Factors (tonnes per kWh)
-      co2Factor: 0.00018,
-      n2oFactor: 0.0000001,
-      ch4Factor: 0.00000007,
-      // Detailed Information
+      emissionFactor: 0.00018,
       howItWorks: 'Natural gas (primarily methane, CH4) is extracted from underground reservoirs and transported via pipelines to power plants. In combined-cycle plants, gas is burned in combustion turbines, and the hot exhaust drives steam turbines for additional power generation.',
-      chemicalProcess: 'CH4 + 2O2 → CO2 + 2H2O + Heat. The combustion of methane releases carbon dioxide and water vapor, along with trace amounts of nitrogen oxides (NOx) from high-temperature combustion.',
+      chemicalProcess: 'CH4 + 2O2 → CO2 + 2H2O + Heat. The combustion of methane releases carbon dioxide and water vapor, along with trace amounts of nitrogen oxides (NOx).',
       environmentalImpacts: [
         'Produces about 50% less CO2 than coal per kWh',
-        'Methane leaks during extraction (2-3% of production) significantly increase warming impact',
+        'Methane leaks during extraction (2-3%) increase warming impact',
         'Hydraulic fracturing (fracking) can contaminate groundwater',
         'Lower particulate and sulfur emissions than coal or oil',
-        'Water usage for cooling affects local water systems',
-        'Land disruption from drilling operations'
+        'Dominant fuel source in New England grid'
       ],
-      globalContext: 'Natural gas provides about 24% of world electricity. Usage is increasing as countries transition away from coal. The US is the worlds largest producer due to shale gas revolution.',
-      efficiency: '40-60% efficient in combined-cycle plants (best among fossil fuels). Simple cycle plants are only 30-35% efficient.',
-      costComparison: 'Moderate cost at $0.05-0.08 per kWh. Price volatile due to market fluctuations. Generally cheaper than oil but more expensive than coal.',
-      alternatives: 'Renewable natural gas (from landfills/farms), hydrogen blending, transition to wind/solar with battery storage, geothermal for baseload power.',
-      history: 'First used for electricity in 1940s. Became major source after 1970s oil crisis. Shale gas boom since 2008 made it dominant fuel in US power generation.'
+      globalContext: 'Natural gas provides about 50% of New England electricity. ISO-NE relies heavily on natural gas due to pipeline infrastructure and coal plant retirements.',
+      efficiency: '40-60% efficient in combined-cycle plants (best among fossil fuels).',
+      alternatives: 'Renewable natural gas, hydrogen blending, wind/solar with battery storage.'
     },
     { 
-      source: 'Coal Fired Plants', 
-      emissions: 119.18, 
-      percentage: 38.2, 
+      source: 'Oil', 
+      emissions: 30.92, 
+      percentage: 12.8,
+      mixPercent: 5.34,
+      kwhUsed: 123699,
       color: '#f97316',
-      libertyMix: 56.75,
-      kwhUsed: 1314588,
-      co2Factor: 0.00032,
-      n2oFactor: 0.00000148,
-      ch4Factor: 0.00000007,
-      howItWorks: 'Coal is mined (surface or underground), transported by rail/ship, and pulverized into fine powder. This powder is blown into boilers where it burns at 1,400°C, heating water into high-pressure steam that spins turbine generators.',
-      chemicalProcess: 'C + O2 → CO2 + Heat. Coal also contains sulfur (S + O2 → SO2) and nitrogen compounds that form NOx. Incomplete combustion releases carbon monoxide and particulates.',
+      emissionFactor: 0.00025,
+      howItWorks: 'Petroleum is refined into heavy fuel oil or diesel, then burned in boilers or combustion turbines. Oil plants often serve as peaking plants due to quick startup times.',
+      chemicalProcess: 'CxHy + O2 → CO2 + H2O + Heat. Petroleum hydrocarbons combust to form CO2 and water.',
       environmentalImpacts: [
-        'Highest CO2 emissions of any fuel (2x natural gas)',
-        'Releases mercury, arsenic, and other toxic heavy metals',
-        'Sulfur dioxide causes acid rain',
-        'Particulate matter (PM2.5) causes respiratory diseases',
-        'Coal ash ponds contain toxic waste that can leak',
-        'Mining destroys ecosystems and displaces communities',
-        'Black lung disease in miners',
-        'Largest single source of global CO2 emissions'
-      ],
-      globalContext: 'Coal provides 36% of world electricity but declining in developed nations. China and India still building new plants. Coal power peaked in US in 2007.',
-      efficiency: 'Only 33-40% efficient. Supercritical plants reach 45%. Most energy lost as waste heat.',
-      costComparison: 'Cheapest fuel at $0.03-0.05 per kWh, but environmental costs not included. Carbon pricing makes it uneconomical.',
-      alternatives: 'Direct replacement with solar/wind. Natural gas for baseload. Nuclear for 24/7 power. Battery storage for reliability.',
-      history: 'First coal power plant built 1882 (Edison). Dominated 20th century electricity. Now being phased out due to climate concerns.'
-    },
-    { 
-      source: 'Oil-Fired Plants', 
-      emissions: 25.45, 
-      percentage: 8.1, 
-      color: '#eab308',
-      libertyMix: 4.38,
-      kwhUsed: 101461,
-      co2Factor: 0.00025,
-      n2oFactor: 0.00000064,
-      ch4Factor: 0.00000022,
-      howItWorks: 'Petroleum is refined into heavy fuel oil or diesel, then burned in boilers or combustion turbines. Oil plants often serve as peaking plants due to quick startup times (minutes vs hours for coal).',
-      chemicalProcess: 'CxHy + O2 → CO2 + H2O + Heat. Petroleum hydrocarbons combust to form CO2 and water. Sulfur impurities create SO2; nitrogen forms NOx at high temperatures.',
-      environmentalImpacts: [
-        'CO2 emissions between gas and coal',
-        'Oil spills during transport devastate marine ecosystems',
-        'Refining process creates additional pollution',
+        'Higher CO2 emissions than natural gas',
+        'Oil spills during transport devastate ecosystems',
+        'Used mainly for backup/peak demand in New England',
         'Sulfur content causes acid rain',
-        'Offshore drilling threatens ocean habitats',
-        'Geopolitical conflicts over oil resources',
-        'Groundwater contamination from storage tanks'
+        'Being phased out in favor of cleaner sources'
       ],
-      globalContext: 'Oil provides only 3% of world electricity (down from 25% in 1970s). Mostly used in island nations and for backup power. Being replaced by natural gas and renewables.',
-      efficiency: '35-45% efficient. Combined-cycle oil plants can reach 50%.',
-      costComparison: 'Most expensive fossil fuel at $0.10-0.20 per kWh. Price highly volatile based on global markets.',
-      alternatives: 'Solar + batteries ideal for islands. Biodiesel as transition fuel. LNG for remote areas.',
-      history: 'Peaked in 1970s during oil embargo. Rapidly declined as prices rose. Now mainly backup power.'
+      globalContext: 'Oil provides about 5% of New England electricity, mainly during peak demand or when natural gas is constrained.',
+      efficiency: '35-45% efficient.',
+      alternatives: 'Battery storage for peak demand, demand response programs.'
     },
     { 
-      source: 'Landfill Gas Plants', 
-      emissions: 13.56, 
-      percentage: 4.3, 
+      source: 'Biomass', 
+      emissions: 8.63, 
+      percentage: 3.6,
+      mixPercent: 1.62,
+      kwhUsed: 37527,
       color: '#22c55e',
-      libertyMix: 3.24,
-      kwhUsed: 75054,
-      co2Factor: 0.00018,
-      n2oFactor: 0.00000067,
-      ch4Factor: 0.00000023,
-      howItWorks: 'Organic waste in landfills decomposes anaerobically (without oxygen), producing landfill gas (50-60% methane, 40-50% CO2). This gas is collected through wells and pipes, cleaned of impurities, and burned in engines or turbines.',
-      chemicalProcess: 'Organic matter → CH4 + CO2 (anaerobic decomposition). Then: CH4 + 2O2 → CO2 + 2H2O + Heat. Converting methane to CO2 reduces warming impact by 84x over 20 years.',
+      emissionFactor: 0.00023,
+      howItWorks: 'Organic materials (wood chips, agricultural waste, dedicated energy crops) are burned to produce steam that drives turbines. Some plants use gasification to convert biomass to gas first.',
+      chemicalProcess: 'Biomass + O2 → CO2 + H2O + Heat. Carbon released was recently absorbed from atmosphere, making it carbon-neutral in theory.',
       environmentalImpacts: [
-        'POSITIVE: Captures methane that would escape to atmosphere',
-        'Methane is 84x more potent than CO2 over 20 years',
-        'Reduces landfill odors and explosion risks',
-        'Still produces CO2 when burned',
-        'Extends useful life of landfills',
-        'Creates local jobs at waste facilities',
-        'Considered carbon-neutral by some standards'
+        'Considered carbon-neutral (CO2 absorbed during growth)',
+        'Can use waste materials that would decompose anyway',
+        'Reduces landfill waste',
+        'Land use concerns if using dedicated crops',
+        'Air quality impacts from burning',
+        'Sustainable forestry practices important'
       ],
-      globalContext: 'Landfill gas provides less than 1% of world electricity. US has 500+ landfill gas projects. Growing as waste management improves.',
-      efficiency: '25-35% efficient. Lower than fossil fuels due to gas impurities.',
-      costComparison: 'Low cost at $0.04-0.07 per kWh. Often subsidized as renewable energy.',
-      alternatives: 'Composting reduces waste. Anaerobic digesters more efficient. Zero-waste policies eliminate need.',
-      history: 'First commercial landfill gas plant 1975. EPA regulations in 1990s required gas capture at large landfills.'
+      globalContext: 'Biomass provides about 2% of New England electricity. NH has several biomass plants using wood from sustainable forestry.',
+      efficiency: '20-25% efficient for direct combustion.',
+      alternatives: 'Improved forestry practices, agricultural waste utilization.'
     },
     { 
-      source: 'Municipal Trash Plants', 
-      emissions: 13.02, 
-      percentage: 4.2, 
+      source: 'Municipal Solid Waste (MSW)', 
+      emissions: 3.95, 
+      percentage: 1.6,
+      mixPercent: 0.55,
+      kwhUsed: 12741,
       color: '#3b82f6',
-      libertyMix: 1.8,
-      kwhUsed: 41696,
-      co2Factor: 0.00031,
-      n2oFactor: 0.00000444,
-      ch4Factor: 0.00000229,
-      howItWorks: 'Municipal solid waste (MSW) is burned at 850-1100°C in specialized incinerators with air pollution controls. Heat produces steam for electricity generation. Modern plants include filters for particulates and scrubbers for acid gases.',
-      chemicalProcess: 'Mixed waste + O2 → CO2 + H2O + ash + pollutants. Plastics release more CO2 per pound than biomass. Incomplete combustion creates dioxins and furans.',
+      emissionFactor: 0.00031,
+      howItWorks: 'Municipal solid waste (household trash) is burned at 850-1100°C in specialized incinerators. Heat produces steam for electricity. Modern plants include pollution controls.',
+      chemicalProcess: 'Mixed waste + O2 → CO2 + H2O + ash + pollutants. Plastics release more CO2; organic matter releases biogenic CO2.',
       environmentalImpacts: [
         'Reduces landfill volume by 90%',
-        'High N2O emissions from burning plastics',
-        'Can release toxic dioxins and furans',
+        'Generates energy from waste',
+        'Can release dioxins and furans if not controlled',
         'Heavy metals concentrate in ash',
-        'Ash disposal requires special handling',
-        'Destroys materials that could be recycled',
-        'Air pollution concerns near facilities',
-        'Environmental justice issues (plants often in low-income areas)'
+        'Competes with recycling programs',
+        'Environmental justice concerns'
       ],
-      globalContext: 'Waste-to-energy provides 2% of world electricity. Popular in Europe and Japan where land is scarce. Controversial in environmental community.',
-      efficiency: '20-30% efficient. Combined heat and power systems reach 80% energy recovery.',
-      costComparison: 'High cost at $0.08-0.15 per kWh. Tipping fees from waste provide additional revenue.',
-      alternatives: 'Zero-waste policies, enhanced recycling, composting, chemical recycling of plastics.',
-      history: 'First US plant 1975. Growth in 1980s during landfill crisis. Now controversial as recycling improves.'
+      globalContext: 'MSW provides less than 1% of New England electricity. Several waste-to-energy plants operate in the region.',
+      efficiency: '20-30% efficient.',
+      alternatives: 'Zero-waste policies, enhanced recycling, composting.'
+    },
+    { 
+      source: 'Coal', 
+      emissions: 1.70, 
+      percentage: 0.7,
+      mixPercent: 0.23,
+      kwhUsed: 5328,
+      color: '#6b7280',
+      emissionFactor: 0.00032,
+      howItWorks: 'Coal is burned in boilers to create steam that drives turbines. New England has largely phased out coal power.',
+      chemicalProcess: 'C + O2 → CO2 + Heat. Coal also releases sulfur dioxide, mercury, and particulates.',
+      environmentalImpacts: [
+        'Highest CO2 emissions of any fuel',
+        'Releases mercury and toxic heavy metals',
+        'Causes acid rain from sulfur dioxide',
+        'Mining destroys ecosystems',
+        'New England has closed most coal plants',
+        'Merrimack Station (NH) closed in 2024'
+      ],
+      globalContext: 'Coal now provides less than 1% of New England electricity. The region has successfully transitioned away from coal.',
+      efficiency: '33-40% efficient.',
+      alternatives: 'Already being replaced by natural gas and renewables.'
+    },
+    { 
+      source: 'Renewables & Other', 
+      emissions: 0, 
+      percentage: 0,
+      mixPercent: 45.01,
+      kwhUsed: 1042642,
+      color: '#10b981',
+      emissionFactor: 0,
+      howItWorks: 'Includes nuclear, hydro, solar, wind, and other zero-emission sources. Hydro from Canada is significant. Solar and wind growing rapidly.',
+      chemicalProcess: 'No combustion. Nuclear: fission. Solar: photovoltaic effect. Wind: kinetic energy. Hydro: gravitational potential energy.',
+      environmentalImpacts: [
+        'Zero direct CO2 emissions',
+        'Nuclear has waste disposal challenges',
+        'Hydro can affect fish migration',
+        'Wind/solar have land use considerations',
+        'Critical for meeting climate goals',
+        'Growing rapidly in New England'
+      ],
+      globalContext: '45% of New England electricity comes from zero-emission sources. Nuclear (Seabrook, Millstone) provides baseload. Canadian hydro provides imports. Solar/wind growing.',
+      efficiency: 'Nuclear: 90%+, Hydro: 90%, Wind: 35-45%, Solar: 20-25%.',
+      alternatives: 'Continue expanding renewables, battery storage, grid modernization.'
     }
   ];
 
-  // Day of week averages (estimated based on school patterns)
+  // Day of week averages
   const dayOfWeekData = [
     { day: 'Monday', multiplier: 1.15, label: 'High - Week starts' },
     { day: 'Tuesday', multiplier: 1.12, label: 'High - Full operations' },
@@ -198,20 +191,20 @@ function App() {
     { day: 'Sunday', multiplier: 0.70, label: 'Lowest - Weekend' }
   ];
 
-  // Monthly patterns (estimated based on seasons)
+  // Monthly patterns
   const monthlyData = [
-    { month: 'Jan', emissions: 32.5, heating: 'High' },
-    { month: 'Feb', emissions: 30.8, heating: 'High' },
-    { month: 'Mar', emissions: 28.2, heating: 'Moderate' },
-    { month: 'Apr', emissions: 24.5, heating: 'Low' },
-    { month: 'May', emissions: 22.1, heating: 'None' },
-    { month: 'Jun', emissions: 18.5, heating: 'None' },
-    { month: 'Jul', emissions: 15.2, heating: 'None' },
-    { month: 'Aug', emissions: 16.8, heating: 'None' },
-    { month: 'Sep', emissions: 23.4, heating: 'Low' },
-    { month: 'Oct', emissions: 26.7, heating: 'Moderate' },
-    { month: 'Nov', emissions: 29.8, heating: 'High' },
-    { month: 'Dec', emissions: 31.2, heating: 'High' }
+    { month: 'Jan', emissions: 25.2, heating: 'High' },
+    { month: 'Feb', emissions: 23.9, heating: 'High' },
+    { month: 'Mar', emissions: 21.9, heating: 'Moderate' },
+    { month: 'Apr', emissions: 19.0, heating: 'Low' },
+    { month: 'May', emissions: 17.2, heating: 'None' },
+    { month: 'Jun', emissions: 14.4, heating: 'None' },
+    { month: 'Jul', emissions: 11.8, heating: 'None' },
+    { month: 'Aug', emissions: 13.0, heating: 'None' },
+    { month: 'Sep', emissions: 18.2, heating: 'Low' },
+    { month: 'Oct', emissions: 20.7, heating: 'Moderate' },
+    { month: 'Nov', emissions: 23.1, heating: 'High' },
+    { month: 'Dec', emissions: 24.2, heating: 'High' }
   ];
 
   const initializeEmissions = useCallback(() => {
@@ -247,9 +240,10 @@ function App() {
     return () => clearInterval(interval);
   }, [isLive, initializeEmissions, emissionsPerSecond]);
 
+  const emissionFactorPerKwh = yearlyEmissions / totalKwh;
   const buildingsWithEmissions = buildingsData.map(b => ({
     ...b,
-    emissions: (b.energyUsed * 0.000135).toFixed(2),
+    emissions: (b.energyUsed * emissionFactorPerKwh).toFixed(2),
     percentOfTotal: ((b.energyUsed / totalEnergyKwh) * 100).toFixed(1)
   }));
 
@@ -266,7 +260,7 @@ function App() {
           <span style={{...styles.liveDot, backgroundColor: isLive ? '#22c55e' : '#9ca3af'}}></span>
           <span>{isLive ? 'LIVE' : 'PAUSED'}</span>
         </div>
-        <p style={styles.dataSource}>Data Source: Liberty Electric Generation Mix 2024</p>
+        <p style={styles.dataSource}>Data Source: Liberty Utilities NE System Mix 2024</p>
       </header>
 
       <div style={styles.navButtons}>
@@ -311,19 +305,31 @@ function App() {
 
           <div style={styles.statsGrid}>
             <div style={styles.statCard}><p style={styles.statLabel}>Total Electricity</p><p style={styles.statValue}>2,316,469</p><p style={styles.statUnit}>kWh/year</p></div>
-            <div style={styles.statCard}><p style={styles.statLabel}>Annual Cost</p><p style={styles.statValue}>$347,470</p><p style={styles.statUnit}>per year</p></div>
+            <div style={styles.statCard}><p style={styles.statLabel}>Renewables</p><p style={styles.statValue}>45%</p><p style={styles.statUnit}>of grid mix</p></div>
             <div style={styles.statCard}><p style={styles.statLabel}>Buildings</p><p style={styles.statValue}>{buildingsData.length}</p><p style={styles.statUnit}>monitored</p></div>
-            <div style={styles.statCard}><p style={styles.statLabel}>Energy Sources</p><p style={styles.statValue}>5</p><p style={styles.statUnit}>types</p></div>
+            <div style={styles.statCard}><p style={styles.statLabel}>Emission Factor</p><p style={styles.statValue}>0.105</p><p style={styles.statUnit}>kg CO2/kWh</p></div>
+          </div>
+
+          <div style={styles.mixSummary}>
+            <h3 style={styles.sectionTitle}>Liberty NE System Mix</h3>
+            <div style={styles.mixGrid}>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#10b981'}}></span>Renewables & Other: 45.01%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#ef4444'}}></span>Natural Gas: 47.25%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#f97316'}}></span>Oil: 5.34%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#22c55e'}}></span>Biomass: 1.62%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#3b82f6'}}></span>MSW: 0.55%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#6b7280'}}></span>Coal: 0.23%</div>
+            </div>
           </div>
 
           <div style={styles.equivSection}>
             <h3 style={styles.sectionTitle}>Environmental Impact Equivalents</h3>
             <div style={styles.equivGrid}>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🚗</span><p style={styles.equivValue}>68</p><p style={styles.equivLabel}>Cars driven for 1 year</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🌳</span><p style={styles.equivValue}>5,155</p><p style={styles.equivLabel}>Trees needed to offset</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🏠</span><p style={styles.equivValue}>35</p><p style={styles.equivLabel}>Homes energy for 1 year</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>✈️</span><p style={styles.equivValue}>78</p><p style={styles.equivLabel}>Cross-country flights</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>⛽</span><p style={styles.equivValue}>35,100</p><p style={styles.equivLabel}>Gallons of gasoline</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>🚗</span><p style={styles.equivValue}>53</p><p style={styles.equivLabel}>Cars driven for 1 year</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>🌳</span><p style={styles.equivValue}>4,000</p><p style={styles.equivLabel}>Trees needed to offset</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>🏠</span><p style={styles.equivValue}>27</p><p style={styles.equivLabel}>Homes energy for 1 year</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>✈️</span><p style={styles.equivValue}>61</p><p style={styles.equivLabel}>Cross-country flights</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>⛽</span><p style={styles.equivValue}>27,200</p><p style={styles.equivLabel}>Gallons of gasoline</p></div>
               <div style={styles.equivCard}><span style={styles.equivIcon}>💡</span><p style={styles.equivValue}>23,164</p><p style={styles.equivLabel}>100W bulbs for 1 year</p></div>
             </div>
           </div>
@@ -433,7 +439,7 @@ function App() {
               )}
             </div>
           ))}
-          <div style={styles.total}><span>CAMPUS TOTAL</span><span>{totalEnergyKwh.toLocaleString()} kW-hr | {(totalEnergyKwh * 0.000135).toFixed(2)} mtCO2e</span></div>
+          <div style={styles.total}><span>CAMPUS TOTAL</span><span>{totalEnergyKwh.toLocaleString()} kW-hr | {yearlyEmissions.toFixed(2)} mtCO2e</span></div>
         </div>
       )}
 
@@ -441,18 +447,20 @@ function App() {
       {viewMode === 'sources' && (
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Emissions by Energy Source</h3>
-          <p style={styles.hint}>Click on each source for comprehensive details • Based on Liberty Electric generation mix</p>
+          <p style={styles.hint}>Click on each source for details • Based on Liberty Utilities NE System Mix</p>
           
           {emissionsData.map((s, i) => (
             <div key={i} style={styles.sourceCard}>
               <div style={styles.sourceHeader} onClick={() => setExpandedSource(expandedSource === i ? null : i)}>
                 <div>
                   <p style={styles.sourceName}>{s.source}</p>
-                  <p style={styles.sourceStats}>{s.emissions} mtCO2e ({s.percentage}%) • {s.libertyMix}% of Liberty mix</p>
+                  <p style={styles.sourceStats}>
+                    {s.emissions > 0 ? `${s.emissions} mtCO2e (${s.percentage}% of emissions)` : 'Zero emissions'} • {s.mixPercent}% of grid mix
+                  </p>
                 </div>
                 <span style={styles.arrow}>{expandedSource === i ? '▼' : '▶'}</span>
               </div>
-              <div style={styles.bar}><div style={{...styles.barFill, width: `${s.percentage * 2}%`, backgroundColor: s.color}} /></div>
+              <div style={styles.bar}><div style={{...styles.barFill, width: `${s.mixPercent * 2}%`, backgroundColor: s.color}} /></div>
               
               {expandedSource === i && (
                 <div style={styles.sourceDetails}>
@@ -467,15 +475,6 @@ function App() {
                   </div>
 
                   <div style={styles.detailBlock}>
-                    <h4 style={styles.detailHeader}>📊 Emission Factors (per kWh)</h4>
-                    <div style={styles.factorGrid}>
-                      <div style={styles.factorItem}><span>CO2:</span> <span>{s.co2Factor} tonnes</span></div>
-                      <div style={styles.factorItem}><span>N2O:</span> <span>{s.n2oFactor} tonnes</span></div>
-                      <div style={styles.factorItem}><span>CH4:</span> <span>{s.ch4Factor} tonnes</span></div>
-                    </div>
-                  </div>
-
-                  <div style={styles.detailBlock}>
                     <h4 style={styles.detailHeader}>🌍 Environmental Impacts</h4>
                     <ul style={styles.impactList}>
                       {s.environmentalImpacts.map((impact, j) => (
@@ -485,7 +484,7 @@ function App() {
                   </div>
 
                   <div style={styles.detailBlock}>
-                    <h4 style={styles.detailHeader}>🌐 Global Context</h4>
+                    <h4 style={styles.detailHeader}>🌐 Regional Context</h4>
                     <p style={styles.detailText}>{s.globalContext}</p>
                   </div>
 
@@ -495,24 +494,15 @@ function App() {
                   </div>
 
                   <div style={styles.detailBlock}>
-                    <h4 style={styles.detailHeader}>💰 Cost Comparison</h4>
-                    <p style={styles.detailText}>{s.costComparison}</p>
-                  </div>
-
-                  <div style={styles.detailBlock}>
                     <h4 style={styles.detailHeader}>♻️ Cleaner Alternatives</h4>
                     <p style={styles.detailText}>{s.alternatives}</p>
                   </div>
 
-                  <div style={styles.detailBlock}>
-                    <h4 style={styles.detailHeader}>📚 History</h4>
-                    <p style={styles.detailText}>{s.history}</p>
-                  </div>
-
                   <div style={styles.calcBox}>
                     <h4 style={styles.detailHeader}>📈 KUA Calculation</h4>
-                    <p>Liberty Electric Mix: {s.libertyMix}%</p>
+                    <p>Grid Mix Share: {s.mixPercent}%</p>
                     <p>KUA kWh from this source: {s.kwhUsed.toLocaleString()} kWh</p>
+                    <p>Emission Factor: {s.emissionFactor} tonnes/kWh</p>
                     <p>Total Emissions: <strong>{s.emissions} mtCO2e</strong></p>
                   </div>
                 </div>
@@ -531,11 +521,11 @@ function App() {
               </div>
               <div style={styles.gasCard}>
                 <h5 style={styles.gasName}>N2O - Nitrous Oxide</h5>
-                <p style={styles.gasText}>298x more potent than CO2 (GWP = 298). Stays ~114 years. From combustion and agriculture. Also depletes ozone layer.</p>
+                <p style={styles.gasText}>298x more potent than CO2 (GWP = 298). Stays ~114 years. From combustion and agriculture.</p>
               </div>
               <div style={styles.gasCard}>
                 <h5 style={styles.gasName}>CH4 - Methane</h5>
-                <p style={styles.gasText}>84x more potent than CO2 over 20 years (GWP = 84). Stays ~12 years. From natural gas leaks, landfills, livestock.</p>
+                <p style={styles.gasText}>84x more potent than CO2 over 20 years (GWP = 84). Stays ~12 years. From natural gas leaks and landfills.</p>
               </div>
             </div>
           </div>
@@ -544,7 +534,7 @@ function App() {
 
       <footer style={styles.footer}>
         <p>Kimball Union Academy - Campus Carbon Emissions Dashboard</p>
-        <p>Data: Liberty Electric Generation Mix 2024 | Total: {yearlyEmissions} mtCO2e/year</p>
+        <p>Data: Liberty Utilities NE System Mix 2024 | Total: {yearlyEmissions} mtCO2e/year</p>
         <Link to="/admin" style={styles.adminLink}>🔐 Admin Portal</Link>
       </footer>
     </div>
@@ -578,6 +568,10 @@ const styles = {
   statLabel: { fontSize: '0.7rem', color: '#94a3b8' },
   statValue: { fontSize: '1.2rem', fontWeight: 'bold', color: '#22c55e' },
   statUnit: { fontSize: '0.65rem', color: '#64748b' },
+  mixSummary: { maxWidth: '600px', margin: '0 auto 20px', backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px' },
+  mixGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px' },
+  mixItem: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: '#cbd5e1' },
+  mixDot: { width: '12px', height: '12px', borderRadius: '50%' },
   equivSection: { maxWidth: '700px', margin: '0 auto 20px', backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px' },
   sectionTitle: { fontSize: '1.2rem', color: '#22c55e', marginBottom: '15px', textAlign: 'center' },
   equivGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' },
@@ -589,9 +583,9 @@ const styles = {
   hint: { fontSize: '0.8rem', color: '#94a3b8', textAlign: 'center', marginBottom: '15px' },
   subTitle: { fontSize: '1rem', color: '#f97316', marginBottom: '10px' },
   timeSection: { marginBottom: '30px' },
-  dayRow: { display: 'flex', alignItems: 'center', padding: '8px', borderRadius: '6px', marginBottom: '5px' },
+  dayRow: { display: 'flex', alignItems: 'center', padding: '8px', borderRadius: '6px', marginBottom: '5px', flexWrap: 'wrap' },
   dayName: { width: '100px', fontSize: '0.85rem', color: '#e2e8f0' },
-  dayBarContainer: { flex: 1, height: '20px', backgroundColor: '#0f172a', borderRadius: '10px', marginRight: '10px' },
+  dayBarContainer: { flex: 1, minWidth: '100px', height: '20px', backgroundColor: '#0f172a', borderRadius: '10px', marginRight: '10px' },
   dayBar: { height: '100%', backgroundColor: '#22c55e', borderRadius: '10px' },
   dayValue: { width: '60px', fontSize: '0.8rem', color: '#22c55e', textAlign: 'right' },
   dayLabel: { width: '120px', fontSize: '0.7rem', color: '#64748b', textAlign: 'right' },
@@ -601,7 +595,7 @@ const styles = {
   monthValue: { fontSize: '1rem', fontWeight: 'bold', color: '#22c55e' },
   monthUnit: { fontSize: '0.6rem', color: '#64748b' },
   monthHeat: { fontSize: '0.6rem', color: '#f97316', marginTop: '3px' },
-  realTimeGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' },
+  realTimeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '10px' },
   realTimeCard: { backgroundColor: '#334155', borderRadius: '8px', padding: '12px', textAlign: 'center' },
   rtLabel: { fontSize: '0.7rem', color: '#94a3b8' },
   rtValue: { fontSize: '1.1rem', fontWeight: 'bold', color: '#22c55e' },
@@ -628,8 +622,6 @@ const styles = {
   detailBlock: { marginBottom: '15px' },
   detailHeader: { color: '#22c55e', fontSize: '0.9rem', marginBottom: '5px' },
   detailText: { color: '#cbd5e1', fontSize: '0.8rem', lineHeight: '1.5', margin: 0 },
-  factorGrid: { display: 'flex', gap: '15px', flexWrap: 'wrap' },
-  factorItem: { backgroundColor: '#1e293b', padding: '8px 12px', borderRadius: '6px', fontSize: '0.8rem', color: '#cbd5e1' },
   impactList: { margin: '0', paddingLeft: '20px' },
   impactItem: { color: '#cbd5e1', fontSize: '0.8rem', marginBottom: '4px' },
   calcBox: { backgroundColor: '#1e293b', padding: '12px', borderRadius: '8px', fontSize: '0.8rem', color: '#cbd5e1' },
