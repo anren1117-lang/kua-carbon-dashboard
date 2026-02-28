@@ -67,6 +67,8 @@ function App() {
       ],
       globalContext: 'Natural gas provides about 50% of New England electricity. ISO-NE relies heavily on natural gas due to pipeline infrastructure and coal plant retirements.',
       efficiency: '40-60% efficient in combined-cycle plants (best among fossil fuels).',
+      costComparison: 'Moderate cost at $0.05-0.08 per kWh. Price volatile due to market fluctuations and pipeline constraints in winter. Generally cheaper than oil but prices spike during cold snaps.',
+      history: 'First used for electricity in 1940s. Became major source after 1970s oil crisis. Shale gas boom since 2008 made it dominant fuel in US power generation. Now provides nearly half of New England electricity.',
       alternatives: 'Renewable natural gas, hydrogen blending, wind/solar with battery storage.'
     },
     { 
@@ -88,6 +90,8 @@ function App() {
       ],
       globalContext: 'Oil provides about 5% of New England electricity, mainly during peak demand or when natural gas is constrained.',
       efficiency: '35-45% efficient.',
+      costComparison: 'Most expensive fossil fuel at $0.10-0.20 per kWh. Price highly volatile based on global markets. Used mainly when other sources unavailable.',
+      history: 'Peaked in 1970s during oil embargo. Rapidly declined as prices rose. Now mainly backup power and peak demand in New England.',
       alternatives: 'Battery storage for peak demand, demand response programs.'
     },
     { 
@@ -110,6 +114,8 @@ function App() {
       ],
       globalContext: 'Biomass provides about 2% of New England electricity. NH has several biomass plants using wood from sustainable forestry.',
       efficiency: '20-25% efficient for direct combustion.',
+      costComparison: 'Moderate cost at $0.06-0.10 per kWh. Fuel costs depend on local wood supply. Often receives renewable energy subsidies.',
+      history: 'Used since early electricity generation. Modern biomass plants emerged in 1980s. NH has long history of forest products industry supporting biomass energy.',
       alternatives: 'Improved forestry practices, agricultural waste utilization.'
     },
     { 
@@ -132,6 +138,8 @@ function App() {
       ],
       globalContext: 'MSW provides less than 1% of New England electricity. Several waste-to-energy plants operate in the region.',
       efficiency: '20-30% efficient.',
+      costComparison: 'High cost at $0.08-0.15 per kWh. However, tipping fees from waste disposal provide additional revenue, making it economically viable.',
+      history: 'First US waste-to-energy plant 1975. Growth in 1980s during landfill crisis. Now controversial as recycling improves. Some plants closing due to competition from cheap natural gas.',
       alternatives: 'Zero-waste policies, enhanced recycling, composting.'
     },
     { 
@@ -154,6 +162,8 @@ function App() {
       ],
       globalContext: 'Coal now provides less than 1% of New England electricity. The region has successfully transitioned away from coal.',
       efficiency: '33-40% efficient.',
+      costComparison: 'Was cheapest fuel at $0.03-0.05 per kWh, but environmental regulations and carbon costs made it uneconomical. No longer competitive in New England.',
+      history: 'First coal power plant built 1882 (Edison). Dominated 20th century electricity. New England began phasing out in 2000s. Merrimack Station (NH) - last coal plant in New England - closed in 2024.',
       alternatives: 'Already being replaced by natural gas and renewables.'
     },
     { 
@@ -176,6 +186,8 @@ function App() {
       ],
       globalContext: '45% of New England electricity comes from zero-emission sources. Nuclear (Seabrook, Millstone) provides baseload. Canadian hydro provides imports. Solar/wind growing.',
       efficiency: 'Nuclear: 90%+, Hydro: 90%, Wind: 35-45%, Solar: 20-25%.',
+      costComparison: 'Nuclear: $0.03-0.05/kWh (existing plants). Hydro: $0.02-0.04/kWh. Wind: $0.02-0.05/kWh. Solar: $0.03-0.06/kWh. Renewables now cost-competitive or cheaper than fossil fuels.',
+      history: 'Nuclear plants built 1970s-80s. Hydro imports from Canada since 1990s. Solar/wind boom since 2010. Massachusetts, Rhode Island, Connecticut have aggressive renewable mandates driving growth.',
       alternatives: 'Continue expanding renewables, battery storage, grid modernization.'
     }
   ];
@@ -491,6 +503,16 @@ function App() {
                   <div style={styles.detailBlock}>
                     <h4 style={styles.detailHeader}>⚙️ Efficiency</h4>
                     <p style={styles.detailText}>{s.efficiency}</p>
+                  </div>
+
+                  <div style={styles.detailBlock}>
+                    <h4 style={styles.detailHeader}>💰 Cost Comparison</h4>
+                    <p style={styles.detailText}>{s.costComparison}</p>
+                  </div>
+
+                  <div style={styles.detailBlock}>
+                    <h4 style={styles.detailHeader}>📚 History</h4>
+                    <p style={styles.detailText}>{s.history}</p>
                   </div>
 
                   <div style={styles.detailBlock}>
