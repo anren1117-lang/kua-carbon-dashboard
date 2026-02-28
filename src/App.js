@@ -12,8 +12,8 @@ function App() {
   const [expandedBuilding, setExpandedBuilding] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
 
-  // NEW Liberty NE System Mix - 242.22 mtCO2e annual
-  const yearlyEmissions = 242.22;
+  // ISO New England Official Mix - 221.53 mtCO2e annual
+  const yearlyEmissions = 221.53;
   const totalKwh = 2316469;
   const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60);
   const emissionsPerMinute = yearlyEmissions / (365 * 24 * 60);
@@ -46,16 +46,16 @@ function App() {
   const totalEnergyKwh = buildingsData.reduce((sum, b) => sum + b.energyUsed, 0);
   const totalPowerKw = buildingsData.reduce((sum, b) => sum + b.power, 0);
 
-  // NEW Liberty NE System Mix Energy Sources
+  // ISO New England Official Energy Sources (2024/2025 data)
   const emissionsData = [
     { 
       source: 'Natural Gas', 
-      emissions: 197.02, 
-      percentage: 81.3,
-      mixPercent: 47.25,
-      kwhUsed: 1094532,
+      emissions: 213.83, 
+      percentage: 96.5,
+      mixPercent: 51,
+      kwhUsed: 1181399,
       color: '#ef4444',
-      emissionFactor: 0.00018,
+      emissionFactor: 0.000181,
       howItWorks: 'Natural gas (primarily methane, CH4) is extracted from underground reservoirs and transported via pipelines to power plants. In combined-cycle plants, gas is burned in combustion turbines, and the hot exhaust drives steam turbines for additional power generation.',
       chemicalProcess: 'CH4 + 2O2 → CO2 + 2H2O + Heat. The combustion of methane releases carbon dioxide and water vapor, along with trace amounts of nitrogen oxides (NOx).',
       environmentalImpacts: [
@@ -63,132 +63,151 @@ function App() {
         'Methane leaks during extraction (2-3%) increase warming impact',
         'Hydraulic fracturing (fracking) can contaminate groundwater',
         'Lower particulate and sulfur emissions than coal or oil',
-        'Dominant fuel source in New England grid'
+        'Dominant fuel source in New England grid (51%)'
       ],
-      globalContext: 'Natural gas provides about 50% of New England electricity. ISO-NE relies heavily on natural gas due to pipeline infrastructure and coal plant retirements.',
+      globalContext: 'Natural gas provides 51% of New England electricity (ISO-NE 2024). The region relies heavily on natural gas due to pipeline infrastructure and coal/oil plant retirements.',
       efficiency: '40-60% efficient in combined-cycle plants (best among fossil fuels).',
-      costComparison: 'Moderate cost at $0.05-0.08 per kWh. Price volatile due to market fluctuations and pipeline constraints in winter. Generally cheaper than oil but prices spike during cold snaps.',
-      history: 'First used for electricity in 1940s. Became major source after 1970s oil crisis. Shale gas boom since 2008 made it dominant fuel in US power generation. Now provides nearly half of New England electricity.',
+      costComparison: 'Moderate cost at $0.05-0.08 per kWh. Price volatile due to market fluctuations and pipeline constraints in winter.',
+      history: 'Became dominant after 2008 shale gas boom. Now provides over half of New England electricity.',
       alternatives: 'Renewable natural gas, hydrogen blending, wind/solar with battery storage.'
     },
     { 
+      source: 'Nuclear', 
+      emissions: 0, 
+      percentage: 0,
+      mixPercent: 23,
+      kwhUsed: 532788,
+      color: '#8b5cf6',
+      emissionFactor: 0,
+      howItWorks: 'Nuclear fission splits uranium atoms, releasing heat that produces steam to drive turbines. New England has two nuclear plants: Millstone (CT) and Seabrook (NH).',
+      chemicalProcess: 'U-235 + neutron → fission products + neutrons + energy. No combustion, no CO2 emissions during operation.',
+      environmentalImpacts: [
+        'Zero carbon emissions during operation',
+        'Provides reliable baseload power 24/7',
+        'Radioactive waste requires long-term storage',
+        'High upfront construction costs',
+        'Critical for New England grid reliability'
+      ],
+      globalContext: 'Nuclear provides 23% of New England electricity. Millstone and Seabrook are critical for grid reliability and carbon-free power.',
+      efficiency: '90%+ capacity factor - highest of any source.',
+      costComparison: 'Low operating cost at $0.03-0.05 per kWh for existing plants. New plants very expensive.',
+      history: 'Vermont Yankee closed 2013, Pilgrim closed 2019. Remaining plants essential for clean energy.',
+      alternatives: 'Advanced nuclear designs, small modular reactors (SMRs).'
+    },
+    { 
+      source: 'Renewables (Solar, Wind, Biomass)', 
+      emissions: 0, 
+      percentage: 0,
+      mixPercent: 12,
+      kwhUsed: 277976,
+      color: '#22c55e',
+      emissionFactor: 0,
+      howItWorks: 'Solar panels convert sunlight to electricity. Wind turbines capture kinetic energy. Biomass burns organic material. Combined they provide 12% of New England power.',
+      chemicalProcess: 'Solar: Photovoltaic effect converts photons to electrons. Wind: Kinetic energy to rotational to electrical. No combustion for solar/wind.',
+      environmentalImpacts: [
+        'Zero emissions from solar and wind',
+        'Biomass considered carbon-neutral (CO2 absorbed during growth)',
+        'Land use considerations for large installations',
+        'Intermittent - depends on weather',
+        'Growing rapidly in New England'
+      ],
+      globalContext: '12% of New England electricity from renewables. Solar 4.1%, Wind 3.9%, Biomass/Wood 1.7%, MSW 2.2%, Landfill Gas 0.3%.',
+      efficiency: 'Solar: 20-25%, Wind: 35-45%, varies by weather.',
+      costComparison: 'Solar: $0.03-0.06/kWh, Wind: $0.02-0.05/kWh. Now cost-competitive with fossil fuels.',
+      history: 'Rapid growth since 2010. Block Island Wind Farm (2016) was first US offshore wind. Vineyard Wind started 2024.',
+      alternatives: 'Offshore wind expansion, community solar, battery storage integration.'
+    },
+    { 
+      source: 'Hydropower', 
+      emissions: 0, 
+      percentage: 0,
+      mixPercent: 6,
+      kwhUsed: 138988,
+      color: '#3b82f6',
+      emissionFactor: 0,
+      howItWorks: 'Water flows through turbines to generate electricity. Includes conventional hydro dams and pumped storage facilities in New England.',
+      chemicalProcess: 'Gravitational potential energy → kinetic energy → electrical energy. No combustion, no emissions.',
+      environmentalImpacts: [
+        'Zero carbon emissions',
+        'Can affect fish migration and river ecosystems',
+        'Pumped storage provides grid reliability',
+        'Dependent on water availability',
+        'Long facility lifespan (50+ years)'
+      ],
+      globalContext: '6% of New England electricity from hydro. Region also imports Canadian hydropower (part of 7% imports).',
+      efficiency: '90% efficiency - highest of any generation type.',
+      costComparison: 'Very low cost at $0.02-0.04 per kWh. Existing facilities very economical.',
+      history: 'New England has used hydro since 1800s. Two large pumped storage facilities provide 1,600 MW.',
+      alternatives: 'Run-of-river hydro, increased imports from Quebec.'
+    },
+    { 
+      source: 'Net Imports (NY, Quebec, New Brunswick)', 
+      emissions: 0, 
+      percentage: 0,
+      mixPercent: 7,
+      kwhUsed: 162153,
+      color: '#06b6d4',
+      emissionFactor: 0,
+      howItWorks: 'Electricity imported via transmission lines from neighboring regions - primarily hydropower from Quebec and New Brunswick, and mixed sources from New York.',
+      chemicalProcess: 'Mostly hydropower from Canada - no combustion, no emissions.',
+      environmentalImpacts: [
+        'Mostly clean hydropower from Canada',
+        'Reduces need for local fossil fuel generation',
+        'Requires transmission infrastructure',
+        'Subject to availability and contracts',
+        'New England is historically a net importer'
+      ],
+      globalContext: '7% of New England electricity is imported. Quebec hydro is major source of clean power.',
+      efficiency: 'Transmission losses ~3-5% over long distances.',
+      costComparison: 'Varies by contract and market conditions.',
+      history: 'Long-term contracts with Hydro-Quebec. New transmission projects proposed.',
+      alternatives: 'New England Clean Energy Connect, additional Canadian imports.'
+    },
+    { 
       source: 'Oil', 
-      emissions: 30.92, 
-      percentage: 12.8,
-      mixPercent: 5.34,
-      kwhUsed: 123699,
+      emissions: 5.95, 
+      percentage: 2.7,
+      mixPercent: 1,
+      kwhUsed: 23165,
       color: '#f97316',
-      emissionFactor: 0.00025,
-      howItWorks: 'Petroleum is refined into heavy fuel oil or diesel, then burned in boilers or combustion turbines. Oil plants often serve as peaking plants due to quick startup times.',
+      emissionFactor: 0.000257,
+      howItWorks: 'Petroleum is refined into heavy fuel oil or diesel, then burned in boilers or combustion turbines. Oil plants serve as backup during peak demand and gas shortages.',
       chemicalProcess: 'CxHy + O2 → CO2 + H2O + Heat. Petroleum hydrocarbons combust to form CO2 and water.',
       environmentalImpacts: [
         'Higher CO2 emissions than natural gas',
-        'Oil spills during transport devastate ecosystems',
-        'Used mainly for backup/peak demand in New England',
-        'Sulfur content causes acid rain',
+        'Used mainly for backup/peak demand',
+        'Important during winter gas shortages',
+        'Oil spills during transport risk ecosystems',
         'Being phased out in favor of cleaner sources'
       ],
-      globalContext: 'Oil provides about 5% of New England electricity, mainly during peak demand or when natural gas is constrained.',
+      globalContext: 'Oil provides only 1% of New England electricity normally, but increases during cold winter days when gas is constrained.',
       efficiency: '35-45% efficient.',
-      costComparison: 'Most expensive fossil fuel at $0.10-0.20 per kWh. Price highly volatile based on global markets. Used mainly when other sources unavailable.',
-      history: 'Peaked in 1970s during oil embargo. Rapidly declined as prices rose. Now mainly backup power and peak demand in New England.',
+      costComparison: 'Most expensive fossil fuel at $0.10-0.20 per kWh. Used when no alternatives available.',
+      history: 'Peaked in 1970s during oil embargo. Now mainly backup power for winter reliability.',
       alternatives: 'Battery storage for peak demand, demand response programs.'
     },
     { 
-      source: 'Biomass', 
-      emissions: 8.63, 
-      percentage: 3.6,
-      mixPercent: 1.62,
-      kwhUsed: 37527,
-      color: '#22c55e',
-      emissionFactor: 0.00023,
-      howItWorks: 'Organic materials (wood chips, agricultural waste, dedicated energy crops) are burned to produce steam that drives turbines. Some plants use gasification to convert biomass to gas first.',
-      chemicalProcess: 'Biomass + O2 → CO2 + H2O + Heat. Carbon released was recently absorbed from atmosphere, making it carbon-neutral in theory.',
-      environmentalImpacts: [
-        'Considered carbon-neutral (CO2 absorbed during growth)',
-        'Can use waste materials that would decompose anyway',
-        'Reduces landfill waste',
-        'Land use concerns if using dedicated crops',
-        'Air quality impacts from burning',
-        'Sustainable forestry practices important'
-      ],
-      globalContext: 'Biomass provides about 2% of New England electricity. NH has several biomass plants using wood from sustainable forestry.',
-      efficiency: '20-25% efficient for direct combustion.',
-      costComparison: 'Moderate cost at $0.06-0.10 per kWh. Fuel costs depend on local wood supply. Often receives renewable energy subsidies.',
-      history: 'Used since early electricity generation. Modern biomass plants emerged in 1980s. NH has long history of forest products industry supporting biomass energy.',
-      alternatives: 'Improved forestry practices, agricultural waste utilization.'
-    },
-    { 
-      source: 'Municipal Solid Waste (MSW)', 
-      emissions: 3.95, 
-      percentage: 1.6,
-      mixPercent: 0.55,
-      kwhUsed: 12741,
-      color: '#3b82f6',
-      emissionFactor: 0.00031,
-      howItWorks: 'Municipal solid waste (household trash) is burned at 850-1100°C in specialized incinerators. Heat produces steam for electricity. Modern plants include pollution controls.',
-      chemicalProcess: 'Mixed waste + O2 → CO2 + H2O + ash + pollutants. Plastics release more CO2; organic matter releases biogenic CO2.',
-      environmentalImpacts: [
-        'Reduces landfill volume by 90%',
-        'Generates energy from waste',
-        'Can release dioxins and furans if not controlled',
-        'Heavy metals concentrate in ash',
-        'Competes with recycling programs',
-        'Environmental justice concerns'
-      ],
-      globalContext: 'MSW provides less than 1% of New England electricity. Several waste-to-energy plants operate in the region.',
-      efficiency: '20-30% efficient.',
-      costComparison: 'High cost at $0.08-0.15 per kWh. However, tipping fees from waste disposal provide additional revenue, making it economically viable.',
-      history: 'First US waste-to-energy plant 1975. Growth in 1980s during landfill crisis. Now controversial as recycling improves. Some plants closing due to competition from cheap natural gas.',
-      alternatives: 'Zero-waste policies, enhanced recycling, composting.'
-    },
-    { 
       source: 'Coal', 
-      emissions: 1.70, 
-      percentage: 0.7,
+      emissions: 1.75, 
+      percentage: 0.8,
       mixPercent: 0.23,
       kwhUsed: 5328,
       color: '#6b7280',
-      emissionFactor: 0.00032,
-      howItWorks: 'Coal is burned in boilers to create steam that drives turbines. New England has largely phased out coal power.',
+      emissionFactor: 0.000329,
+      howItWorks: 'Coal is burned in boilers to create steam that drives turbines. New England has almost completely phased out coal power.',
       chemicalProcess: 'C + O2 → CO2 + Heat. Coal also releases sulfur dioxide, mercury, and particulates.',
       environmentalImpacts: [
         'Highest CO2 emissions of any fuel',
         'Releases mercury and toxic heavy metals',
         'Causes acid rain from sulfur dioxide',
-        'Mining destroys ecosystems',
-        'New England has closed most coal plants',
-        'Merrimack Station (NH) closed in 2024'
+        'New England has closed nearly all coal plants',
+        'Only 0.23% of grid mix remains'
       ],
-      globalContext: 'Coal now provides less than 1% of New England electricity. The region has successfully transitioned away from coal.',
+      globalContext: 'Coal provides only 0.23% of New England electricity. Bridgeport Harbor (last major coal plant) closed in 2021.',
       efficiency: '33-40% efficient.',
-      costComparison: 'Was cheapest fuel at $0.03-0.05 per kWh, but environmental regulations and carbon costs made it uneconomical. No longer competitive in New England.',
-      history: 'First coal power plant built 1882 (Edison). Dominated 20th century electricity. New England began phasing out in 2000s. Merrimack Station (NH) - last coal plant in New England - closed in 2024.',
-      alternatives: 'Already being replaced by natural gas and renewables.'
-    },
-    { 
-      source: 'Renewables & Other', 
-      emissions: 0, 
-      percentage: 0,
-      mixPercent: 45.01,
-      kwhUsed: 1042642,
-      color: '#10b981',
-      emissionFactor: 0,
-      howItWorks: 'Includes nuclear, hydro, solar, wind, and other zero-emission sources. Hydro from Canada is significant. Solar and wind growing rapidly.',
-      chemicalProcess: 'No combustion. Nuclear: fission. Solar: photovoltaic effect. Wind: kinetic energy. Hydro: gravitational potential energy.',
-      environmentalImpacts: [
-        'Zero direct CO2 emissions',
-        'Nuclear has waste disposal challenges',
-        'Hydro can affect fish migration',
-        'Wind/solar have land use considerations',
-        'Critical for meeting climate goals',
-        'Growing rapidly in New England'
-      ],
-      globalContext: '45% of New England electricity comes from zero-emission sources. Nuclear (Seabrook, Millstone) provides baseload. Canadian hydro provides imports. Solar/wind growing.',
-      efficiency: 'Nuclear: 90%+, Hydro: 90%, Wind: 35-45%, Solar: 20-25%.',
-      costComparison: 'Nuclear: $0.03-0.05/kWh (existing plants). Hydro: $0.02-0.04/kWh. Wind: $0.02-0.05/kWh. Solar: $0.03-0.06/kWh. Renewables now cost-competitive or cheaper than fossil fuels.',
-      history: 'Nuclear plants built 1970s-80s. Hydro imports from Canada since 1990s. Solar/wind boom since 2010. Massachusetts, Rhode Island, Connecticut have aggressive renewable mandates driving growth.',
-      alternatives: 'Continue expanding renewables, battery storage, grid modernization.'
+      costComparison: 'Was cheapest at $0.03-0.05/kWh but environmental costs made it uneconomical.',
+      history: 'Brayton Point closed 2017, Mount Tom 2018, Bridgeport Harbor 2021. Coal era essentially over in New England.',
+      alternatives: 'Already replaced by natural gas and renewables.'
     }
   ];
 
@@ -203,20 +222,20 @@ function App() {
     { day: 'Sunday', multiplier: 0.70, label: 'Lowest - Weekend' }
   ];
 
-  // Monthly patterns
+  // Monthly patterns (based on 221.53 mtCO2e annual)
   const monthlyData = [
-    { month: 'Jan', emissions: 25.2, heating: 'High' },
-    { month: 'Feb', emissions: 23.9, heating: 'High' },
-    { month: 'Mar', emissions: 21.9, heating: 'Moderate' },
-    { month: 'Apr', emissions: 19.0, heating: 'Low' },
-    { month: 'May', emissions: 17.2, heating: 'None' },
-    { month: 'Jun', emissions: 14.4, heating: 'None' },
-    { month: 'Jul', emissions: 11.8, heating: 'None' },
-    { month: 'Aug', emissions: 13.0, heating: 'None' },
-    { month: 'Sep', emissions: 18.2, heating: 'Low' },
-    { month: 'Oct', emissions: 20.7, heating: 'Moderate' },
-    { month: 'Nov', emissions: 23.1, heating: 'High' },
-    { month: 'Dec', emissions: 24.2, heating: 'High' }
+    { month: 'Jan', emissions: 23.1, heating: 'High' },
+    { month: 'Feb', emissions: 21.9, heating: 'High' },
+    { month: 'Mar', emissions: 20.0, heating: 'Moderate' },
+    { month: 'Apr', emissions: 17.4, heating: 'Low' },
+    { month: 'May', emissions: 15.7, heating: 'None' },
+    { month: 'Jun', emissions: 13.2, heating: 'None' },
+    { month: 'Jul', emissions: 10.8, heating: 'None' },
+    { month: 'Aug', emissions: 11.9, heating: 'None' },
+    { month: 'Sep', emissions: 16.7, heating: 'Low' },
+    { month: 'Oct', emissions: 19.0, heating: 'Moderate' },
+    { month: 'Nov', emissions: 21.2, heating: 'High' },
+    { month: 'Dec', emissions: 22.2, heating: 'High' }
   ];
 
   const initializeEmissions = useCallback(() => {
@@ -272,7 +291,7 @@ function App() {
           <span style={{...styles.liveDot, backgroundColor: isLive ? '#22c55e' : '#9ca3af'}}></span>
           <span>{isLive ? 'LIVE' : 'PAUSED'}</span>
         </div>
-        <p style={styles.dataSource}>Data Source: Liberty Utilities NE System Mix 2024</p>
+        <p style={styles.dataSource}>Data Source: ISO New England Grid Mix 2024</p>
       </header>
 
       <div style={styles.navButtons}>
@@ -317,19 +336,20 @@ function App() {
 
           <div style={styles.statsGrid}>
             <div style={styles.statCard}><p style={styles.statLabel}>Total Electricity</p><p style={styles.statValue}>2,316,469</p><p style={styles.statUnit}>kWh/year</p></div>
-            <div style={styles.statCard}><p style={styles.statLabel}>Renewables</p><p style={styles.statValue}>45%</p><p style={styles.statUnit}>of grid mix</p></div>
+            <div style={styles.statCard}><p style={styles.statLabel}>Zero-Emission</p><p style={styles.statValue}>48%</p><p style={styles.statUnit}>of grid mix</p></div>
             <div style={styles.statCard}><p style={styles.statLabel}>Buildings</p><p style={styles.statValue}>{buildingsData.length}</p><p style={styles.statUnit}>monitored</p></div>
-            <div style={styles.statCard}><p style={styles.statLabel}>Emission Factor</p><p style={styles.statValue}>0.105</p><p style={styles.statUnit}>kg CO2/kWh</p></div>
+            <div style={styles.statCard}><p style={styles.statLabel}>Emission Factor</p><p style={styles.statValue}>0.096</p><p style={styles.statUnit}>kg CO2/kWh</p></div>
           </div>
 
           <div style={styles.mixSummary}>
-            <h3 style={styles.sectionTitle}>Liberty NE System Mix</h3>
+            <h3 style={styles.sectionTitle}>ISO New England Grid Mix (2024)</h3>
             <div style={styles.mixGrid}>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#10b981'}}></span>Renewables & Other: 45.01%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#ef4444'}}></span>Natural Gas: 47.25%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#f97316'}}></span>Oil: 5.34%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#22c55e'}}></span>Biomass: 1.62%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#3b82f6'}}></span>MSW: 0.55%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#ef4444'}}></span>Natural Gas: 51%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#8b5cf6'}}></span>Nuclear: 23%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#22c55e'}}></span>Renewables: 12%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#06b6d4'}}></span>Net Imports: 7%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#3b82f6'}}></span>Hydro: 6%</div>
+              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#f97316'}}></span>Oil: 1%</div>
               <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#6b7280'}}></span>Coal: 0.23%</div>
             </div>
           </div>
@@ -337,12 +357,12 @@ function App() {
           <div style={styles.equivSection}>
             <h3 style={styles.sectionTitle}>Environmental Impact Equivalents</h3>
             <div style={styles.equivGrid}>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🚗</span><p style={styles.equivValue}>53</p><p style={styles.equivLabel}>Cars driven for 1 year</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🌳</span><p style={styles.equivValue}>4,000</p><p style={styles.equivLabel}>Trees needed to offset</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🏠</span><p style={styles.equivValue}>27</p><p style={styles.equivLabel}>Homes energy for 1 year</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>✈️</span><p style={styles.equivValue}>61</p><p style={styles.equivLabel}>Cross-country flights</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>⛽</span><p style={styles.equivValue}>27,200</p><p style={styles.equivLabel}>Gallons of gasoline</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>💡</span><p style={styles.equivValue}>23,164</p><p style={styles.equivLabel}>100W bulbs for 1 year</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>🚗</span><p style={styles.equivValue}>48</p><p style={styles.equivLabel}>Cars driven for 1 year</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>🌳</span><p style={styles.equivValue}>3,660</p><p style={styles.equivLabel}>Trees needed to offset</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>🏠</span><p style={styles.equivValue}>25</p><p style={styles.equivLabel}>Homes energy for 1 year</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>✈️</span><p style={styles.equivValue}>56</p><p style={styles.equivLabel}>Cross-country flights</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>⛽</span><p style={styles.equivValue}>24,900</p><p style={styles.equivLabel}>Gallons of gasoline</p></div>
+              <div style={styles.equivCard}><span style={styles.equivIcon}>💡</span><p style={styles.equivValue}>21,200</p><p style={styles.equivLabel}>100W bulbs for 1 year</p></div>
             </div>
           </div>
         </>
@@ -556,7 +576,7 @@ function App() {
 
       <footer style={styles.footer}>
         <p>Kimball Union Academy - Campus Carbon Emissions Dashboard</p>
-        <p>Data: Liberty Utilities NE System Mix 2024 | Total: {yearlyEmissions} mtCO2e/year</p>
+        <p>Data: ISO New England 2024 | Total: {yearlyEmissions} mtCO2e/year</p>
         <Link to="/admin" style={styles.adminLink}>🔐 Admin Portal</Link>
       </footer>
     </div>
