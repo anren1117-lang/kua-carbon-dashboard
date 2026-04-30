@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
+import { EducationalCard } from './EducationalCard';
 
 const empty = { zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' };
 
@@ -32,6 +33,33 @@ function StudentUSBoarding() {
         mode (drive vs fly) is inferred from distance.
       </p>
       <div style={s.factor}>Factor source: EPA (ground) + DEFRA (air with radiative forcing)</div>
+
+      <EducationalCard
+        title="Term-break travel is a major Scope 3 source"
+        sections={[
+          {
+            heading: 'A single round-trip flight',
+            body: [
+              'BOS ↔ LAX round-trip in economy: roughly 1.2 mtCO₂e per passenger — about half a year\'s per-student dorm electricity, in a single weekend of travel.',
+              'Most US boarders fly home 3–4 times per year (Thanksgiving, winter break, spring break, summer). That can total 4–5 mtCO₂e per student per year.',
+              'For a 100-student domestic boarding cohort, that\'s 400–500 mtCO₂e — comparable in scale to KUA\'s entire Scope 1 + 2 footprint.',
+            ],
+          },
+          {
+            heading: 'When driving beats flying',
+            body: [
+              'Below ~500 miles, driving a car with 4 people often emits less per passenger than flying.',
+              'Above ~1,000 miles, flying is usually unavoidable but radiative-forcing-corrected factors make air emissions worse than the raw kg-of-fuel suggest.',
+              'A 4-person carpool over 500 miles produces about the same total emissions as one person flying solo.',
+            ],
+          },
+          {
+            heading: 'Why we record by ZIP',
+            body: 'Home ZIP gives us distance to BOS/MHT, which combined with mode (drive vs fly, inferred above/below the threshold) lets us compute term-break round-trip emissions per student. Each student is one row; school-year total is the sum.',
+            citation: 'EPA Emission Factors Hub (ground); DEFRA 2024 conversion factors with radiative forcing multiplier (air).',
+          },
+        ]}
+      />
 
       {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
 

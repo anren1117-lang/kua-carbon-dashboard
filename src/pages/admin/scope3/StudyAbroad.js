@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
+import { EducationalCard } from './EducationalCard';
 
 const empty = { destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' };
 
@@ -33,6 +34,32 @@ function StudyAbroad() {
         materiality simplification.
       </p>
       <div style={s.factor}>Factor source: DEFRA international air with radiative forcing</div>
+
+      <EducationalCard
+        title="Tracking the carbon of an educational trip"
+        sections={[
+          {
+            heading: 'Order of magnitude',
+            body: [
+              'BOS ↔ Madrid round-trip in economy: roughly 1.7 mtCO₂e per student.',
+              'A 12-student spring-term Spain program produces ~20 mtCO₂e in flights alone — comparable to a small US household\'s entire annual footprint.',
+              'Domestic programs (BOS ↔ DEN, ~0.9 mtCO₂e round-trip) cost less than half the carbon of a transatlantic one.',
+            ],
+          },
+          {
+            heading: 'Why we track it openly',
+            body: [
+              'Study abroad has substantial educational value. The point of measuring isn\'t to discourage it — it\'s to make the carbon cost visible alongside the academic benefit so the school can make informed choices about which programs to invest in.',
+              'Schools that publish carbon-per-student-per-program let students factor it into their decisions, and let admissions/development reason honestly about institutional climate commitments.',
+            ],
+          },
+          {
+            heading: 'What we currently exclude',
+            body: 'Ground travel within the destination country, hotel stays, and food are not yet captured by this category — only the round-trip flight per participant. The flight is typically 70–85% of total program emissions, so the simplification is a known materiality choice we will document publicly on the methodology page.',
+            citation: 'DEFRA 2024 international air factors with radiative forcing multiplier.',
+          },
+        ]}
+      />
 
       {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
 

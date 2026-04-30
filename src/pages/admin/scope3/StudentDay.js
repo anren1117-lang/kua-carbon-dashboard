@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
+import { EducationalCard } from './EducationalCard';
 
 const empty = { zip_code: '', graduation_year: '2026', school_year: '2025-2026' };
 
@@ -32,6 +33,34 @@ function StudentDay() {
         factors translate ZIP into annual commuting emissions.
       </p>
       <div style={s.factor}>Factor source: EPA Emission Factors Hub (per-passenger-mile)</div>
+
+      <EducationalCard
+        title="Why daily commuting adds up"
+        sections={[
+          {
+            heading: 'Order of magnitude',
+            body: [
+              'A 10-mile one-way commute, driven solo every school day for 36 weeks, produces roughly 1.5 mtCO₂e per year — about 0.7% of KUA\'s entire annual footprint, from a single person.',
+              'Carpooling with one other person cuts per-passenger emissions in half. Switching from a gas car to an EV cuts them by about 60% on the New England grid.',
+              'Walking and biking are zero-emission. Below ~3 miles, they\'re often faster than driving once you account for parking.',
+            ],
+          },
+          {
+            heading: 'How the calculation works',
+            body: 'For each commuter we record one-way distance, mode, days per week, and weeks per school year. Annual emissions are then:',
+            formula: 'annual = one_way_miles × 2 × days_per_week × weeks_per_year × mode_factor',
+            citation: 'Mode factors from EPA GHG Emission Factors Hub (Mobile Combustion table).',
+          },
+          {
+            heading: 'What students can act on',
+            body: [
+              'Tracking your own commute helps you see exactly what your choice costs in carbon.',
+              'A single switch — solo car → carpool, or gas → EV — measurably moves KUA\'s Scope 3 number.',
+              'Cordero et al. (2020) found that students who calculate their own footprints make pro-environmental choices for years afterward.',
+            ],
+          },
+        ]}
+      />
 
       {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
 

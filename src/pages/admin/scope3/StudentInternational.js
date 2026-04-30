@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
+import { EducationalCard } from './EducationalCard';
 
 const empty = { country: '', graduation_year: '2026', school_year: '2025-2026' };
 
@@ -32,6 +33,34 @@ function StudentInternational() {
         from country (capital or major hub) to BOS/MHT.
       </p>
       <div style={s.factor}>Factor source: DEFRA international air with radiative forcing multiplier</div>
+
+      <EducationalCard
+        title="Why international flights dominate the inventory"
+        sections={[
+          {
+            heading: 'A single round trip',
+            body: [
+              'East-Asia ↔ BOS round-trip in economy: roughly 3–4 mtCO₂e per passenger.',
+              'That single round trip is comparable to one full year of an average US household\'s total electricity use.',
+              'For a school with 50 international students returning home each summer + winter, this category alone can produce 300–400 mtCO₂e per year.',
+              'Kool (2025) at Royal Roads University found that student air travel alone produced 28 million km in a single year — dwarfing every other emissions category at the institution.',
+            ],
+          },
+          {
+            heading: 'Why aviation gets a multiplier',
+            body: 'Burning jet fuel at 30,000+ feet doesn\'t just produce CO₂ — water vapor, NOₓ, and contrails trap additional heat. DEFRA applies a radiative forcing multiplier of about 1.9× to air-travel CO₂ to account for this. The factor we use is already corrected.',
+            citation: 'DEFRA 2024 Conversion Factors for Company Reporting; IPCC AR6 WG1 Ch.7 on aviation non-CO₂ effects.',
+          },
+          {
+            heading: 'Where reduction actually matters',
+            body: [
+              'Going home twice a year instead of three times saves roughly 1.5–2 mtCO₂e per student — more than any dorm-electricity intervention can achieve.',
+              'School-coordinated extended stays during shoulder breaks (eg. spring) reduce one round trip per affected student.',
+              'Per-student, intercontinental travel is the highest-leverage individual choice available.',
+            ],
+          },
+        ]}
+      />
 
       {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
 
