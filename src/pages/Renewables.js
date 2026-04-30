@@ -1,4 +1,5 @@
 import React from 'react';
+import { EducationalCard } from '../components/EducationalCard';
 
 const systems = [
   {
@@ -45,6 +46,34 @@ function Renewables() {
         Tracked as a first-class category, not buried inside Scope 2. Self-consumption reduces
         Scope 2 directly; grid exports are tracked separately to avoid double-counting.
       </p>
+
+      <EducationalCard
+        title="How three different on-site systems each reduce campus emissions"
+        sections={[
+          {
+            heading: 'Solar PV — direct and exported',
+            body: [
+              'When the array is producing more than the campus is using, the surplus flows back to Liberty\'s grid. New Hampshire net metering means KUA gets credited at the retail rate.',
+              'Self-consumed kWh reduce Scope 2 directly: those electrons never came from the grid, so no fossil generation was needed for them.',
+              'Exported kWh are tracked as a separate "avoided emissions" line so we don\'t double-count: Liberty serves them to other customers, who then can\'t claim them as zero-carbon.',
+            ],
+          },
+          {
+            heading: 'Geothermal — moving heat, not making it',
+            body: [
+              'A ground-source heat pump moves heat between the building and the earth. It uses electricity, but for every 1 kWh it consumes it can deliver 3–4 kWh of heat — a coefficient of performance (COP) of 3 to 4.',
+              'The carbon benefit is counterfactual: we estimate how much heating oil or propane would have been burned to deliver the same heat, and credit the system for that avoided fossil combustion.',
+              'Because it\'s an estimate, geothermal data is flagged "estimated" by default rather than "measured."',
+            ],
+          },
+          {
+            heading: 'Why the broken wind turbine is still on the dashboard',
+            body: 'Hiding offline equipment misrepresents both reality (we have a turbine — it\'s just down) and history (whoever decides whether to restore it needs the historical baseline). The turbine is documented with status, last operational date, and any historical generation we have records of, with zero current output. The same data model accepts live readings the day it\'s restored.',
+            citation: 'GHG Protocol Scope 2 Guidance; IPCC AR6 on radiative forcing for net-metering accounting.',
+          },
+        ]}
+      />
+
       <div style={styles.list}>
         {systems.map((s) => (
           <div key={s.name} style={styles.card}>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { EducationalCard } from '../components/EducationalCard';
 
 const categories = [
   { num: 1, name: 'Purchased Goods & Services', desc: 'Embodied emissions of food, paper, supplies, equipment, materials.', factor: 'EPA Supply Chain GHG Emission Factors (EEIO, spend-based)', status: 'Planned' },
@@ -35,6 +36,38 @@ function Scope3() {
         Categories 9 (downstream transportation) and 12 (end-of-life of sold products) do not apply
         to a school and are excluded from the inventory by design.
       </div>
+
+      <EducationalCard
+        title="Scope 3 is everything else — and usually the largest"
+        sections={[
+          {
+            heading: 'The hidden majority',
+            body: [
+              'Scope 1 + 2 is the carbon you can see from the parking lot — boilers, the fuel truck, the meter. Scope 3 is everything indirect: the food in the dining hall, the laptops in classrooms, the flights students take home for break.',
+              'Across higher-education footprint studies, Scope 3 typically represents 50–80% of total emissions. It\'s also the hardest category to measure because the data lives outside the institution.',
+              'For a residential boarding school, student travel can dwarf every other category combined — Kool (2025) at Royal Roads University found 28 million km of student air travel in a single pre-COVID year, more than every other emissions source put together.',
+            ],
+            citation: 'Valls-Val & Bovea (2021); Gutiérrez-Mosquera et al. (2024); Kool (2025).',
+          },
+          {
+            heading: 'Why we implement it incrementally',
+            body: [
+              'The GHG Protocol defines 15 Scope 3 categories. We add them one at a time — each requires its own data source, methodology, and uncertainty assessment.',
+              'Two categories (downstream transportation, end-of-life of sold products) don\'t apply because schools don\'t sell physical products. We list them publicly as excluded rather than silently dropping them.',
+              'The Yale-style "student travel" addition isn\'t a numbered category, but for residential schools it\'s materially the most important — so we track it as a first-class line.',
+            ],
+          },
+          {
+            heading: 'What you can do',
+            body: [
+              'Term-break travel: one fewer round trip per year usually beats anything you can change at the dorm level.',
+              'Mode choice: train and bus often emit less than half what flying does on the same route.',
+              'Group travel: 4 people in one car emits roughly 1/4 the per-person emissions of 4 separate trips.',
+            ],
+          },
+        ]}
+      />
+
       <div style={styles.list}>
         {categories.map((c) => (
           <div key={c.name} style={styles.item}>

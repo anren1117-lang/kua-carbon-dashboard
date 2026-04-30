@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
-import { EducationalCard } from './EducationalCard';
+import { EducationalCard } from '../../../components/EducationalCard';
 
 const empty = { country: '', graduation_year: '2026', school_year: '2025-2026' };
 
