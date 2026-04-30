@@ -3,8 +3,8 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 
 const styles = {
-  title: { margin: 0, fontSize: 32, fontWeight: 700 },
-  subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 760 },
+  title: { margin: 0, fontSize: 36, fontWeight: 700 },
+  subtitle: { marginTop: 10, color: '#94a3b8', maxWidth: 760, fontSize: 17, lineHeight: 1.6 },
   card: { marginTop: 24, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 10, padding: 20 },
   row: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1f2937' },
   label: { color: '#94a3b8' },

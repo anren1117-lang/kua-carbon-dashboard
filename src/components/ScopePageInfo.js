@@ -6,35 +6,35 @@ const styles = {
     background: '#0f172a',
     border: '1px solid #1f2937',
     borderRadius: 12,
-    padding: 20,
-    borderLeft: `3px solid ${color}`,
+    padding: 22,
+    borderLeft: `4px solid ${color}`,
   }),
-  cardTitle: { fontSize: 16, fontWeight: 600, color: '#e5e7eb', margin: 0, marginBottom: 12 },
+  cardTitle: { fontSize: 19, fontWeight: 700, color: '#e5e7eb', margin: 0, marginBottom: 14 },
   estimateRow: { display: 'flex', gap: 16, flexWrap: 'wrap' },
-  estimateCell: { padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, minWidth: 140 },
-  estimateLabel: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6 },
-  estimateValue: { fontSize: 22, color: '#e5e7eb', fontWeight: 700, marginTop: 2 },
-  estimateUnit: { fontSize: 11, color: '#94a3b8', marginLeft: 4, fontWeight: 400 },
-  estimateRange: { fontSize: 11, color: '#64748b', marginTop: 2 },
-  estimateNote: { marginTop: 12, fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 },
-  documented: { fontSize: 10, padding: '2px 8px', borderRadius: 999, background: '#052e1a', color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginLeft: 8 },
-  refList: { paddingLeft: 18, fontSize: 13, color: '#cbd5e1', lineHeight: 1.8, margin: 0 },
-  refTitle: { color: '#e5e7eb', fontWeight: 600 },
-  refSource: { color: '#64748b' },
-  actionList: { display: 'grid', gap: 12, marginTop: 4 },
-  actionRow: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  estimateCell: { padding: '12px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, minWidth: 150 },
+  estimateLabel: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 600 },
+  estimateValue: { fontSize: 26, color: '#e5e7eb', fontWeight: 700, marginTop: 4 },
+  estimateUnit: { fontSize: 13, color: '#94a3b8', marginLeft: 4, fontWeight: 400 },
+  estimateRange: { fontSize: 13, color: '#64748b', marginTop: 4 },
+  estimateNote: { marginTop: 14, fontSize: 16, color: '#cbd5e1', lineHeight: 1.7 },
+  documented: { fontSize: 12, padding: '3px 10px', borderRadius: 999, background: '#052e1a', color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginLeft: 10, fontWeight: 700 },
+  refList: { paddingLeft: 22, fontSize: 16, color: '#cbd5e1', lineHeight: 1.9, margin: 0 },
+  refTitle: { color: '#e5e7eb', fontWeight: 700 },
+  refSource: { color: '#94a3b8' },
+  actionList: { display: 'grid', gap: 14, marginTop: 4 },
+  actionRow: { padding: '16px 18px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10 },
   actionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' },
-  actionName: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
-  actionImpact: (color) => ({ fontSize: 12, color, fontWeight: 700, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }),
-  actionDetail: { marginTop: 6, fontSize: 12, color: '#94a3b8', lineHeight: 1.5 },
-  toggleBtn: { marginTop: 8, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', padding: '4px 10px', borderRadius: 4, fontSize: 11, cursor: 'pointer' },
-  proofBox: { marginTop: 10, padding: '10px 12px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
-  proofTitle: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 600, marginBottom: 6 },
-  dataTable: { width: '100%', borderCollapse: 'collapse', fontSize: 11 },
-  dataTh: { textAlign: 'left', padding: '4px 6px', color: '#64748b', borderBottom: '1px solid #1f2937', fontWeight: 600 },
-  dataTd: { padding: '4px 6px', color: '#cbd5e1', borderBottom: '1px solid #1f2937', verticalAlign: 'top' },
-  dataSource: { color: '#64748b', fontSize: 10 },
-  mathBlock: { marginTop: 8, padding: '8px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11, color: '#86efac', lineHeight: 1.7, whiteSpace: 'pre-wrap' },
+  actionName: { fontSize: 17, color: '#e5e7eb', fontWeight: 700 },
+  actionImpact: (color) => ({ fontSize: 14, color, fontWeight: 700, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }),
+  actionDetail: { marginTop: 8, fontSize: 15, color: '#cbd5e1', lineHeight: 1.7 },
+  toggleBtn: { marginTop: 12, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', padding: '6px 14px', borderRadius: 4, fontSize: 13, cursor: 'pointer' },
+  proofBox: { marginTop: 12, padding: '14px 16px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
+  proofTitle: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 8 },
+  dataTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  dataTh: { textAlign: 'left', padding: '6px 8px', color: '#94a3b8', borderBottom: '1px solid #1f2937', fontWeight: 700 },
+  dataTd: { padding: '6px 8px', color: '#cbd5e1', borderBottom: '1px solid #1f2937', verticalAlign: 'top' },
+  dataSource: { color: '#64748b', fontSize: 12 },
+  mathBlock: { marginTop: 10, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13, color: '#86efac', lineHeight: 1.8, whiteSpace: 'pre-wrap' },
 };
 
 function ActionRow({ a, color }) {
@@ -140,10 +140,10 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
 
       <section style={styles.card(color)}>
         <h2 style={styles.cardTitle}>How action changes KUA's number</h2>
-        <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 0, marginBottom: 14, lineHeight: 1.6 }}>
-          Estimated annual impact of each lever, ordered roughly by magnitude. Numbers are
-          order-of-magnitude — exact values will tighten as the dashboard's reduction-scenario
-          simulator (Phase 5) is wired up.
+        <p style={{ fontSize: 16, color: '#94a3b8', marginTop: 0, marginBottom: 16, lineHeight: 1.7 }}>
+          Estimated annual impact of each lever, ordered roughly by magnitude. Click "Show data
+          + math" on any row to see the cited inputs and the worked calculation. Numbers are
+          order-of-magnitude — exact values tighten as real measured data is loaded.
         </p>
         <div style={styles.actionList}>
           {actions.map((a, i) => <ActionRow key={i} a={a} color={color} />)}

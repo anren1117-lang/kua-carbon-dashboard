@@ -12,8 +12,8 @@ const categories = [
 ];
 
 const styles = {
-  title: { margin: 0, fontSize: 32, fontWeight: 700 },
-  subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 760 },
+  title: { margin: 0, fontSize: 36, fontWeight: 700 },
+  subtitle: { marginTop: 10, color: '#94a3b8', maxWidth: 760, fontSize: 17, lineHeight: 1.6 },
   excluded: { marginTop: 16, padding: 12, background: '#0f172a', border: '1px dashed #334155', borderRadius: 8, color: '#94a3b8', fontSize: 13 },
   list: { marginTop: 24, display: 'grid', gap: 12 },
   item: { background: '#0f172a', border: '1px solid #1f2937', borderRadius: 10, padding: 16 },

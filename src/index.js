@@ -12,6 +12,7 @@ import Renewables from './pages/Renewables';
 import Sinks from './pages/Sinks';
 import Scenarios from './pages/Scenarios';
 import Methodology from './pages/Methodology';
+import CarbonCredits from './pages/CarbonCredits';
 import AdminHome from './pages/admin/AdminHome';
 import AdminScope1 from './pages/admin/AdminScope1';
 import AdminScope2 from './pages/admin/AdminScope2';
@@ -55,6 +56,7 @@ root.render(
           <Route path="/sinks" element={<Sinks />} />
           <Route path="/scenarios" element={<Scenarios />} />
           <Route path="/methodology" element={<Methodology />} />
+          <Route path="/credits" element={<CarbonCredits />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />

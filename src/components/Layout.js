@@ -8,6 +8,7 @@ const navItems = [
   { to: '/scope-3', label: 'Scope 3' },
   { to: '/renewables', label: 'Renewables' },
   { to: '/sinks', label: 'Sinks' },
+  { to: '/credits', label: 'Carbon Credits' },
   { to: '/scenarios', label: 'Scenarios' },
   { to: '/methodology', label: 'Methodology' },
 ];
