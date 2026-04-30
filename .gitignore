@@ -7,6 +7,8 @@
 src/node_modules
 src/dist
 .vercel
+**/supabase/.temp
+**/supabase/.branches
 
 # testing
 /coverage
