@@ -4,6 +4,7 @@ import { EducationalCard } from './components/EducationalCard';
 import { NetEstimate } from './components/NetEstimate';
 import { PeerComparison } from './components/PeerComparison';
 import { ScopeDonut } from './components/ScopeDonut';
+import { ScopeExplainer } from './components/ScopeExplainer';
 import { AISummary } from './components/AISummary';
 import './App.css';
 
@@ -306,6 +307,7 @@ function App() {
       <NetEstimate />
       <AISummary />
       <ScopeDonut />
+      <ScopeExplainer />
       <PeerComparison />
 
       <div style={{ maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' }}>
