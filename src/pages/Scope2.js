@@ -1,5 +1,6 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
+import { ScopePageInfo } from '../components/ScopePageInfo';
 
 const styles = {
   title: { margin: 0, fontSize: 32, fontWeight: 700 },
@@ -45,6 +46,29 @@ function Scope2() {
       <p style={{ marginTop: 24, color: '#94a3b8' }}>
         Live grid-mix and per-building energy data are rendered on the main Dashboard.
       </p>
+
+      <ScopePageInfo
+        color="#f59e0b"
+        estimate={{
+          total: '222', totalRange: 'documented · 222', perStudent: 0.4, documented: true,
+          thirdMetric: { label: 'kWh consumed', value: '2.3M', note: 'campus-wide annual' },
+          note: 'This is the only line currently sourced from real measurement: 2,316,469 kWh from the campus real-time meter × the ISO-NE 2024 grid emission factor. Liberty Utilities is the distribution utility but the meter is the source of truth.',
+        }}
+        references={[
+          { title: 'ISO New England Electric Generator Air Emissions Report 2024', use: '643 lb CO₂/MWh in-region · 177 lb CO₂/MWh imported (Canadian hydro share)' },
+          { title: 'EPA eGRID 2022', use: 'NPCC New England subregion emission rates for cross-validation' },
+          { title: 'GHG Protocol Scope 2 Guidance', source: 'WRI/WBCSD 2015', use: 'Location-based vs market-based dual reporting framework' },
+          { title: 'New Hampshire Public Utilities Commission', use: 'Liberty Utilities (Granite State Electric) tariff documentation' },
+        ]}
+        actions={[
+          { action: 'Expand on-site solar PV', impact: '−40 to −100 mtCO₂e/yr', detail: 'Each additional 100 MWh of self-consumed solar displaces ~30 mtCO₂e of grid generation. Best ROI on rooftops with low shading and existing 3-phase service.' },
+          { action: 'LED lighting retrofit campus-wide', impact: '−20 to −50 mtCO₂e/yr', detail: 'Modern LEDs use 60–80% less than fluorescents and 90% less than incandescent. Highest impact in old-stock fixtures with long daily run times (corridors, athletic facilities).' },
+          { action: 'Smart HVAC scheduling', impact: '−15 to −30 mtCO₂e/yr', detail: 'Setback during nights, weekends, and breaks. Modern building automation systems pay for themselves in 1–3 years. Currently many KUA buildings run HVAC continuously.' },
+          { action: 'Procure clean electricity supplier', impact: '−50 to −150 mtCO₂e/yr (market-based)', detail: 'NH has been deregulated since 1998. KUA can choose a competitive supplier sourcing from wind/hydro/solar without changing physical delivery. Shows up only in the market-based view to avoid double-counting.' },
+          { action: 'Battery storage with time-of-use shifting', impact: '−5 to −15 mtCO₂e/yr', detail: 'Charge from solar/grid at low-emission hours (nights, when wind is high), discharge at peak hours. Modest reduction but enables demand-response revenue.' },
+        ]}
+      />
+
 
       <EducationalCard
         title="How Scope 2 actually works"

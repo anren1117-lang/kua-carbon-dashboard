@@ -1,5 +1,6 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
+import { ScopePageInfo } from '../components/ScopePageInfo';
 
 const styles = {
   title: { margin: 0, fontSize: 32, fontWeight: 700 },
@@ -51,6 +52,32 @@ function Sinks() {
             heading: 'A research gap this project closes',
             body: 'Valls-Val & Bovea (2021) reviewed 35 university footprint studies and found that sinks are rarely quantified — most reports publish gross emissions without ever subtracting what the trees on campus absorb. KUA\'s dashboard reports the net balance as the headline number, addressing that gap directly.',
           },
+        ]}
+      />
+
+      <ScopePageInfo
+        color="#22c55e"
+        estimate={{
+          totalPrefix: '−', total: '~3,000', totalRange: '2,000 – 4,000 pulled out', perStudent: -5.0,
+          thirdMetric: { label: 'Forested area', value: '~1,000', note: 'acres of campus forest' },
+          note: 'KUA is the only school in the peer chart with a quantified physical sink. Roughly 1,000 acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.',
+        }}
+        references={[
+          { title: 'Nowak, D.J. et al. (2013)', source: 'Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage; 0.28 kg C/m²/yr sequestration (urban tree averages across 28 cities, 6 states)' },
+          { title: 'Birdsey, R.A. (1992)', source: 'USDA Forest Service General Technical Report WO-59', use: 'Average US forest accumulates 1,252 lb C/acre/year; 59% of total carbon held below ground' },
+          { title: 'Morin, R.S. et al. (2020)', source: 'USDA Forest Inventory and Analysis, NH', use: 'NH forests average 31.8 tons C/acre; maple/beech/birch covers 52% of state forestland' },
+          { title: 'USDA Urban Tree Database', use: 'Species-specific allometric equations replacing the Jenkins-style fallback' },
+          { title: 'Valls-Val, K. & Bovea, M.D. (2021)', source: 'Sustainability', use: 'Systematic review identifying that sinks are rarely quantified in HEI carbon inventories — the gap KUA closes' },
+          { title: 'Jenkins, J.C. et al. (2003)', source: 'Forest Science', use: 'Allometric equations for biomass estimation from DBH (used as fallback in the admin form)' },
+          { title: 'IPCC Guidelines for National GHG Inventories', source: 'Volume 4: AFOLU, 2019 Refinement', use: 'Soil organic carbon stock methodology' },
+        ]}
+        actions={[
+          { action: 'Plant additional native canopy trees', impact: '+2 to +5 mtCO₂e/yr per 100 trees', detail: 'New trees sequester slowly at first (0.01–0.05 mtCO₂e/yr) but compound over decades. A 100-tree planting today is ~5 mtCO₂e/yr by year 30. Native maple/oak/birch best for NH climate.' },
+          { action: 'Protect existing forested land from development', impact: '−500 to −2,000 mtCO₂e per acre converted', detail: 'Avoiding even 1 acre of forest-to-pavement conversion preserves both the standing biomass (≈ 117 mtCO₂e stored above ground per acre) AND the soil organic carbon (often 200+ mtCO₂e/acre). Land-use change is the highest-impact threat to the sink.' },
+          { action: 'Forest stand management', impact: '+50 to +200 mtCO₂e/yr', detail: 'Selective thinning of suppressed trees increases growth rates of dominant trees and overall sequestration. Avoid clear-cutting; managed mature forests sequester more than monoculture plantations.' },
+          { action: 'Reduce mowing on lawn-edges → meadow', impact: '+5 to +15 mtCO₂e/yr per acre converted', detail: 'Unmown native grass meadows store more soil carbon than mowed lawns and require zero gasoline mower emissions. Best on athletic-field perimeters.' },
+          { action: 'Enable woody-debris decay (no burn pile)', impact: '+2 to +10 mtCO₂e/yr', detail: 'Standing and fallen deadwood decomposes slowly back into soil carbon, retaining ~50% of stored C. Burning releases it all immediately.' },
+          { action: 'Annual tree inventory + canopy-cover analysis', impact: 'replaces estimate with measured', detail: 'The biggest reduction in uncertainty (not direct emissions). The Phase 1 fieldwork in the project plan turns the ±50% range on this line into a ±10% measured value.' },
         ]}
       />
 

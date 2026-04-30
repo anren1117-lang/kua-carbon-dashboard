@@ -1,5 +1,6 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
+import { ScopePageInfo } from '../components/ScopePageInfo';
 
 const categories = [
   { num: 1, name: 'Purchased Goods & Services', desc: 'Embodied emissions of food, paper, supplies, equipment, materials.', factor: 'EPA Supply Chain GHG Emission Factors (EEIO, spend-based)', status: 'Planned' },
@@ -65,6 +66,31 @@ function Scope3() {
               'Group travel: 4 people in one car emits roughly 1/4 the per-person emissions of 4 separate trips.',
             ],
           },
+        ]}
+      />
+
+      <ScopePageInfo
+        color="#8b5cf6"
+        estimate={{
+          total: '~3,000', totalRange: '2,000 – 3,800', perStudent: 5.0,
+          thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
+          note: 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel alone dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the single highest-impact line item per student affected.',
+        }}
+        references={[
+          { title: 'Kool, B. (2025)', source: 'Sustainability Accounting at Royal Roads University', use: 'Student air travel scale at residential institutions' },
+          { title: 'EPA Supply Chain GHG Emission Factors v1.2', use: 'Spend-based EEIO factors for purchased goods (Cat 1)' },
+          { title: 'EPA Waste Reduction Model (WARM) v15', use: 'Net factors for landfill (+0.52), recycling (−0.10), composting (+0.04) kg CO₂e per ton' },
+          { title: 'DEFRA 2024 Conversion Factors for Company Reporting', use: 'Air travel per-passenger-km with 1.9× radiative forcing multiplier' },
+          { title: 'Greenhouse Gas Protocol Scope 3 Standard', source: 'WRI/WBCSD 2011', use: 'Defines all 15 Scope 3 categories; Cat 9 and Cat 12 explicitly excluded for schools' },
+          { title: 'Yale Office of Sustainability', use: 'Student-travel category methodology adapted for KUA boarding-school context' },
+        ]}
+        actions={[
+          { action: 'One fewer round-trip flight per international student', impact: '−150 to −200 mtCO₂e/yr', detail: 'If 50 international students replace one home trip per year with an extended on-campus stay (e.g., shoulder break), that\'s 50 × 3 mtCO₂e saved. The single highest-leverage individual choice in the entire dashboard.' },
+          { action: 'Carpooling for US-boarder term-break travel', impact: '−50 to −100 mtCO₂e/yr', detail: 'Coordinated drive-share groups for the Boston/NYC corridors. A 4-person carpool vs 4 separate trips saves roughly 75% per passenger-mile.' },
+          { action: 'Train/bus over plane for sub-1,000-mile travel', impact: '−30 to −60 mtCO₂e/yr', detail: 'Faculty business travel within the Northeast corridor. Trains emit ~70% less per passenger-mile than short-haul flights.' },
+          { action: 'Local food procurement (regional sourcing)', impact: '−40 to −100 mtCO₂e/yr', detail: 'Food has higher EEIO factors than most categories (~0.55 kg CO₂e/$). Regional supply chains can cut transportation emissions and often have lower upstream factors.' },
+          { action: 'Compost diversion from landfill', impact: '−10 to −25 mtCO₂e/yr', detail: 'Each ton of food waste shifted from landfill (+0.52) to composting (+0.04) saves ~0.48 mtCO₂e. Captures fugitive methane that would otherwise leak.' },
+          { action: 'Electric school buses for athletic team travel', impact: '−5 to −15 mtCO₂e/yr', detail: 'EV buses on the NE grid emit ~60% less per mile than diesel. Modest absolute number but visible to the student body.' },
         ]}
       />
 

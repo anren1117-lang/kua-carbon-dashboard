@@ -1,5 +1,6 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
+import { ScopePageInfo } from '../components/ScopePageInfo';
 
 const categories = [
   { name: 'Heating Fuel', desc: 'Heating oil and propane delivered to campus boilers and water heaters.', factor: 'EPA GHG Emission Factors Hub: 10.16 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane', status: 'In dashboard (fuel_bills table)' },
@@ -57,6 +58,28 @@ function Scope1() {
               'Refrigerant leak detection during HVAC service catches small leaks before they grow.',
             ],
           },
+        ]}
+      />
+
+      <ScopePageInfo
+        color="#ef4444"
+        estimate={{
+          total: '~1,000', totalRange: '800 – 1,500', perStudent: 1.6,
+          thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
+          note: 'Heating fuel is the overwhelming driver. Refrigerant leakage and fleet vehicles add roughly 20–50 mtCO₂e between them. The estimate replaces with a measured number once heating-oil and propane delivery records are entered through the Admin Portal.',
+        }}
+        references={[
+          { title: 'EPA GHG Emission Factors Hub (2024)', source: 'Stationary Combustion Table 2', use: '10.16 kg CO₂/gal heating oil; 5.72 kg CO₂/gal propane' },
+          { title: 'IPCC AR6 Working Group I, Chapter 7', source: '2021', use: 'GWP100 values for refrigerants (R-410A 2256, R-134a 1530, etc.)' },
+          { title: 'EPA GHG Emission Factors Hub — Mobile Combustion', use: '8.78 kg CO₂/gal gasoline; 10.21 kg CO₂/gal diesel for fleet vehicles' },
+          { title: 'GHG Protocol Refrigerants Tool', use: 'Mass-balance method: emissions = (recharge − reclaim) × GWP100' },
+        ]}
+        actions={[
+          { action: 'Heat pump retrofit on a major dorm', impact: '−40 to −80 mtCO₂e/yr', detail: 'Replaces 4,000–8,000 gal/yr of heating oil with electric heat. Net effect after the new Scope 2 load is still about a 60% reduction on the New England grid (heat pumps deliver 3 kWh of heat per 1 kWh of electricity).' },
+          { action: 'Weatherization + envelope upgrades', impact: '−20 to −40 mtCO₂e/yr', detail: 'Insulation, air sealing, and window upgrades typically cut a building\'s heating fuel use by 20–30%. Highest leverage is the oldest, leakiest dormitory.' },
+          { action: 'Thermostat setback at night and breaks', impact: '−15 to −30 mtCO₂e/yr', detail: 'Lowering setpoint 2–3°F overnight and during weekend/break absences saves 5–10% of fuel. Costs nothing.' },
+          { action: 'Refrigerant leak detection on routine HVAC service', impact: '−5 to −20 mtCO₂e/yr', detail: 'Annual leak inspection catches small leaks early. R-410A has a GWP of 2,256 — 1 kg of leaked refrigerant = 2.3 mtCO₂e.' },
+          { action: 'Electric or hybrid replacements for fleet vehicles', impact: '−10 to −20 mtCO₂e/yr', detail: 'EV vans on the NE grid emit roughly 60% less per mile than gasoline. Most impactful when replacing the highest-mileage vehicles first.' },
         ]}
       />
 
