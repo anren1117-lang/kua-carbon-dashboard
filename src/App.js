@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { EducationalCard } from './components/EducationalCard';
 import { NetEstimate } from './components/NetEstimate';
+import { PeerComparison } from './components/PeerComparison';
 import './App.css';
 
 function App() {
@@ -301,6 +302,7 @@ function App() {
       </header>
 
       <NetEstimate />
+      <PeerComparison />
 
       <div style={{ maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' }}>
         <EducationalCard
