@@ -12,8 +12,8 @@ import React from 'react';
 // offsets = purchased carbon credits / RECs — a financial drawdown
 const peers = [
   { name: 'KUA',                          type: 'boarding-secondary', isUs: true,
-    scope1: 1.6, scope2: 0.4, scope3: 5.0, sinks: -1.0, offsets: 0,
-    note: 'Preliminary Fermi estimate. Scope 3 dominated by international and US-boarder term-break travel; sinks from a 150–300 acre campus tree+soil estimate.' },
+    scope1: 1.6, scope2: 0.4, scope3: 5.0, sinks: -5.0, offsets: 0,
+    note: 'Preliminary Fermi estimate. Scope 3 dominated by international and US-boarder term-break travel. Sinks from a ~1,000-acre campus forest at mid-estimate sequestration (3,000 mtCO₂e/yr ÷ ~600 students). Replaces a much smaller earlier estimate after the campus acreage was clarified.' },
   { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary',
     scope1: 4.0, scope2: 1.5, scope3: 4.5, sinks: 0, offsets: 0,
     note: 'Larger boarding cohort, older buildings on heating oil; sinks not quantified in their reporting.' },

@@ -6,21 +6,23 @@ const rows = [
   { name: 'Scope 2 — Electricity',                  low: 222,  high: 222,  kind: 'documented', note: '2.3M kWh × ISO-NE 2024 (643 lb CO₂/MWh). The one figure currently cited.' },
   { name: 'Scope 3 — Student travel',               low: 1500, high: 3000, kind: 'estimate', note: 'Internationals (~50) at ~3 mtCO₂e per round trip, US boarders (~150) at ~3–4 trips/yr at ~1 mt each, plus study abroad and athletic teams. Often the largest single category at residential schools (Kool 2025).' },
   { name: 'Scope 3 — Goods, waste, commuting, upstream fuel', low: 500, high: 800, kind: 'estimate', note: 'EEIO spend-based (Cat 1) + WARM waste + small commuting (residential school) + upstream fuel ~15–20% of Scope 1+2.' },
-  { name: 'Sinks — On-campus sequestration',        low: -1000,high: -400, kind: 'estimate', note: '150–300 acres × Nowak (2013) sequestration density 0.28 kg C/m²/yr × 44/12 (C → CO₂). Negative = pulled out of the air.' },
+  { name: 'Sinks — On-campus sequestration',        low: -4000,high: -2000, kind: 'estimate', note: '~1,000 acres of campus forest × forest accumulation rate. Conservative end uses Birdsey (1992) US-forest average (~2.1 mtCO₂e/acre/yr). Upper end uses Nowak (2013) urban-tree density (0.28 kg C/m²/yr → ~4.2 mtCO₂e/acre/yr) where open-grown trees grow faster. Negative = pulled out of the air.' },
 ];
 
+// gross = scope1 + scope2 + scope3; net = gross + sinks (sinks stored negative)
 const summary = {
   grossLow: 3242,
   grossHigh: 5572,
   grossMid: 4150,
-  sinkLow: -1000,
-  sinkHigh: -400,
-  netLow: 2700,
-  netHigh: 4900,
-  netMid: 3500,
-  perStudentLow: 4.5,
-  perStudentHigh: 8,
-  perStudentMid: 6,
+  sinkLow: -4000,    // most-negative (best case sequestration)
+  sinkHigh: -2000,   // least-negative (conservative)
+  // Net range: best case = lowest gross + most sinks; worst case = highest gross + least sinks
+  netLow: -758,      // 3242 - 4000 — slightly net-negative is plausible
+  netHigh: 3572,     // 5572 - 2000
+  netMid: 1150,      // 4150 - 3000
+  perStudentLow: -1.3,
+  perStudentHigh: 6.0,
+  perStudentMid: 1.9,
   studentCount: 600,
 };
 
@@ -70,8 +72,8 @@ export function NetEstimate() {
         <div style={styles.numbers}>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Net balance</div>
-            <div style={styles.numBig}>~{fmt(summary.netMid).replace('-', '')}<span style={styles.numUnit}>mtCO₂e/yr</span></div>
-            <div style={styles.numRange}>range {fmtRange(summary.netLow, summary.netHigh)}</div>
+            <div style={styles.numBig}>~{fmt(summary.netMid)}<span style={styles.numUnit}>mtCO₂e/yr</span></div>
+            <div style={styles.numRange}>range {fmtRange(summary.netLow, summary.netHigh)} · low end is net-negative</div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Per student</div>
@@ -85,8 +87,8 @@ export function NetEstimate() {
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Sequestration</div>
-            <div style={styles.numBig}>~{fmt(700)}<span style={styles.numUnit}>mtCO₂e/yr</span></div>
-            <div style={styles.numRange}>range {fmtRange(Math.abs(summary.sinkHigh), Math.abs(summary.sinkLow))} pulled out</div>
+            <div style={styles.numBig}>~{fmt(3000)}<span style={styles.numUnit}>mtCO₂e/yr</span></div>
+            <div style={styles.numRange}>range {fmtRange(Math.abs(summary.sinkHigh), Math.abs(summary.sinkLow))} pulled out · ~1,000 acres of campus forest</div>
           </div>
         </div>
 
