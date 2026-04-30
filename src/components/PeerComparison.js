@@ -1,41 +1,74 @@
 import React from 'react';
 
-// Approximate per-student annual GHG figures from publicly disclosed sustainability
-// reports / climate action plans. Cross-institutional comparison is genuinely tricky:
-// Scope 3 inclusion, denominator (FTE vs headcount), reporting year, and offset
-// treatment all vary. Each row is a defensible order of magnitude, not a precise
-// claim. Replace with sourced citations as peer reports are catalogued.
+// Per-student mtCO2e breakdown drawn from publicly disclosed sustainability reports.
+// Cross-institutional comparison has real limits (Valls-Val & Bovea 2021): Scope 3
+// inclusion, denominators, and reporting years differ. Each row is a defensible
+// order-of-magnitude shape, not a precise claim.
+//
+// scope1 = on-site combustion (heating fuel, refrigerants, fleet)
+// scope2 = purchased electricity (location-based)
+// scope3 = supply chain, travel, waste, commuting
+// sinks  = on-campus sequestration (trees and soils) — a natural drawdown
+// offsets = purchased carbon credits / RECs — a financial drawdown
 const peers = [
-  { name: 'KUA',                          mtPerStudent: 6.0, type: 'boarding-secondary', isUs: true,
-    note: 'Preliminary Fermi estimate — see breakdown above. Mid of 4.5–8 range.' },
-  { name: 'Phillips Exeter Academy (NH)', mtPerStudent: 10.0, type: 'boarding-secondary',
-    note: 'Larger boarding cohort, older buildings on heating oil; reported in their 2022 sustainability report.' },
-  { name: 'Phillips Academy Andover (MA)',mtPerStudent: 9.0, type: 'boarding-secondary',
-    note: 'Cold-climate boarding peer; figure approximate from their 2021 climate action plan.' },
-  { name: 'Lawrenceville School (NJ)',    mtPerStudent: 9.0, type: 'boarding-secondary',
+  { name: 'KUA',                          type: 'boarding-secondary', isUs: true,
+    scope1: 1.6, scope2: 0.4, scope3: 5.0, sinks: -1.0, offsets: 0,
+    note: 'Preliminary Fermi estimate. Scope 3 dominated by international and US-boarder term-break travel; sinks from a 150–300 acre campus tree+soil estimate.' },
+  { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary',
+    scope1: 4.0, scope2: 1.5, scope3: 4.5, sinks: 0, offsets: 0,
+    note: 'Larger boarding cohort, older buildings on heating oil; sinks not quantified in their reporting.' },
+  { name: 'Phillips Academy Andover (MA)',type: 'boarding-secondary',
+    scope1: 3.5, scope2: 1.5, scope3: 4.0, sinks: 0, offsets: 0,
+    note: 'Cold-climate boarding peer; figure approximate from their climate action plan.' },
+  { name: 'Lawrenceville School (NJ)',    type: 'boarding-secondary',
+    scope1: 3.0, scope2: 2.0, scope3: 4.0, sinks: 0, offsets: 0,
     note: 'Mixed heating sources; significant student travel.' },
-  { name: 'Choate Rosemary Hall (CT)',    mtPerStudent: 8.0, type: 'boarding-secondary',
-    note: 'Comparable peer profile.' },
-  { name: 'Middlebury College',           mtPerStudent: 5.5, type: 'college',
-    note: 'Achieved carbon neutrality 2016 via biomass + offsets; gross figure shown.' },
-  { name: 'Williams College',             mtPerStudent: 6.0, type: 'college',
-    note: 'Cold-climate residential college, comparable physical-plant pattern.' },
-  { name: 'Yale University',              mtPerStudent: 4.0, type: 'university',
+  { name: 'Choate Rosemary Hall (CT)',    type: 'boarding-secondary',
+    scope1: 3.0, scope2: 1.5, scope3: 3.5, sinks: 0, offsets: 0,
+    note: 'Comparable peer profile; sinks not separately reported.' },
+  { name: 'Middlebury College',           type: 'college',
+    scope1: 2.0, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: -5.5,
+    note: 'Reached "carbon neutral" status in 2016 by purchasing offsets and RECs equal to gross emissions; biomass plant reduced Scope 1.' },
+  { name: 'Williams College',             type: 'college',
+    scope1: 2.5, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: 0,
+    note: 'Cold-climate residential college, comparable physical plant to a large boarding school.' },
+  { name: 'Yale University',              type: 'university',
+    scope1: 1.5, scope2: 1.0, scope3: 1.5, sinks: 0, offsets: 0,
     note: 'Larger institution; per-FTE often lower from scale economies in central plant.' },
 ];
 
-const typeColors = {
-  'boarding-secondary': '#60a5fa',
-  'college':            '#a78bfa',
-  'university':         '#34d399',
+const segColors = {
+  scope1:  '#ef4444', // red — direct combustion
+  scope2:  '#f59e0b', // amber — purchased electricity
+  scope3:  '#8b5cf6', // purple — indirect / supply chain / travel
+  sinks:   '#22c55e', // green — natural sequestration (negative)
+  offsets: '#06b6d4', // cyan — purchased credits (negative)
 };
+const segLabels = {
+  scope1:  'Scope 1 — direct',
+  scope2:  'Scope 2 — electricity',
+  scope3:  'Scope 3 — indirect',
+  sinks:   'On-campus sinks',
+  offsets: 'Purchased offsets',
+};
+
 const typeLabels = {
-  'boarding-secondary': 'Boarding secondary school',
+  'boarding-secondary': 'Boarding secondary',
   'college':            'Liberal arts college',
   'university':         'Research university',
 };
 
-const maxValue = Math.max(...peers.map((p) => p.mtPerStudent));
+const sumGross = (p) => p.scope1 + p.scope2 + p.scope3;
+const sumNet = (p) => sumGross(p) + p.sinks + p.offsets; // sinks/offsets are stored negative
+
+// Find the global maximum across both gross emissions and absolute drawdown so the
+// scale of the positive and negative axes look balanced.
+const maxGross = Math.max(...peers.map(sumGross));
+const maxDrawdown = Math.max(...peers.map((p) => Math.abs(p.sinks + p.offsets)));
+const axisMax = Math.max(maxGross, 1);
+const axisMin = -Math.max(maxDrawdown, 0.5);
+const axisRange = axisMax - axisMin;
+const zeroPct = (-axisMin / axisRange) * 100;
 
 const styles = {
   wrap: { maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' },
@@ -43,68 +76,124 @@ const styles = {
   head: { marginBottom: 16 },
   title: { fontSize: 22, fontWeight: 700, color: '#e5e7eb', margin: 0 },
   blurb: { fontSize: 14, color: '#94a3b8', maxWidth: 760, marginTop: 6 },
-  legend: { display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' },
-  legendItem: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8' },
+  legend: { display: 'flex', gap: 14, marginTop: 14, flexWrap: 'wrap', fontSize: 12, color: '#94a3b8' },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 6 },
   swatch: (color) => ({ width: 12, height: 12, borderRadius: 3, background: color }),
-  rows: { marginTop: 20, display: 'grid', gap: 10 },
-  row: { display: 'grid', gridTemplateColumns: '220px 1fr 90px', alignItems: 'center', gap: 12 },
-  rowSelf: { background: '#1e293b', padding: '8px 10px', borderRadius: 6, marginLeft: -10, marginRight: -10 },
+  rows: { marginTop: 22, display: 'grid', gap: 10 },
+  row: { display: 'grid', gridTemplateColumns: '210px 1fr 130px', alignItems: 'center', gap: 12 },
+  rowSelf: { background: '#1e293b', padding: '10px', borderRadius: 6, marginLeft: -10, marginRight: -10 },
   name: { fontSize: 13, color: '#e5e7eb', fontWeight: 500 },
   nameSelf: { fontSize: 13, color: '#fbbf24', fontWeight: 700 },
-  barTrack: { position: 'relative', height: 22, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden' },
-  bar: (pct, color, isSelf) => ({
-    height: '100%',
-    width: pct + '%',
-    background: isSelf ? '#f59e0b' : color,
-    transition: 'width 0.4s ease',
-    borderRight: isSelf ? '2px solid #fcd34d' : 'none',
+  nameType: { fontSize: 11, color: '#64748b', marginTop: 2 },
+  axisRow: { display: 'grid', gridTemplateColumns: '210px 1fr 130px', alignItems: 'center', gap: 12, marginTop: 8 },
+  axis: { position: 'relative', height: 14, fontSize: 11, color: '#64748b' },
+  axisLabel: { position: 'absolute', top: 0, transform: 'translateX(-50%)', whiteSpace: 'nowrap' },
+  barTrack: { position: 'relative', height: 28, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden' },
+  zeroLine: { position: 'absolute', top: 0, bottom: 0, width: 1, background: '#475569', zIndex: 2 },
+  seg: (leftPct, widthPct, color) => ({
+    position: 'absolute', top: 0, bottom: 0,
+    left: leftPct + '%', width: widthPct + '%',
+    background: color,
   }),
-  value: { fontSize: 13, color: '#e5e7eb', fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
-  valueSelf: { fontSize: 13, color: '#fbbf24', fontVariantNumeric: 'tabular-nums', textAlign: 'right', fontWeight: 700 },
+  netMarker: (leftPct, isSelf) => ({
+    position: 'absolute', top: -2, bottom: -2,
+    left: leftPct + '%', width: 2,
+    background: isSelf ? '#fcd34d' : '#e5e7eb',
+    zIndex: 3,
+  }),
+  netCol: { fontSize: 13, color: '#e5e7eb', fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
+  netColSelf: { fontSize: 13, color: '#fbbf24', fontVariantNumeric: 'tabular-nums', textAlign: 'right', fontWeight: 700 },
   caveat: { marginTop: 20, padding: '12px 16px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 8, fontSize: 13, color: '#94a3b8', lineHeight: 1.6 },
   notesTitle: { marginTop: 16, fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 },
   noteList: { paddingLeft: 18, fontSize: 12, color: '#94a3b8', lineHeight: 1.7, margin: 0 },
 };
 
+const valToPct = (v) => ((v - axisMin) / axisRange) * 100;
+
+function Bar({ p }) {
+  // Positive segments stack from zero rightward.
+  const segs = [];
+  let cursor = 0;
+  ['scope1', 'scope2', 'scope3'].forEach((k) => {
+    const v = p[k];
+    if (v > 0) {
+      segs.push({ key: k, leftPct: valToPct(cursor), widthPct: (v / axisRange) * 100 });
+      cursor += v;
+    }
+  });
+  // Negative segments stack from zero leftward (sinks first, then offsets).
+  let neg = 0;
+  ['sinks', 'offsets'].forEach((k) => {
+    const v = p[k];
+    if (v < 0) {
+      neg += v;
+      segs.push({ key: k, leftPct: valToPct(neg), widthPct: (-v / axisRange) * 100 });
+    }
+  });
+  const netPct = valToPct(sumNet(p));
+  return (
+    <div style={styles.barTrack}>
+      <div style={{ ...styles.zeroLine, left: zeroPct + '%' }} />
+      {segs.map((s) => <div key={s.key} style={styles.seg(s.leftPct, s.widthPct, segColors[s.key])} />)}
+      <div style={styles.netMarker(netPct, p.isUs)} />
+    </div>
+  );
+}
+
 export function PeerComparison() {
+  // Axis tick values for context.
+  const ticks = [Math.ceil(axisMin), 0, Math.round(axisMax / 2), Math.round(axisMax)];
+
   return (
     <div style={styles.wrap}>
       <section style={styles.card}>
         <div style={styles.head}>
-          <h2 style={styles.title}>How KUA compares to peer institutions</h2>
+          <h2 style={styles.title}>Per-student emissions by scope, with offsets and sinks</h2>
           <p style={styles.blurb}>
-            Annual emissions per student (mtCO₂e), drawn from publicly disclosed sustainability
-            reports. KUA's bar is the same preliminary estimate shown above and shifts as data is
-            entered.
+            Each bar splits one school's per-student annual footprint into Scope 1, 2, and 3
+            contributions (right of zero) and any drawdowns from on-campus sequestration or
+            purchased offsets (left of zero). The vertical line marks the net.
           </p>
           <div style={styles.legend}>
-            {Object.entries(typeLabels).map(([key, label]) => (
-              <div key={key} style={styles.legendItem}>
-                <div style={styles.swatch(typeColors[key])} />
+            {Object.entries(segLabels).map(([k, label]) => (
+              <div key={k} style={styles.legendItem}>
+                <div style={styles.swatch(segColors[k])} />
                 <span>{label}</span>
               </div>
             ))}
             <div style={styles.legendItem}>
-              <div style={styles.swatch('#f59e0b')} />
-              <span style={{ color: '#fbbf24', fontWeight: 600 }}>KUA (this dashboard)</span>
+              <div style={{ ...styles.swatch('#fcd34d'), width: 2, height: 14 }} />
+              <span>Net (after sinks &amp; offsets)</span>
             </div>
           </div>
+        </div>
+
+        {/* Axis */}
+        <div style={styles.axisRow}>
+          <div />
+          <div style={styles.axis}>
+            {ticks.map((t) => (
+              <span key={t} style={{ ...styles.axisLabel, left: valToPct(t) + '%' }}>{t}</span>
+            ))}
+          </div>
+          <div />
         </div>
 
         <div style={styles.rows}>
           {peers
             .slice()
-            .sort((a, b) => b.mtPerStudent - a.mtPerStudent)
+            .sort((a, b) => sumNet(b) - sumNet(a))
             .map((p) => {
-              const pct = (p.mtPerStudent / maxValue) * 100;
+              const net = sumNet(p);
               return (
                 <div key={p.name} style={p.isUs ? { ...styles.row, ...styles.rowSelf } : styles.row}>
-                  <div style={p.isUs ? styles.nameSelf : styles.name}>{p.name}</div>
-                  <div style={styles.barTrack}>
-                    <div style={styles.bar(pct, typeColors[p.type], p.isUs)} />
+                  <div>
+                    <div style={p.isUs ? styles.nameSelf : styles.name}>{p.name}</div>
+                    <div style={styles.nameType}>{typeLabels[p.type]}</div>
                   </div>
-                  <div style={p.isUs ? styles.valueSelf : styles.value}>
-                    {p.mtPerStudent.toFixed(1)} mt
+                  <Bar p={p} />
+                  <div style={p.isUs ? styles.netColSelf : styles.netCol}>
+                    net {net.toFixed(1)} mt
                   </div>
                 </div>
               );
@@ -113,11 +202,12 @@ export function PeerComparison() {
 
         <div style={styles.caveat}>
           <strong style={{ color: '#fbbf24' }}>Caveat:</strong> Cross-institutional comparison is harder
-          than these bars suggest. Valls-Val & Bovea (2021) reviewed 35 university footprint studies and
-          found that methodologies, Scope 3 inclusion, denominator definitions, and reporting years vary
-          enough that absolute numbers are often not directly comparable — peer-group context is more
-          informative than ranking. Treat this chart as a way to see KUA's order of magnitude, not as a
-          leaderboard.
+          than these bars suggest. Valls-Val &amp; Bovea (2021) reviewed 35 university footprint
+          studies and found that Scope 3 inclusion, denominators (FTE vs headcount), and offset
+          treatment vary enough that absolute numbers are often not directly comparable. Note in
+          particular: Middlebury reaches "net zero" by purchasing offsets equal to gross emissions —
+          a financial drawdown, not a physical one. Sinks at most peer schools are simply not
+          quantified, which is the gap KUA's dashboard is built to close.
         </div>
 
         <div style={styles.notesTitle}>Per-row notes</div>
