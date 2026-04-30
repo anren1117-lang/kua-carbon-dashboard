@@ -292,6 +292,10 @@ function App() {
           <span>{isLive ? 'LIVE' : 'PAUSED'}</span>
         </div>
         <p style={styles.dataSource}>Data Source: ISO New England Grid Mix 2024</p>
+        <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 999, background: '#3a2a0d', border: '1px solid #92400e', color: '#fbbf24', fontSize: 12, letterSpacing: 0.5 }}>
+          <span style={{ fontWeight: 700 }}>ESTIMATED BASELINE</span>
+          <span style={{ opacity: 0.8 }}>· {yearlyEmissions} mtCO₂e/year derived from ISO-NE 2024 grid mix · live counters interpolate this annual figure</span>
+        </div>
       </header>
 
       <div style={styles.navButtons}>
