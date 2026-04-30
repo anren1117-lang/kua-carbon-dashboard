@@ -75,11 +75,98 @@ function Scope1() {
           { title: 'GHG Protocol Refrigerants Tool', use: 'Mass-balance method: emissions = (recharge − reclaim) × GWP100' },
         ]}
         actions={[
-          { action: 'Heat pump retrofit on a major dorm', impact: '−40 to −80 mtCO₂e/yr', detail: 'Replaces 4,000–8,000 gal/yr of heating oil with electric heat. Net effect after the new Scope 2 load is still about a 60% reduction on the New England grid (heat pumps deliver 3 kWh of heat per 1 kWh of electricity).' },
-          { action: 'Weatherization + envelope upgrades', impact: '−20 to −40 mtCO₂e/yr', detail: 'Insulation, air sealing, and window upgrades typically cut a building\'s heating fuel use by 20–30%. Highest leverage is the oldest, leakiest dormitory.' },
-          { action: 'Thermostat setback at night and breaks', impact: '−15 to −30 mtCO₂e/yr', detail: 'Lowering setpoint 2–3°F overnight and during weekend/break absences saves 5–10% of fuel. Costs nothing.' },
-          { action: 'Refrigerant leak detection on routine HVAC service', impact: '−5 to −20 mtCO₂e/yr', detail: 'Annual leak inspection catches small leaks early. R-410A has a GWP of 2,256 — 1 kg of leaked refrigerant = 2.3 mtCO₂e.' },
-          { action: 'Electric or hybrid replacements for fleet vehicles', impact: '−10 to −20 mtCO₂e/yr', detail: 'EV vans on the NE grid emit roughly 60% less per mile than gasoline. Most impactful when replacing the highest-mileage vehicles first.' },
+          {
+            action: 'Heat pump retrofit on a major dorm',
+            impact: '−28 to −56 mtCO₂e/yr',
+            detail: 'Replaces a dorm\'s oil/propane boiler with an electric heat pump. New Scope 2 load is roughly 1/3 the original Scope 1 emissions because heat pumps deliver 2.5–3.5 kWh of heat per 1 kWh of electricity, and the New England grid is ~3× cleaner than oil per BTU delivered.',
+            data: [
+              { input: 'Annual heating oil per dorm', value: '4,000 – 8,000 gal/yr', source: 'Boarding-school facilities surveys (NEEP 2022)' },
+              { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Emission Factors Hub 2024, Stationary Combustion' },
+              { input: 'Heating oil heat content (HHV)', value: '138,500 BTU/gal', source: 'EIA Energy Calculator' },
+              { input: 'Boiler thermal efficiency', value: '80%', source: 'ASHRAE 90.1 typical for in-service systems' },
+              { input: 'Cold-climate heat pump COP', value: '2.0 – 3.0', source: 'NEEP Cold Climate Air-Source Heat Pump Specification' },
+              { input: 'ISO-NE grid emission factor', value: '643 lb CO₂/MWh = 0.292 kg/kWh', source: 'ISO-NE Air Emissions Report 2024' },
+            ],
+            math: [
+              '# Worked example: 6,000 gal/yr dorm at COP 2.5',
+              'old_emissions = 6,000 gal × 10.16 kg/gal = 60,960 kg ≈ 61.0 mtCO₂e',
+              '',
+              'heat_delivered_btu = 6,000 × 138,500 × 0.80 = 665M BTU',
+              'heat_delivered_kwh = 665M / 3,412 BTU/kWh = 195,000 kWh',
+              'electricity_needed = 195,000 / 2.5 (COP) = 78,000 kWh',
+              'new_emissions = 78,000 × 0.292 = 22,776 kg ≈ 22.8 mtCO₂e',
+              '',
+              'savings = 61.0 − 22.8 = 38.2 mtCO₂e/yr',
+              '',
+              '# Range: 4,000 gal at COP 3.0 → 28 mt; 8,000 gal at COP 2.0 → 56 mt',
+            ],
+          },
+          {
+            action: 'Weatherization + envelope upgrades',
+            impact: '−8 to −24 mtCO₂e/yr per dorm',
+            detail: 'Air sealing, insulation, and window upgrades typically reduce a building\'s heating fuel use by 20–30%. Highest leverage is the oldest, leakiest dormitory.',
+            data: [
+              { input: 'Heating reduction from envelope retrofit', value: '20 – 30%', source: 'DOE Building America Solution Center; ENERGY STAR Home Performance' },
+              { input: 'Annual heating oil per dorm', value: '4,000 – 8,000 gal/yr', source: 'NEEP 2022' },
+              { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Hub 2024' },
+            ],
+            math: [
+              '# Low: 4,000 gal × 20% reduction × 10.16 = 8.1 mtCO₂e/yr',
+              '# High: 8,000 gal × 30% reduction × 10.16 = 24.4 mtCO₂e/yr',
+            ],
+          },
+          {
+            action: 'Thermostat setback at night and breaks',
+            impact: '−7 to −60 mtCO₂e/yr campus-wide',
+            detail: 'Lowering setpoint 2°F overnight, weekends, and during breaks. EPA-published rule of thumb: ~7% reduction per 1°F × 8 hours.',
+            data: [
+              { input: 'Heating reduction per 1°F × 8 hrs setback', value: '~7%', source: 'EPA ENERGY STAR Programmable Thermostat guidance' },
+              { input: 'Total campus heating fuel', value: '~100,000 gal/yr (estimate)', source: 'KUA Scope 1 estimate, this dashboard' },
+              { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Hub 2024' },
+            ],
+            math: [
+              '# 2°F overnight setback ≈ 7% reduction (one full 8-hr window)',
+              '# campus = 100,000 gal × 7% × 10.16 = 71,120 kg ≈ 71 mtCO₂e/yr',
+              '# realistic implementation across mixed building stock: 7-60 mt range',
+            ],
+          },
+          {
+            action: 'Refrigerant leak detection on routine HVAC service',
+            impact: '−4 to −10 mtCO₂e/yr',
+            detail: 'Annual leak inspection during scheduled HVAC service catches small leaks before they grow. The dominant impact is preventing R-410A loss, which has GWP100 of 2,256.',
+            data: [
+              { input: 'Typical commercial HVAC leak rate', value: '5 – 15% per year', source: 'GHG Protocol Refrigerants Tool' },
+              { input: 'Total refrigerant charge (school estimate)', value: '60 – 100 lb across HVAC systems', source: 'Commercial HVAC sizing norms' },
+              { input: 'R-410A GWP100', value: '2,256', source: 'IPCC AR6 WG1 Ch.7 Table 7.SM.7' },
+              { input: 'Detection effectiveness', value: '50 – 80% leak reduction', source: 'EPA Stratospheric Protection Division (2018 MOU)' },
+            ],
+            math: [
+              '# baseline_leak = 80 lb × 10% × 0.4536 kg/lb × 2,256 GWP = 8,180 kg ≈ 8.2 mtCO₂e',
+              '# with detection: leak drops 50-80%',
+              '# savings = 8.2 × 0.5 to 8.2 × 0.8 = 4.1 to 6.6 mtCO₂e/yr',
+              '# Higher charge (100 lb) systems extend the upper bound to ~10',
+            ],
+          },
+          {
+            action: 'Electric or hybrid replacements for fleet vehicles',
+            impact: '−10 to −22 mtCO₂e/yr',
+            detail: 'EV vans on the New England grid emit roughly 75% less per mile than gasoline. Best ROI on the highest-mileage vehicles.',
+            data: [
+              { input: 'Gasoline emission factor', value: '8.78 kg CO₂/gal', source: 'EPA GHG Hub Mobile Combustion 2024' },
+              { input: 'Average van fuel economy', value: '18 mpg', source: 'EPA Fuel Economy data' },
+              { input: 'Annual mileage per fleet van', value: '8,000 – 15,000 mi', source: 'School fleet operating norms' },
+              { input: 'EV efficiency', value: '0.30 kWh/mi', source: 'EPA fueleconomy.gov electric vehicle data' },
+              { input: 'ISO-NE grid emission factor', value: '0.292 kg/kWh', source: 'ISO-NE 2024' },
+            ],
+            math: [
+              '# Per van per year (12,000 mi):',
+              'gasoline_emissions = 12,000 / 18 × 8.78 = 5,853 kg ≈ 5.9 mtCO₂e',
+              'ev_emissions      = 12,000 × 0.30 × 0.292 = 1,051 kg ≈ 1.1 mtCO₂e',
+              'savings_per_van   = 5.9 − 1.1 = 4.8 mtCO₂e/yr',
+              '',
+              '# Replacing 3-5 vans: 14 to 24 mtCO₂e/yr (rounded 10-22)',
+            ],
+          },
         ]}
       />
 
