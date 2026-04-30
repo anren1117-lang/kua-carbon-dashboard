@@ -1,57 +1,167 @@
-import React from 'react';
-import { formStyles as s } from './formStyles';
+import React, { useState } from 'react';
+import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, currentSchoolYear } from '../_shared';
 
-const schema = [
-  { col: 'employee_role', type: 'enum', note: 'faculty · staff · other' },
-  { col: 'home_zip', type: 'text', note: 'Home ZIP, used to estimate one-way distance from campus' },
-  { col: 'mode', type: 'enum', note: 'car_solo · carpool · transit · bike · walk · ev' },
-  { col: 'days_per_week', type: 'integer', note: 'Average days per week on campus during the school year' },
-  { col: 'survey_date', type: 'date', note: 'When this entry was collected; commuting is re-surveyed annually' },
-  { col: 'school_year', type: 'text', note: 'e.g. 2025-2026' },
+const modes = [
+  { value: 'car_solo', label: 'Car (solo)',     factorKey: 'epa_commute_car_solo_kg_co2e_per_pmi' },
+  { value: 'carpool',  label: 'Carpool',         factorKey: 'epa_commute_carpool_kg_co2e_per_pmi' },
+  { value: 'transit',  label: 'Public transit',  factorKey: 'epa_commute_transit_kg_co2e_per_pmi' },
+  { value: 'ev',       label: 'Electric vehicle',factorKey: 'epa_commute_ev_kg_co2e_per_pmi' },
+  { value: 'bike',     label: 'Bicycle',         factorKey: 'epa_commute_bike_kg_co2e_per_pmi' },
+  { value: 'walk',     label: 'Walk',            factorKey: 'epa_commute_walk_kg_co2e_per_pmi' },
 ];
 
-const styles = {
-  schemaTable: { width: '100%', marginTop: 12, borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '8px 10px', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, borderBottom: '1px solid #1f2937', background: '#0b1220' },
-  td: { padding: '8px 10px', fontSize: 13, borderBottom: '1px solid #1f2937', color: '#cbd5e1', verticalAlign: 'top' },
-  mono: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', color: '#22d3ee' },
-};
+const empty = () => ({
+  school_year: currentSchoolYear(),
+  employee_role: 'faculty',
+  home_zip: '',
+  one_way_miles: '',
+  mode: 'car_solo',
+  days_per_week: '5',
+  weeks_per_year: '36',
+  survey_date: today(),
+  data_quality: 'estimated',
+  source: '',
+  notes: '',
+});
 
 function Cat7Commuting() {
+  const { rows, error, insert, update, remove } = useTable('commuting', 'survey_date');
+  const [form, setForm] = useState(empty());
+  const [editingId, setEditingId] = useState(null);
+  const [msg, setMsg] = useState(null);
+
+  const activeMode = modes.find((m) => m.value === form.mode) || modes[0];
+  const factor = useFactor(activeMode.factorKey);
+
+  const miles = parseFloat(form.one_way_miles);
+  const days = parseFloat(form.days_per_week);
+  const weeks = parseFloat(form.weeks_per_year);
+  // annual round-trip passenger-miles × per-mile factor
+  const preview = factor && !isNaN(miles) && !isNaN(days) && !isNaN(weeks)
+    ? miles * 2 * days * weeks * Number(factor.value)
+    : null;
+
+  const reset = () => { setForm(empty()); setEditingId(null); };
+  const handleEdit = (r) => { setForm({
+    ...r,
+    one_way_miles: String(r.one_way_miles),
+    days_per_week: String(r.days_per_week ?? '5'),
+    weeks_per_year: String(r.weeks_per_year ?? '36'),
+    survey_date: r.survey_date ?? today(),
+    home_zip: r.home_zip ?? '',
+  }); setEditingId(r.id); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        school_year: form.school_year,
+        employee_role: form.employee_role,
+        home_zip: form.home_zip || null,
+        one_way_miles: parseFloat(form.one_way_miles),
+        mode: form.mode,
+        days_per_week: parseFloat(form.days_per_week),
+        weeks_per_year: parseFloat(form.weeks_per_year),
+        survey_date: form.survey_date || null,
+        data_quality: form.data_quality,
+        source: form.source || null,
+        notes: form.notes || null,
+      };
+      if (editingId) { await update(editingId, payload); setMsg({ ok: true, text: 'Commute updated.' }); }
+      else { await insert(payload); setMsg({ ok: true, text: 'Commute added.' }); }
+      reset();
+    } catch (err) { setMsg({ ok: false, text: err.message }); }
+  };
+
+  const onDelete = async (id) => {
+    if (!window.confirm('Delete this commute entry?')) return;
+    try { await remove(id); if (editingId === id) reset(); } catch (err) { setMsg({ ok: false, text: err.message }); }
+  };
+
   return (
     <div>
       <div style={s.cat}>Scope 3 · Category 7</div>
       <h1 style={s.title}>Employee Commuting</h1>
       <p style={s.subtitle}>
-        Daily travel of non-resident faculty and staff to campus. Smaller for a residential
-        boarding school than for a comparable day school, but still required for a complete
-        Scope 3 inventory.
+        Annual survey rows for non-resident faculty and staff. One row per person per school
+        year. Distance from ZIP to campus is entered as one-way miles (use Google Maps or a
+        ZIP-distance tool); the form computes annual round-trip passenger-miles automatically.
       </p>
       <div style={s.factor}>
-        Factor source: EPA Emission Factors Hub — per-passenger-mile by mode
+        Methodology: EPA per-passenger-mile factors by mode{factor && ` — ${activeMode.label}: ${factor.value} ${factor.unit}`}
       </div>
 
-      <div style={s.card}>
-        <h2 style={s.h2}>Planned schema · <code style={styles.mono}>commuting</code></h2>
-        <table style={styles.schemaTable}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Column</th>
-              <th style={styles.th}>Type</th>
-              <th style={styles.th}>Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schema.map((c) => (
-              <tr key={c.col}>
-                <td style={{ ...styles.td, ...styles.mono }}>{c.col}</td>
-                <td style={styles.td}>{c.type}</td>
-                <td style={styles.td}>{c.note}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
+
+      <form style={s.card} onSubmit={submit}>
+        <h2 style={s.h2}>{editingId ? 'Edit commute' : 'Add commute'}</h2>
+        <div style={s.formGrid}>
+          <div style={s.field}>
+            <label style={s.label}>School year</label>
+            <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} required />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Role</label>
+            <select value={form.employee_role} onChange={(e) => setForm({ ...form, employee_role: e.target.value })} style={s.input}>
+              <option>faculty</option><option>staff</option><option>student</option><option>other</option>
+            </select>
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Home ZIP</label>
+            <input type="text" value={form.home_zip} onChange={(e) => setForm({ ...form, home_zip: e.target.value })} style={s.input} placeholder="optional" />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>One-way miles</label>
+            <input type="number" step="0.1" min="0" value={form.one_way_miles} onChange={(e) => setForm({ ...form, one_way_miles: e.target.value })} style={s.input} required />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Mode</label>
+            <select value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value })} style={s.input}>
+              {modes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Days / week</label>
+            <input type="number" step="0.1" min="0" max="7" value={form.days_per_week} onChange={(e) => setForm({ ...form, days_per_week: e.target.value })} style={s.input} required />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Weeks / year</label>
+            <input type="number" step="0.1" min="0" max="52" value={form.weeks_per_year} onChange={(e) => setForm({ ...form, weeks_per_year: e.target.value })} style={s.input} required />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Survey date</label>
+            <input type="date" value={form.survey_date} onChange={(e) => setForm({ ...form, survey_date: e.target.value })} style={s.input} />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Data quality</label>
+            <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
+              <option>measured</option><option>estimated</option><option>modeled</option>
+            </select>
+          </div>
+          <div style={{ ...s.field, ...s.full }}>
+            <label style={s.label}>Notes</label>
+            <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} />
+          </div>
+        </div>
+        <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} label="Annual round-trip emissions" />
+        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+          <button type="submit" style={s.submit}>{editingId ? 'Save changes' : 'Add commute'}</button>
+          {editingId && <button type="button" onClick={reset} style={{ ...s.submit, background: 'transparent', color: '#cbd5e1', border: '1px solid #334155' }}>Cancel</button>}
+        </div>
+      </form>
+
+      {error && <div style={{ ...s.msg, ...s.msgErr }}>{error}</div>}
+      <RecordsTable
+        rows={rows} onEdit={handleEdit} onDelete={onDelete} editingId={editingId}
+        columns={[
+          { key: 'school_year', label: 'Year' },
+          { key: 'employee_role', label: 'Role' },
+          { key: 'home_zip', label: 'ZIP', mono: true },
+          { key: 'one_way_miles', label: 'Miles' },
+          { key: 'mode', label: 'Mode' },
+          { key: 'days_per_week', label: 'Days/wk' },
+        ]}
+      />
     </div>
   );
 }

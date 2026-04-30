@@ -5,11 +5,11 @@ const groups = [
   {
     heading: 'GHG Protocol categories',
     items: [
-      { to: '/admin/scope-3/cat-1', cat: 'Cat 1', name: 'Purchased Goods & Services', status: 'Schema preview', desc: 'Spend-based using EPA Supply Chain (EEIO) factors.' },
+      { to: '/admin/scope-3/cat-1', cat: 'Cat 1', name: 'Purchased Goods & Services', status: 'Live form', desc: 'Spend-based using EPA Supply Chain (EEIO) factors.' },
       { to: '/admin/scope-3/cat-3', cat: 'Cat 3', name: 'Upstream Fuel & Energy', status: 'Derived', desc: 'Computed from Scope 1 and 2 quantities × upstream factors.' },
       { to: '/admin/scope-3/cat-5', cat: 'Cat 5', name: 'Waste in Operations', status: 'Live form', desc: 'Landfill, recycling, composting via EPA WARM.' },
       { to: '/admin/scope-3/cat-6', cat: 'Cat 6', name: 'Business Travel', status: 'Live form', desc: 'Faculty/staff flights, trains, hotels, mileage.' },
-      { to: '/admin/scope-3/cat-7', cat: 'Cat 7', name: 'Employee Commuting', status: 'Schema preview', desc: 'Annual survey of non-resident faculty and staff.' },
+      { to: '/admin/scope-3/cat-7', cat: 'Cat 7', name: 'Employee Commuting', status: 'Live form', desc: 'Annual per-person survey × per-passenger-mile factor.' },
     ],
   },
   {
