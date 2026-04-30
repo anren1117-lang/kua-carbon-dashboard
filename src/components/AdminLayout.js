@@ -4,6 +4,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/framework', label: 'Framework' },
+  { to: '/admin/ai-ingestion', label: 'AI Agent' },
   { to: '/admin/scope-1', label: 'Scope 1' },
   { to: '/admin/scope-2', label: 'Scope 2' },
   { to: '/admin/scope-3', label: 'Scope 3' },

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { EducationalCard } from './components/EducationalCard';
 import { NetEstimate } from './components/NetEstimate';
 import { PeerComparison } from './components/PeerComparison';
+import { ScopeDonut } from './components/ScopeDonut';
+import { AISummary } from './components/AISummary';
 import './App.css';
 
 function App() {
@@ -302,6 +304,8 @@ function App() {
       </header>
 
       <NetEstimate />
+      <AISummary />
+      <ScopeDonut />
       <PeerComparison />
 
       <div style={{ maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' }}>

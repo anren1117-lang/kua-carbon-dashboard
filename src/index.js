@@ -20,6 +20,7 @@ import AdminRenewables from './pages/admin/AdminRenewables';
 import AdminSinks from './pages/admin/AdminSinks';
 import AdminMethodology from './pages/admin/AdminMethodology';
 import AdminFramework from './pages/admin/AdminFramework';
+import AdminAIIngestion from './pages/admin/AdminAIIngestion';
 import HeatingOil from './pages/admin/scope1/HeatingOil';
 import Propane from './pages/admin/scope1/Propane';
 import Refrigerants from './pages/admin/scope1/Refrigerants';
@@ -58,6 +59,7 @@ root.render(
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
           <Route path="framework" element={<AdminFramework />} />
+          <Route path="ai-ingestion" element={<AdminAIIngestion />} />
 
           <Route path="scope-1" element={<AdminScope1 />} />
           <Route path="scope-1/heating-oil" element={<HeatingOil />} />
