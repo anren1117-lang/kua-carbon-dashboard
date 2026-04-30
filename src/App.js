@@ -305,40 +305,20 @@ function App() {
         </div>
       </header>
 
-      <SectionHeader
-        label="The bottom line"
-        title="KUA's preliminary net carbon footprint"
-        description="Estimated across all scopes plus on-campus sequestration. Each row replaces with a measured value as fuel deliveries, travel records, and tree inventory data are entered through the Admin Portal."
-      />
+      <SectionHeader label="The number" title="Net annual carbon footprint" />
       <NetEstimate />
 
-      <SectionHeader
-        label="In plain English"
-        title="What the data says right now"
-        description="A grounded summary that updates as records land in the database. Currently rule-based; will route through an LLM in Phase 3 of the project plan."
-      />
+      <SectionHeader label="Summary" title="In plain English" />
       <AISummary />
 
-      <SectionHeader
-        label="Where it comes from"
-        title="Emissions broken down by scope"
-        description="Where KUA's gross emissions actually originate, and how the on-campus forest brings them back down."
-      />
+      <SectionHeader label="Breakdown" title="By scope" />
       <ScopeDonut />
       <ScopeExplainer />
 
-      <SectionHeader
-        label="How we compare"
-        title="KUA vs peer institutions"
-        description="Per-student emissions across boarding-secondary peers, liberal arts colleges, and one research university — split by scope and offset, not just totaled."
-      />
+      <SectionHeader label="Context" title="How KUA compares" />
       <PeerComparison />
 
-      <SectionHeader
-        label="Getting oriented"
-        title="How to use this dashboard"
-        description="A quick guide to what the live counters mean, scale comparisons that make the numbers concrete, and the methodology principle behind every figure."
-      />
+      <SectionHeader label="Orientation" title="How to read this dashboard" />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
         <EducationalCard
           title="How to read this dashboard"
@@ -369,11 +349,7 @@ function App() {
         />
       </div>
 
-      <SectionHeader
-        label="Live data"
-        title="Real-time energy and grid mix"
-        description="The original campus-electricity dashboard. Live emissions counter, ISO-NE grid mix breakdown, per-building consumption, and time-of-day patterns."
-      />
+      <SectionHeader label="Live data" title="Real-time energy and grid mix" />
 
       <div style={styles.navButtons}>
         <button style={{...styles.navButton, backgroundColor: viewMode === 'overview' ? '#22c55e' : '#334155'}} onClick={() => setViewMode('overview')}>Overview</button>

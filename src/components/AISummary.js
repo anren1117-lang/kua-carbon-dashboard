@@ -93,19 +93,27 @@ export function AISummary() {
   const gross = PRELIM.scope1 + PRELIM.scope2 + PRELIM.scope3;
   const net = gross - PRELIM.sinks;
 
+  const [showFull, setShowFull] = useState(false);
+  const visibleSentences = showFull ? sentences : sentences.slice(0, 1);
+
   return (
     <div style={styles.wrap}>
       <section style={styles.card}>
         <div style={styles.head}>
           <span style={styles.badge}>AI-generated · grounded</span>
-          <span style={styles.title}>What this dashboard says, in plain English</span>
+          <span style={styles.title}>In plain English</span>
         </div>
         <div style={styles.body}>
-          {sentences.map((s, i) => <p key={i} style={{ margin: i === 0 ? 0 : '8px 0 0' }}>{s}</p>)}
+          {visibleSentences.map((s, i) => <p key={i} style={{ margin: i === 0 ? 0 : '8px 0 0' }}>{s}</p>)}
         </div>
-        <button type="button" style={styles.toggle} onClick={() => setShowCalc((v) => !v)}>
-          {showCalc ? 'Hide calculation' : 'Show calculation'}
+        <button type="button" style={styles.toggle} onClick={() => setShowFull((v) => !v)}>
+          {showFull ? 'Show less' : 'Read full summary'}
         </button>
+        {showFull && (
+          <button type="button" style={{ ...styles.toggle, marginLeft: 8 }} onClick={() => setShowCalc((v) => !v)}>
+            {showCalc ? 'Hide calculation' : 'Show calculation'}
+          </button>
+        )}
         {showCalc && (
           <pre style={styles.calc}>
 {`gross = scope1 + scope2 + scope3

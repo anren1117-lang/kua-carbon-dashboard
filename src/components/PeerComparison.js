@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Per-student mtCO2e breakdown drawn from publicly disclosed sustainability reports.
 // Cross-institutional comparison has real limits (Valls-Val & Bovea 2021): Scope 3
@@ -110,6 +110,36 @@ const styles = {
 
 const valToPct = (v) => ((v - axisMin) / axisRange) * 100;
 
+function PeerNotes() {
+  const [open, setOpen] = useState(false);
+  const toggleStyle = { marginTop: 18, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', padding: '8px 14px', borderRadius: 6, fontSize: 13, cursor: 'pointer' };
+  return (
+    <>
+      <button type="button" style={toggleStyle} onClick={() => setOpen((v) => !v)}>
+        {open ? 'Hide caveats and source notes' : 'Show caveats and source notes'}
+      </button>
+      {open && (
+        <>
+          <div style={styles.caveat}>
+            <strong style={{ color: '#fbbf24' }}>Caveat:</strong> Cross-institutional comparison is
+            harder than these bars suggest. Valls-Val &amp; Bovea (2021) reviewed 35 university
+            footprint studies and found that Scope 3 inclusion, denominators, and offset treatment
+            vary enough that absolute numbers are often not directly comparable. Middlebury reaches
+            "net zero" by purchasing offsets equal to gross emissions — a financial drawdown, not a
+            physical one. Sinks at most peer schools are simply not quantified.
+          </div>
+          <div style={styles.notesTitle}>Per-row notes</div>
+          <ul style={styles.noteList}>
+            {peers.map((p) => (
+              <li key={p.name}><strong style={{ color: '#cbd5e1' }}>{p.name}.</strong> {p.note}</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
+}
+
 function Bar({ p }) {
   // Positive segments stack from zero rightward.
   const segs = [];
@@ -200,22 +230,7 @@ export function PeerComparison() {
             })}
         </div>
 
-        <div style={styles.caveat}>
-          <strong style={{ color: '#fbbf24' }}>Caveat:</strong> Cross-institutional comparison is harder
-          than these bars suggest. Valls-Val &amp; Bovea (2021) reviewed 35 university footprint
-          studies and found that Scope 3 inclusion, denominators (FTE vs headcount), and offset
-          treatment vary enough that absolute numbers are often not directly comparable. Note in
-          particular: Middlebury reaches "net zero" by purchasing offsets equal to gross emissions —
-          a financial drawdown, not a physical one. Sinks at most peer schools are simply not
-          quantified, which is the gap KUA's dashboard is built to close.
-        </div>
-
-        <div style={styles.notesTitle}>Per-row notes</div>
-        <ul style={styles.noteList}>
-          {peers.map((p) => (
-            <li key={p.name}><strong style={{ color: '#cbd5e1' }}>{p.name}.</strong> {p.note}</li>
-          ))}
-        </ul>
+        <PeerNotes />
       </section>
     </div>
   );

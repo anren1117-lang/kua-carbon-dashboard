@@ -48,6 +48,7 @@ const fmt = (n) => Math.abs(n) >= 1000 ? n.toLocaleString(undefined, { maximumFr
 const fmtRange = (lo, hi) => lo === hi ? fmt(lo) : `${fmt(lo)} – ${fmt(hi)}`;
 
 export function NetEstimate() {
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
   return (
@@ -61,66 +62,63 @@ export function NetEstimate() {
             <span style={styles.heroUnit}>mtCO₂e / yr</span>
           </div>
           <div style={styles.heroRange}>
-            range {fmtRange(summary.netLow, summary.netHigh)} · low end of the range is net-negative
+            range {fmtRange(summary.netLow, summary.netHigh)} · low end is net-negative
           </div>
         </div>
-        <p style={styles.blurb}>
-          Fermi estimate across every scope plus on-campus sequestration. Each line below is
-          replaced with a measured value as data is entered through the Admin Portal — only the
-          Scope 2 electricity row currently is.
-        </p>
 
         <div style={styles.numbers}>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Per student</div>
             <div style={styles.numBig}>~{summary.perStudentMid}<span style={styles.numUnit}>mtCO₂e</span></div>
-            <div style={styles.numRange}>{summary.perStudentLow} – {summary.perStudentHigh} · {summary.studentCount} students</div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Gross emissions</div>
             <div style={styles.numBig}>~{fmt(summary.grossMid)}<span style={styles.numUnit}>mtCO₂e</span></div>
-            <div style={styles.numRange}>{fmtRange(summary.grossLow, summary.grossHigh)}</div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Sequestration</div>
             <div style={styles.numBig}>~{fmt(3000)}<span style={styles.numUnit}>mtCO₂e</span></div>
-            <div style={styles.numRange}>~1,000 acres of campus forest</div>
           </div>
         </div>
 
-        <div style={styles.tableWrap}>
-          <div style={styles.tableHead}>Line-by-line breakdown</div>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Source</th>
-                <th style={{ ...styles.th, textAlign: 'right' }}>mtCO₂e / yr</th>
-                <th style={styles.th}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.name}>
-                  <td style={styles.td}>{r.name}</td>
-                  <td style={styles.tdNum}>
-                    {r.low === r.high ? fmt(r.low) : `${fmt(r.low)} to ${fmt(r.high)}`}
-                  </td>
-                  <td style={styles.td}><span style={styles.pill(r.kind)}>{r.kind}</span></td>
+        <button type="button" style={styles.detailsToggle} onClick={() => setShowBreakdown((v) => !v)}>
+          {showBreakdown ? 'Hide breakdown' : 'Show line-by-line breakdown'}
+        </button>
+
+        {showBreakdown && (
+          <div style={styles.tableWrap}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Source</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>mtCO₂e / yr</th>
+                  <th style={styles.th}>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <button type="button" style={styles.detailsToggle} onClick={() => setShowNotes((v) => !v)}>
-            {showNotes ? 'Hide assumptions' : 'Show how each line was estimated'}
-          </button>
-          {showNotes && (
-            <ul style={styles.noteList}>
-              {rows.map((r) => <li key={r.name}><strong>{r.name}.</strong> {r.note}</li>)}
-              <li><strong>Per-student denominator.</strong> ≈ {summary.studentCount} students (boarding + day). Adjust when enrollment data is integrated.</li>
-              <li><strong>Calibration.</strong> {summary.perStudentMid} mtCO₂e/student/yr lands inside the 2–15 envelope reported across HEI footprint studies (Gutiérrez-Mosquera et al. 2024); cold-climate residential schools tend toward the higher end.</li>
-            </ul>
-          )}
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.name}>
+                    <td style={styles.td}>{r.name}</td>
+                    <td style={styles.tdNum}>
+                      {r.low === r.high ? fmt(r.low) : `${fmt(r.low)} to ${fmt(r.high)}`}
+                    </td>
+                    <td style={styles.td}><span style={styles.pill(r.kind)}>{r.kind}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button type="button" style={styles.detailsToggle} onClick={() => setShowNotes((v) => !v)}>
+              {showNotes ? 'Hide assumptions' : 'Show assumptions per line'}
+            </button>
+            {showNotes && (
+              <ul style={styles.noteList}>
+                {rows.map((r) => <li key={r.name}><strong>{r.name}.</strong> {r.note}</li>)}
+                <li><strong>Per-student denominator.</strong> ≈ {summary.studentCount} students (boarding + day). Adjust when enrollment data is integrated.</li>
+                <li><strong>Calibration.</strong> {summary.perStudentMid} mtCO₂e/student/yr lands inside the 2–15 envelope reported across HEI footprint studies (Gutiérrez-Mosquera et al. 2024).</li>
+              </ul>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
