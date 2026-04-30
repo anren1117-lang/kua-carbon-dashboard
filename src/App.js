@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { EducationalCard } from './components/EducationalCard';
+import { NetEstimate } from './components/NetEstimate';
 import './App.css';
 
 function App() {
@@ -298,6 +299,8 @@ function App() {
           <span style={{ opacity: 0.8 }}>· {yearlyEmissions} mtCO₂e/year derived from ISO-NE 2024 grid mix · live counters interpolate this annual figure</span>
         </div>
       </header>
+
+      <NetEstimate />
 
       <div style={{ maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' }}>
         <EducationalCard
