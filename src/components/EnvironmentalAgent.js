@@ -25,6 +25,10 @@ const styles = {
   thread: { display: 'grid', gap: 14, marginBottom: 16, maxHeight: 600, overflowY: 'auto', paddingRight: 4 },
   msgUser: { alignSelf: 'end', maxWidth: '85%', padding: '10px 14px', background: '#1e3a8a', color: '#dbeafe', borderRadius: '12px 12px 2px 12px', fontSize: 15, lineHeight: 1.6, whiteSpace: 'pre-wrap' },
   msgAssistant: { maxWidth: '95%', padding: '14px 18px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #06b6d4', borderRadius: '12px 12px 12px 2px', color: '#e5e7eb', fontSize: 15, lineHeight: 1.7 },
+  searchedRow: { marginTop: 10, paddingTop: 10, borderTop: '1px solid #1f2937', fontSize: 12, color: '#94a3b8' },
+  searchedLabel: { color: '#22d3ee', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.6, fontSize: 10, marginRight: 6 },
+  citationsRow: { marginTop: 10, fontSize: 12 },
+  citationLink: { color: '#22d3ee', textDecoration: 'none', display: 'block', marginTop: 4, wordBreak: 'break-word' },
   thinking: { padding: '14px 18px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #06b6d4', borderRadius: '12px 12px 12px 2px', color: '#64748b', fontSize: 14, fontStyle: 'italic' },
   inputRow: { display: 'flex', gap: 8, marginTop: 8 },
   input: { flex: 1, padding: '12px 14px', background: '#0b1220', border: '1px solid #334155', borderRadius: 8, color: '#e5e7eb', fontSize: 15, fontFamily: 'inherit', resize: 'none', minHeight: 48 },
@@ -121,7 +125,15 @@ export function EnvironmentalAgent() {
         return;
       }
 
-      setMessages([...next, { role: 'assistant', content: data.content }]);
+      setMessages([
+        ...next,
+        {
+          role: 'assistant',
+          content: data.content,
+          citations: data.citations || [],
+          searchedTopics: data.searchedTopics || [],
+        },
+      ]);
     } catch (err) {
       setError({ kind: 'network', message: err.message });
     }
@@ -172,9 +184,27 @@ export function EnvironmentalAgent() {
             {messages.map((m, i) => (
               <div key={i} style={m.role === 'user' ? styles.msgUser : styles.msgAssistant}>
                 {m.role === 'assistant' ? <Markdown text={m.content} /> : m.content}
+                {m.role === 'assistant' && m.searchedTopics && m.searchedTopics.length > 0 && (
+                  <div style={styles.searchedRow}>
+                    <span style={styles.searchedLabel}>Searched the web for</span>
+                    {m.searchedTopics.map((q, j) => (
+                      <span key={j}>{j > 0 ? ' · ' : ''}<em>{q}</em></span>
+                    ))}
+                  </div>
+                )}
+                {m.role === 'assistant' && m.citations && m.citations.length > 0 && (
+                  <div style={styles.citationsRow}>
+                    <span style={styles.searchedLabel}>Sources</span>
+                    {m.citations.slice(0, 5).map((c, j) => (
+                      <a key={j} href={c.url} target="_blank" rel="noopener noreferrer" style={styles.citationLink}>
+                        [{j + 1}] {c.title}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
-            {loading && <div style={styles.thinking}>Thinking…</div>}
+            {loading && <div style={styles.thinking}>Thinking{messages.length > 0 ? ' (may search the web)' : ''}…</div>}
           </div>
         ) : (
           <div style={styles.empty}>
