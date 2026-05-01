@@ -651,9 +651,10 @@ const paths = [
         ],
         question: 'Years until budget gone:',
         options: [
-          { text: '~3 years', correct: false, explanation: 'Too short.' },
+          { text: '~3 years', correct: false, explanation: 'Too short — that would imply current emissions of ~80+ Gt/yr.' },
           { text: '~7 years', correct: true, explanation: 'Right. 250 ÷ 37 ≈ 6.76 years. This is why the IPCC says emissions need to peak before 2025 and roughly halve by 2030 to stay on track for 1.5°C.' },
-          { text: '~25 years', correct: false, explanation: 'Too long. You may have used the 2°C budget.' },
+          { text: '~25 years', correct: false, explanation: 'Too long. You may have used the 2°C budget instead of the tighter 1.5°C budget.' },
+          { text: '~50 years', correct: false, explanation: 'Way too long. The remaining budget is tight; even the 2°C budget gives only ~20-25 years at current rates.' },
         ],
       },
       {
@@ -704,6 +705,7 @@ const paths = [
           { text: '~25%', correct: false, explanation: 'Too low — Scope 3 dominates at residential boarding schools.' },
           { text: '~50%', correct: false, explanation: 'Closer, but Scope 3 is even bigger here.' },
           { text: '~72%', correct: true, explanation: 'Right. **~3,000 of ~4,150 mtCO₂e gross is Scope 3** — about 72%. Most of that is student travel: international students flying home, US boarders\' term-break trips. Scope 1 (~1,000) and Scope 2 (~222) together are only ~28%. Kool (2025) found this same pattern at Royal Roads University, where student air travel alone dominated all other sources combined.' },
+          { text: '~95%', correct: false, explanation: 'Too high — Scope 1 and 2 still total ~28% (1,222/4,150). Scope 3 dominates but doesn\'t exclude the others.' },
         ],
       },
       {
@@ -716,9 +718,10 @@ const paths = [
         ],
         question: 'Annual Scope 1 from heating oil:',
         options: [
-          { text: '~96.5 mtCO₂e', correct: false, explanation: 'Off by 10×.' },
+          { text: '~96.5 mtCO₂e', correct: false, explanation: 'Off by 10× (you may have divided by 1,000 once too many times).' },
           { text: '~965 mtCO₂e', correct: true, explanation: 'Right. 95,000 × 10.16 = 965,200 kg = 965.2 mtCO₂e.' },
-          { text: '~9,650 mtCO₂e', correct: false, explanation: 'Off by 10× the other way.' },
+          { text: '~9,650 mtCO₂e', correct: false, explanation: 'Off by 10× the other way (kg → mt divides by 1,000, not multiplies).' },
+          { text: '~95 mtCO₂e', correct: false, explanation: 'You may have used the gallon count alone without applying the emission factor.' },
         ],
       },
       {
@@ -735,7 +738,8 @@ const paths = [
         options: [
           { text: '~73 mtCO₂e', correct: false, explanation: 'Forgot to multiply by 2 (round trip)?' },
           { text: '~146 mtCO₂e', correct: true, explanation: 'Right. 50 × 7,500 × 2 × 0.195 / 1,000 = 146.25 mtCO₂e/yr.' },
-          { text: '~580 mtCO₂e', correct: false, explanation: 'Too high. Recheck.' },
+          { text: '~580 mtCO₂e', correct: false, explanation: 'Too high. Recheck — you may have used the wrong unit conversion.' },
+          { text: '~14.6 mtCO₂e', correct: false, explanation: 'Off by 10× — possibly an extra division by 1,000 somewhere in the chain.' },
         ],
       },
       {
@@ -750,8 +754,9 @@ const paths = [
         question: 'Net per student:',
         options: [
           { text: '~1.9 mtCO₂e/student', correct: true, explanation: 'Right. Net = 1,150. Per student = 1,150/600 = 1.92 mtCO₂e.' },
-          { text: '~6.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students.' },
-          { text: '~4.2 mtCO₂e/student', correct: false, explanation: 'Almost — that\'s the gross-only per student.' },
+          { text: '~6.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
+          { text: '~4.2 mtCO₂e/student', correct: false, explanation: 'Almost — that\'s the gross-only per student. Net is lower because the forest pulls some carbon back.' },
+          { text: '~5.0 mtCO₂e/student', correct: false, explanation: 'Sequestration per student (3,000/600 = 5.0). The net is gross minus sinks, divided by enrollment.' },
         ],
       },
       {
@@ -769,6 +774,7 @@ const paths = [
           { text: '±250 mt', correct: false, explanation: 'Just the smallest source — not how independent errors combine.' },
           { text: '±2,450 mt (linear sum)', correct: false, explanation: 'That assumes errors all push the same way. For independent random errors, the quadrature sum is smaller.' },
           { text: '±1,580 mt', correct: true, explanation: 'Right. √(250² + 1,200² + 1,000²) = √(62,500 + 1.44M + 1M) = √2,502,500 ≈ 1,582 mt. Note that the largest source (Scope 3) dominates — uncertainty in small terms barely matters. AP Stats students recognize this as the formula for combining standard deviations of independent variables.' },
+          { text: '±820 mt (average)', correct: false, explanation: 'Averaging uncertainties isn\'t how they combine. The quadrature formula (root of sum of squares) gives the correct combined uncertainty for independent sources.' },
         ],
       },
       {
@@ -778,6 +784,7 @@ const paths = [
           { text: 'About the same', correct: false, explanation: 'Most peer boarding schools are 6–10 mt/student because they don\'t count sinks.' },
           { text: 'Lower than peers', correct: true, explanation: 'Right. Phillips Exeter ~10, Andover ~9. KUA looks lower mostly because we measure on-campus sequestration.' },
           { text: 'Higher than peers', correct: false, explanation: 'Boarding schools have similar gross emissions; the difference is whether sinks are measured.' },
+          { text: 'It depends on how you count', correct: false, explanation: 'True in general — methodology choices matter — but for the apples-to-apples comparison shown on the peer chart, KUA\'s reported figure is lower because it includes sequestration that peer schools don\'t measure.' },
         ],
       },
       {
@@ -823,6 +830,7 @@ const paths = [
           { text: 'ATP synthase', correct: false, explanation: 'ATP synthase makes ATP from ADP + Pi using a proton gradient — it\'s in the light reactions.' },
           { text: 'RuBisCO (rubisco)', correct: true, explanation: 'Right. Ribulose-1,5-bisphosphate carboxylase/oxygenase fixes CO₂ onto a 5-carbon sugar (RuBP) to form two 3-carbon molecules (3-PGA). It\'s the most abundant protein on Earth — and it\'s remarkably slow and inefficient, which is why C4 plants evolved a CO₂-concentrating workaround.' },
           { text: 'NADP reductase', correct: false, explanation: 'NADP reductase produces NADPH in the light reactions, not Calvin cycle.' },
+          { text: 'PEP carboxylase', correct: false, explanation: 'PEP carboxylase fixes CO₂ in C4 PLANTS as part of their concentrating mechanism, but the standard Calvin cycle initial fixation is done by RuBisCO. C4 plants then hand off the CO₂ from PEP carboxylase to RuBisCO afterward.' },
         ],
       },
       {
@@ -846,6 +854,7 @@ const paths = [
           { text: '~1.0 mtC/acre/yr', correct: false, explanation: 'You stopped at NPP — but the question asks for GPP, which adds back the respired carbon.' },
           { text: '~2.0 mtC/acre/yr', correct: true, explanation: 'Right. NPP = 2.0 × 0.5 = 1.0 mtC/acre/yr. R_a ≈ NPP = 1.0. GPP = NPP + R_a = 2.0 mtC/acre/yr. Roughly half of all carbon a forest fixes goes to fueling its own metabolism — the other half becomes new wood, leaves, and roots.' },
           { text: '~0.5 mtC/acre/yr', correct: false, explanation: 'Too low. Biomass accumulation IS NPP, before subtracting respiration from GPP.' },
+          { text: '~4.0 mtC/acre/yr', correct: false, explanation: 'Too high — you may have multiplied biomass by 2 instead of 0.5 for the carbon fraction. Biomass accumulation is the NET, not the gross, of carbon fixation.' },
         ],
       },
       {
@@ -869,9 +878,10 @@ const paths = [
         ],
         question: 'CO₂ pulled:',
         options: [
-          { text: '~6 kg CO₂', correct: false, explanation: 'You stopped at carbon mass.' },
+          { text: '~6 kg CO₂', correct: false, explanation: 'You stopped at carbon mass without converting to CO₂. Multiply by 44/12 to convert C to CO₂.' },
           { text: '~22 kg CO₂', correct: true, explanation: 'Right. 12 × 0.50 = 6 kg C. 6 × 44/12 = 22 kg CO₂.' },
-          { text: '~44 kg CO₂', correct: false, explanation: 'Forgot the carbon fraction (×0.5).' },
+          { text: '~44 kg CO₂', correct: false, explanation: 'Forgot the carbon fraction (×0.5). The whole biomass isn\'t carbon — about half is.' },
+          { text: '~12 kg CO₂', correct: false, explanation: 'You used the biomass mass directly as the CO₂ amount. They\'re not equal — half is carbon, and the carbon-to-CO₂ ratio is 44/12.' },
         ],
       },
       {
@@ -892,9 +902,10 @@ const paths = [
         ],
         question: 'Approximately how much CO₂ is stored in this single mature tree?',
         options: [
-          { text: '~150 kg CO₂', correct: false, explanation: 'Too low. Recheck the exp() result.' },
+          { text: '~150 kg CO₂', correct: false, explanation: 'Too low. Recheck the exp() result — exp(7.23) is about 1,380, not 100.' },
           { text: '~2,500 kg CO₂', correct: true, explanation: 'Right (within ~20%). −2.48 + 2.4835 × 3.912 ≈ 7.23. exp(7.23) ≈ 1,380 kg biomass. × 0.5 = 690 kg C. × 44/12 = ~2,530 kg CO₂. Roughly 2 metric tons stored in one mature maple.' },
           { text: '~50,000 kg CO₂', correct: false, explanation: 'Way too high. The Jenkins formula gives biomass in kg, not tons.' },
+          { text: '~700 kg CO₂', correct: false, explanation: 'You may have stopped at carbon mass without converting to CO₂ (× 44/12). Check the final step.' },
         ],
       },
       {
@@ -907,8 +918,9 @@ const paths = [
         question: 'Why does paving over a forest release MORE carbon than just letting trees stand and decay naturally?',
         options: [
           { text: 'Pavement temperature is irrelevant — the release comes from biology', correct: true, explanation: 'Right. The trees go into a pile or landfill, releasing carbon over years. PLUS the soil carbon that took centuries to build releases as the disturbed soil decomposes faster. Total release per acre: 200–400 mtCO₂e over years. Unmanaged decay would have stored some of that carbon back into soil instead.' },
-          { text: 'Pavement is dark and absorbs heat', correct: false, explanation: 'Surface temperature isn\'t the carbon mechanism.' },
-          { text: 'They release the same amount', correct: false, explanation: 'Disturbing the soil dramatically accelerates carbon loss.' },
+          { text: 'Pavement is dark and absorbs heat', correct: false, explanation: 'Surface temperature isn\'t the carbon mechanism. The carbon release comes from microbial decomposition of soil organic matter, not from heat.' },
+          { text: 'They release the same amount', correct: false, explanation: 'Disturbing the soil dramatically accelerates carbon loss. Decay-in-place keeps some carbon in the soil; paving exposes and aerates the soil, accelerating microbial respiration.' },
+          { text: 'Trees absorb pavement chemistry', correct: false, explanation: 'Living trees do absorb some pollutants, but cut-down trees aren\'t absorbing anything. The mechanism is about disturbed soil releasing decades of stored carbon.' },
         ],
       },
       {
@@ -923,9 +935,10 @@ const paths = [
         ],
         question: 'Annual sequestration:',
         options: [
-          { text: '~570 mtCO₂e/yr', correct: false, explanation: 'Stopped at C mass — multiply by 44/12.' },
+          { text: '~570 mtCO₂e/yr', correct: false, explanation: 'Stopped at C mass — multiply by 44/12 to convert carbon to CO₂.' },
           { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey conservative end). Dashboard mid-estimate of ~3,000 blends with the higher Nowak rate for open-grown trees.' },
-          { text: '~10,000 mtCO₂e/yr', correct: false, explanation: 'Recheck lb → kg conversion.' },
+          { text: '~10,000 mtCO₂e/yr', correct: false, explanation: 'Recheck lb → kg conversion (×0.4536, not ×4.5).' },
+          { text: '~1,252 mtCO₂e/yr', correct: false, explanation: 'You used the rate directly without scaling acreage and converting units. The given rate is per acre and in lb of CARBON.' },
         ],
       },
       {
