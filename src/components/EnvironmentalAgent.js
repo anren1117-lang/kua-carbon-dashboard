@@ -84,43 +84,12 @@ function Markdown({ text }) {
   return <>{out}</>;
 }
 
-const STORAGE_KEY = 'kua-ask-conversation';
-const MAX_PERSIST_MESSAGES = 60; // cap stored to keep localStorage under quota
-
 export function EnvironmentalAgent() {
-  // Lazy-init: read prior conversation from localStorage on first mount.
-  // The agent's "memory" lives in the browser — privacy: nothing leaves the device
-  // except the messages you send to /api/chat (which forwards to Anthropic).
-  const [messages, setMessages] = useState(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const threadRef = useRef(null);
-
-  // Persist messages to localStorage on every change. Trim to the most recent
-  // MAX_PERSIST_MESSAGES so a long-running conversation can't exceed quota.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (messages.length === 0) {
-        window.localStorage.removeItem(STORAGE_KEY);
-      } else {
-        const toPersist = messages.slice(-MAX_PERSIST_MESSAGES);
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist));
-      }
-    } catch {
-      // localStorage may be disabled / quota exceeded — fail silently.
-    }
-  }, [messages]);
 
   useEffect(() => {
     if (threadRef.current) {
@@ -187,20 +156,12 @@ export function EnvironmentalAgent() {
     <div style={styles.wrap}>
       <section style={styles.card}>
         <div style={styles.head}>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={styles.badge}>AI environmental assistant</span>
-            {messages.length > 0 && (
-              <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 4, background: '#052e1a', color: '#86efac', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, border: '1px solid #14532d' }}>
-                Memory · {messages.length} message{messages.length === 1 ? '' : 's'} saved
-              </span>
-            )}
-          </div>
-          <h2 style={styles.title}>Ask anything about climate, carbon, or sustainability</h2>
+          <span style={styles.badge}>AI environmental assistant</span>
+          <h2 style={styles.title}>Ask anything about climate, environment, or sustainability</h2>
           <p style={styles.subtitle}>
-            Free-form conversation grounded in environmental science. Knows KUA's data, can
-            search the web for current information, and <strong>remembers your conversation
-            across sessions</strong> — open this page tomorrow and it picks up where you left
-            off. Saved to your browser only; nothing is uploaded.
+            Free-form environmental Q&amp;A. Searches the web for current data, knows KUA's
+            specific numbers, and stays strictly on environmental topics — off-topic questions
+            get politely redirected.
           </p>
         </div>
 
