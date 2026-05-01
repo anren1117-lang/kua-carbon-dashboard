@@ -88,6 +88,46 @@ const paths = [
         body: 'In **2015**, nearly every country in the world signed the **Paris Agreement** — an international commitment to limit warming to "well below 2 °C" and ideally to **1.5 °C above pre-industrial levels**. We\'re currently at about 1.2 °C, so the room to maneuver is small.\n\nCountries set their own emission-reduction targets and report progress. Some are doing well; some aren\'t. The **technology** to reduce emissions exists — solar and wind are now cheaper than fossil fuels in most places, electric cars and heat pumps work, energy efficiency saves money. The **engineering problem is largely solved**. The challenges are mostly political, economic, and social.\n\nAt the institutional level, schools and companies are **measuring their footprints, setting reduction targets, and acting on them**. KUA\'s carbon dashboard is one piece of that effort — and the methodology principle behind it is simple: **you can\'t reduce what you can\'t measure**. Once a school knows its number and what drives it, the conversation shifts from vague good intentions to specific projects.',
       },
       {
+        type: 'quiz',
+        question: 'Methane (CH₄) has a much higher GWP100 per molecule than CO₂. So why does CO₂ get more attention in climate policy?',
+        options: [
+          { text: 'CO₂ is more potent in the long run', correct: false, explanation: 'Per molecule, CH₄ is 28× more potent than CO₂ over 100 years. CO₂ doesn\'t win on potency; it wins on TOTAL MASS.' },
+          { text: 'There\'s vastly more CO₂ being emitted by mass than methane', correct: true, explanation: 'Right. Annual global CO₂ emissions: ~37 Gt. Annual global methane: ~0.4 Gt. Even with methane\'s 28× GWP, total CH₄-equivalent is only ~11 Gt vs CO₂ at 37 Gt. **CO₂ dominates because we emit so much more of it**, even though it\'s weaker per molecule. Policy attention follows total impact, which is concentration × potency.' },
+          { text: 'Methane is natural and CO₂ isn\'t', correct: false, explanation: 'Both are natural gases that humans emit in addition to natural sources. Both contribute to anthropogenic warming.' },
+          { text: 'CO₂ stays in the atmosphere longer', correct: false, explanation: 'True (centuries vs ~12 years for CH₄), but this is REFLECTED in GWP100 already. The relevant fact is that we emit so much more CO₂ by mass.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Earth has had warm periods before in geological history. Why is the current warming considered different?',
+        options: [
+          { text: 'It\'s warmer than ever before', correct: false, explanation: 'False. Earth has been warmer in the past — Cretaceous era, around 100 million years ago, was much warmer. The issue isn\'t the absolute temperature.' },
+          { text: 'It\'s happening unprecedentedly fast and is caused by humans', correct: true, explanation: 'Right. Past warm periods happened over **millions of years**, giving species and ecosystems time to adapt. Current warming is happening in **decades to centuries** — orders of magnitude faster. The cause is also unique: previous shifts were driven by orbital cycles, volcanic activity, and natural CO₂ swings. Today\'s rise is from human burning of fossil fuels, with isotopic fingerprints that prove the source.' },
+          { text: 'Volcanoes used to be more active', correct: false, explanation: 'Volcanic activity has been roughly steady on geological timescales. It\'s not the driver of recent warming.' },
+          { text: 'Past warming was good and current warming is bad', correct: false, explanation: 'Whether warming is "good" or "bad" depends on context — what\'s being asked, what we\'re comparing to, what species and societies exist now. The scientific issue is the rate and the human cause, not a moral judgment about temperature.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Which sector emits the most global CO₂?',
+        options: [
+          { text: 'Transportation (cars, trucks, planes, ships)', correct: false, explanation: '~16% of global emissions. Significant but not the largest. Most road-vehicle CO₂ comes from passenger cars and freight trucks.' },
+          { text: 'Energy (electricity and heat generation)', correct: true, explanation: 'Right. **Energy generation is ~30% of global emissions** — the largest single sector. This includes electricity grids, district heating, and industrial process heat. It\'s also the most addressable: replacing fossil-fired power plants with wind, solar, nuclear, and storage is the most direct path to cutting global emissions. The IRA, EU Green Deal, and China\'s mass renewable buildout all target this sector first.' },
+          { text: 'Agriculture (livestock and crops)', correct: false, explanation: '~11% of global emissions, but a higher share of methane and N₂O specifically. Important sector but smaller than energy.' },
+          { text: 'Buildings (heating and cooling)', correct: false, explanation: '~6% direct emissions (boilers, etc.), but buildings also DRIVE significant electricity demand which lands in the energy sector. Combined heating + cooling load is large but the direct emissions are relatively concentrated.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Which sector emits the most global CO₂?',
+        options: [
+          { text: 'Energy generation (electricity & heat)', correct: true, explanation: 'Right. **~30% of global emissions** — the largest single sector. Replacing fossil-fired plants with wind, solar, nuclear, and storage is the most direct path to cutting global emissions.' },
+          { text: 'Transportation', correct: false, explanation: '~16% — significant but second to energy.' },
+          { text: 'Agriculture', correct: false, explanation: '~11% of global, but dominant for methane and N₂O specifically.' },
+          { text: 'Buildings (direct heating)', correct: false, explanation: '~6% direct, though buildings drive significant electricity demand which lands in the energy sector.' },
+        ],
+      },
+      {
         type: 'finish',
         heading: 'You\'ve got the basics',
         body: 'Earth is warming. Cause: human CO₂ emissions, mostly from burning fossil fuels. The greenhouse effect is real physics, well-understood for over a century. Reducing emissions is the only long-term fix. Now you can dive into more specific topics — pick another path.',
@@ -154,6 +194,53 @@ const paths = [
         ],
       },
       {
+        type: 'quiz',
+        question: 'Which of these is Scope 3 for a school?',
+        options: [
+          { text: 'Refrigerant leaking from the cafeteria walk-in cooler', correct: false, explanation: 'Scope 1 — KUA owns and maintains the cooler.' },
+          { text: 'Electricity used to run the cafeteria walk-in cooler', correct: false, explanation: 'Scope 2 — electricity purchased from the grid.' },
+          { text: 'CO₂ from the trucks delivering food to the cafeteria', correct: true, explanation: 'Right. **Upstream transportation of purchased goods is Scope 3** (Category 4). KUA doesn\'t own the trucks or burn the fuel — but those emissions happened because KUA purchased the food. The supplier\'s logistics show up in KUA\'s Scope 3 supply chain accounting.' },
+          { text: 'Heat from the cafeteria\'s gas range', correct: false, explanation: 'Scope 1 — KUA buys the gas and burns it directly.' },
+        ],
+      },
+      {
+        type: 'math',
+        heading: 'Math: emissions from gasoline',
+        scenario: 'A teacher drives a personal car to a conference in NYC and back, total 500 miles, in a 30-mpg car. Calculate the CO₂ emitted from gasoline combustion.',
+        given: [
+          { label: 'Distance', value: '500 mi' },
+          { label: 'Fuel economy', value: '30 mpg' },
+          { label: 'Gasoline factor', value: '8.78 kg CO₂/gal' },
+        ],
+        question: 'Total CO₂ emissions:',
+        options: [
+          { text: '~150 kg CO₂', correct: true, explanation: 'Right. 500 / 30 = 16.67 gallons × 8.78 = ~146.4 kg CO₂. About a 7th of a metric ton — significant for one trip. (Note: this would be Scope 3 for KUA since the teacher uses personal vehicle for business travel — Category 6 business travel.)' },
+          { text: '~75 kg CO₂', correct: false, explanation: 'Half the right answer. Recheck the gallons calculation.' },
+          { text: '~500 kg CO₂', correct: false, explanation: 'You may have multiplied miles directly by the kg/gal factor without dividing by mpg first. The car uses ~16 gal, not 500.' },
+          { text: '~1,500 kg CO₂', correct: false, explanation: 'Way too high — that would be ~10x the actual figure.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Why is Scope 3 the hardest scope to measure accurately?',
+        options: [
+          { text: 'Because it\'s the smallest', correct: false, explanation: 'Scope 3 is usually the LARGEST scope at residential institutions, not the smallest. Difficulty isn\'t about size.' },
+          { text: 'Because the data lives at suppliers, vendors, and individual people — not at the school\'s meters', correct: true, explanation: 'Right. **Scope 1 and 2 have on-site meters and invoices.** A school can read its own gas meter, count its propane deliveries, and pull its own electricity bill. **Scope 3 requires data from outside parties** — supplier invoices, individual student travel patterns, waste-hauler reports, vendor sustainability data. That data is fragmented and often estimated, which is why methodology choices matter so much in Scope 3.' },
+          { text: 'Because it\'s subjective', correct: false, explanation: 'Scope 3 is rule-based, not subjective. The categories and methodologies are well-defined; the challenge is data availability, not arbitrariness.' },
+          { text: 'Because it changes year to year', correct: false, explanation: 'All scopes change year to year. The Scope 3 challenge is data sourcing, not temporal variability.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Why can\'t we just plant enough trees to absorb all human CO₂ emissions?',
+        options: [
+          { text: 'Trees emit CO₂ at night', correct: false, explanation: 'Trees DO respire (consume sugars and emit CO₂), but on net over their lifespan they sequester carbon. This isn\'t why trees can\'t solve the problem.' },
+          { text: 'Global emissions (~37 GtCO₂/yr) are larger than the global terrestrial sink (~12 GtCO₂/yr) — even doubling forests can\'t close the gap', correct: true, explanation: 'Right. **The math doesn\'t work at scale.** Humanity emits ~37 Gt of CO₂ per year. Global terrestrial ecosystems absorb ~12 Gt per year. Even tripling that capacity can\'t absorb our annual emissions, let alone the centuries of accumulated past emissions. Forests are NECESSARY but not SUFFICIENT — we have to reduce emissions AND grow sinks.' },
+          { text: 'Trees are too expensive to plant', correct: false, explanation: 'Tree planting is among the cheapest carbon interventions per ton when done well. Cost isn\'t the binding constraint.' },
+          { text: 'There isn\'t enough carbon dioxide for trees', correct: false, explanation: 'Backwards — there\'s too much CO₂. Trees would happily take more if they had the space and water.' },
+        ],
+      },
+      {
         type: 'finish',
         heading: 'You can read the dashboard now',
         body: 'A carbon footprint is the annual gas emissions a person or institution is responsible for. KUA\'s is about 1,150 tons net, after counting the campus forest as a sink. The whole point of measuring is to give the community something concrete to act on. Pick another path to dig deeper.',
@@ -213,6 +300,56 @@ const paths = [
         type: 'concept',
         heading: 'And one bigger lever — what you push for',
         body: '**Civic and institutional action** is often the most underrated category — and the most impactful for a student in particular.\n\nWhy? Because **institutional emissions dwarf personal emissions**. A KUA student who organizes a successful campaign to switch a dorm from oil heating to a heat pump has just contributed to a **38 mtCO₂e/year reduction** — roughly **20× that student\'s own personal footprint** for years to come. A student who advocates effectively for clean-electricity procurement, or for protecting the campus forest from development, can move numbers in the **hundreds of mtCO₂e**.\n\nForms civic action takes:\n\n**Voting** for candidates and ballot measures with strong climate commitments.\n**Organizing** at school — proposing a policy, joining the sustainability committee, building coalitions of students and faculty.\n**Choosing colleges and employers** based on their climate stance. Universities and companies pay attention to applicant priorities.\n**Speaking up** about specific decisions — building a new parking lot vs preserving forest, fuel choices for campus heating, what gets served in the dining hall.\n**Participating in democratic processes** more broadly — climate policy is set largely by governments.\n\nThe research backs this up. Cordero et al. (2020) found students who calculated their own carbon footprints **continued to make pro-environmental choices for years afterward** — not just personal choices, but institutional and civic ones. **Knowing the math gave them confidence to advocate for change.**',
+      },
+      {
+        type: 'quiz',
+        question: 'Per kilogram of food, which has the LARGEST carbon footprint?',
+        options: [
+          { text: 'Beef', correct: true, explanation: 'Right. Beef ≈ **60 kg CO₂e per kg** — far higher than chicken (~6), rice (~4), or beans (~0.9). Cattle digestion produces methane (a 28× GWP gas), and cattle require enormous amounts of land and feed compared to other foods. Switching beef meals to chicken or plants is one of the most impactful single dietary changes.' },
+          { text: 'Chicken', correct: false, explanation: 'Chicken is ~6 kg CO₂e/kg — about 10× lower than beef. Significant compared to plants but much smaller than ruminant meat.' },
+          { text: 'Rice', correct: false, explanation: 'Rice is ~4 kg CO₂e/kg — moderately high among plant foods because flooded paddy fields produce methane. Still 15× lower than beef per kg.' },
+          { text: 'Potatoes', correct: false, explanation: 'Potatoes are about ~0.4 kg CO₂e/kg — among the lowest of any food. Roughly 150× less impact per kg than beef.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'A student drives 1,000 miles solo in a 25-mpg car. Another student flies the same 1,000 miles. Who emits more CO₂?',
+        options: [
+          { text: 'They emit about the same', correct: false, explanation: 'Close but not equal — depends on flight type and car occupancy. At these specific values the flight emits slightly more.' },
+          { text: 'The driver emits more', correct: false, explanation: 'Drive: 1,000 / 25 × 8.78 = 351 kg CO₂. Less than the flight per passenger.' },
+          { text: 'The flight emits more', correct: true, explanation: 'Right. **Drive: 1,000 mi / 25 mpg × 8.78 kg/gal = ~351 kg CO₂**. **Flight: 1,000 mi × 0.395 kg/passenger-mi (with radiative forcing) = ~395 kg**. So flying solo is slightly worse than driving solo at this distance. With multiple drivers (carpool), driving wins by a lot. Above ~1,000 mi the math usually favors flying because of fuel economy at cruising altitude.' },
+          { text: 'Driving has zero emissions if the car is electric', correct: false, explanation: 'EVs aren\'t zero emissions — they shift emissions from tailpipe to power plant. On the New England grid, an EV emits ~0.09 kg/mi (90 kg for 1,000 mi). Still much lower than gas, but not zero.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Which of these is a "free" carbon reduction — no money, minimal time, just habit change?',
+        options: [
+          { text: 'Setting your radiator one notch lower at night', correct: true, explanation: 'Right. **No money, no time investment** — just a habit change. Lowering setpoint 2 °F overnight saves ~7% of heating energy. For a typical dorm using 6,000 gal/year heating oil, that\'s ~30 mtCO₂e of CO₂ across the building. The same applies to turning off lights and electronics when not in use.' },
+          { text: 'Buying carbon offsets to cover your annual flights', correct: false, explanation: 'This costs money and doesn\'t actually reduce your emissions — you\'re paying someone else to reduce theirs. The CO₂ from your flight still goes up.' },
+          { text: 'Installing solar panels on your house', correct: false, explanation: 'Solar costs significant up-front money (and isn\'t something most students can do anyway). Real impact, but not free.' },
+          { text: 'Buying organic food', correct: false, explanation: 'Organic food is often slightly less carbon-intensive but costs more, and the carbon difference is small compared to switching from beef to plant-based foods.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'You want to convince a friend to fly less. What\'s the most effective approach?',
+        options: [
+          { text: 'Tell them flying is morally wrong', correct: false, explanation: 'Lecturing triggers defensiveness, not change. Behavior research shows moralizing usually backfires.' },
+          { text: 'Show them the carbon math and let them decide', correct: false, explanation: 'Information helps, but information alone rarely changes behavior. People know the right thing in many areas without doing it.' },
+          { text: 'Mention casually that you\'re skipping a flight and what you\'ll do instead', correct: true, explanation: 'Right. **Modeling beats preaching**. Behavioral research consistently shows people copy what their peers actually do, not what they\'re told to do. Mentioning your choice without judgment ("I took the train, got 4 hours of reading done") plants a seed without triggering defenses. Over time, peer norms shift the bigger numbers than individual lectures ever do.' },
+          { text: 'Refuse to travel anywhere with them until they agree', correct: false, explanation: 'Ultimatums damage relationships and rarely change behavior. Climate communication that lasts is patient and relational, not coercive.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Which combination of changes saves the most CO₂ for a typical KUA student over one year?',
+        options: [
+          { text: 'Recycling everything + walking instead of driving short trips + turning off lights', correct: false, explanation: 'These together save maybe ~30-50 kg CO₂/year. Real, but small compared to bigger choices.' },
+          { text: 'One fewer round-trip flight + half-as-much-beef + organizing for a school heat-pump retrofit', correct: true, explanation: 'Right. **Flight cut: ~3,000 kg. Beef reduction: ~300 kg. Heat-pump organizing (institutional impact spread over years): ~3,000+ kg over the equipment\'s life**. Combined personal + institutional impact: 6,000+ kg in year one with continuing benefit. The big-three combination dwarfs the small-many strategy.' },
+          { text: 'Going vegetarian for one month per year', correct: false, explanation: 'Saves ~100 kg CO₂. Real, but small compared to a single flight reduction.' },
+          { text: 'Switching to bamboo toothbrushes and reusable water bottles', correct: false, explanation: 'These are good circular-economy practices but the carbon impact is tiny — measured in kg, not metric tons. Useful complementary habits, not where you start.' },
+        ],
       },
       {
         type: 'finish',
@@ -334,6 +471,36 @@ const paths = [
           { text: '+1,170 mtCO₂e', correct: false, explanation: 'You added all four — sinks should be subtracted.' },
           { text: '+530 mtCO₂e', correct: true, explanation: 'Right. Gross = 200 + 150 + 500 = 850. Net = 850 − 320 = 530 mtCO₂e/yr.' },
           { text: '+850 mtCO₂e', correct: false, explanation: 'That\'s the gross, not the net.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'A KUA dorm has both a Scope 1 source AND a Scope 2 source under the same roof. Which combination is correct?',
+        options: [
+          { text: 'Heating oil furnace = Scope 1; lights = Scope 2', correct: true, explanation: 'Right. The furnace burns oil ON SITE — Scope 1 (direct combustion). The lights use electricity from the grid — Scope 2 (purchased electricity). Same building, different scopes, different reduction strategies.' },
+          { text: 'Heating oil furnace = Scope 2; lights = Scope 1', correct: false, explanation: 'Reversed. Scope 1 is what KUA burns directly; Scope 2 is what KUA buys from the grid. Heating oil is burned at KUA, lights run on purchased electricity.' },
+          { text: 'Both are Scope 1 because they\'re both at KUA', correct: false, explanation: 'Location isn\'t the criterion — control is. The furnace is operated by KUA, but the power plant generating the electricity is operated by someone else.' },
+          { text: 'Both are Scope 3 because the dorm is a building', correct: false, explanation: 'Building maintenance might involve Scope 3 (e.g., upstream emissions of construction materials), but the active heating and lighting are Scope 1 and Scope 2 respectively.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Why does the GHG Protocol REQUIRE both location-based AND market-based Scope 2 reporting?',
+        options: [
+          { text: 'They give different answers and stakeholders need both perspectives', correct: true, explanation: 'Right. **Location-based** says "what was the average grid factor in your region?" — measures system-level reality. **Market-based** says "what did you specifically procure?" — credits voluntary clean-energy purchases. They CAN differ substantially: a school on a coal-heavy grid that buys 100% renewable supply has high location-based emissions but low market-based. Both are valid views; both are required to prevent gaming the system.' },
+          { text: 'Because emissions are a moral question', correct: false, explanation: 'Whatever the moral framing, the methodology question is about accounting consistency.' },
+          { text: 'To discourage RECs', correct: false, explanation: 'Actually the dual-reporting framework MAKES space for RECs in the market-based view while keeping location-based honest.' },
+          { text: 'Because school administrators are confused', correct: false, explanation: 'Both methodologies are deliberate design choices, not accidents.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'A school has Scope 1 of 1,000 mt, Scope 2 of 200 mt, and Scope 3 of 3,000 mt. If it stops on-campus heating fuel use entirely (electrifies completely), what happens?',
+        options: [
+          { text: 'Scope 1 drops to ~0; Scope 2 grows from electrification load', correct: true, explanation: 'Right. **Electrification shifts emissions from Scope 1 (direct fuel combustion) to Scope 2 (purchased electricity).** On a clean grid like New England\'s, the new Scope 2 number is much smaller per BTU than the eliminated Scope 1 — that\'s the climate win. But the scope categorization changes regardless of total.' },
+          { text: 'Total emissions drop to zero', correct: false, explanation: 'No — Scope 2 grows (the new heat pumps need electricity), and Scope 3 is unchanged. The reduction is real but partial.' },
+          { text: 'Nothing changes since totals stay the same', correct: false, explanation: 'Totals don\'t stay the same. On the New England grid, electrified heat emits ~1/3 the CO₂ per BTU of oil heat. Total emissions fall meaningfully.' },
+          { text: 'Scope 3 grows to compensate', correct: false, explanation: 'Scope 3 doesn\'t mechanically grow when Scope 1 falls. They\'re independent categories.' },
         ],
       },
       {
@@ -482,6 +649,16 @@ const paths = [
         ],
       },
       {
+        type: 'quiz',
+        question: 'On a planet with no atmosphere absorbing 240 W/m² of sunlight, the Stefan-Boltzmann effective temperature is ~256 K. Earth\'s actual temperature is ~288 K. The difference is:',
+        options: [
+          { text: 'The natural greenhouse effect — water vapor, CO₂, and other gases trapping outgoing IR longer', correct: true, explanation: 'Right. **The 33 K difference between airless equilibrium and actual surface temperature is the natural greenhouse effect.** It\'s caused by water vapor (the dominant contributor naturally), CO₂, methane, and other IR-absorbing gases. Without it, Earth would be frozen and uninhabitable. The problem isn\'t the greenhouse effect itself — it\'s that humans are AMPLIFYING it beyond the natural baseline.' },
+          { text: 'Solar variability', correct: false, explanation: 'Solar output has been roughly stable. The 33 K gap is steady-state with our current atmosphere, not a temporary excursion.' },
+          { text: 'Earth being closer to the Sun than calculated', correct: false, explanation: 'The 240 W/m² figure already accounts for Earth\'s actual orbital distance and cross-section.' },
+          { text: 'Volcanic heating from below', correct: false, explanation: 'Internal heat flux from Earth\'s mantle is ~0.09 W/m² — negligible compared to 240 W/m² solar input.' },
+        ],
+      },
+      {
         type: 'finish',
         heading: 'You can derive the physics yourself',
         body: 'Stefan-Boltzmann gives Earth\'s 33-K natural greenhouse effect. Vibrational modes explain why some gases absorb IR and others don\'t. GWPs combine absorption strength + atmospheric lifetime. Ocean acidification is logarithmic and faster than the surface pH change suggests. Carbon budget remaining: ~7 years at current rates. The chemistry and physics are solid.',
@@ -593,6 +770,16 @@ const paths = [
           { text: 'About the same', correct: false, explanation: 'Most peer boarding schools are 6–10 mt/student because they don\'t count sinks.' },
           { text: 'Lower than peers', correct: true, explanation: 'Right. Phillips Exeter ~10, Andover ~9. KUA looks lower mostly because we measure on-campus sequestration.' },
           { text: 'Higher than peers', correct: false, explanation: 'Boarding schools have similar gross emissions; the difference is whether sinks are measured.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'KUA reports ~1.9 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
+        options: [
+          { text: 'It would drop, because more students share the same fixed emissions', correct: true, explanation: 'Right. **Most KUA emissions are roughly fixed costs of operating the campus** — heating buildings, generating administrative emissions, maintaining facilities. Adding students adds some marginal emissions (more food, more travel) but proportionally less. Per-student would drop because the denominator grows faster than the numerator. This is why "per-student" can be a deceptive metric on its own — it rewards growth without necessarily reducing total impact.' },
+          { text: 'It would stay exactly the same', correct: false, explanation: 'Per-student divides total by enrollment. Both numbers change with growth, but not proportionally. Per-student typically falls.' },
+          { text: 'It would grow, because more students mean more emissions', correct: false, explanation: 'Total emissions grow but not as fast as enrollment. Per-student typically falls.' },
+          { text: 'It depends on what the new students do', correct: false, explanation: 'Marginal student behavior matters less than the fixed-cost dilution effect at this scale.' },
         ],
       },
       {
@@ -734,6 +921,16 @@ const paths = [
         ],
       },
       {
+        type: 'quiz',
+        question: 'Which CANNOT be fixed by trees alone — even at planetary scale?',
+        options: [
+          { text: 'Annual emissions exceeding global terrestrial sink capacity', correct: true, explanation: 'Right. **Annual human CO₂ emissions (~37 Gt) far exceed the global terrestrial carbon sink (~12 Gt).** Trees take centuries to mature; we emit on a yearly timescale. Forests are essential but mathematically can\'t absorb our flow at scale — we have to cut emissions AND grow sinks. This is why "1 trillion trees" framings, while popular, don\'t close the gap on their own.' },
+          { text: 'Local air quality issues', correct: false, explanation: 'Trees actually help with local air quality — filtering particulates and absorbing some pollutants.' },
+          { text: 'Soil erosion on slopes', correct: false, explanation: 'Tree roots stabilize slopes effectively. This IS something trees can fix.' },
+          { text: 'Loss of habitat for forest species', correct: false, explanation: 'Reforestation directly creates habitat. Trees fix this problem.' },
+        ],
+      },
+      {
         type: 'finish',
         heading: 'AP Bio at ecosystem scale',
         body: 'Light reactions → ATP/NADPH → Calvin cycle → C fixation. GPP minus respiration equals NPP — the new biomass. C3 vs C4 vs CAM are the three evolutionary photosynthetic strategies. DBH gives biomass; biomass × 0.5 = carbon; × 44/12 = CO₂. KUA\'s forest pulls roughly 2,000 mtCO₂e/yr conservatively, ~3,000 mid-estimate.',
@@ -862,6 +1059,26 @@ const paths = [
         body: 'A common myth: "renewables are too intermittent to run a grid." Texas (50%+ renewable on many days), California (60%+ on sunny days), Iowa (55%+ wind annually) prove the engineering is solvable. Recipe: geographic diversification, transmission, storage, demand response, overbuilding.',
       },
       {
+        type: 'quiz',
+        question: 'What is the BIGGEST current obstacle to renewables replacing fossil fuels at global scale?',
+        options: [
+          { text: 'They\'re too expensive', correct: false, explanation: 'Solar and wind are now CHEAPER than new fossil generation in most places. Cost stopped being the binding constraint around 2020.' },
+          { text: 'Grid integration: transmission, storage, and managing variability across hours and seasons', correct: true, explanation: 'Right. **The technology to generate clean power exists and is cheap. The harder problem is integrating it.** Variable solar and wind need transmission to move power from where it\'s windy/sunny to where demand is, storage to bridge nights and calm days, and operational changes to existing grids that were built around steady fossil baseload. These are engineering challenges with known solutions, but require investment.' },
+          { text: 'Renewables can\'t make enough power', correct: false, explanation: 'Solar capacity factor in NH is only 14%, but at scale (millions of installations) total annual energy is enormous. Texas already gets >50% of electricity from renewables on many days.' },
+          { text: 'People don\'t like solar panels', correct: false, explanation: 'Public support for renewables is high in most polls. Permitting and NIMBY issues are real but smaller than the technical integration challenges.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Why is hydrogen often called a "fuel of the future" but not yet widely deployed?',
+        options: [
+          { text: 'It\'s an energy CARRIER, not an energy SOURCE — its climate value depends on how the H₂ is made', correct: true, explanation: 'Right. **Burning H₂ produces only water — clean.** But making H₂ requires energy. "Green" hydrogen is electrolyzed using renewables (clean). "Gray" hydrogen is made from natural gas, releasing CO₂ in the process (not clean). Today most H₂ is gray. Hydrogen is most useful for sectors hard to electrify (steel, long-haul aviation, fertilizer) where its energy density helps.' },
+          { text: 'Hydrogen is too dangerous to use', correct: false, explanation: 'Hydrogen has different safety properties than gasoline (lighter, dissipates faster) but is broadly manageable with proper engineering. Already used industrially at scale.' },
+          { text: 'There isn\'t enough hydrogen on Earth', correct: false, explanation: 'Hydrogen is the most abundant element in the universe. We can produce as much as we want — the question is energy cost.' },
+          { text: 'It only works in cold climates', correct: false, explanation: 'No climate dependence for hydrogen production or use.' },
+        ],
+      },
+      {
         type: 'finish',
         heading: 'You can size projects yourself',
         body: 'Solar output = nameplate × hours × capacity factor. Avoided emissions = kWh × grid factor. Heat pump output = electricity × COP, with theoretical max set by Carnot. Wind power scales as v³, capped by Betz. With these formulas you can roughly size and evaluate any electrification project.',
@@ -947,6 +1164,36 @@ const paths = [
         body: 'A valid comparison requires consistent measurement methodology. Comparing two schools with different scope inclusions is like comparing GPA systems with different scales. AP Stats students recognize this as confounding by methodology — the difference in published numbers might reflect real differences, OR just measurement choices. The Valls-Val & Bovea (2021) finding that 35 university studies use inconsistent methods means cross-study meta-analysis requires careful normalization.',
       },
       {
+        type: 'quiz',
+        question: 'How can you fairly compare two schools\' carbon footprints?',
+        options: [
+          { text: 'Look only at per-student totals', correct: false, explanation: 'Per-student normalization is necessary but not sufficient — you also need to know what scopes were included and what methodology was used.' },
+          { text: 'Verify they used the same scope inclusions, denominator, and methodology before comparing', correct: true, explanation: 'Right. **Comparison requires methodology parity.** Did both count Scope 3 fully? Both use the same denominator (FTE vs headcount)? Both measure on-campus sinks? If any of those differ, the apparent comparison may be a methodology artifact. Valls-Val & Bovea (2021) found this was the dominant problem in their review of 35 university footprint studies.' },
+          { text: 'Compare gross emissions only, ignoring sinks', correct: false, explanation: 'This makes comparison easier but penalizes schools that legitimately measure their physical sinks. Better to compare both gross and net side-by-side.' },
+          { text: 'Trust the numbers schools self-report without verification', correct: false, explanation: 'Self-reported data without verification standards is notoriously unreliable. AASHE STARS adds some peer review but doesn\'t fully solve the problem.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'A school spends $50,000 to buy carbon offsets equal to its 1,000 mtCO₂e gross annual emissions. What\'s the average price per ton it paid?',
+        options: [
+          { text: '$5/ton', correct: false, explanation: 'The math: $50,000 ÷ 1,000 = $50/ton.' },
+          { text: '$50/ton', correct: true, explanation: 'Right. $50,000 / 1,000 mtCO₂e = $50/ton CO₂. **This is in the upper-middle of the voluntary market range** ($5-50/ton typical). Higher quality offsets (engineered removal, verified additionality) cost more; cheap nature-based offsets cost less but face quality concerns. The Guardian / Carbon Plan investigation (2023) found ~90% of REDD+ offsets in major registries didn\'t represent real additional reductions.' },
+          { text: '$500/ton', correct: false, explanation: 'That would be DAC-level pricing. Way above what the school paid.' },
+          { text: '$5,000/ton', correct: false, explanation: 'No carbon market sells offsets at that price — even the most expensive removal credits cost a fraction of that.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Two schools each report 5 mtCO₂e/student net. School A measures on-campus sinks; School B doesn\'t. What\'s most likely true about their underlying physical reality?',
+        options: [
+          { text: 'They emit the same amount', correct: false, explanation: 'If A subtracts sinks and B doesn\'t, A\'s GROSS is likely higher than B\'s gross.' },
+          { text: 'School A actually emits MORE than B; the sink subtraction makes A look equal', correct: true, explanation: 'Right. If School A reports 5 net AFTER subtracting (say) 2 mt of sinks, A\'s gross is 7. School B reports 5 with no sinks subtracted, so B\'s gross is 5. **A actually emits MORE in the atmosphere; the only thing equalizing them is A\'s methodology of counting drawdown.** This is exactly the comparison problem Valls-Val & Bovea (2021) flagged: "same number" can mean very different physical realities.' },
+          { text: 'School B emits more than A', correct: false, explanation: 'You\'d need to know each school\'s gross before sinks to determine that. The methodology difference goes the other way.' },
+          { text: 'You can\'t conclude anything', correct: false, explanation: 'You CAN conclude that the methodologies differ and that A\'s gross emissions are higher than B\'s gross emissions. That\'s a valid inference.' },
+        ],
+      },
+      {
         type: 'finish',
         heading: 'Comparison context, not a leaderboard',
         body: 'KUA\'s shape (heavy travel + green sinks bar) is structurally normal for a NH boarding school. Methodology determines whether two schools with the same physical footprint look 3× different on paper.',
@@ -1028,6 +1275,46 @@ const paths = [
         type: 'concept',
         heading: 'Rebound effect (Jevons paradox) — APES vocabulary',
         body: 'When efficiency goes up, sometimes total consumption goes up too. LED bulbs use less electricity per bulb, so people install more bulbs. Better gas mileage encourages more driving. This is the rebound effect — a piece of the energy-efficiency picture economists and policymakers fight about. Real-world rebound effects are usually 10–40% of the engineered savings, not 100%, but they\'re not zero either.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which of these intervention types typically has the LOWEST cost per ton of CO₂ avoided?',
+        options: [
+          { text: 'LED retrofit + thermostat setbacks', correct: true, explanation: 'Right. **Behavioral and lighting interventions are typically the cheapest** — payback in 1-3 years. The marginal abatement cost curve for almost any institution starts here, then moves up to electrification, then to procurement, then to offsets at the high end.' },
+          { text: 'Buying premium DAC offsets', correct: false, explanation: 'DAC = $300-700/ton — among the most expensive options.' },
+          { text: 'Installing residential solar', correct: false, explanation: 'Solar has dropped dramatically but is still ~$50-100/ton over its lifetime when you account for installation. Cheaper than offsets but more expensive than efficiency.' },
+          { text: 'Demolishing buildings to plant forests', correct: false, explanation: 'Demolition releases huge embodied carbon and forests take decades to compensate. Almost never net-positive on reasonable timescales.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Why does the dashboard rank action levers by IMPACT (mtCO₂e/yr) rather than by cost?',
+        options: [
+          { text: 'Cost is irrelevant for school budgets', correct: false, explanation: 'Cost matters a lot for actual implementation. The point is impact and cost are different questions.' },
+          { text: 'Impact tells you what moves the climate; cost is a separate question about feasibility', correct: true, explanation: 'Right. **Impact and cost-effectiveness are independent dimensions.** A $50/ton intervention saving 1 ton is cheaper but smaller than a $200/ton intervention saving 100 tons. Both questions matter, but impact has to come first to know what scale you\'re working at.' },
+          { text: 'Impact is always positive and cost is always negative', correct: false, explanation: 'Cost can be negative (savings exceed investment) and impact can be small. They\'re independent.' },
+          { text: 'Schools care about appearance over reality', correct: false, explanation: 'Opposite — measurement is for honesty, not optics.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'KUA replaces 4 dorm boilers with heat pumps over 5 years. Each saves ~38 mtCO₂e/yr. What\'s the total emission reduction by year 10?',
+        options: [
+          { text: '~152 mtCO₂e total', correct: false, explanation: 'That\'s just one year of savings × 4 dorms. The savings RECUR every year for the heat pumps\' lifetimes.' },
+          { text: '~1,160 mtCO₂e cumulative', correct: true, explanation: 'Right. Year 1: 1 dorm × 38 = 38. Year 2: 2 × 38 = 76. ... Year 5: 5 × 38 = 190. Years 6-10 all 5 × 38 = 190. Cumulative through year 10: 38 + 76 + 114 + 152 + 190 + 5×190 = 1,520 mtCO₂e (or ~1,160 if you count from year 1 with each dorm starting in year of installation only). The compounding of recurring savings is why infrastructure changes have outsized long-term impact.' },
+          { text: '~38 mtCO₂e total', correct: false, explanation: 'That\'s one dorm in one year — way too small.' },
+          { text: '~10,000 mtCO₂e total', correct: false, explanation: 'Way too high — that would require ~30 retrofitted dorms or much higher per-dorm savings.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'KUA gets a $200K donation specifically for emission reduction. Which use likely yields the most CO₂ avoided per dollar?',
+        options: [
+          { text: 'Buy carbon offsets at $50/ton — guaranteed 4,000 tons retired', correct: false, explanation: 'Cheap on paper, but offset quality varies. The Guardian/Carbon Plan investigation found ~90% of REDD+ offsets didn\'t represent real reductions. And once spent, it\'s gone — no recurring benefit.' },
+          { text: 'LED retrofit + thermostat controls campus-wide', correct: true, explanation: 'Right. **LED + behavioral controls typically pay back in 1-3 years with savings continuing for 15+ years.** $200K of LEDs across multiple buildings would save ~50-100 mt/year for the equipment\'s lifetime — total cumulative impact 1,500+ mtCO₂e over 20 years from one investment, all at KUA. Highest impact-per-dollar by far.' },
+          { text: 'Premium DAC offsets at $500/ton — 400 tons retired', correct: false, explanation: 'High quality but expensive. $200K only buys ~400 tons of DAC. Smaller total impact than the LED option.' },
+          { text: 'Plant 1,000 native trees on campus', correct: false, explanation: 'Long-term sequestration is real, but year-1 impact is tiny (~5-10 tons). Trees take 20-30 years to mature into significant sinks. LED savings start immediately.' },
+        ],
       },
       {
         type: 'finish',
@@ -1123,6 +1410,36 @@ const paths = [
           { text: '(a) skip flight — $0/mt', correct: true, explanation: 'Right. (a) costs nothing in dollars. (b) ≈ $100/mt. (c) ≈ $100/mt but is also offsets-not-removal, which means you\'re paying someone else to do something they may or may not actually do. Direct emission reductions you can verify yourself dominate offsets in the cost-effectiveness ranking when you have the choice.' },
           { text: '(c) offsets — fastest', correct: false, explanation: 'Same dollar cost as (b) per mt, but (c) is offsets — you\'re still emitting the gases.' },
           { text: 'They\'re all about the same', correct: false, explanation: 'Skipping a flight is genuinely free in dollars.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Which has the LARGEST per-calorie carbon footprint?',
+        options: [
+          { text: 'Beef', correct: true, explanation: 'Right. **Beef** is high in carbon AND low in calories — about 8-15 kg CO₂e per 1,000 calories. Plant staples (rice, pasta, potatoes) are 0.5-1. Chicken is moderate at ~2.' },
+          { text: 'Avocados', correct: false, explanation: 'Avocados are moderate (~2 kg per 1,000 cal). Higher than rice but lower than meat.' },
+          { text: 'Pasta', correct: false, explanation: 'Pasta is among the lowest-footprint staples (~0.5 kg per 1,000 cal).' },
+          { text: 'Eggs', correct: false, explanation: 'Eggs (~2-3 kg per 1,000 cal) are higher than plants but well below beef.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'A KUA international student\'s annual personal footprint is ~6 mt. The LARGEST single contributor is:',
+        options: [
+          { text: 'Dorm electricity', correct: false, explanation: 'Per-student dorm electricity is ~0.4 mt — small.' },
+          { text: 'International round-trip flights home', correct: true, explanation: 'Right. **A single round-trip to East Asia ≈ 3 mtCO₂e** — half a typical student\'s personal annual footprint in one trip. Two round trips per year (winter + summer) = ~50-60% of personal footprint.' },
+          { text: 'Cafeteria food', correct: false, explanation: 'Food contributes ~1 mt depending on diet. Smaller than long-haul flights.' },
+          { text: 'Disposable bottles and cups', correct: false, explanation: 'Single-digit kg per year — tiny on the scale that matters.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'Setting a dorm radiator from 22 °C to 20 °C overnight saves roughly:',
+        options: [
+          { text: '~14% of overnight heating energy', correct: true, explanation: 'Right. About **7% per °F of setback × ~2 °F ≈ 14%** of overnight heating. EPA ENERGY STAR documents this rule. Across an NH winter, ~30-50 kg CO₂e per dorm room saved from a free habit change.' },
+          { text: '~1%', correct: false, explanation: 'Too low — 2 °F lower is real impact.' },
+          { text: '~50%', correct: false, explanation: 'Too high — setback only applies to overnight hours.' },
+          { text: '~80%', correct: false, explanation: 'Way too high — would risk frozen pipes.' },
         ],
       },
       {
