@@ -52,17 +52,19 @@ const paths = [
         question: 'Where does most of the extra CO₂ come from?',
         options: [
           { text: 'Burning fossil fuels — gas, oil, coal', correct: true, explanation: 'Right. About 75% of human CO₂ emissions come from burning fossil fuels for energy, heating, and transportation. The other 25% mostly comes from cutting down forests and from industrial processes like cement production.' },
-          { text: 'Volcanoes', correct: false, explanation: 'Volcanoes do release CO₂ — but humans now release ~100× more per year than all volcanoes combined.' },
-          { text: 'People breathing', correct: false, explanation: 'People do exhale CO₂, but the carbon comes from food we eat, which came from plants that just absorbed it from the air. It\'s a closed loop.' },
+          { text: 'Volcanoes', correct: false, explanation: 'Volcanoes do release CO₂ — but humans now release ~100× more per year than all volcanoes combined. Volcanic CO₂ has been part of the natural carbon cycle for billions of years; what\'s new in the last 200 years is the fossil-fuel pulse.' },
+          { text: 'People breathing', correct: false, explanation: 'People do exhale CO₂, but the carbon comes from food we eat, which came from plants that just absorbed it from the air. It\'s a closed loop — no NEW carbon enters the atmosphere from breathing.' },
+          { text: 'The Sun heating up', correct: false, explanation: 'The Sun\'s output has actually been slightly DECREASING over the past 60 years, even as Earth warmed dramatically. If it were the Sun, the upper atmosphere would warm too — instead we see the lower atmosphere warming and the upper cooling, exactly the fingerprint of greenhouse trapping.' },
         ],
       },
       {
         type: 'quiz',
         question: 'Atmospheric CO₂ has risen from about 280 ppm pre-industrial to what today?',
         options: [
-          { text: '~310 ppm', correct: false, explanation: 'Higher than that. We crossed 310 ppm in the 1950s.' },
+          { text: '~310 ppm', correct: false, explanation: 'Higher than that. We crossed 310 ppm in the 1950s, decades ago.' },
           { text: '~425 ppm', correct: true, explanation: 'Right. ~280 ppm pre-industrial → ~425 ppm today is a **50% increase** in the gas that drives the greenhouse effect. Ice cores show this is the highest CO₂ concentration in **at least 3 million years** — long before modern humans existed. The Keeling Curve at Mauna Loa has been tracking this rise continuously since 1958.' },
-          { text: '~600 ppm', correct: false, explanation: 'We\'re not there yet. ~600 ppm is what business-as-usual scenarios project by 2100.' },
+          { text: '~600 ppm', correct: false, explanation: 'We\'re not there yet. ~600 ppm is what business-as-usual scenarios project by 2100 if emissions don\'t decline. Some lower-emission pathways keep us under 500 ppm; some higher-emission pathways push past 700.' },
+          { text: '~250 ppm', correct: false, explanation: 'That\'s lower than pre-industrial. Atmospheric CO₂ has only risen since the late 1700s — never decreased on a sustained basis. The recent 425 ppm figure is the highest in 3 million years.' },
         ],
       },
       {
@@ -74,9 +76,10 @@ const paths = [
         type: 'quiz',
         question: 'Roughly how much has global mean sea level risen since 1880?',
         options: [
-          { text: '~5 cm', correct: false, explanation: 'More than that. We\'ve seen ~20 cm so far.' },
+          { text: '~5 cm', correct: false, explanation: 'More than that. We\'ve seen ~20 cm so far. The rate has also been accelerating — recent decades show ~3.5 mm/year vs ~1.4 mm/year in the early 1900s.' },
           { text: '~20 cm', correct: true, explanation: 'Right. About **20 cm of sea-level rise since 1880** — from two effects combined: ice melt (Greenland and Antarctica) plus thermal expansion (warmer water takes up more volume). Best-case projections add another **30 cm by 2100**; worst-case scenarios with rapid Antarctic ice-sheet collapse exceed **100 cm**. Hundreds of millions of people live within a few meters of current sea level.' },
-          { text: '~100 cm', correct: false, explanation: 'That\'s a worst-case 2100 projection, not what has already happened.' },
+          { text: '~100 cm', correct: false, explanation: 'That\'s a worst-case 2100 projection, not what has already happened. We\'re on track for somewhere between 30 and 100 cm by end of century depending on emissions trajectory and ice-sheet stability.' },
+          { text: '~5 mm', correct: false, explanation: 'Way too small — that\'s about ONE year of recent rise, not 145 years\' worth. The cumulative figure is roughly 200 mm = 20 cm.' },
         ],
       },
       {
@@ -109,9 +112,10 @@ const paths = [
         type: 'quiz',
         question: 'Which greenhouse gas has the HIGHEST global warming potential per molecule?',
         options: [
-          { text: 'CO₂', correct: false, explanation: 'CO₂ is the reference (GWP100 = 1). Other gases are measured relative to it.' },
-          { text: 'Methane (CH₄)', correct: false, explanation: 'Methane is potent (GWP100 = 28) but not the highest. It\'s actually a SHORT-lived gas — its 20-year potency is much higher (~84) but it oxidizes within ~12 years.' },
+          { text: 'CO₂', correct: false, explanation: 'CO₂ is the reference (GWP100 = 1). Other gases are measured RELATIVE to CO₂. CO₂ has the most TOTAL warming impact because there\'s so much of it, but per molecule it\'s the weakest of the major GHGs.' },
+          { text: 'Methane (CH₄)', correct: false, explanation: 'Methane is potent (GWP100 = 28) but not the highest. It\'s a SHORT-lived gas — its 20-year potency is much higher (~84) but it oxidizes within ~12 years. Methane matters disproportionately for near-term warming.' },
           { text: 'SF₆ (sulfur hexafluoride)', correct: true, explanation: 'Right. **SF₆ has GWP100 = 24,300** — the highest of any major greenhouse gas. It\'s used in electrical equipment (high-voltage switches and substations) where its insulating properties are valuable, but any leakage has enormous warming impact. The good news: total atmospheric SF₆ is still tiny because it\'s used in small quantities. R-410A (a common refrigerant) is also significant at 2,256.' },
+          { text: 'Water vapor (H₂O)', correct: false, explanation: 'Water vapor IS a greenhouse gas — and the most abundant one in the atmosphere — but it doesn\'t get a GWP value because it\'s a FEEDBACK rather than a forcing. Its concentration depends on temperature: warmer air holds more water vapor, which causes more warming, which holds more vapor. We don\'t add water vapor directly; we\'re indirectly amplifying it via CO₂ warming.' },
         ],
       },
       {
@@ -123,9 +127,10 @@ const paths = [
         type: 'quiz',
         question: 'A typical American\'s annual carbon footprint is roughly:',
         options: [
-          { text: '~5 mtCO₂e', correct: false, explanation: 'That\'s closer to the GLOBAL average per person, not the US average.' },
+          { text: '~5 mtCO₂e', correct: false, explanation: 'That\'s closer to the GLOBAL average per person, not the US average. The US sits well above global average.' },
           { text: '~16 mtCO₂e', correct: true, explanation: 'Right. The average American emits about **16 mtCO₂e per year** — among the highest per-capita rates in the world. The European average is ~8 (half), the global average is ~5, and to stay under 1.5°C of warming, the global average needs to fall to about **2 mtCO₂e per person per year by 2050**. KUA students\' school-related footprint is roughly 5–8 mt — about half their typical home-life carbon.' },
-          { text: '~50 mtCO₂e', correct: false, explanation: 'Way too high. That would be more than 3× the actual US average.' },
+          { text: '~50 mtCO₂e', correct: false, explanation: 'Way too high. That would be more than 3× the actual US average. Even the highest-emitting individuals (frequent flyers, large homes) typically max out around 30–40 mt; nations with very heavy industry can hit ~30 per capita (Qatar, Trinidad) but the US is ~16.' },
+          { text: '~1 mtCO₂e', correct: false, explanation: 'Way too low. 1 mt/year is what the global average needs to reach by mid-century to stay under 1.5°C of warming. The US is currently 16× that level.' },
         ],
       },
       {
@@ -142,9 +147,10 @@ const paths = [
         type: 'quiz',
         question: 'Why is measuring on-campus tree absorption important for our footprint number?',
         options: [
-          { text: 'It makes the school look better on paper', correct: false, explanation: 'That\'s a side effect, not the reason. The real reason is more honest.' },
-          { text: 'It\'s real CO₂ being pulled out of the air on KUA land — a true offset, not an accounting trick', correct: true, explanation: 'Right. Photosynthesis is real chemistry: trees take CO₂ from the air and lock it into wood and soil. If we don\'t count it, we underreport the school\'s true climate impact. Most schools don\'t measure this — KUA is unusual.' },
-          { text: 'Because trees are pretty', correct: false, explanation: 'They are, but that\'s not the methodology argument.' },
+          { text: 'It makes the school look better on paper', correct: false, explanation: 'That\'s a side effect, not the reason. If you only count emissions and ignore real drawdown, you\'re reporting an inaccurate picture in either direction. The principle is honesty, not flattery.' },
+          { text: 'It\'s real CO₂ being pulled out of the air on KUA land — a true offset, not an accounting trick', correct: true, explanation: 'Right. Photosynthesis is real chemistry: trees take CO₂ from the air and lock it into wood and soil. If we don\'t count it, we underreport the school\'s true climate impact. Most schools don\'t measure this — KUA is unusual. Valls-Val & Bovea (2021) reviewed 35 university footprint studies and found this gap consistently.' },
+          { text: 'Because trees are pretty', correct: false, explanation: 'They are, but that\'s aesthetic, not methodological. Trees matter for the carbon footprint because of their physical sequestration role, regardless of how they look.' },
+          { text: 'Because we have to count them by law', correct: false, explanation: 'There\'s no law requiring it. The GHG Protocol explicitly leaves on-site sequestration as optional reporting. KUA\'s choice to measure sinks is voluntary — that\'s what makes it unusual among peer schools.' },
         ],
       },
       {
@@ -172,9 +178,10 @@ const paths = [
         type: 'quiz',
         question: 'Which of these saves the most carbon over one year?',
         options: [
-          { text: 'Always turning off your dorm light when you leave', correct: false, explanation: 'Helpful but small — about 5 kg CO₂/year saved.' },
-          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about 3,000 kg CO₂ — about 600× as much as a year of conscientious light-switching. If you can only pick one thing, the flight is where the leverage is.' },
-          { text: 'Recycling every plastic bottle for a year', correct: false, explanation: 'Recycling matters but is small in carbon terms — maybe 30 kg CO₂/year for a typical student.' },
+          { text: 'Always turning off your dorm light when you leave', correct: false, explanation: 'Helpful but small — about **5 kg CO₂/year** saved. Worth doing as a habit; not enough to be your top priority.' },
+          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about **3,000 kg CO₂** — about **600× as much as a year of conscientious light-switching**. If you can only pick one thing, the flight is where the leverage is. The math is just the difference in scale: aviation per-passenger-km factor (with radiative forcing) × thousands of km.' },
+          { text: 'Recycling every plastic bottle for a year', correct: false, explanation: 'Recycling matters but is small in carbon terms — maybe **30 kg CO₂/year** for a typical student. It saves resources and reduces virgin-material production, but the climate impact is modest compared to travel or diet.' },
+          { text: 'Switching from beef to chicken for one weekly meal all year', correct: false, explanation: 'Significant but smaller than a flight reduction — about **300 kg CO₂/year** saved (36 weeks × 0.15 kg beef × 54 kg/kg difference). About 10× the recycling impact, but still 10× LESS than skipping a single flight.' },
         ],
       },
       {
@@ -186,9 +193,10 @@ const paths = [
         type: 'quiz',
         question: 'A student who organizes a successful campaign to retrofit ONE dorm from oil heat to a heat pump has helped reduce KUA\'s annual emissions by roughly:',
         options: [
-          { text: '~3 mtCO₂e', correct: false, explanation: 'That\'s about a single international flight saved — meaningful at the individual scale, but a heat-pump retrofit is bigger.' },
+          { text: '~3 mtCO₂e', correct: false, explanation: 'That\'s about a single international flight saved — meaningful at the individual scale, but a heat-pump retrofit is bigger because heating is a major Scope 1 source for the entire building, not just one person.' },
           { text: '~38 mtCO₂e', correct: true, explanation: 'Right. A single 6,000-gal/year oil boiler replaced with a cold-climate heat pump (COP 2.5) on the New England grid saves about **38 mtCO₂e/year** — and that savings continues every year for the lifetime of the heat pump (~15-20 years). One organized student campaign can lock in **hundreds of mtCO₂e** of avoided emissions over the equipment\'s lifetime.' },
-          { text: '~500 mtCO₂e', correct: false, explanation: 'A bit too high — that\'s closer to the campus-wide impact of converting MULTIPLE buildings.' },
+          { text: '~500 mtCO₂e', correct: false, explanation: 'A bit too high — that\'s closer to the campus-wide impact of converting MULTIPLE buildings. ~500 mt is roughly what KUA would save by retrofitting most of its largest buildings to heat pumps over time.' },
+          { text: '~0.5 mtCO₂e', correct: false, explanation: 'Way too low — that\'s closer to a small individual habit change. Retrofits to building HVAC systems affect entire structures and produce institution-scale savings.' },
         ],
       },
       {
@@ -226,9 +234,10 @@ const paths = [
         type: 'quiz',
         question: 'A campus van fills up at the gas station. Which scope is that?',
         options: [
-          { text: 'Scope 1', correct: true, explanation: 'Right. KUA owns the van and operates it; the combustion happens here.' },
-          { text: 'Scope 2', correct: false, explanation: 'Scope 2 is purchased electricity. Vehicle fuel that KUA burns directly is Scope 1.' },
-          { text: 'Scope 3', correct: false, explanation: 'Close — student travel is Scope 3. But for KUA-owned fleet, it\'s Scope 1.' },
+          { text: 'Scope 1', correct: true, explanation: 'Right. KUA owns the van and operates it; the combustion happens here. Fleet vehicles are a standard Scope 1 sub-category alongside heating fuel and refrigerants.' },
+          { text: 'Scope 2', correct: false, explanation: 'Scope 2 is purchased electricity. Vehicle fuel that KUA burns directly is Scope 1. (If KUA had an electric van charging on the grid, the charging electricity would be Scope 2 — but the van itself wouldn\'t emit anything directly.)' },
+          { text: 'Scope 3', correct: false, explanation: 'Close — student travel is Scope 3. But for KUA-owned fleet, it\'s Scope 1 because KUA controls the vehicle. The dividing line is ownership/control, not just whether wheels are involved.' },
+          { text: 'It\'s the gas station\'s emissions, not ours', correct: false, explanation: 'The CO₂ comes out of the van\'s tailpipe, not the gas pump. The gas station\'s emissions (lights, refrigeration) are theirs; the burned fuel\'s emissions are whoever burns it. KUA bought the fuel and burns it through the van, so KUA owns the emissions.' },
         ],
       },
       {
@@ -284,9 +293,10 @@ const paths = [
         type: 'quiz',
         question: 'A student flies home to Tokyo for winter break. Which scope?',
         options: [
-          { text: 'Scope 1', correct: false, explanation: 'KUA doesn\'t own the airplane.' },
-          { text: 'Scope 2', correct: false, explanation: 'Scope 2 is electricity.' },
-          { text: 'Scope 3', correct: true, explanation: 'Right. Student travel is Scope 3 — indirect emissions from KUA\'s activities, but not under direct control.' },
+          { text: 'Scope 1', correct: false, explanation: 'KUA doesn\'t own the airplane or burn the fuel. Scope 1 requires direct ownership and operation of the emission source.' },
+          { text: 'Scope 2', correct: false, explanation: 'Scope 2 is electricity from the grid. The airplane runs on jet fuel burned by an airline, not on grid electricity from a power station.' },
+          { text: 'Scope 3', correct: true, explanation: 'Right. **Student travel is Scope 3** — indirect emissions caused by KUA\'s activities (enrolling international students who need to fly home) but not under KUA\'s direct control. The airline burns the fuel, but KUA\'s decisions drive the demand. Yale formalized this as a "student travel" sub-category outside the standard 15 GHGP categories.' },
+          { text: 'It doesn\'t count because the student isn\'t at school', correct: false, explanation: 'GHG accounting follows ECONOMIC ACTIVITY, not physical location. The flight only happens because the student attends KUA, so it\'s associated with KUA\'s operations even though it occurs off-campus.' },
         ],
       },
       {
@@ -1138,6 +1148,32 @@ const styles = {
     cursor: state ? 'default' : 'pointer', fontSize: 15, fontWeight: 500, textAlign: 'left', transition: 'background 0.15s, border-color 0.15s',
   }),
   explanation: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 },
+  allExplain: { marginTop: 14, display: 'grid', gap: 10 },
+  allExplainHeader: { fontSize: 13, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, marginBottom: 4 },
+  explainCard: (kind) => ({
+    padding: '12px 14px',
+    background: '#0b1220',
+    borderLeft: `3px solid ${kind === 'correct' ? '#22c55e' : '#ef4444'}`,
+    border: '1px solid #1f2937',
+    borderRadius: 6,
+    fontSize: 14,
+    color: '#cbd5e1',
+    lineHeight: 1.6,
+  }),
+  explainOpt: { fontWeight: 700, color: '#e5e7eb' },
+  explainMark: (kind) => ({
+    display: 'inline-block',
+    fontSize: 11,
+    padding: '2px 7px',
+    borderRadius: 999,
+    background: kind === 'correct' ? '#052e1a' : '#3a0d0d',
+    color: kind === 'correct' ? '#86efac' : '#fca5a5',
+    fontWeight: 700,
+    marginRight: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  }),
+  explainPicked: { fontSize: 11, color: '#fbbf24', marginLeft: 8, fontStyle: 'italic' },
 
   mathBadge: { display: 'inline-block', fontSize: 10, padding: '3px 8px', borderRadius: 4, background: '#3a2a0d', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, border: '1px solid #92400e', marginBottom: 12 },
   scenario: { fontSize: 15, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 14 },
@@ -1155,6 +1191,32 @@ const styles = {
   doneTitle: { fontSize: 24, fontWeight: 700 },
   doneBody: { fontSize: 16, color: '#cbd5e1', marginTop: 12, lineHeight: 1.7 },
 };
+
+// Renders every option's explanation after the student answers — so they learn
+// not just from the one they picked, but from why each distractor was wrong (or
+// confirmation of why the right one is right).
+function AllExplanations({ options, pickedIdx, pickedCorrect }) {
+  return (
+    <div style={styles.allExplain}>
+      <div style={styles.allExplainHeader}>
+        {pickedCorrect ? '✓ Correct — and here\'s why each option works the way it does:' : '— Not quite. Here\'s the breakdown of every option:'}
+      </div>
+      {options.map((opt, i) => {
+        const kind = opt.correct ? 'correct' : 'wrong';
+        return (
+          <div key={i} style={styles.explainCard(kind)}>
+            <span style={styles.explainMark(kind)}>{opt.correct ? '✓ Correct' : '✗ Wrong'}</span>
+            <span style={styles.explainOpt}>{opt.text}</span>
+            {i === pickedIdx && <span style={styles.explainPicked}>← you picked this</span>}
+            <div style={{ marginTop: 8 }}>
+              <Fmt text={opt.explanation} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function LearnAgent() {
   const [activePathId, setActivePathId] = useState(null);
@@ -1249,8 +1311,8 @@ export function LearnAgent() {
                 {step.options.map((opt, i) => {
                   let state = null;
                   if (answer) {
-                    if (i === answer.idx) state = answer.correct ? 'correct' : 'wrong';
-                    else if (opt.correct && answer && !answer.correct) state = 'correct';
+                    if (opt.correct) state = 'correct';
+                    else if (i === answer.idx) state = 'wrong';
                   }
                   return (
                     <button key={i} type="button" style={styles.option(state)} disabled={!!answer} onClick={() => choose(i, opt)}>
@@ -1259,14 +1321,7 @@ export function LearnAgent() {
                   );
                 })}
               </div>
-              {answer && (
-                <div style={styles.explanation}>
-                  <strong style={{ color: answer.correct ? '#86efac' : '#fbbf24' }}>
-                    {answer.correct ? '✓ Correct.' : '— Not quite.'}
-                  </strong>{' '}
-                  <Fmt text={step.options[answer.idx].explanation} />
-                </div>
-              )}
+              {answer && <AllExplanations options={step.options} pickedIdx={answer.idx} pickedCorrect={answer.correct} />}
             </>
           )}
 
@@ -1291,8 +1346,8 @@ export function LearnAgent() {
                 {step.options.map((opt, i) => {
                   let state = null;
                   if (answer) {
-                    if (i === answer.idx) state = answer.correct ? 'correct' : 'wrong';
-                    else if (opt.correct && answer && !answer.correct) state = 'correct';
+                    if (opt.correct) state = 'correct';
+                    else if (i === answer.idx) state = 'wrong';
                   }
                   return (
                     <button key={i} type="button" style={styles.option(state)} disabled={!!answer} onClick={() => choose(i, opt)}>
@@ -1301,14 +1356,7 @@ export function LearnAgent() {
                   );
                 })}
               </div>
-              {answer && (
-                <div style={styles.explanation}>
-                  <strong style={{ color: answer.correct ? '#86efac' : '#fbbf24' }}>
-                    {answer.correct ? '✓ Correct.' : '— Not quite.'}
-                  </strong>{' '}
-                  <Fmt text={step.options[answer.idx].explanation} />
-                </div>
-              )}
+              {answer && <AllExplanations options={step.options} pickedIdx={answer.idx} pickedCorrect={answer.correct} />}
             </>
           )}
 
