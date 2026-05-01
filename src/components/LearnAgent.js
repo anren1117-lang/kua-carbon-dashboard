@@ -405,9 +405,10 @@ const paths = [
         ],
         question: 'kg CO₂ produced per gallon (complete combustion):',
         options: [
-          { text: '~3.18 kg CO₂/gal', correct: false, explanation: 'That\'s the mass of the FUEL per gallon, not the CO₂ produced.' },
+          { text: '~3.18 kg CO₂/gal', correct: false, explanation: 'That\'s the mass of the FUEL per gallon, not the CO₂ produced. Combustion produces CO₂ that contains the fuel\'s carbon plus added oxygen — heavier than the original fuel.' },
           { text: '~10.16 kg CO₂/gal', correct: true, explanation: 'Right. 3.18 kg/gal × 0.87 (C fraction) = 2.77 kg C/gal × 44.01/12.01 = 10.15 kg CO₂/gal. The EPA factor is just stoichiometry on a typical fuel composition. Same approach derives propane (5.72), gasoline (8.78), diesel (10.21) from their molecular formulas.' },
-          { text: '~24 kg CO₂/gal', correct: false, explanation: 'Too high. You may have multiplied by 12.01/44.01 backwards.' },
+          { text: '~24 kg CO₂/gal', correct: false, explanation: 'Too high. You may have multiplied by 12.01/44.01 backwards. The C → CO₂ ratio is 44/12 ≈ 3.67, not 12/44.' },
+          { text: '~5.5 kg CO₂/gal', correct: false, explanation: 'About right for propane (5.72) but too low for heating oil. Heating oil has more carbon per gallon than propane because it\'s denser and longer-chain hydrocarbons.' },
         ],
       },
       {
@@ -429,6 +430,7 @@ const paths = [
           { text: '~2.3 mtCO₂e', correct: false, explanation: 'Too low. Check unit conversions — kWh→MWh divides by 1,000.' },
           { text: '~23.3 mtCO₂e', correct: true, explanation: 'Right. 80,000 kWh ÷ 1,000 = 80 MWh × 643 lb/MWh = 51,440 lb × 0.4536 kg/lb = 23,333 kg = 23.3 mtCO₂e.' },
           { text: '~233 mtCO₂e', correct: false, explanation: 'Too high by 10×. Watch the kg→mt conversion at the end.' },
+          { text: '~80 mtCO₂e', correct: false, explanation: 'You may have skipped the emission factor entirely. 80 MWh is just the energy — you need to multiply by lb/MWh and convert to mt.' },
         ],
       },
       {
@@ -470,7 +472,8 @@ const paths = [
         options: [
           { text: '+1,170 mtCO₂e', correct: false, explanation: 'You added all four — sinks should be subtracted.' },
           { text: '+530 mtCO₂e', correct: true, explanation: 'Right. Gross = 200 + 150 + 500 = 850. Net = 850 − 320 = 530 mtCO₂e/yr.' },
-          { text: '+850 mtCO₂e', correct: false, explanation: 'That\'s the gross, not the net.' },
+          { text: '+850 mtCO₂e', correct: false, explanation: 'That\'s the gross, not the net. The whole point of measuring sinks is to subtract them from gross to get net.' },
+          { text: '−320 mtCO₂e', correct: false, explanation: 'That\'s just the sequestration without subtracting from gross. The school is still net-positive emitting because gross > sinks.' },
         ],
       },
       {
@@ -543,6 +546,7 @@ const paths = [
           { text: '~256 K (−18 °C)', correct: true, explanation: 'Right. T = (240 / 5.67e−8)^(1/4) = (4.23e9)^(1/4) ≈ 255 K = −18 °C. Earth\'s actual surface temperature is ~288 K (15 °C). The 33 K difference IS the greenhouse effect — it\'s real and natural; CO₂, water vapor, methane all contribute.' },
           { text: '~288 K (15 °C)', correct: false, explanation: 'That\'s the actual surface temperature WITH the greenhouse effect — what we want is the temperature WITHOUT it.' },
           { text: '~310 K (37 °C)', correct: false, explanation: 'Way too high — that\'s body temperature. Recheck the fourth root.' },
+          { text: '~200 K (−73 °C)', correct: false, explanation: 'Too cold. You may have used T² instead of T⁴ in the rearrangement. Stefan-Boltzmann is fourth-power, not square.' },
         ],
       },
       {
@@ -557,6 +561,7 @@ const paths = [
           { text: 'Symmetric stretch', correct: false, explanation: 'Not quite. The symmetric stretch doesn\'t change the dipole moment, so it\'s IR-inactive (though Raman-active).' },
           { text: 'Antisymmetric stretch and bend', correct: true, explanation: 'Right. Both modes change CO₂\'s dipole moment as it vibrates. The bend at 15 µm sits squarely in Earth\'s peak IR emission wavelength, which is why CO₂ is such an effective greenhouse gas despite being only 0.04% of the atmosphere.' },
           { text: 'Rotation', correct: false, explanation: 'CO₂ does rotate, but rotation contributes far less to greenhouse trapping than the bend mode.' },
+          { text: 'All three vibrational modes equally', correct: false, explanation: 'They\'re NOT equal — the symmetric stretch has no IR-active dipole change, so it doesn\'t contribute. The bend mode is the dominant absorption at the wavelength matching Earth\'s peak IR emission.' },
         ],
       },
       {
@@ -583,7 +588,8 @@ const paths = [
         options: [
           { text: '~54 kg CO₂e', correct: false, explanation: 'You only added the masses. Each gas needs its GWP first.' },
           { text: '~189 kg CO₂e', correct: true, explanation: 'Right. 50×1 + 4×28 + 0.1×273 = 50 + 112 + 27.3 = 189.3 kg CO₂e. Methane (only 4 kg of mass!) contributes more than the 50 kg of CO₂.' },
-          { text: '~512 kg CO₂e', correct: false, explanation: 'Too high. Recheck.' },
+          { text: '~512 kg CO₂e', correct: false, explanation: 'Too high. Recheck — you may have multiplied an extra factor somewhere.' },
+          { text: '~50 kg CO₂e', correct: false, explanation: 'You only counted the CO₂ and ignored the methane and N₂O contributions. Each gas counts toward CO₂e through its own GWP.' },
         ],
       },
       {
@@ -600,6 +606,7 @@ const paths = [
           { text: '~189 kg CO₂e', correct: false, explanation: 'That was the GWP100 answer. The 20-year multiplier for methane is 3× higher.' },
           { text: '~413 kg CO₂e', correct: true, explanation: 'Right. 50 + 336 + 27.3 = 413 kg CO₂e — more than 2× the GWP100 number, all from re-weighting methane.' },
           { text: '~6,000 kg CO₂e', correct: false, explanation: 'Way too high. Recheck multiplications.' },
+          { text: '~150 kg CO₂e', correct: false, explanation: 'Too low. You may have used a smaller methane multiplier than 84 (GWP20).' },
         ],
       },
       {
@@ -620,7 +627,8 @@ const paths = [
         options: [
           { text: '~1%', correct: false, explanation: 'pH is logarithmic — small numerical changes are big concentration changes.' },
           { text: '~30%', correct: true, explanation: 'Right. [H⁺]_now / [H⁺]_then = 10⁻⁸·¹⁰ / 10⁻⁸·²¹ = 10⁰·¹¹ ≈ 1.288. That\'s a 28.8% increase. Marine organisms with calcium carbonate shells (corals, oysters, pteropods) struggle to build shells in more acidic water — and the shift is happening fast on geological timescales.' },
-          { text: '~110%', correct: false, explanation: 'Too high. The difference is 0.11 pH units.' },
+          { text: '~110%', correct: false, explanation: 'Too high. The difference is 0.11 pH units, which corresponds to ~30% concentration change, not 100%+.' },
+          { text: '~13%', correct: false, explanation: 'You may have linearly subtracted pH values. pH is on a log scale, so concentration changes are larger than linear pH differences suggest.' },
         ],
       },
       {
