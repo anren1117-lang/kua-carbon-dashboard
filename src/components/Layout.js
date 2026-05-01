@@ -12,6 +12,7 @@ const navItems = [
   { to: '/scenarios', label: 'Scenarios' },
   { to: '/methodology', label: 'Methodology' },
   { to: '/learn', label: 'Learn' },
+  { to: '/ask', label: 'Ask' },
 ];
 
 const styles = {
