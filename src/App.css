@@ -1,38 +1,101 @@
+/* Base responsive CSS rules for the whole app. The components themselves use
+   inline styles (no CSS framework), but a few global rules make every page
+   substantially more device-friendly without component-by-component changes. */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0b1220;
+  color: #e5e7eb;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Make every image and SVG scale down inside its container instead of overflowing. */
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inputs and buttons don't pick up body font by default in some browsers. */
+button, input, textarea, select {
+  font-family: inherit;
+}
+
+/* Better tap targets on touch devices — minimum 44px height per Apple/Google guidelines. */
+button {
+  touch-action: manipulation;
+  min-height: 36px;
+}
+
+/* Tables that would otherwise overflow narrow screens should scroll horizontally
+   inside their parent rather than blowing out the layout. Components can opt in
+   by wrapping a table in <div className="table-scroll">. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Horizontal nav scroll for the public Layout — long nav lists scroll on mobile
+   instead of wrapping into 5+ rows. The scrollbar is hidden visually but the
+   gesture still works on touch devices. */
+.nav-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Phone screens: reduce extreme padding/margins and dial down hero text sizing. */
+@media (max-width: 720px) {
+  body {
+    font-size: 15px;
+  }
+  /* Hero numbers in NetEstimate use clamp() inline so they scale automatically.
+     This rule is here in case any other components need a fallback. */
+  h1 {
+    font-size: clamp(24px, 7vw, 36px) !important;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: clamp(20px, 6vw, 28px) !important;
+    line-height: 1.25;
+  }
+  /* The Layout's main content area gets less padding on phones. */
+  main {
+    padding: 16px 12px !important;
+  }
+  /* Cards typically have 24-32px padding which is too much on phones. */
+  section, .card {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Tablet sizing — slight tightening, not as aggressive as phone. */
+@media (min-width: 721px) and (max-width: 1024px) {
+  body {
+    font-size: 15.5px;
+  }
+}
+
+/* The original CRA scaffold rules below are kept for backward compat with any
+   component that might still reference these classes. */
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
 .App-link {
   color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

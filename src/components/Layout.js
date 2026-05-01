@@ -18,9 +18,9 @@ const navItems = [
 const styles = {
   shell: { minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: '#0b1220', color: '#e5e7eb' },
   header: { borderBottom: '1px solid #1f2937', background: '#0f172a', position: 'sticky', top: 0, zIndex: 10 },
-  headerInner: { maxWidth: 1200, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' },
-  brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#22d3ee', textDecoration: 'none' },
-  nav: { display: 'flex', gap: 4, flexWrap: 'wrap', flex: 1 },
+  headerInner: { maxWidth: 1200, margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'nowrap' },
+  brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#22d3ee', textDecoration: 'none', whiteSpace: 'nowrap' },
+  nav: { display: 'flex', gap: 4, flex: 1, minWidth: 0 },
   link: ({ isActive }) => ({
     padding: '6px 10px',
     borderRadius: 6,
@@ -29,8 +29,9 @@ const styles = {
     background: isActive ? '#22d3ee' : 'transparent',
     textDecoration: 'none',
     fontWeight: isActive ? 600 : 400,
+    whiteSpace: 'nowrap',
   }),
-  adminLink: { padding: '6px 10px', borderRadius: 6, fontSize: 14, color: '#cbd5e1', textDecoration: 'none', border: '1px solid #334155' },
+  adminLink: { padding: '6px 10px', borderRadius: 6, fontSize: 14, color: '#cbd5e1', textDecoration: 'none', border: '1px solid #334155', whiteSpace: 'nowrap', flexShrink: 0 },
   main: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' },
   footer: { borderTop: '1px solid #1f2937', padding: '20px 24px', textAlign: 'center', fontSize: 12, color: '#64748b' },
 };
@@ -41,7 +42,7 @@ function Layout() {
       <header style={styles.header}>
         <div style={styles.headerInner}>
           <NavLink to="/" style={styles.brand}>KUA Carbon</NavLink>
-          <nav style={styles.nav}>
+          <nav style={styles.nav} className="nav-scroll">
             {navItems.map(({ to, label, end }) => (
               <NavLink key={to} to={to} end={end} style={styles.link}>
                 {label}
