@@ -1,6 +1,7 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
+import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
 
 const styles = {
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
@@ -43,9 +44,7 @@ function Scope2() {
           <span style={styles.value}>Liberty monthly bill</span>
         </div>
       </div>
-      <p style={{ marginTop: 24, color: '#94a3b8' }}>
-        Live grid-mix and per-building energy data are rendered on the main Dashboard.
-      </p>
+      <Scope2LiveDashboard />
 
       <ScopePageInfo
         color="#f59e0b"
