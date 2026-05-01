@@ -6,10 +6,141 @@ import React, { useState } from 'react';
 // scenarios with given inputs and full calculation chains in the explanation.
 const paths = [
   {
+    id: 'climate-101',
+    title: 'Climate change in 5 minutes',
+    desc: 'What it actually is, in plain language. No math.',
+    subject: 'Anyone can start here',
+    level: 'intro',
+    estMin: 4,
+    steps: [
+      {
+        type: 'concept',
+        heading: 'What people mean when they say "climate change"',
+        body: 'Earth\'s average temperature is going up. Slowly in human terms — about 1.2 °C since the 1800s — but really fast in geological terms. The cause is well-understood: humans burning fossil fuels (coal, oil, gas) releases carbon dioxide (CO₂) into the atmosphere, and CO₂ traps heat that would otherwise escape to space.',
+      },
+      {
+        type: 'concept',
+        heading: 'The greenhouse effect, simply',
+        body: 'Imagine a parked car on a sunny day. Sunlight gets in through the windows. The seats warm up. They radiate that warmth back as heat. The glass blocks some of it from escaping, so the car gets hotter than the air outside. Earth\'s atmosphere works the same way — certain gases (CO₂, methane, water vapor) act like the car\'s glass. More CO₂ = more heat trapped = warmer planet.',
+      },
+      {
+        type: 'quiz',
+        question: 'Where does most of the extra CO₂ come from?',
+        options: [
+          { text: 'Burning fossil fuels — gas, oil, coal', correct: true, explanation: 'Right. About 75% of human CO₂ emissions come from burning fossil fuels for energy, heating, and transportation. The other 25% mostly comes from cutting down forests and from industrial processes like cement production.' },
+          { text: 'Volcanoes', correct: false, explanation: 'Volcanoes do release CO₂ — but humans now release ~100× more per year than all volcanoes combined.' },
+          { text: 'People breathing', correct: false, explanation: 'People do exhale CO₂, but the carbon comes from food we eat, which came from plants that just absorbed it from the air. It\'s a closed loop.' },
+        ],
+      },
+      {
+        type: 'concept',
+        heading: 'Why does it matter?',
+        body: 'Warmer global average → more extreme heat waves, stronger storms, rising sea levels, shifting where crops grow, melting ice, and changes to ecosystems. Even small temperature changes have big effects because the climate system is a chain of dominoes — once one falls, others follow.',
+      },
+      {
+        type: 'concept',
+        heading: 'What\'s being done?',
+        body: 'Countries agreed in Paris (2015) to try to limit warming to 1.5–2 °C. Schools, businesses, and individuals are measuring and reducing emissions. KUA\'s carbon dashboard is one piece of that — knowing the number is the first step to changing it.',
+      },
+      {
+        type: 'finish',
+        heading: 'You\'ve got the basics',
+        body: 'Earth is warming. Cause: human CO₂ emissions, mostly from burning fossil fuels. The greenhouse effect is real physics, well-understood for over a century. Reducing emissions is the only long-term fix. Now you can dive into more specific topics — pick another path.',
+      },
+    ],
+  },
+
+  {
+    id: 'carbon-plain',
+    title: 'Carbon footprints, in plain English',
+    desc: 'What is a "carbon footprint"? Why do we measure them?',
+    subject: 'Anyone can start here',
+    level: 'intro',
+    estMin: 4,
+    steps: [
+      {
+        type: 'concept',
+        heading: 'What is a carbon footprint?',
+        body: 'It\'s the total amount of CO₂ (and other warming gases, converted to CO₂-equivalent) that something — a person, a school, a country — is responsible for releasing in a year. Like counting calories, but for greenhouse gas emissions instead of food.',
+      },
+      {
+        type: 'concept',
+        heading: 'How big is one ton of CO₂?',
+        body: 'A metric ton (mt) is 1,000 kg — about the weight of a small car. One ton of CO₂ as a gas would fill a sphere about 8 meters across. The average American emits about 16 tons of CO₂ per year. The average KUA student\'s school-related emissions are roughly 5–8 tons (we\'re still measuring exactly).',
+      },
+      {
+        type: 'concept',
+        heading: 'Why measure it?',
+        body: 'You can\'t reduce what you don\'t measure. If a school says "we\'re working on sustainability" without a number, there\'s no way to tell if it\'s actually working. With a number, you can set a goal, track progress, and compare to other schools. Measurement is what turns vague good intentions into specific projects.',
+      },
+      {
+        type: 'concept',
+        heading: 'KUA\'s situation',
+        body: 'KUA emits roughly 4,150 tons of CO₂-equivalent per year (preliminary estimate) from heating fuel, electricity, food, travel, and other sources. The campus forest pulls roughly 3,000 tons back out of the air through photosynthesis. Net: about 1,150 tons per year, or roughly 1.9 tons per student.',
+      },
+      {
+        type: 'quiz',
+        question: 'Why is measuring on-campus tree absorption important for our footprint number?',
+        options: [
+          { text: 'It makes the school look better on paper', correct: false, explanation: 'That\'s a side effect, not the reason. The real reason is more honest.' },
+          { text: 'It\'s real CO₂ being pulled out of the air on KUA land — a true offset, not an accounting trick', correct: true, explanation: 'Right. Photosynthesis is real chemistry: trees take CO₂ from the air and lock it into wood and soil. If we don\'t count it, we underreport the school\'s true climate impact. Most schools don\'t measure this — KUA is unusual.' },
+          { text: 'Because trees are pretty', correct: false, explanation: 'They are, but that\'s not the methodology argument.' },
+        ],
+      },
+      {
+        type: 'finish',
+        heading: 'You can read the dashboard now',
+        body: 'A carbon footprint is the annual gas emissions a person or institution is responsible for. KUA\'s is about 1,150 tons net, after counting the campus forest as a sink. The whole point of measuring is to give the community something concrete to act on. Pick another path to dig deeper.',
+      },
+    ],
+  },
+
+  {
+    id: 'first-impact',
+    title: 'Your first impact at KUA',
+    desc: 'What you can actually do, ranked by impact. Quick.',
+    subject: 'Anyone can start here',
+    level: 'intro',
+    estMin: 3,
+    steps: [
+      {
+        type: 'concept',
+        heading: 'Some choices matter way more than others',
+        body: 'Not all "green" actions are equal. Turning off a light feels good but barely moves the number. Choosing not to take one international flight saves more carbon than turning off lights for a decade. If you only have time for one thing, do the big thing.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which of these saves the most carbon over one year?',
+        options: [
+          { text: 'Always turning off your dorm light when you leave', correct: false, explanation: 'Helpful but small — about 5 kg CO₂/year saved.' },
+          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about 3,000 kg CO₂ — about 600× as much as a year of conscientious light-switching. If you can only pick one thing, the flight is where the leverage is.' },
+          { text: 'Recycling every plastic bottle for a year', correct: false, explanation: 'Recycling matters but is small in carbon terms — maybe 30 kg CO₂/year for a typical student.' },
+        ],
+      },
+      {
+        type: 'concept',
+        heading: 'Your three biggest levers',
+        body: '1. Travel: long-haul flights are by far the biggest. Combining trips, taking trains for shorter distances, and carpooling all matter. 2. Food: eating less beef is the single biggest dietary change. Beef has roughly 10× the carbon footprint of chicken and 50× that of plant foods. 3. Energy use at home and dorm: small per item, but adds up.',
+      },
+      {
+        type: 'concept',
+        heading: 'And one bigger lever — what you push for',
+        body: 'Voting, joining a club, organizing for change at KUA, choosing a college based on its climate goals — these can move much bigger numbers than your personal footprint. A student who organizes a switch from oil heating to heat pumps in one dorm has helped offset hundreds of times their own emissions.',
+      },
+      {
+        type: 'finish',
+        heading: 'You have a starting place',
+        body: 'Travel beats most other personal choices in scale. Food is meaningful too. Daily small things matter, but only collectively. The biggest leverage of all is what you push for at the institutional level. Pick another path to go deeper into any of these.',
+      },
+    ],
+  },
+
+  {
     id: 'basics',
     title: 'Carbon basics',
-    desc: 'What Scope 1, 2, 3 and sinks mean — start here. Combustion stoichiometry from first principles.',
+    desc: 'What Scope 1, 2, 3 and sinks mean. Combustion stoichiometry from first principles.',
     subject: 'APES · AP Chem',
+    level: 'standard',
     estMin: 9,
     steps: [
       {
@@ -129,6 +260,7 @@ const paths = [
     title: 'The greenhouse effect, in detail',
     desc: 'Earth\'s energy balance, Stefan-Boltzmann, vibrational modes, ocean acidification.',
     subject: 'AP Physics 2 · AP Chem',
+    level: 'ap',
     estMin: 14,
     steps: [
       {
@@ -273,6 +405,7 @@ const paths = [
     title: 'KUA\'s footprint',
     desc: 'Walk through KUA\'s preliminary numbers — verify them yourself with statistics.',
     subject: 'APES · AP Stats',
+    level: 'standard',
     estMin: 9,
     steps: [
       {
@@ -377,6 +510,7 @@ const paths = [
     title: 'From photosynthesis to forest carbon',
     desc: 'Light vs dark reactions, Calvin cycle stoichiometry, GPP/NPP, allometric biomass.',
     subject: 'AP Bio',
+    level: 'ap',
     estMin: 12,
     steps: [
       {
@@ -514,6 +648,7 @@ const paths = [
     title: 'Energy and the New England grid',
     desc: 'Carnot efficiency, capacity factors, heat pump physics, kWh sizing, AP Physics applications.',
     subject: 'AP Physics 2',
+    level: 'ap',
     estMin: 13,
     steps: [
       {
@@ -641,6 +776,7 @@ const paths = [
     title: 'How KUA compares',
     desc: 'Why peer comparisons are tricky, and what they actually show.',
     subject: 'APES · AP Stats',
+    level: 'standard',
     estMin: 4,
     steps: [
       {
@@ -696,6 +832,7 @@ const paths = [
     title: 'What actually changes the number',
     desc: 'Action levers ranked by impact, with cost-effectiveness and ROI math.',
     subject: 'APES · economics',
+    level: 'standard',
     estMin: 6,
     steps: [
       {
@@ -778,6 +915,7 @@ const paths = [
     title: 'What can YOU change?',
     desc: 'Personal-scale actions ranked by impact — dorm life, food, travel, civic engagement.',
     subject: 'Civics · personal finance',
+    level: 'standard',
     estMin: 9,
     steps: [
       {
@@ -883,10 +1021,20 @@ const styles = {
   introBody: { fontSize: 16, color: '#cbd5e1', marginTop: 12, lineHeight: 1.7 },
   pathGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginTop: 24 },
   pathCard: { padding: '18px 20px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10, cursor: 'pointer', textAlign: 'left', color: '#e5e7eb' },
-  pathSubject: { fontSize: 11, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 6 },
+  pathHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 6 },
+  pathSubject: { fontSize: 11, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 },
+  levelBadge: (level) => ({
+    fontSize: 10, padding: '3px 8px', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, whiteSpace: 'nowrap',
+    background: level === 'intro' ? '#052e1a' : level === 'standard' ? '#1e3a8a' : '#2e1065',
+    color: level === 'intro' ? '#86efac' : level === 'standard' ? '#bfdbfe' : '#d8b4fe',
+    border: `1px solid ${level === 'intro' ? '#14532d' : level === 'standard' ? '#1e40af' : '#5b21b6'}`,
+  }),
   pathTitle: { fontSize: 17, fontWeight: 700, color: '#e5e7eb' },
   pathDesc: { fontSize: 13, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 },
   pathMeta: { fontSize: 11, color: '#64748b', marginTop: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
+  groupTitle: { fontSize: 13, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 700, marginTop: 24, marginBottom: 10 },
+  groupTitleFirst: { fontSize: 13, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 700, marginTop: 8, marginBottom: 10 },
+  groupBlurb: { fontSize: 13, color: '#94a3b8', marginBottom: 14, lineHeight: 1.6 },
 
   progressBar: { height: 4, background: '#1f2937', borderRadius: 2, overflow: 'hidden', marginBottom: 24 },
   progress: (pct) => ({ height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #22d3ee, #3b82f6)', transition: 'width 0.3s' }),
@@ -943,24 +1091,44 @@ export function LearnAgent() {
         <section style={styles.card}>
           <div style={styles.intro}>
             <span style={styles.badge}>AI learning agent</span>
-            <h2 style={styles.title}>Pick a path. AP-aligned, math-driven, grounded in real numbers.</h2>
+            <h2 style={styles.title}>Pick a path that matches where you are.</h2>
             <p style={styles.introBody}>
-              Eight learning paths spanning carbon basics, KUA-specific data, comparison, and AP-level
-              deep dives. Subject tags reference AP Environmental Science, AP Chemistry, AP Biology,
-              AP Physics, and AP Statistics content. Each path mixes concept cards, knowledge quizzes,
-              and worked-math scenarios where you compute the answer from given inputs.
+              Eleven learning paths organized by difficulty. <strong>Intro</strong> paths are for
+              anyone — short, no math, plain language. <strong>Standard</strong> paths add real
+              numbers and walk through KUA\'s data. <strong>AP-Level</strong> paths go deep with
+              chemistry, biology, physics, and statistics math at the AP framework level.
             </p>
           </div>
-          <div style={styles.pathGrid}>
-            {paths.map((p) => (
-              <button key={p.id} type="button" style={styles.pathCard} onClick={() => startPath(p.id)}>
-                {p.subject && <div style={styles.pathSubject}>{p.subject}</div>}
-                <div style={styles.pathTitle}>{p.title}</div>
-                <div style={styles.pathDesc}>{p.desc}</div>
-                <div style={styles.pathMeta}>{p.steps.length} steps · ~{p.estMin} min</div>
-              </button>
-            ))}
-          </div>
+
+          {[
+            { level: 'intro',    title: 'Start here', blurb: 'Short, no math required. Anyone can learn the basics in a few minutes.' },
+            { level: 'standard', title: 'Standard',  blurb: 'KUA-specific data with calculations you can verify. Mix of concept and worked math.' },
+            { level: 'ap',       title: 'AP-level deep dives', blurb: 'Chemistry, biology, physics, and statistics math at AP framework rigor. For students who want to derive every number from first principles.' },
+          ].map((group, gi) => {
+            const groupPaths = paths.filter((p) => p.level === group.level);
+            if (groupPaths.length === 0) return null;
+            return (
+              <div key={group.level}>
+                <div style={gi === 0 ? styles.groupTitleFirst : styles.groupTitle}>{group.title}</div>
+                <p style={styles.groupBlurb}>{group.blurb}</p>
+                <div style={styles.pathGrid}>
+                  {groupPaths.map((p) => (
+                    <button key={p.id} type="button" style={styles.pathCard} onClick={() => startPath(p.id)}>
+                      <div style={styles.pathHead}>
+                        {p.subject && <div style={styles.pathSubject}>{p.subject}</div>}
+                        <span style={styles.levelBadge(p.level)}>
+                          {p.level === 'intro' ? 'Intro' : p.level === 'standard' ? 'Standard' : 'AP-Level'}
+                        </span>
+                      </div>
+                      <div style={styles.pathTitle}>{p.title}</div>
+                      <div style={styles.pathDesc}>{p.desc}</div>
+                      <div style={styles.pathMeta}>{p.steps.length} steps · ~{p.estMin} min</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
           <p style={{ fontSize: 12, color: '#64748b', marginTop: 24, fontStyle: 'italic' }}>
             Currently rule-based — content is curated and the conversation is scripted. The
             architecture supports swapping to an LLM-driven free-form tutor in Phase 3.
