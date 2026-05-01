@@ -57,9 +57,27 @@ const paths = [
         ],
       },
       {
+        type: 'quiz',
+        question: 'Atmospheric CO₂ has risen from about 280 ppm pre-industrial to what today?',
+        options: [
+          { text: '~310 ppm', correct: false, explanation: 'Higher than that. We crossed 310 ppm in the 1950s.' },
+          { text: '~425 ppm', correct: true, explanation: 'Right. ~280 ppm pre-industrial → ~425 ppm today is a **50% increase** in the gas that drives the greenhouse effect. Ice cores show this is the highest CO₂ concentration in **at least 3 million years** — long before modern humans existed. The Keeling Curve at Mauna Loa has been tracking this rise continuously since 1958.' },
+          { text: '~600 ppm', correct: false, explanation: 'We\'re not there yet. ~600 ppm is what business-as-usual scenarios project by 2100.' },
+        ],
+      },
+      {
         type: 'concept',
         heading: 'Why does it matter?',
         body: 'A warmer global **average** sounds harmless — what\'s a few degrees? — but the average **hides** the bigger changes that come with it. The same way an "average" 20 °C day in spring can mean either a steady 20 °C or a 5 °C night and a 35 °C afternoon, a small change in global mean temperature reflects much larger changes in extremes, patterns, and feedbacks.\n\n**More extreme weather.** Warmer air holds more moisture (~7% more per °C of warming), so when it rains, it tends to rain harder. Hurricanes intensify faster because warmer oceans give them more energy. Heat waves last longer and are hotter. Droughts in already-dry regions become more severe because heat accelerates evaporation. **The 10 hottest years on record have all occurred since 2014.** Insurance industries — who care about real costs, not politics — are already pricing climate risk into premiums and pulling out of coastal markets.\n\n**Rising sea levels.** Two effects combine: ice on Greenland and Antarctica is melting and adding water, and the existing ocean is **thermally expanding** as it warms (warmer water takes up more volume). Together they\'ve raised global mean sea level by about **20 cm since 1880**. Best-case scenarios for the rest of this century project an additional **30 cm by 2100**; worst-case scenarios with rapid Antarctic ice-sheet collapse exceed **100 cm**. Coastal cities — Miami, New York, Mumbai, Shanghai, Jakarta, Lagos, Manila, Dhaka — face existential adaptation challenges. Hundreds of millions of people live within a few meters of current sea level.\n\n**Shifting agriculture.** Where you can grow what you grow is changing. Wheat, corn, and rice yields decline above certain temperature thresholds. Wine regions are migrating poleward. Coffee growing regions in Central America are losing altitude. Adapting takes years, money, and political coordination — none of which scale at the rate the climate is shifting.\n\n**Ecosystem stress and species loss.** Marine ecosystems built around stable ocean chemistry are fracturing — coral reefs (which support ~25% of marine biodiversity) are dying from heat-driven **bleaching events**. Trees in western North America are losing the temperature window they evolved for. Species that can\'t move fast enough — or whose migration paths are blocked by human development — face **extinction**. The current rate of species loss is **100–1,000× the natural background rate** and accelerating.\n\n**Tipping points and irreversibility.** Some climate processes have **thresholds** beyond which they accelerate themselves. The Greenland ice sheet might reach a melt rate that becomes self-sustaining. The Amazon rainforest might transition from net carbon sink to net carbon source. Permafrost in Siberia and Canada is already melting, releasing methane that adds to warming. Once these thresholds are crossed, **stopping emissions doesn\'t reverse them on any human timescale**. CO₂ released today affects the climate for centuries.\n\n**Climate justice.** The countries that have emitted the most historical CO₂ (US, Europe, Japan, increasingly China) are not the same countries that are most affected by warming (small island nations, sub-Saharan Africa, South Asia). The poorest people in the most vulnerable regions face the worst impacts despite having contributed least to the problem. This **moral asymmetry** is one of the central tensions of international climate negotiations.\n\n**Why the urgency is real.** CO₂ is essentially permanent on human timescales. About 25% of CO₂ emitted today will still affect the climate **1,000 years from now**. There is no future technology that scrubs the atmosphere clean cheaply at scale — we have ideas, but at the prices and scales we\'d need, they\'re not on the horizon. The choices being made in the next decade or two will shape the climate every human alive today and most of the next ten generations will live in.',
+      },
+      {
+        type: 'quiz',
+        question: 'Roughly how much has global mean sea level risen since 1880?',
+        options: [
+          { text: '~5 cm', correct: false, explanation: 'More than that. We\'ve seen ~20 cm so far.' },
+          { text: '~20 cm', correct: true, explanation: 'Right. About **20 cm of sea-level rise since 1880** — from two effects combined: ice melt (Greenland and Antarctica) plus thermal expansion (warmer water takes up more volume). Best-case projections add another **30 cm by 2100**; worst-case scenarios with rapid Antarctic ice-sheet collapse exceed **100 cm**. Hundreds of millions of people live within a few meters of current sea level.' },
+          { text: '~100 cm', correct: false, explanation: 'That\'s a worst-case 2100 projection, not what has already happened.' },
+        ],
       },
       {
         type: 'concept',
@@ -88,9 +106,27 @@ const paths = [
         body: 'A **carbon footprint** is the total amount of greenhouse gases — measured in **metric tons of CO₂-equivalent (mtCO₂e)** — that a person, a school, a company, or a country is responsible for releasing into the atmosphere over a given period (usually one year). It\'s a way to put a single number on a complicated reality so you can track it, compare it, and act on it.\n\nThink of it like **counting calories, but for greenhouse gas emissions instead of food**. Just as a calorie count summarizes diverse foods into one comparable number — a banana, a steak, a bowl of rice each have their own calorie count — a carbon footprint summarizes diverse emission sources (driving, flying, heating, eating, buying things, throwing things away) into one comparable number. The trick is that the actual gases involved differ (CO₂ from combustion, methane from cattle and landfills, nitrous oxide from fertilizers, refrigerants from leaky ACs), and they each have different warming potencies. So we **convert all of them to the CO₂-equivalent** that would have the same warming effect over a 100-year period — that\'s where the "e" in "mtCO₂e" comes from.\n\nThis conversion is done with **Global Warming Potentials (GWPs)** published by the **IPCC**:\n\n**CO₂** is the reference, GWP = 1.\n**Methane (CH₄)** has GWP100 = 28.\n**Nitrous oxide (N₂O)** has GWP100 = 273.\n**HFC-134a** (a common refrigerant) has GWP100 = 1,530.\n**SF₆** (used in electrical equipment) has GWP100 = 24,300.\n\nSo 1 kg of methane released has the same 100-year warming effect as 28 kg of CO₂. Multiply the gas emissions by their GWPs, sum the result, and you have a single number representing total warming impact.\n\nThe **footprint is split into three categories called "scopes"** based on who controls the emission source. The Greenhouse Gas Protocol — the global accounting standard developed by the World Resources Institute and World Business Council for Sustainable Development — defines them this way:\n\n**Scope 1 — direct emissions.** Things you (or your school) burn or release directly. Heating oil in the boiler, propane in the water heater, gasoline in your fleet vehicles, refrigerants leaking from HVAC equipment. If you can choose to turn it off, it\'s Scope 1.\n\n**Scope 2 — purchased electricity.** Indirect emissions from electricity you buy from the grid. You don\'t burn coal at the school — but the power company does, on your behalf, every time someone plugs in a laptop. We measure your kWh consumption and multiply by the average emission factor of the regional grid (for KUA, that\'s ISO New England at 643 lb CO₂ per MWh in 2024).\n\n**Scope 3 — everything else.** All other indirect emissions. The food in your dining hall (whose production emitted CO₂ on a farm hundreds of miles away). The flights students take home for break. The paper for textbooks. The waste truck that drives to the landfill. Construction materials. The Greenhouse Gas Protocol formally defines **15 separate Scope 3 categories**; for a residential boarding school, the dominant ones are usually student travel, food procurement, and waste.\n\nThe distinction matters because **who controls the emission determines who can reduce it**. A school can decide to switch its boilers to heat pumps (a Scope 1 reduction). It can negotiate a cleaner electricity supply contract (a Scope 2 reduction, market-based). It can encourage students to reduce flying or buy local food (Scope 3 reductions). Different categories require different strategies, partners, and authority.\n\nKUA\'s dashboard tracks all three scopes, plus a fourth category called **sinks** — the on-campus forest that pulls carbon **out** of the atmosphere via photosynthesis. Most peer schools don\'t measure their sinks; the gap that creates is large enough that it can dominate the comparison.\n\n**A few important limitations of footprint accounting** to keep in mind: it doesn\'t capture biodiversity loss, water use, or other environmental effects beyond climate. It can over- or under-count depending on methodology choices (which is why peer comparisons need to be careful — see the "How KUA compares" path). And it focuses on **flows** (annual emissions) rather than **stocks** (historical accumulated emissions, which is what actually drives current climate). Despite those limitations, it remains the most useful single number for tracking and acting on climate impact at any organizational scale.',
       },
       {
+        type: 'quiz',
+        question: 'Which greenhouse gas has the HIGHEST global warming potential per molecule?',
+        options: [
+          { text: 'CO₂', correct: false, explanation: 'CO₂ is the reference (GWP100 = 1). Other gases are measured relative to it.' },
+          { text: 'Methane (CH₄)', correct: false, explanation: 'Methane is potent (GWP100 = 28) but not the highest. It\'s actually a SHORT-lived gas — its 20-year potency is much higher (~84) but it oxidizes within ~12 years.' },
+          { text: 'SF₆ (sulfur hexafluoride)', correct: true, explanation: 'Right. **SF₆ has GWP100 = 24,300** — the highest of any major greenhouse gas. It\'s used in electrical equipment (high-voltage switches and substations) where its insulating properties are valuable, but any leakage has enormous warming impact. The good news: total atmospheric SF₆ is still tiny because it\'s used in small quantities. R-410A (a common refrigerant) is also significant at 2,256.' },
+        ],
+      },
+      {
         type: 'concept',
         heading: 'How big is one ton of CO₂?',
         body: 'A **metric ton (mt) = 1,000 kilograms** — roughly the weight of a small car. But CO₂ is a gas, so the **physical volume** is harder to picture. At standard temperature and pressure, **one metric ton of CO₂ would fill a sphere about 8 meters across** — bigger than a typical house room.\n\nFor scale comparisons:\n\n**The average American** emits about **16 mtCO₂e per year** — among the highest per-capita rates in the world.\n**The average European** emits about **8 mtCO₂e per year** — half the US rate, despite similar standards of living.\n**The global average** is about **5 mtCO₂e per person per year**.\n**To stay under 1.5 °C** of warming, the global average needs to fall to about **2 mtCO₂e per person per year by 2050**.\n\n**KUA students\' school-related footprint** is roughly **5–8 mtCO₂e per year** before forest credits — meaning a typical KUA student\'s school carbon is about half their home-life carbon. (Personal home emissions are separate from the school dashboard.)',
+      },
+      {
+        type: 'quiz',
+        question: 'A typical American\'s annual carbon footprint is roughly:',
+        options: [
+          { text: '~5 mtCO₂e', correct: false, explanation: 'That\'s closer to the GLOBAL average per person, not the US average.' },
+          { text: '~16 mtCO₂e', correct: true, explanation: 'Right. The average American emits about **16 mtCO₂e per year** — among the highest per-capita rates in the world. The European average is ~8 (half), the global average is ~5, and to stay under 1.5°C of warming, the global average needs to fall to about **2 mtCO₂e per person per year by 2050**. KUA students\' school-related footprint is roughly 5–8 mt — about half their typical home-life carbon.' },
+          { text: '~50 mtCO₂e', correct: false, explanation: 'Way too high. That would be more than 3× the actual US average.' },
+        ],
       },
       {
         type: 'concept',
@@ -145,6 +181,15 @@ const paths = [
         type: 'concept',
         heading: 'Your three biggest personal levers',
         body: '**1. Travel.** Long-haul flights are by far the biggest single thing most students do. A round-trip from Boston to Tokyo emits about **3 metric tons** of CO₂e per passenger — that\'s roughly **half a typical KUA student\'s entire annual school-related footprint**, in one weekend of travel. Practical actions: **combine trips** when possible (one trip with two stops vs two separate trips), **take trains** for shorter distances (~70% lower CO₂ per mile than flying short-haul), and **carpool** with classmates over breaks.\n\n**2. Food.** Eating less beef is the single biggest dietary change you can make for the climate. Beef has roughly **10× the carbon footprint of chicken** and **50–100× that of plant foods** — because cattle digestion produces methane (a strong greenhouse gas), and cattle take far more land and feed than other meats. **You don\'t have to go fully vegetarian** to make a difference. Even **one or two fewer beef meals per week** saves hundreds of kg of CO₂e per year.\n\n**3. Energy at home and dorm.** Small per item, but adds up. **Setting your radiator one notch lower** in winter saves real fuel. **Showering shorter** saves both water and the energy used to heat it. **Turning off electronics when not in use** rather than leaving on standby. **Choosing reusable over disposable** avoids the upstream emissions baked into single-use products. None of these alone are huge, but **a portfolio of habits** shifts the dorm-level baseline.',
+      },
+      {
+        type: 'quiz',
+        question: 'A student who organizes a successful campaign to retrofit ONE dorm from oil heat to a heat pump has helped reduce KUA\'s annual emissions by roughly:',
+        options: [
+          { text: '~3 mtCO₂e', correct: false, explanation: 'That\'s about a single international flight saved — meaningful at the individual scale, but a heat-pump retrofit is bigger.' },
+          { text: '~38 mtCO₂e', correct: true, explanation: 'Right. A single 6,000-gal/year oil boiler replaced with a cold-climate heat pump (COP 2.5) on the New England grid saves about **38 mtCO₂e/year** — and that savings continues every year for the lifetime of the heat pump (~15-20 years). One organized student campaign can lock in **hundreds of mtCO₂e** of avoided emissions over the equipment\'s lifetime.' },
+          { text: '~500 mtCO₂e', correct: false, explanation: 'A bit too high — that\'s closer to the campus-wide impact of converting MULTIPLE buildings.' },
+        ],
       },
       {
         type: 'concept',
@@ -446,6 +491,15 @@ const paths = [
         type: 'concept',
         heading: 'Where does the headline come from?',
         body: 'Gross: ~4,150 mtCO₂e/yr (Scope 1 ~1,000 + Scope 2 ~222 + Scope 3 ~3,000). Sequestration: ~3,000 mtCO₂e/yr drawdown. Net: 4,150 − 3,000 = 1,150.',
+      },
+      {
+        type: 'quiz',
+        question: 'Roughly what fraction of KUA\'s GROSS emissions comes from Scope 3?',
+        options: [
+          { text: '~25%', correct: false, explanation: 'Too low — Scope 3 dominates at residential boarding schools.' },
+          { text: '~50%', correct: false, explanation: 'Closer, but Scope 3 is even bigger here.' },
+          { text: '~72%', correct: true, explanation: 'Right. **~3,000 of ~4,150 mtCO₂e gross is Scope 3** — about 72%. Most of that is student travel: international students flying home, US boarders\' term-break trips. Scope 1 (~1,000) and Scope 2 (~222) together are only ~28%. Kool (2025) found this same pattern at Royal Roads University, where student air travel alone dominated all other sources combined.' },
+        ],
       },
       {
         type: 'math',
@@ -831,6 +885,15 @@ const paths = [
           { text: 'Both publish ~1.9 mt/student', correct: false, explanation: 'Only A subtracts sinks.' },
           { text: 'A: ~1.9 mt; B: ~6.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,150 − 3,000) / 600 = 1.92. B: 4,150 / 600 = 6.92. Same physical campus, 3.6× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
           { text: 'Both publish ~6.9 mt', correct: false, explanation: 'A subtracted sinks first.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'What\'s the fundamental difference between an "offset" and an on-campus "sink"?',
+        options: [
+          { text: 'They\'re the same thing', correct: false, explanation: 'They\'re not — and the distinction matters a lot for honest reporting.' },
+          { text: 'Offsets are purchased credits paid for emissions reductions or removals elsewhere; sinks are physical drawdown happening on your own land', correct: true, explanation: 'Right. **An offset is a financial transaction** — you pay someone else (a forest project in Brazil, a wind farm in Texas) to either reduce their own emissions or pull carbon from the atmosphere on your behalf. **A sink is physical drawdown** happening on land you control. Offsets work in principle but their quality varies enormously, and there\'s no guarantee the seller actually delivered what they sold. KUA\'s 3,000 mtCO₂e/yr from the campus forest is real, measurable, and physically here. Middlebury\'s "net zero" via offsets is a financial claim about CO₂ molecules they paid someone else to handle — not the same thing.' },
+          { text: 'Offsets are bigger than sinks', correct: false, explanation: 'Either can be bigger — depends on the project.' },
         ],
       },
       {
