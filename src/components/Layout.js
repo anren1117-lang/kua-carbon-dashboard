@@ -11,6 +11,7 @@ const navItems = [
   { to: '/credits', label: 'Carbon Credits' },
   { to: '/scenarios', label: 'Scenarios' },
   { to: '/methodology', label: 'Methodology' },
+  { to: '/learn', label: 'Learn' },
 ];
 
 const styles = {

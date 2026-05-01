@@ -318,35 +318,34 @@ function App() {
       <SectionHeader label="Context" title="How KUA compares" />
       <PeerComparison />
 
-      <SectionHeader label="Orientation" title="How to read this dashboard" />
+      <SectionHeader label="Learn" title="Want a guided walkthrough?" />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
-        <EducationalCard
-          title="How to read this dashboard"
-          sections={[
-            {
-              heading: 'What you are looking at',
-              body: [
-                'This is the campus electricity baseline — what KUA used in 2024 (about 2.3 million kWh, ≈ 221.5 mtCO₂e/year). The big number ticking up in real time is an estimate built from that annual baseline divided by seconds per year — useful to see scale, but it is not a live meter feed yet.',
-                'Buildings, energy sources, and time-of-day breakdowns drill into the same baseline. The tabs above let you slice it by view.',
-                'Other parts of KUA\'s footprint — heating fuel, travel, waste — are tracked separately under Scope 1 and Scope 3 in the menu.',
-              ],
-            },
-            {
-              heading: 'How to make the numbers concrete',
-              body: [
-                '221 mtCO₂e/year is roughly the annual emissions of 50 average US cars driven 11,500 miles each.',
-                'Or about 30 average New England households\' total annual electricity use.',
-                'Or about 70 round-trip flights from Boston to Los Angeles in economy.',
-                'The point of these comparisons is not guilt — it is scale. Climate decisions get easier when the numbers stop being abstract.',
-              ],
-            },
-            {
-              heading: 'Why this dashboard exists',
-              body: 'Most schools talk about sustainability without measuring it. Without a measured number, every reduction goal is a slogan and every claim of progress is unverifiable. This dashboard is purpose-built so the KUA community can answer "how much, where, and what changed?" — the questions a serious sustainability conversation requires.',
-              citation: 'Cordero et al. (2020) found that students who do hands-on carbon accounting make pro-environmental choices for years afterward.',
-            },
-          ]}
-        />
+        <Link
+          to="/learn"
+          style={{
+            display: 'block',
+            padding: '24px 28px',
+            background: 'linear-gradient(160deg, #0f172a 0%, #0b1220 100%)',
+            border: '1px solid #1f2937',
+            borderLeft: '3px solid #06b6d4',
+            borderRadius: 14,
+            textDecoration: 'none',
+            color: '#e5e7eb',
+          }}
+        >
+          <div style={{ fontSize: 11, padding: '4px 10px', borderRadius: 4, background: '#155e75', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 700, border: '1px solid #0e7490', display: 'inline-block' }}>
+            AI learning agent
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 14, color: '#e5e7eb' }}>
+            Take the interactive tour →
+          </div>
+          <div style={{ fontSize: 15, color: '#cbd5e1', marginTop: 8, lineHeight: 1.6 }}>
+            Four short paths with quizzes — Carbon basics, KUA's footprint, How we compare, What
+            actually changes the number. Each takes about 3–5 minutes and matches the data shown
+            on this page.
+          </div>
+        </Link>
+
       </div>
 
       <SectionHeader label="Live data" title="Real-time energy and grid mix" />
