@@ -1,5 +1,29 @@
 import React, { useState } from 'react';
 
+// Inline formatter — handles **bold** markers and \n\n paragraph breaks without
+// pulling in a markdown dependency.
+function Fmt({ text }) {
+  if (!text) return null;
+  const renderInline = (s) =>
+    s.split(/(\*\*[^*]+\*\*)/g).map((p, i) => {
+      if (p.startsWith('**') && p.endsWith('**')) {
+        return <strong key={i} style={{ color: '#e5e7eb', fontWeight: 700 }}>{p.slice(2, -2)}</strong>;
+      }
+      return <React.Fragment key={i}>{p}</React.Fragment>;
+    });
+  const paragraphs = text.split(/\n\n+/);
+  if (paragraphs.length === 1) return <>{renderInline(text)}</>;
+  return (
+    <>
+      {paragraphs.map((para, i) => (
+        <span key={i} style={{ display: 'block', marginTop: i === 0 ? 0 : 14 }}>
+          {renderInline(para)}
+        </span>
+      ))}
+    </>
+  );
+}
+
 // AP-aligned curriculum across 9 paths. Subject tags reference the AP course
 // content frameworks: APES (Environmental Science), AP Chem, AP Bio, AP Physics,
 // AP Stats. Each path mixes concept cards, knowledge quizzes, and worked-math
@@ -16,12 +40,12 @@ const paths = [
       {
         type: 'concept',
         heading: 'What people mean when they say "climate change"',
-        body: 'Earth\'s average temperature is going up. Slowly in human terms — about 1.2 °C since the 1800s — but really fast in geological terms. The cause is well-understood: humans burning fossil fuels (coal, oil, gas) releases carbon dioxide (CO₂) into the atmosphere, and CO₂ traps heat that would otherwise escape to space.',
+        body: 'Earth\'s **average temperature is going up** — slowly in human terms (about **1.2 °C of warming since the 1800s**) but extremely fast in geological terms. For most of human history, global average temperatures shifted by tenths of a degree over thousands of years. We\'ve now matched that kind of change in roughly **one human lifetime**.\n\nThe cause is well-understood and not seriously contested in the scientific community: humans burn **fossil fuels** (coal, oil, natural gas) and clear forests, both of which release **carbon dioxide (CO₂)** into the atmosphere. CO₂ has a property — it absorbs infrared (heat) radiation — that means more CO₂ in the air = more heat trapped = warmer planet. This isn\'t a theory; it\'s physics that was demonstrated in the **1850s** by John Tyndall and described mathematically by Svante Arrhenius in **1896**.\n\nSince pre-industrial times we\'ve raised atmospheric CO₂ from **~280 parts per million to ~425 ppm** — the highest in **at least 3 million years**. The warming we see is the predictable consequence.',
       },
       {
         type: 'concept',
         heading: 'The greenhouse effect, simply',
-        body: 'Imagine a parked car on a sunny day. Sunlight gets in through the windows. The seats warm up. They radiate that warmth back as heat. The glass blocks some of it from escaping, so the car gets hotter than the air outside. Earth\'s atmosphere works the same way — certain gases (CO₂, methane, water vapor) act like the car\'s glass. More CO₂ = more heat trapped = warmer planet.',
+        body: 'Imagine a **parked car on a sunny day**. Sunlight passes through the windows easily — that\'s **visible light**. The seats and dashboard absorb the sunlight and warm up, then re-emit that energy as **infrared (heat)** radiation. But infrared light **doesn\'t pass back out through glass as easily as visible light passes in**. So heat builds up inside, and the car gets much hotter than the outside air. That\'s why a car in summer can hit 50 °C even when it\'s only 25 °C outside.\n\n**Earth\'s atmosphere works almost exactly the same way.** Sunlight (mostly visible) passes through to the surface. The surface warms up and radiates the energy back as infrared. **Greenhouse gases** — CO₂, methane (CH₄), water vapor, nitrous oxide — absorb that infrared and re-emit some of it back toward the surface, slowing the rate at which heat escapes to space.\n\nThis is **not bad in itself** — without any greenhouse effect, Earth would average about **−18 °C (0 °F)** and be uninhabitable. The natural greenhouse effect keeps us at a livable **~15 °C average**. The problem is that humans are **adding more greenhouse gases**, intensifying the trapping, and pushing temperatures up beyond what ecosystems and societies are adapted to.',
       },
       {
         type: 'quiz',
@@ -35,12 +59,12 @@ const paths = [
       {
         type: 'concept',
         heading: 'Why does it matter?',
-        body: 'Warmer global average → more extreme heat waves, stronger storms, rising sea levels, shifting where crops grow, melting ice, and changes to ecosystems. Even small temperature changes have big effects because the climate system is a chain of dominoes — once one falls, others follow.',
+        body: 'A warmer global average sounds harmless — what\'s a few degrees? — but the average **hides** the more serious changes that come with it. The actual consequences include:\n\n**More extreme weather.** Heat waves are longer and hotter, stronger hurricanes and typhoons form because warmer oceans hold more energy, and the patterns of rain and drought shift unpredictably. The 10 hottest years on record have all happened since **2014**.\n\n**Rising sea levels.** As ice on Greenland and Antarctica melts and warmer water expands, oceans rise. We\'ve already seen about **20 cm of sea-level rise since 1880**, and another **30–100 cm is expected by 2100** depending on how fast emissions fall. Coastal cities home to hundreds of millions of people are at risk.\n\n**Shifting agriculture.** Where crops can grow is changing. Some areas become harder to farm; some become possible. Adapting takes years and money.\n\n**Ecosystem collapse risk.** Coral reefs are dying from warm-water bleaching. Species that can\'t move fast enough are going extinct. The whole climate system is **a chain of dominoes** — once one falls, others follow, and some of the changes are irreversible on human timescales.',
       },
       {
         type: 'concept',
         heading: 'What\'s being done?',
-        body: 'Countries agreed in Paris (2015) to try to limit warming to 1.5–2 °C. Schools, businesses, and individuals are measuring and reducing emissions. KUA\'s carbon dashboard is one piece of that — knowing the number is the first step to changing it.',
+        body: 'In **2015**, nearly every country in the world signed the **Paris Agreement** — an international commitment to limit warming to "well below 2 °C" and ideally to **1.5 °C above pre-industrial levels**. We\'re currently at about 1.2 °C, so the room to maneuver is small.\n\nCountries set their own emission-reduction targets and report progress. Some are doing well; some aren\'t. The **technology** to reduce emissions exists — solar and wind are now cheaper than fossil fuels in most places, electric cars and heat pumps work, energy efficiency saves money. The **engineering problem is largely solved**. The challenges are mostly political, economic, and social.\n\nAt the institutional level, schools and companies are **measuring their footprints, setting reduction targets, and acting on them**. KUA\'s carbon dashboard is one piece of that effort — and the methodology principle behind it is simple: **you can\'t reduce what you can\'t measure**. Once a school knows its number and what drives it, the conversation shifts from vague good intentions to specific projects.',
       },
       {
         type: 'finish',
@@ -61,22 +85,22 @@ const paths = [
       {
         type: 'concept',
         heading: 'What is a carbon footprint?',
-        body: 'It\'s the total amount of CO₂ (and other warming gases, converted to CO₂-equivalent) that something — a person, a school, a country — is responsible for releasing in a year. Like counting calories, but for greenhouse gas emissions instead of food.',
+        body: 'A **carbon footprint** is the total amount of greenhouse gases — measured in **metric tons of CO₂-equivalent (mtCO₂e)** — that a person, a school, a company, or a country is responsible for releasing into the atmosphere over a given period (usually one year). It\'s a way to put a single number on a complicated reality.\n\nThink of it like **counting calories, but for greenhouse gas emissions instead of food**. Just as a calorie count summarizes diverse foods into one comparable number, a carbon footprint summarizes diverse emission sources (driving, flying, heating, eating, buying things) into one comparable number — even when the actual gases involved are different (CO₂, methane, nitrous oxide, refrigerants, etc.). They\'re all converted to the **CO₂-equivalent** that would have the same warming effect.\n\nThe footprint is split into **three "scopes"** by who controls the source: Scope 1 (you burn it directly), Scope 2 (you buy electricity that someone else generated), and Scope 3 (everything else — supply chain, travel, things you bought). KUA\'s dashboard tracks all three, plus the **forest sink** that pulls some carbon back out.',
       },
       {
         type: 'concept',
         heading: 'How big is one ton of CO₂?',
-        body: 'A metric ton (mt) is 1,000 kg — about the weight of a small car. One ton of CO₂ as a gas would fill a sphere about 8 meters across. The average American emits about 16 tons of CO₂ per year. The average KUA student\'s school-related emissions are roughly 5–8 tons (we\'re still measuring exactly).',
+        body: 'A **metric ton (mt) = 1,000 kilograms** — roughly the weight of a small car. But CO₂ is a gas, so the **physical volume** is harder to picture. At standard temperature and pressure, **one metric ton of CO₂ would fill a sphere about 8 meters across** — bigger than a typical house room.\n\nFor scale comparisons:\n\n**The average American** emits about **16 mtCO₂e per year** — among the highest per-capita rates in the world.\n**The average European** emits about **8 mtCO₂e per year** — half the US rate, despite similar standards of living.\n**The global average** is about **5 mtCO₂e per person per year**.\n**To stay under 1.5 °C** of warming, the global average needs to fall to about **2 mtCO₂e per person per year by 2050**.\n\n**KUA students\' school-related footprint** is roughly **5–8 mtCO₂e per year** before forest credits — meaning a typical KUA student\'s school carbon is about half their home-life carbon. (Personal home emissions are separate from the school dashboard.)',
       },
       {
         type: 'concept',
         heading: 'Why measure it?',
-        body: 'You can\'t reduce what you don\'t measure. If a school says "we\'re working on sustainability" without a number, there\'s no way to tell if it\'s actually working. With a number, you can set a goal, track progress, and compare to other schools. Measurement is what turns vague good intentions into specific projects.',
+        body: '**You can\'t reduce what you don\'t measure.** This is the single most important reason for any carbon dashboard to exist.\n\nIf a school says "we\'re working on sustainability" but doesn\'t publish a number, there\'s **no way to tell if anything is actually working**. The school could be doing meaningful work or doing nothing. Measurement turns vague good intentions into a concrete starting point.\n\nWith a measured number, the school can:\n\n**Set a real goal.** "Reduce emissions by 30% by 2030" only means something if you know what 100% looks like.\n**Track progress over time.** Year-over-year comparisons reveal whether projects are working.\n**Compare to peer institutions.** Without consistent measurement methodology, comparisons are meaningless. With it, you see how you stack up.\n**Identify the highest-leverage interventions.** It turns out some changes save dozens of tons; others save dozens of pounds. Knowing the difference shapes investment decisions.\n**Hold the institution accountable.** Public, sourced numbers are harder to spin than vague claims.\n\nCordero et al. (2020), a peer-reviewed study, found that **students who calculate their own carbon footprints** make **measurable pro-environmental choices for years afterward**. The educational value of measurement is real — and it\'s why this dashboard exists.',
       },
       {
         type: 'concept',
         heading: 'KUA\'s situation',
-        body: 'KUA emits roughly 4,150 tons of CO₂-equivalent per year (preliminary estimate) from heating fuel, electricity, food, travel, and other sources. The campus forest pulls roughly 3,000 tons back out of the air through photosynthesis. Net: about 1,150 tons per year, or roughly 1.9 tons per student.',
+        body: 'Here are the **headline numbers** for KUA\'s footprint, in plain language:\n\n**Gross emissions: ~4,150 tons CO₂e per year.** That\'s the total released by KUA\'s operations and indirect activities. About 1,000 tons from heating fuel (Scope 1), 222 tons from purchased electricity (Scope 2), and 3,000 tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~3,000 tons CO₂e per year drawdown.** KUA owns roughly **1,000 acres of forest** in New Hampshire. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools **don\'t even measure this** — KUA does, which is unusual.\n\n**Net carbon balance: ~1,150 tons CO₂e per year.** That\'s gross minus sequestration. Per student: about **1.9 mtCO₂e/year**. For comparison, peer boarding schools are typically **6–10 mtCO₂e/student/year** — KUA looks lower largely because we count our forest, but also because the New England grid is fairly clean.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. The range of plausible values is wide right now (−760 to +3,572 mtCO₂e net). As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.',
       },
       {
         type: 'quiz',
@@ -106,7 +130,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Some choices matter way more than others',
-        body: 'Not all "green" actions are equal. Turning off a light feels good but barely moves the number. Choosing not to take one international flight saves more carbon than turning off lights for a decade. If you only have time for one thing, do the big thing.',
+        body: 'Not all "green" actions are created equal. **The numbers vary by 100×, sometimes 1,000×.** Turning off a light feels good but barely moves the needle. Choosing not to take one international flight saves more carbon than a decade of conscientious light-switching.\n\nThis is **not** a reason to give up on small actions — they add up at scale, and they build habits. But it IS a reason to **pay attention to magnitude**. If you only have time and energy for one thing, **do the big thing first**.\n\nA rough guide for KUA students, ordered by yearly carbon impact:\n\n**Travel decisions** — by far the largest. One round-trip flight to East Asia ≈ **3,000 kg CO₂e**. One flight to California ≈ 1,000 kg. Driving 1,000 miles ≈ 400 kg. Train Boston-NYC ≈ 50 kg per round trip.\n**Diet patterns** — meaningful. Switching half your beef meals to chicken for a year ≈ **300 kg saved**. Going fully vegetarian ≈ 500–1,000 kg saved.\n**Daily energy use** — small per item, big at scale. Showering shorter, electronics off when not in use, lower thermostat at night ≈ **20–100 kg saved per year per habit**.\n**Civic + institutional action** — the multiplier. Pushing for a heat-pump retrofit, organizing for clean-energy procurement, voting for climate policy ≈ **hundreds of times your personal footprint** if you succeed.',
       },
       {
         type: 'quiz',
@@ -119,13 +143,13 @@ const paths = [
       },
       {
         type: 'concept',
-        heading: 'Your three biggest levers',
-        body: '1. Travel: long-haul flights are by far the biggest. Combining trips, taking trains for shorter distances, and carpooling all matter. 2. Food: eating less beef is the single biggest dietary change. Beef has roughly 10× the carbon footprint of chicken and 50× that of plant foods. 3. Energy use at home and dorm: small per item, but adds up.',
+        heading: 'Your three biggest personal levers',
+        body: '**1. Travel.** Long-haul flights are by far the biggest single thing most students do. A round-trip from Boston to Tokyo emits about **3 metric tons** of CO₂e per passenger — that\'s roughly **half a typical KUA student\'s entire annual school-related footprint**, in one weekend of travel. Practical actions: **combine trips** when possible (one trip with two stops vs two separate trips), **take trains** for shorter distances (~70% lower CO₂ per mile than flying short-haul), and **carpool** with classmates over breaks.\n\n**2. Food.** Eating less beef is the single biggest dietary change you can make for the climate. Beef has roughly **10× the carbon footprint of chicken** and **50–100× that of plant foods** — because cattle digestion produces methane (a strong greenhouse gas), and cattle take far more land and feed than other meats. **You don\'t have to go fully vegetarian** to make a difference. Even **one or two fewer beef meals per week** saves hundreds of kg of CO₂e per year.\n\n**3. Energy at home and dorm.** Small per item, but adds up. **Setting your radiator one notch lower** in winter saves real fuel. **Showering shorter** saves both water and the energy used to heat it. **Turning off electronics when not in use** rather than leaving on standby. **Choosing reusable over disposable** avoids the upstream emissions baked into single-use products. None of these alone are huge, but **a portfolio of habits** shifts the dorm-level baseline.',
       },
       {
         type: 'concept',
         heading: 'And one bigger lever — what you push for',
-        body: 'Voting, joining a club, organizing for change at KUA, choosing a college based on its climate goals — these can move much bigger numbers than your personal footprint. A student who organizes a switch from oil heating to heat pumps in one dorm has helped offset hundreds of times their own emissions.',
+        body: '**Civic and institutional action** is often the most underrated category — and the most impactful for a student in particular.\n\nWhy? Because **institutional emissions dwarf personal emissions**. A KUA student who organizes a successful campaign to switch a dorm from oil heating to a heat pump has just contributed to a **38 mtCO₂e/year reduction** — roughly **20× that student\'s own personal footprint** for years to come. A student who advocates effectively for clean-electricity procurement, or for protecting the campus forest from development, can move numbers in the **hundreds of mtCO₂e**.\n\nForms civic action takes:\n\n**Voting** for candidates and ballot measures with strong climate commitments.\n**Organizing** at school — proposing a policy, joining the sustainability committee, building coalitions of students and faculty.\n**Choosing colleges and employers** based on their climate stance. Universities and companies pay attention to applicant priorities.\n**Speaking up** about specific decisions — building a new parking lot vs preserving forest, fuel choices for campus heating, what gets served in the dining hall.\n**Participating in democratic processes** more broadly — climate policy is set largely by governments.\n\nThe research backs this up. Cordero et al. (2020) found students who calculated their own carbon footprints **continued to make pro-environmental choices for years afterward** — not just personal choices, but institutional and civic ones. **Knowing the math gave them confidence to advocate for change.**',
       },
       {
         type: 'finish',
@@ -1151,7 +1175,7 @@ export function LearnAgent() {
           {step.type === 'concept' && (
             <>
               <div style={styles.stepHeading}>{step.heading}</div>
-              <p style={styles.stepBody}>{step.body}</p>
+              <p style={styles.stepBody}><Fmt text={step.body} /></p>
             </>
           )}
 
@@ -1177,7 +1201,7 @@ export function LearnAgent() {
                   <strong style={{ color: answer.correct ? '#86efac' : '#fbbf24' }}>
                     {answer.correct ? '✓ Correct.' : '— Not quite.'}
                   </strong>{' '}
-                  {step.options[answer.idx].explanation}
+                  <Fmt text={step.options[answer.idx].explanation} />
                 </div>
               )}
             </>
@@ -1187,7 +1211,7 @@ export function LearnAgent() {
             <>
               <div style={styles.mathBadge}>Work it out</div>
               <div style={styles.stepHeading}>{step.heading}</div>
-              <p style={styles.scenario}>{step.scenario}</p>
+              <p style={styles.scenario}><Fmt text={step.scenario} /></p>
               <div style={styles.givenBox}>
                 <div style={styles.givenLabel}>Given</div>
                 <div style={styles.givenList}>
@@ -1219,7 +1243,7 @@ export function LearnAgent() {
                   <strong style={{ color: answer.correct ? '#86efac' : '#fbbf24' }}>
                     {answer.correct ? '✓ Correct.' : '— Not quite.'}
                   </strong>{' '}
-                  {step.options[answer.idx].explanation}
+                  <Fmt text={step.options[answer.idx].explanation} />
                 </div>
               )}
             </>
@@ -1228,7 +1252,7 @@ export function LearnAgent() {
           {step.type === 'finish' && (
             <div style={styles.done}>
               <div style={styles.doneTitle}>{step.heading}</div>
-              <p style={styles.doneBody}>{step.body}</p>
+              <p style={styles.doneBody}><Fmt text={step.body} /></p>
             </div>
           )}
         </div>
