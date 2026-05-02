@@ -987,8 +987,9 @@ const paths = [
         question: 'Why does the grid emission factor change throughout the day?',
         options: [
           { text: 'Different generators run at different times', correct: true, explanation: 'Right. At 3am, baseload (nuclear, hydro, wind) covers low demand. At 6pm summer evening, gas peakers fire up to meet demand. The marginal kWh changes with time of day.' },
-          { text: 'The factor is constant year-round', correct: false, explanation: 'No.' },
-          { text: 'The grid runs only nuclear at night', correct: false, explanation: 'Oversimplification.' },
+          { text: 'The factor is constant year-round', correct: false, explanation: 'No — the grid mix shifts hour-by-hour and seasonally. Annual averages mask big swings.' },
+          { text: 'The grid runs only nuclear at night', correct: false, explanation: 'Oversimplification. Nuclear runs all the time; the day-night variation comes from how OTHER generators come and go to meet changing demand.' },
+          { text: 'Customers pay different rates by time of day', correct: false, explanation: 'Some markets have time-of-use pricing, but that\'s a billing structure not a grid emissions phenomenon. The factor depends on what\'s actually generating.' },
         ],
       },
       {
@@ -1009,7 +1010,8 @@ const paths = [
         options: [
           { text: '~24,500 kWh', correct: false, explanation: 'Too low by an order of magnitude.' },
           { text: '~245,000 kWh', correct: true, explanation: 'Right. 200 × 8,760 × 0.14 = 245,280 kWh. About 10% of KUA\'s total annual electricity from one rooftop.' },
-          { text: '~1.75M kWh', correct: false, explanation: 'Forgot the capacity factor.' },
+          { text: '~1.75M kWh', correct: false, explanation: 'Forgot the capacity factor — that\'s 200 kW × 8,760 hr without the 14% adjustment.' },
+          { text: '~70,000 kWh', correct: false, explanation: 'You may have used a 4% capacity factor instead of 14%. NH solar typically lands at 13-16%.' },
         ],
       },
       {
@@ -1023,9 +1025,10 @@ const paths = [
         ],
         question: 'Annual avoided emissions:',
         options: [
-          { text: '~7 mtCO₂e/yr', correct: false, explanation: 'Off by 10×.' },
+          { text: '~7 mtCO₂e/yr', correct: false, explanation: 'Off by 10× (probably an extra unit conversion).' },
           { text: '~71 mtCO₂e/yr', correct: true, explanation: 'Right. 245 MWh × 643 lb/MWh = 157,535 lb × 0.4536 = 71,458 kg ≈ 71.5 mtCO₂e. About a third of KUA\'s entire Scope 2.' },
-          { text: '~700 mtCO₂e/yr', correct: false, explanation: 'Way too high.' },
+          { text: '~700 mtCO₂e/yr', correct: false, explanation: 'Way too high — probably forgot kg → mt.' },
+          { text: '~157 mtCO₂e/yr', correct: false, explanation: 'You may have stopped at lb without converting to kg (×0.4536) or mt.' },
         ],
       },
       {
@@ -1045,8 +1048,9 @@ const paths = [
         question: 'Theoretical max COP, and how the real 2.5 compares:',
         options: [
           { text: 'Max ~9.2; real 2.5 is ~27% of max', correct: true, explanation: 'Right. COP_max = 295 / (295 − 263) = 295 / 32 ≈ 9.22. A real cold-climate heat pump at COP 2.5 captures about 2.5/9.22 ≈ 27% of the theoretical Carnot maximum. Even at 27% Carnot efficiency, you\'re STILL getting 2.5 kWh of heating per 1 kWh of electricity — because Carnot heat pumps for these temperatures are extremely effective in principle.' },
-          { text: 'Max ~3.0; real 2.5 is ~83% of max', correct: false, explanation: 'You may have used the heat-engine formula instead of the heat-pump formula.' },
+          { text: 'Max ~3.0; real 2.5 is ~83% of max', correct: false, explanation: 'You may have used the heat-engine formula instead of the heat-pump formula. Heat pump COP_max formula is T_hot / ΔT.' },
           { text: 'Max ~1.0; real 2.5 violates physics', correct: false, explanation: 'Heat pumps regularly exceed COP 1 — they don\'t make heat from electricity, they MOVE existing heat. No conservation laws violated.' },
+          { text: 'Max ~32; real 2.5 is 8% of max', correct: false, explanation: 'You may have used the temperature DIFFERENCE in the numerator. The Carnot heat-pump COP is T_hot / (T_hot − T_cold), not (T_hot − T_cold) / T_hot.' },
         ],
       },
       {
@@ -1066,7 +1070,8 @@ const paths = [
         options: [
           { text: '~5 mtCO₂e/yr', correct: false, explanation: 'Walk through old vs new emissions separately.' },
           { text: '~38 mtCO₂e/yr', correct: true, explanation: 'Right. OLD: 6,000 × 10.16 = 61 mt. NEW: 6,000 × 138,500 × 0.80 = 665M BTU; ÷ 3,412 = 195,000 kWh thermal; ÷ 2.5 = 78,000 kWh electric; × 0.292 = 22.8 mt. Savings = 61 − 22.8 = 38 mtCO₂e/yr.' },
-          { text: '~61 mtCO₂e/yr', correct: false, explanation: 'You assumed the heat pump uses zero energy.' },
+          { text: '~61 mtCO₂e/yr', correct: false, explanation: 'You assumed the heat pump uses zero energy. The heat pump still consumes real electricity; the saving is the difference between old and new emissions.' },
+          { text: '~85 mtCO₂e/yr', correct: false, explanation: 'Too high — recheck. The combined emissions chain doesn\'t cross 60 mt for old or 25 mt for new.' },
         ],
       },
       {
@@ -1125,8 +1130,9 @@ const paths = [
         question: 'Why is comparing schools\' carbon numbers tricky?',
         options: [
           { text: 'Different scope inclusion', correct: true, explanation: 'Right. Scope 3 inclusion, denominators (FTE vs headcount), offset treatment all vary. Valls-Val & Bovea (2021) reviewed 35 university footprint studies and found this exact problem.' },
-          { text: 'Different climates', correct: false, explanation: 'Climate matters but isn\'t the main reason.' },
-          { text: 'Different student counts', correct: false, explanation: 'Schools normalize per-student.' },
+          { text: 'Different climates', correct: false, explanation: 'Climate matters but isn\'t the main reason. Methodology differences are.' },
+          { text: 'Different student counts', correct: false, explanation: 'Schools normalize per-student to control for size.' },
+          { text: 'Different reporting years', correct: false, explanation: 'Real factor, but not the dominant one. Methodology choices matter more than reporting year alignment.' },
         ],
       },
       {
@@ -1140,9 +1146,10 @@ const paths = [
         ],
         question: 'Difference in published per-student footprint:',
         options: [
-          { text: 'Both publish ~1.9 mt/student', correct: false, explanation: 'Only A subtracts sinks.' },
+          { text: 'Both publish ~1.9 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
           { text: 'A: ~1.9 mt; B: ~6.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,150 − 3,000) / 600 = 1.92. B: 4,150 / 600 = 6.92. Same physical campus, 3.6× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
-          { text: 'Both publish ~6.9 mt', correct: false, explanation: 'A subtracted sinks first.' },
+          { text: 'Both publish ~6.9 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
+          { text: 'A: ~5.0 mt; B: ~5.0 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 1.9 (A) and 6.9 (B).' },
         ],
       },
       {
@@ -1151,7 +1158,8 @@ const paths = [
         options: [
           { text: 'They\'re the same thing', correct: false, explanation: 'They\'re not — and the distinction matters a lot for honest reporting.' },
           { text: 'Offsets are purchased credits paid for emissions reductions or removals elsewhere; sinks are physical drawdown happening on your own land', correct: true, explanation: 'Right. **An offset is a financial transaction** — you pay someone else (a forest project in Brazil, a wind farm in Texas) to either reduce their own emissions or pull carbon from the atmosphere on your behalf. **A sink is physical drawdown** happening on land you control. Offsets work in principle but their quality varies enormously, and there\'s no guarantee the seller actually delivered what they sold. KUA\'s 3,000 mtCO₂e/yr from the campus forest is real, measurable, and physically here. Middlebury\'s "net zero" via offsets is a financial claim about CO₂ molecules they paid someone else to handle — not the same thing.' },
-          { text: 'Offsets are bigger than sinks', correct: false, explanation: 'Either can be bigger — depends on the project.' },
+          { text: 'Offsets are bigger than sinks', correct: false, explanation: 'Either can be bigger — depends on the project. The fundamental difference is offsets-as-payment vs sinks-as-physical-drawdown, not size.' },
+          { text: 'Sinks are more expensive', correct: false, explanation: 'Sinks (your existing forest) are typically free if you already own the land. Offsets cost real money. The cost direction is opposite of what this option claims.' },
         ],
       },
       {
@@ -1239,9 +1247,10 @@ const paths = [
         type: 'quiz',
         question: 'Which has the biggest annual impact on KUA\'s carbon footprint?',
         options: [
-          { text: 'Student turning off dorm lights', correct: false, explanation: 'Tiny — about 0.005 mtCO₂e per LED bulb saved.' },
-          { text: 'One fewer round-trip flight per international student', correct: true, explanation: 'Right. 50 × 1 × 2.93 = 146 mtCO₂e/yr.' },
-          { text: 'Composting in dining hall', correct: false, explanation: 'Real but smaller — ~10–24 mt/yr at full diversion.' },
+          { text: 'Student turning off dorm lights', correct: false, explanation: 'Tiny — about 0.005 mtCO₂e per LED bulb saved per year.' },
+          { text: 'One fewer round-trip flight per international student', correct: true, explanation: 'Right. 50 × 1 × 2.93 = 146 mtCO₂e/yr saved across the international cohort. The single highest-leverage individual lever in the entire dashboard.' },
+          { text: 'Composting in dining hall', correct: false, explanation: 'Real but smaller — ~10–24 mt/yr at full diversion. Captures fugitive methane that would otherwise leak from landfilled food.' },
+          { text: 'Buying offsets equal to KUA\'s gross emissions', correct: false, explanation: 'Offsets equal gross would account for ~4,150 mt on paper, but the offset quality varies and KUA\'s emissions don\'t actually fall. Reduction wins over offsetting per dollar of effort.' },
         ],
       },
       {
@@ -1256,8 +1265,9 @@ const paths = [
         question: 'Order biggest to smallest:',
         options: [
           { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 2.93 ≈ 88 mt. (b) = 0.12 × 2,300,000 × 0.292 / 1,000 ≈ 81 mt. (a) = 38 mt.' },
-          { text: '(a) > (b) > (c)', correct: false, explanation: 'Heat pump is real but smallest at this scale.' },
-          { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 × 3 ≈ 88 mt.' },
+          { text: '(a) > (b) > (c)', correct: false, explanation: 'Heat pump is real but smallest at this scale. The flight reduction across 30 students dominates.' },
+          { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × ~3 mt per round trip ≈ 88 mt, larger than the LED retrofit.' },
+          { text: '(b) > (c) > (a)', correct: false, explanation: 'Close on the order — (c) is slightly larger than (b). 30 × 2.93 = 87.9 vs LED 80.6.' },
         ],
       },
       {
@@ -1274,7 +1284,8 @@ const paths = [
         options: [
           { text: 'Heat pump ~$105/ton; LED ~$53/ton', correct: true, explanation: 'Right. Heat pump: $80K / 760 mt ≈ $105/ton. LED: $40K / 750 mt ≈ $53/ton. The LED retrofit is roughly 2× more cost-effective per ton avoided. This is how a "marginal abatement cost curve" gets built — order interventions by $/ton, do the cheap ones first.' },
           { text: 'Heat pump ~$2,100/ton; LED ~$800/ton', correct: false, explanation: 'You divided by yearly savings, not lifetime savings. Multiply the annual savings by the project lifetime first.' },
-          { text: 'Heat pump ~$50/ton; LED ~$80/ton', correct: false, explanation: 'You may have inverted the ratios.' },
+          { text: 'Heat pump ~$50/ton; LED ~$80/ton', correct: false, explanation: 'You may have inverted the ratios. The heat pump costs MORE per ton than the LED retrofit at these specific cost and savings figures.' },
+          { text: 'Heat pump ~$80/ton; LED ~$40/ton', correct: false, explanation: 'You may have used $ alone without dividing by total tons saved over the project lifetime. The denominator is annual savings × years.' },
         ],
       },
       {
@@ -1378,6 +1389,7 @@ const paths = [
           { text: 'Drive: 246 kg, Fly: 277 kg — fly is slightly worse solo', correct: true, explanation: 'Right. DRIVE: 700/25 × 8.78 = 245.8 kg. FLY: 700 × 0.395 = 276.5 kg. Driving wins by ~30 kg solo. With 2-3 passengers, driving wins by a lot more (per passenger). Below ~500 mi, driving usually wins; above ~1,000 mi, flying often wins on CO₂.' },
           { text: 'Drive: 24 kg', correct: false, explanation: 'You divided by 25 then forgot to multiply by the gas factor.' },
           { text: 'Both ~280 kg', correct: false, explanation: 'Close but not equal.' },
+          { text: 'Fly: 100 kg — flying is always greener', correct: false, explanation: 'A common myth. Flying is more efficient per passenger-mile than solo driving on **long** trips, but for a short 700-mile round trip, solo driving in a fuel-efficient car is comparable or slightly better. The "flying is greenest" assumption only holds when the alternative is one driver in a gas-guzzler.' },
         ],
       },
       {
@@ -1398,18 +1410,20 @@ const paths = [
         ],
         question: 'Annual savings from this one swap:',
         options: [
-          { text: '~3 kg CO₂e', correct: false, explanation: 'Way too low.' },
+          { text: '~3 kg CO₂e', correct: false, explanation: 'Way too low. You probably forgot to multiply by the 36 weeks.' },
           { text: '~292 kg CO₂e', correct: true, explanation: 'Right. 36 swaps × 0.15 kg × (60 − 6) = 36 × 8.1 = 291.6 kg CO₂e ≈ 0.29 mt. One student over four years saves ~1.2 mt just from one weekly swap.' },
-          { text: '~3,000 kg CO₂e', correct: false, explanation: 'Used the full beef factor instead of the difference.' },
+          { text: '~3,000 kg CO₂e', correct: false, explanation: 'Used the full beef factor instead of the difference. Remember: the **swap** only avoids the beef-vs-chicken delta (54 kg/kg), not the entire beef footprint.' },
+          { text: '~30 kg CO₂e', correct: false, explanation: 'Off by a factor of 10. You may have used 0.015 kg (15 g) instead of 0.15 kg (150 g) per portion.' },
         ],
       },
       {
         type: 'quiz',
         question: 'Which has the biggest carbon footprint per pound?',
         options: [
-          { text: 'Beef', correct: true, explanation: 'Right. Cattle digestion produces methane; cattle take more land and feed. Beef is ~10× chicken and 50–100× plant foods.' },
-          { text: 'Chicken', correct: false, explanation: 'Chicken is much lower than beef.' },
-          { text: 'Wheat', correct: false, explanation: 'Plant foods are usually lowest.' },
+          { text: 'Beef', correct: true, explanation: 'Right. Cattle digestion produces **methane** (a 28× greenhouse gas); cattle also take more land, water, and feed per pound of meat. Beef is ~10× chicken and 50–100× plant foods.' },
+          { text: 'Chicken', correct: false, explanation: 'Chicken is much lower than beef (~6 kg CO₂e/kg vs ~60 for beef). Chickens grow fast, eat less per pound of meat, and don\'t produce methane the way cattle do.' },
+          { text: 'Wheat', correct: false, explanation: 'Plant foods are usually lowest. Wheat is ~1 kg CO₂e/kg — about 60× lower than beef.' },
+          { text: 'Lamb', correct: false, explanation: 'Lamb is high (~24 kg CO₂e/kg) — also a ruminant that produces methane — but still less than beef per pound on most lifecycle datasets.' },
         ],
       },
       {
@@ -1428,9 +1442,10 @@ const paths = [
         ],
         question: 'Which is most cost-effective per mt CO₂ avoided?',
         options: [
-          { text: '(a) skip flight — $0/mt', correct: true, explanation: 'Right. (a) costs nothing in dollars. (b) ≈ $100/mt. (c) ≈ $100/mt but is also offsets-not-removal, which means you\'re paying someone else to do something they may or may not actually do. Direct emission reductions you can verify yourself dominate offsets in the cost-effectiveness ranking when you have the choice.' },
-          { text: '(c) offsets — fastest', correct: false, explanation: 'Same dollar cost as (b) per mt, but (c) is offsets — you\'re still emitting the gases.' },
-          { text: 'They\'re all about the same', correct: false, explanation: 'Skipping a flight is genuinely free in dollars.' },
+          { text: '(a) skip flight — $0/mt', correct: true, explanation: 'Right. (a) costs nothing in dollars. (b) ≈ $100/mt. (c) ≈ $100/mt but is also **offsets-not-removal**, which means you\'re paying someone else to do something they may or may not actually do. Direct emission reductions you can verify yourself dominate offsets in the cost-effectiveness ranking when you have the choice.' },
+          { text: '(c) offsets — fastest', correct: false, explanation: 'Same dollar cost as (b) per mt, but (c) is offsets — you\'re still emitting the gases. The "3 mt avoided" is a paper accounting claim, not a physical reduction.' },
+          { text: 'They\'re all about the same', correct: false, explanation: 'Skipping a flight is genuinely free in dollars — that breaks the tie. Cost-effectiveness ranking puts (a) clearly ahead.' },
+          { text: '(b) vegetarian year — most reliable', correct: false, explanation: '(b) is solid (~$100/mt and a real reduction), but it\'s 3× more expensive in absolute mt-impact than (a). "Reliable" isn\'t the same as "cost-effective per ton."' },
         ],
       },
       {
@@ -1558,6 +1573,50 @@ const styles = {
   done: { padding: 28, background: '#052e1a', border: '1px solid #14532d', borderRadius: 12, textAlign: 'center', color: '#86efac' },
   doneTitle: { fontSize: 24, fontWeight: 700 },
   doneBody: { fontSize: 16, color: '#cbd5e1', marginTop: 12, lineHeight: 1.7 },
+  scoreCard: { marginTop: 20, padding: '20px 22px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10, textAlign: 'left' },
+  scoreLabel: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 12 },
+  scoreHero: { fontSize: 'clamp(28px, 6vw, 38px)', color: '#e5e7eb', fontWeight: 800, lineHeight: 1, fontVariantNumeric: 'tabular-nums' },
+  scoreHeroUnit: { fontSize: 16, color: '#94a3b8', fontWeight: 500, marginLeft: 8 },
+  scoreRow: { marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' },
+  scorePill: (kind) => ({
+    padding: '6px 12px',
+    borderRadius: 999,
+    fontSize: 13,
+    fontWeight: 700,
+    border: '1px solid',
+    borderColor: kind === 'right' ? '#14532d' : kind === 'wrong' ? '#7f1d1d' : '#334155',
+    background: kind === 'right' ? '#052e1a' : kind === 'wrong' ? '#3a0d12' : '#0f172a',
+    color: kind === 'right' ? '#86efac' : kind === 'wrong' ? '#fca5a5' : '#cbd5e1',
+  }),
+  scoreNote: { marginTop: 14, fontSize: 14, color: '#94a3b8', lineHeight: 1.6 },
+  reportSection: { marginTop: 22, padding: '20px 22px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10, textAlign: 'left' },
+  reportTitle: { fontSize: 14, color: '#e5e7eb', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 14 },
+  reportRow: (kind) => ({
+    padding: '14px 16px',
+    marginTop: 10,
+    background: '#0f172a',
+    border: '1px solid',
+    borderColor: kind === 'right' ? '#14532d' : kind === 'wrong' ? '#7f1d1d' : '#334155',
+    borderLeft: '4px solid',
+    borderLeftColor: kind === 'right' ? '#22c55e' : kind === 'wrong' ? '#ef4444' : '#64748b',
+    borderRadius: 8,
+  }),
+  reportNum: { fontSize: 12, color: '#64748b', fontWeight: 700, letterSpacing: 0.6 },
+  reportMark: (kind) => ({
+    display: 'inline-block',
+    fontSize: 11,
+    padding: '3px 10px',
+    borderRadius: 999,
+    fontWeight: 700,
+    marginLeft: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    background: kind === 'right' ? '#052e1a' : kind === 'wrong' ? '#3a0d12' : '#1e293b',
+    color: kind === 'right' ? '#86efac' : kind === 'wrong' ? '#fca5a5' : '#cbd5e1',
+  }),
+  reportQ: { marginTop: 8, fontSize: 15, color: '#e5e7eb', fontWeight: 600, lineHeight: 1.5 },
+  reportLine: { marginTop: 8, fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 },
+  reportLineLabel: { color: '#64748b', fontWeight: 600, marginRight: 6 },
 };
 
 // Renders every option's explanation after the student answers — so they learn
@@ -1590,17 +1649,29 @@ export function LearnAgent() {
   const [activePathId, setActivePathId] = useState(null);
   const [stepIdx, setStepIdx] = useState(0);
   const [answer, setAnswer] = useState(null);
+  const [scores, setScores] = useState({});
 
   const path = paths.find((p) => p.id === activePathId);
   const step = path && path.steps[stepIdx];
   const totalSteps = path ? path.steps.length : 0;
   const progress = path ? ((stepIdx + 1) / totalSteps) * 100 : 0;
 
-  const startPath = (id) => { setActivePathId(id); setStepIdx(0); setAnswer(null); };
-  const reset = () => { setActivePathId(null); setStepIdx(0); setAnswer(null); };
+  const startPath = (id) => { setActivePathId(id); setStepIdx(0); setAnswer(null); setScores({}); };
+  const reset = () => { setActivePathId(null); setStepIdx(0); setAnswer(null); setScores({}); };
   const next = () => { setAnswer(null); setStepIdx((i) => i + 1); };
   const prev = () => { setAnswer(null); setStepIdx((i) => Math.max(0, i - 1)); };
-  const choose = (i, opt) => { setAnswer({ idx: i, correct: opt.correct }); };
+  const choose = (i, opt) => {
+    setAnswer({ idx: i, correct: opt.correct });
+    setScores((s) => ({ ...s, [stepIdx]: { picked: i, correct: !!opt.correct } }));
+  };
+
+  const questionSteps = path ? path.steps.map((s, i) => ({ s, i })).filter(({ s }) => s.type === 'quiz' || s.type === 'math') : [];
+  const totalQuestions = questionSteps.length;
+  const scoredEntries = Object.values(scores);
+  const rightCount = scoredEntries.filter((v) => v && v.correct === true).length;
+  const wrongCount = scoredEntries.filter((v) => v && v.correct === false).length;
+  const skippedCount = Math.max(0, totalQuestions - rightCount - wrongCount);
+  const pct = totalQuestions > 0 ? Math.round((rightCount / totalQuestions) * 100) : 0;
 
   if (!path) {
     return (
@@ -1732,6 +1803,71 @@ export function LearnAgent() {
             <div style={styles.done}>
               <div style={styles.doneTitle}>{step.heading}</div>
               <p style={styles.doneBody}><Fmt text={step.body} /></p>
+              {totalQuestions > 0 && (
+                <>
+                  <div style={styles.scoreCard}>
+                    <div style={styles.scoreLabel}>Your score on this path</div>
+                    <div>
+                      <span style={styles.scoreHero}>{rightCount}<span style={{ color: '#475569', fontWeight: 600 }}> / {totalQuestions}</span></span>
+                      <span style={styles.scoreHeroUnit}>({pct}%)</span>
+                    </div>
+                    <div style={styles.scoreRow}>
+                      <span style={styles.scorePill('right')}>✓ {rightCount} right</span>
+                      <span style={styles.scorePill('wrong')}>✗ {wrongCount} wrong</span>
+                      {skippedCount > 0 && <span style={styles.scorePill('skipped')}>– {skippedCount} skipped</span>}
+                    </div>
+                    <div style={styles.scoreNote}>
+                      {pct === 100
+                        ? 'Perfect run — you nailed every question on this path.'
+                        : pct >= 80
+                        ? 'Strong showing. Skim the explanations on the ones you missed and you\'re solid.'
+                        : pct >= 50
+                        ? 'Good effort. Worth re-running this path or going back to review the concepts behind the wrong answers.'
+                        : 'Plenty to revisit. Re-running the path is a good move — the explanations on every option are designed to teach the misconception, not just mark it wrong.'}
+                    </div>
+                  </div>
+
+                  <div style={styles.reportSection}>
+                    <div style={styles.reportTitle}>Question-by-question report</div>
+                    {questionSteps.map(({ s, i }, qNum) => {
+                      const entry = scores[i];
+                      const kind = !entry ? 'skipped' : entry.correct ? 'right' : 'wrong';
+                      const correctOpt = s.options.find((o) => o.correct);
+                      const pickedOpt = entry ? s.options[entry.picked] : null;
+                      const qText = s.type === 'math' ? `${s.heading} — ${s.question}` : s.question;
+                      return (
+                        <div key={i} style={styles.reportRow(kind)}>
+                          <div>
+                            <span style={styles.reportNum}>Q{qNum + 1}</span>
+                            <span style={styles.reportMark(kind)}>
+                              {kind === 'right' ? '✓ Correct' : kind === 'wrong' ? '✗ Wrong' : '– Not answered'}
+                            </span>
+                          </div>
+                          <div style={styles.reportQ}><Fmt text={qText} /></div>
+                          {pickedOpt && (
+                            <div style={styles.reportLine}>
+                              <span style={styles.reportLineLabel}>You picked:</span>
+                              <Fmt text={pickedOpt.text} />
+                            </div>
+                          )}
+                          {kind !== 'right' && correctOpt && (
+                            <div style={styles.reportLine}>
+                              <span style={styles.reportLineLabel}>Correct answer:</span>
+                              <Fmt text={correctOpt.text} />
+                            </div>
+                          )}
+                          {(pickedOpt || correctOpt) && (
+                            <div style={styles.reportLine}>
+                              <span style={styles.reportLineLabel}>Why:</span>
+                              <Fmt text={(pickedOpt && pickedOpt.explanation) || (correctOpt && correctOpt.explanation) || ''} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
