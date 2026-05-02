@@ -1,8 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { buildings } from '../data/buildings.js';
+import { envysionSnapshot } from '../data/envysionSnapshot.js';
+import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
+import { gridMix } from '../data/gridMix.js';
 
 // The original campus-electricity dashboard — live emissions counter, time
 // analysis, per-building data, ISO-NE grid mix breakdown. Lives on /scope-2
 // because it's all about Scope 2 (purchased electricity).
+//
+// Data here is read from src/data/ (gridMix, seasonalPatterns, buildings,
+// envysionSnapshot) rather than hardcoded inline. The narrative copy for
+// each grid source still lives in this file because it's UI explanation,
+// not data.
 export function Scope2LiveDashboard() {
   const [currentEmissions, setCurrentEmissions] = useState(0);
   const [todayEmissions, setTodayEmissions] = useState(0);
@@ -13,50 +23,35 @@ export function Scope2LiveDashboard() {
   const [expandedBuilding, setExpandedBuilding] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
 
-  // ISO New England Official Mix - 221.53 mtCO2e annual
-  const yearlyEmissions = 221.53;
-  const totalKwh = 2316469;
+  // ISO New England Official Mix annual baseline (data layer)
+  const yearlyEmissions = GRID_MIX_TOTAL_MTCO2E;
+  const totalKwh = GRID_MIX_TOTAL_KWH;
   const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60);
   const emissionsPerMinute = yearlyEmissions / (365 * 24 * 60);
   const emissionsPerHour = yearlyEmissions / (365 * 24);
   const emissionsPerDay = yearlyEmissions / 365;
   const emissionsPerMonth = yearlyEmissions / 12;
 
-  // Building data from Envysion
-  const buildingsData = [
-    { name: 'Miller Bicentennial Hall', energyUsed: 44695, power: 72.7, avgVoltage: 209, category: 'Academic' },
-    { name: 'Whittemore Athletic Center', energyUsed: 43193, power: 74.7, avgVoltage: 205, category: 'Athletic' },
-    { name: 'Barrette', energyUsed: 35365, power: 28.1, avgVoltage: 209, category: 'Dorm' },
-    { name: 'Kilton House', energyUsed: 20069, power: 20.1, avgVoltage: 121, category: 'Dorm' },
-    { name: 'Fitch', energyUsed: 15427, power: 21.0, avgVoltage: 209, category: 'Academic' },
-    { name: 'Alumni Silver Gym', energyUsed: 11407, power: 10.2, avgVoltage: 208, category: 'Athletic' },
-    { name: 'Flickinger Arts Center', energyUsed: 9717, power: 17.2, avgVoltage: 210, category: 'Academic' },
-    { name: 'Chellis Hall', energyUsed: 5217, power: 7.1, avgVoltage: 240, category: 'Dorm' },
-    { name: 'Welch House', energyUsed: 5511, power: 12.0, avgVoltage: 121, category: 'Dorm' },
-    { name: 'Dexter-Richards Hall', energyUsed: 5105, power: 0.6, avgVoltage: 209, category: 'Dorm' },
-    { name: 'Densmore Hall', energyUsed: 4768, power: 11.0, avgVoltage: 209, category: 'Dorm' },
-    { name: 'Kurth Hall', energyUsed: 3784, power: 2.8, avgVoltage: 243, category: 'Dorm' },
-    { name: 'Baxter', energyUsed: 2403, power: 1.9, avgVoltage: 209, category: 'Dorm' },
-    { name: 'Bryant Hall', energyUsed: 2288, power: 3.9, avgVoltage: 209, category: 'Dorm' },
-    { name: 'Rowe Hall', energyUsed: 2072, power: 2.2, avgVoltage: 208, category: 'Dorm' },
-    { name: 'Bishop Alumni House', energyUsed: 1826, power: 1.6, avgVoltage: 239, category: 'Dorm' },
-    { name: 'Child Care Center', energyUsed: 1738, power: 0.6, avgVoltage: 209, category: 'Other' },
-    { name: 'Mikula Hall', energyUsed: 1595, power: 1.6, avgVoltage: 240, category: 'Dorm' }
-  ];
+  // Buildings + Envysion observations joined from the data layer.
+  const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
+  const buildingsData = envysionSnapshot.map((row) => {
+    const b = buildingsById[row.buildingId];
+    return {
+      name: b?.name ?? row.buildingId,
+      energyUsed: row.energyUsedKwh,
+      power: row.powerKw,
+      avgVoltage: row.avgVoltage,
+      category: b?.category ?? 'Other',
+    };
+  });
 
   const totalEnergyKwh = buildingsData.reduce((sum, b) => sum + b.energyUsed, 0);
   const totalPowerKw = buildingsData.reduce((sum, b) => sum + b.power, 0);
 
-  // ISO New England Official Energy Sources (2024/2025 data)
-  const emissionsData = [
-    { 
-      source: 'Natural Gas', 
-      emissions: 213.83, 
-      percentage: 96.5,
-      mixPercent: 51,
-      kwhUsed: 1181399,
-      color: '#ef4444',
-      emissionFactor: 0.000181,
+  // Narrative copy per grid source — UI explanation, not data. Keyed by the
+  // source label exactly as it appears in src/data/gridMix.js.
+  const sourceNarrative = {
+    'Natural Gas': {
       howItWorks: 'Natural gas (primarily methane, CH4) is extracted from underground reservoirs and transported via pipelines to power plants. In combined-cycle plants, gas is burned in combustion turbines, and the hot exhaust drives steam turbines for additional power generation.',
       chemicalProcess: 'CH4 + 2O2 → CO2 + 2H2O + Heat. The combustion of methane releases carbon dioxide and water vapor, along with trace amounts of nitrogen oxides (NOx).',
       environmentalImpacts: [
@@ -70,16 +65,9 @@ export function Scope2LiveDashboard() {
       efficiency: '40-60% efficient in combined-cycle plants (best among fossil fuels).',
       costComparison: 'Moderate cost at $0.05-0.08 per kWh. Price volatile due to market fluctuations and pipeline constraints in winter.',
       history: 'Became dominant after 2008 shale gas boom. Now provides over half of New England electricity.',
-      alternatives: 'Renewable natural gas, hydrogen blending, wind/solar with battery storage.'
+      alternatives: 'Renewable natural gas, hydrogen blending, wind/solar with battery storage.',
     },
-    { 
-      source: 'Nuclear', 
-      emissions: 0, 
-      percentage: 0,
-      mixPercent: 23,
-      kwhUsed: 532788,
-      color: '#8b5cf6',
-      emissionFactor: 0,
+    'Nuclear': {
       howItWorks: 'Nuclear fission splits uranium atoms, releasing heat that produces steam to drive turbines. New England has two nuclear plants: Millstone (CT) and Seabrook (NH).',
       chemicalProcess: 'U-235 + neutron → fission products + neutrons + energy. No combustion, no CO2 emissions during operation.',
       environmentalImpacts: [
@@ -93,16 +81,9 @@ export function Scope2LiveDashboard() {
       efficiency: '90%+ capacity factor - highest of any source.',
       costComparison: 'Low operating cost at $0.03-0.05 per kWh for existing plants. New plants very expensive.',
       history: 'Vermont Yankee closed 2013, Pilgrim closed 2019. Remaining plants essential for clean energy.',
-      alternatives: 'Advanced nuclear designs, small modular reactors (SMRs).'
+      alternatives: 'Advanced nuclear designs, small modular reactors (SMRs).',
     },
-    { 
-      source: 'Renewables (Solar, Wind, Biomass)', 
-      emissions: 0, 
-      percentage: 0,
-      mixPercent: 12,
-      kwhUsed: 277976,
-      color: '#22c55e',
-      emissionFactor: 0,
+    'Renewables (Solar, Wind, Biomass)': {
       howItWorks: 'Solar panels convert sunlight to electricity. Wind turbines capture kinetic energy. Biomass burns organic material. Combined they provide 12% of New England power.',
       chemicalProcess: 'Solar: Photovoltaic effect converts photons to electrons. Wind: Kinetic energy to rotational to electrical. No combustion for solar/wind.',
       environmentalImpacts: [
@@ -116,16 +97,9 @@ export function Scope2LiveDashboard() {
       efficiency: 'Solar: 20-25%, Wind: 35-45%, varies by weather.',
       costComparison: 'Solar: $0.03-0.06/kWh, Wind: $0.02-0.05/kWh. Now cost-competitive with fossil fuels.',
       history: 'Rapid growth since 2010. Block Island Wind Farm (2016) was first US offshore wind. Vineyard Wind started 2024.',
-      alternatives: 'Offshore wind expansion, community solar, battery storage integration.'
+      alternatives: 'Offshore wind expansion, community solar, battery storage integration.',
     },
-    { 
-      source: 'Hydropower', 
-      emissions: 0, 
-      percentage: 0,
-      mixPercent: 6,
-      kwhUsed: 138988,
-      color: '#3b82f6',
-      emissionFactor: 0,
+    'Hydropower': {
       howItWorks: 'Water flows through turbines to generate electricity. Includes conventional hydro dams and pumped storage facilities in New England.',
       chemicalProcess: 'Gravitational potential energy → kinetic energy → electrical energy. No combustion, no emissions.',
       environmentalImpacts: [
@@ -139,16 +113,9 @@ export function Scope2LiveDashboard() {
       efficiency: '90% efficiency - highest of any generation type.',
       costComparison: 'Very low cost at $0.02-0.04 per kWh. Existing facilities very economical.',
       history: 'New England has used hydro since 1800s. Two large pumped storage facilities provide 1,600 MW.',
-      alternatives: 'Run-of-river hydro, increased imports from Quebec.'
+      alternatives: 'Run-of-river hydro, increased imports from Quebec.',
     },
-    { 
-      source: 'Net Imports (NY, Quebec, New Brunswick)', 
-      emissions: 0, 
-      percentage: 0,
-      mixPercent: 7,
-      kwhUsed: 162153,
-      color: '#06b6d4',
-      emissionFactor: 0,
+    'Net Imports (NY, Quebec, New Brunswick)': {
       howItWorks: 'Electricity imported via transmission lines from neighboring regions - primarily hydropower from Quebec and New Brunswick, and mixed sources from New York.',
       chemicalProcess: 'Mostly hydropower from Canada - no combustion, no emissions.',
       environmentalImpacts: [
@@ -162,16 +129,9 @@ export function Scope2LiveDashboard() {
       efficiency: 'Transmission losses ~3-5% over long distances.',
       costComparison: 'Varies by contract and market conditions.',
       history: 'Long-term contracts with Hydro-Quebec. New transmission projects proposed.',
-      alternatives: 'New England Clean Energy Connect, additional Canadian imports.'
+      alternatives: 'New England Clean Energy Connect, additional Canadian imports.',
     },
-    { 
-      source: 'Oil', 
-      emissions: 5.95, 
-      percentage: 2.7,
-      mixPercent: 1,
-      kwhUsed: 23165,
-      color: '#f97316',
-      emissionFactor: 0.000257,
+    'Oil': {
       howItWorks: 'Petroleum is refined into heavy fuel oil or diesel, then burned in boilers or combustion turbines. Oil plants serve as backup during peak demand and gas shortages.',
       chemicalProcess: 'CxHy + O2 → CO2 + H2O + Heat. Petroleum hydrocarbons combust to form CO2 and water.',
       environmentalImpacts: [
@@ -185,16 +145,9 @@ export function Scope2LiveDashboard() {
       efficiency: '35-45% efficient.',
       costComparison: 'Most expensive fossil fuel at $0.10-0.20 per kWh. Used when no alternatives available.',
       history: 'Peaked in 1970s during oil embargo. Now mainly backup power for winter reliability.',
-      alternatives: 'Battery storage for peak demand, demand response programs.'
+      alternatives: 'Battery storage for peak demand, demand response programs.',
     },
-    { 
-      source: 'Coal', 
-      emissions: 1.75, 
-      percentage: 0.8,
-      mixPercent: 0.23,
-      kwhUsed: 5328,
-      color: '#6b7280',
-      emissionFactor: 0.000329,
+    'Coal': {
       howItWorks: 'Coal is burned in boilers to create steam that drives turbines. New England has almost completely phased out coal power.',
       chemicalProcess: 'C + O2 → CO2 + Heat. Coal also releases sulfur dioxide, mercury, and particulates.',
       environmentalImpacts: [
@@ -208,36 +161,25 @@ export function Scope2LiveDashboard() {
       efficiency: '33-40% efficient.',
       costComparison: 'Was cheapest at $0.03-0.05/kWh but environmental costs made it uneconomical.',
       history: 'Brayton Point closed 2017, Mount Tom 2018, Bridgeport Harbor 2021. Coal era essentially over in New England.',
-      alternatives: 'Already replaced by natural gas and renewables.'
-    }
-  ];
+      alternatives: 'Already replaced by natural gas and renewables.',
+    },
+  };
 
-  // Day of week averages
-  const dayOfWeekData = [
-    { day: 'Monday', multiplier: 1.15, label: 'High - Week starts' },
-    { day: 'Tuesday', multiplier: 1.12, label: 'High - Full operations' },
-    { day: 'Wednesday', multiplier: 1.10, label: 'High - Mid-week peak' },
-    { day: 'Thursday', multiplier: 1.08, label: 'Moderate - Winding down' },
-    { day: 'Friday', multiplier: 0.95, label: 'Lower - Weekend prep' },
-    { day: 'Saturday', multiplier: 0.75, label: 'Low - Weekend' },
-    { day: 'Sunday', multiplier: 0.70, label: 'Lowest - Weekend' }
-  ];
+  const emissionsData = gridMix.map((m) => ({
+    source: m.source,
+    emissions: m.mtCO2e,
+    percentage: m.percentOfEmissions,
+    mixPercent: m.mixPercent,
+    kwhUsed: m.kwhUsed,
+    color: m.color,
+    emissionFactor: m.emissionFactor,
+    ...(sourceNarrative[m.source] || {}),
+  }));
 
-  // Monthly patterns (based on 221.53 mtCO2e annual)
-  const monthlyData = [
-    { month: 'Jan', emissions: 23.1, heating: 'High' },
-    { month: 'Feb', emissions: 21.9, heating: 'High' },
-    { month: 'Mar', emissions: 20.0, heating: 'Moderate' },
-    { month: 'Apr', emissions: 17.4, heating: 'Low' },
-    { month: 'May', emissions: 15.7, heating: 'None' },
-    { month: 'Jun', emissions: 13.2, heating: 'None' },
-    { month: 'Jul', emissions: 10.8, heating: 'None' },
-    { month: 'Aug', emissions: 11.9, heating: 'None' },
-    { month: 'Sep', emissions: 16.7, heating: 'Low' },
-    { month: 'Oct', emissions: 19.0, heating: 'Moderate' },
-    { month: 'Nov', emissions: 21.2, heating: 'High' },
-    { month: 'Dec', emissions: 22.2, heating: 'High' }
-  ];
+  // Seasonal patterns from data layer. Day-of-week is reordered to start
+  // Monday for display.
+  const dayOfWeekData = [...dayOfWeekPattern.slice(1), dayOfWeekPattern[0]];
+  const monthlyData = monthlyPattern;
 
   const initializeEmissions = useCallback(() => {
     const now = new Date();
