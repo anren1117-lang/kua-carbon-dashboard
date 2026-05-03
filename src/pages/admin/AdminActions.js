@@ -1,21 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
-import { reductionActions, reductionActionsByVisibility } from '../data/reductionActions.js';
-import { rankActions } from '../utils/hotspots.js';
+import { ModulePage, ModuleSection, MetricGrid, Pill } from '../../components/ModuleShell.js';
+import { reductionActions, reductionActionsByVisibility } from '../../data/reductionActions.js';
+import { rankActions } from '../../utils/hotspots.js';
 
-// Public Actions page — filtered to visibility='public'. Admin-only
-// items (capex, vendor selection, board-level) live behind the
-// /admin gate at /admin/actions.
-
-// Actions = AI Carbon Advisor v1. Rule-based ranking of the proposed
-// reduction actions. Each card surfaces all the decision-support fields:
-// expected reduction, cost, difficulty, urgency, confidence, owner,
-// timeline, status, data source, next action.
-//
-// Phase-2 upgrade path: replace rankActions() with an LLM call that takes
-// the same data + recent campus emission deltas and returns a free-form
-// recommendation list with citations.
+// Admin Actions — same UX as the public /actions page, but shows
+// EVERY action regardless of visibility, including capex / vendor /
+// board items that don't appear publicly. A visibility chip above
+// each card flags which tier the item belongs to so reviewers know
+// which list it appears on.
 
 const CATEGORY_META = {
   energy:        { label: 'Energy',        accent: '#fbbf24' },
@@ -33,51 +26,50 @@ const STATUS_KIND = {
   blocked:     'bad',
 };
 
-export default function Actions() {
-  const [filter, setFilter] = useState('all');
+export default function AdminActions() {
+  const [visibility, setVisibility] = useState('all');
+  const [category, setCategory] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [expanded, setExpanded] = useState(null);
 
-  const publicActions = reductionActionsByVisibility('public');
-  const adminOnlyCount = reductionActions.length - publicActions.length;
-  const ranked = rankActions(publicActions);
+  const pool = reductionActionsByVisibility(visibility);
+  const ranked = rankActions(pool);
   const filtered = ranked.filter(({ action }) => {
-    if (filter !== 'all' && action.category !== filter) return false;
+    if (category !== 'all' && action.category !== category) return false;
     if (statusFilter !== 'all' && action.status !== statusFilter) return false;
     return true;
   });
 
-  const totalProposed = publicActions.filter((a) => a.status === 'proposed').length;
-  const totalInProgress = publicActions.filter((a) => a.status === 'in_progress').length;
-  const totalImpactMt = publicActions.reduce((s, a) => s + a.expectedReductionMtCO2e, 0);
-  const totalImpactIfAll = totalImpactMt;
+  const adminCount  = reductionActions.filter((a) => a.visibility === 'admin').length;
+  const publicCount = reductionActions.filter((a) => a.visibility === 'public').length;
+  const totalImpact = reductionActions.reduce((s, a) => s + a.expectedReductionMtCO2e, 0);
 
   return (
     <ModulePage
-      title="AI Carbon Advisor"
+      title="Reduction Actions — Admin View"
       subtitle={
         <>
-          Ranked reduction actions with owner, cost, expected impact, and confidence. Ranking score = expected reduction × urgency × confidence − difficulty penalty.
-          {adminOnlyCount > 0 && (
-            <>
-              {' '}
-              <strong style={{ color: '#fbbf24' }}>{adminOnlyCount} additional action{adminOnlyCount === 1 ? '' : 's'}</strong>{' '}
-              involving capital, vendor selection, or board-level decisions are restricted to the <Link to="/admin/actions" style={{ color: '#22d3ee' }}>admin Actions view</Link>.
-            </>
-          )}
+          Every action regardless of visibility. Public-tagged items also appear on
+          {' '}<Link to="/actions" style={{ color: '#22d3ee' }}>/actions</Link>.
+          Admin-tagged items (capex, vendor decisions, pre-board figures) live only here.
         </>
       }
     >
       <MetricGrid metrics={[
-        { label: 'Proposed actions', value: totalProposed, accent: '#22d3ee' },
-        { label: 'In progress', value: totalInProgress, accent: '#fbbf24' },
-        { label: 'Total potential', value: totalImpactIfAll.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: 'If every action shipped' },
-        { label: 'Top action', value: ranked[0].action.expectedReductionMtCO2e.toFixed(0), unit: 'mtCO₂e/yr', accent: '#ef4444', note: ranked[0].action.title },
+        { label: 'Public actions',  value: publicCount,        accent: '#22c55e' },
+        { label: 'Admin-only',      value: adminCount,         accent: '#fbbf24' },
+        { label: 'Total potential', value: totalImpact.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: 'If every action shipped' },
+        { label: 'Top action',      value: ranked[0]?.action.expectedReductionMtCO2e.toFixed(0) ?? '—', unit: 'mtCO₂e/yr', accent: '#ef4444', note: ranked[0]?.action.title },
       ]} />
 
       <ModuleSection title="Filter">
         <div style={styles.filterRow}>
-          <FilterGroup label="Category" value={filter} setValue={setFilter} options={[
+          <FilterGroup label="Visibility" value={visibility} setValue={setVisibility} options={[
+            { value: 'all',    label: `All (${reductionActions.length})` },
+            { value: 'public', label: `Public (${publicCount})` },
+            { value: 'admin',  label: `Admin-only (${adminCount})` },
+          ]} />
+          <FilterGroup label="Category" value={category} setValue={setCategory} options={[
             { value: 'all', label: 'All' },
             ...Object.entries(CATEGORY_META).map(([v, m]) => ({ value: v, label: m.label })),
           ]} />
@@ -92,8 +84,8 @@ export default function Actions() {
       </ModuleSection>
 
       <ModuleSection
-        title="Ranked actions"
-        hint="Click any row to see the data source, next action, and full implementation notes."
+        title={`${filtered.length} action${filtered.length === 1 ? '' : 's'}`}
+        hint="Click any row to see data source + next action. Visibility chip on each card shows which list the item appears on."
       >
         <div style={styles.list}>
           {filtered.map(({ action, score }, i) => {
@@ -106,12 +98,14 @@ export default function Actions() {
                   style={{ ...styles.cardHead, background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
                   onClick={() => setExpanded(isExpanded ? null : action.id)}
                   aria-expanded={isExpanded}
-                  aria-controls={`action-detail-${action.id}`}
-                  aria-label={`${action.title} — ${isExpanded ? 'collapse' : 'expand'} details`}
+                  aria-controls={`adminaction-detail-${action.id}`}
                 >
                   <div style={{ flex: 1 }}>
                     <div style={styles.rankLine}>
                       <span style={styles.rank}>#{i + 1}</span>
+                      <Pill kind={action.visibility === 'admin' ? 'warn' : 'good'}>
+                        {action.visibility === 'admin' ? '🔒 admin only' : '🌍 public'}
+                      </Pill>
                       <Pill kind="info">{meta.label}</Pill>
                       <Pill kind={STATUS_KIND[action.status] || 'neutral'}>{action.status.replace('_', ' ')}</Pill>
                     </div>
@@ -133,7 +127,7 @@ export default function Actions() {
                 </div>
 
                 {isExpanded && (
-                  <div id={`action-detail-${action.id}`} style={styles.expanded}>
+                  <div id={`adminaction-detail-${action.id}`} style={styles.expanded}>
                     <Field label="Owner" value={action.owner} />
                     <Field label="Timeline" value={action.timeline} />
                     <Field label="Data source" value={action.dataSource} />
@@ -193,7 +187,7 @@ function Field({ label, value }) {
 }
 
 const styles = {
-  filterRow: { display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' },
+  filterRow: { display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' },
   filterGroup: {},
   filterLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 6 },
   chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
@@ -207,7 +201,7 @@ const styles = {
     borderLeft: `4px solid ${accent}`,
     borderRadius: 8,
   }),
-  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, cursor: 'pointer' },
+  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 },
   rankLine: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 },
   rank: { fontSize: 12, color: '#64748b', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
   cardTitle: { fontSize: 16, color: '#e5e7eb', fontWeight: 700 },

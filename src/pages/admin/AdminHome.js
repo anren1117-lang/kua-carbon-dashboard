@@ -4,6 +4,13 @@ import { supabase } from '../../supabaseClient';
 
 const opsCards = [
   {
+    to: '/admin/actions',
+    icon: '🎯',
+    title: 'Reduction Actions (admin view)',
+    body: 'Every action regardless of visibility, including capex, vendor selection, and pre-board figures. Public-tagged items also appear on /actions; admin-tagged items live only here.',
+    stat: 'Capex · Vendor · Pre-board',
+  },
+  {
     to: '/data-admin',
     icon: '🩺',
     title: 'Data Admin',

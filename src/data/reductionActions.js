@@ -18,6 +18,11 @@
  * @property {'proposed'|'in_progress'|'completed'|'blocked'} status
  * @property {string} dataSource
  * @property {string} nextAction
+ * @property {'public'|'admin'} visibility
+ *   public = student- / parent- / trustee-facing items it's fine to publish:
+ *           behavioral, dining, dorm engagement, low-cost public commitments.
+ *   admin  = sustainability-staff-internal items: capex, vendor selection,
+ *           pre-board figures, anything not yet ratified or budget-sensitive.
  */
 
 /** @type {ReductionAction[]} */
@@ -37,6 +42,7 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'KUA dorm heating-fuel records + 3% per °F rule',
     nextAction: 'Pilot in 2 dorms for one month, measure delta vs control.',
+    visibility: 'public',
   },
   {
     id: 'ra_beef_cut20',
@@ -53,6 +59,7 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'POS records + Poore & Nemecek (2018)',
     nextAction: 'Coordinate with chef on substitute recipes; survey student acceptance.',
+    visibility: 'public',
   },
   {
     id: 'ra_gym_hvac_after9',
@@ -69,6 +76,7 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'Envysion late-night demand readings',
     nextAction: 'Get BMS quote from existing vendor.',
+    visibility: 'admin',
   },
   {
     id: 'ra_led_retrofit',
@@ -85,6 +93,7 @@ export const reductionActions = [
     status: 'in_progress',
     dataSource: 'Lighting inventory audit + utility rebate application',
     nextAction: 'Submit Liberty Utilities rebate forms (~40% of cost).',
+    visibility: 'admin',
   },
   {
     id: 'ra_carpool_challenge',
@@ -101,6 +110,7 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'Staff commute survey + carpool log mock data',
     nextAction: 'Finalize prize budget and launch sign-up form.',
+    visibility: 'public',
   },
   {
     id: 'ra_compost_expand',
@@ -117,6 +127,7 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'Food waste logs Feb–Mar 2026',
     nextAction: 'Order bins; train dining staff on contamination protocols.',
+    visibility: 'public',
   },
   {
     id: 'ra_int_student_offset',
@@ -133,6 +144,7 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'International student headcount + air travel records',
     nextAction: 'Identify acceptable removal-credit registry; draft opt-in language.',
+    visibility: 'admin',
   },
   {
     id: 'ra_dorm_competition',
@@ -149,5 +161,101 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'Per-building meter readings + dorm population',
     nextAction: 'Set up weekly auto-email with delta rankings.',
+    visibility: 'public',
+  },
+
+  // Admin-only items: capex, vendor selection, board-level decisions.
+  {
+    id: 'ra_solar_phase2',
+    title: 'Approve Phase-2 solar — 60 kW Miller rooftop array',
+    description: 'Capital approval for the second on-campus PV install. Vendor quote in hand from Phase-1 contractor.',
+    category: 'energy',
+    expectedReductionMtCO2e: 6,
+    estimatedCostUsd: 180000,
+    difficulty: 'high',
+    urgency: 'medium',
+    confidence: 'high',
+    owner: 'Head of School + Board Finance Committee',
+    timeline: 'FY27 capital cycle',
+    status: 'proposed',
+    dataSource: 'Phase-1 array performance + vendor quote',
+    nextAction: 'Submit to Finance Committee with rebate-adjusted NPV.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_oil_to_heatpump',
+    title: 'Heating-oil to heat-pump conversion — feasibility study',
+    description: 'Engage HVAC consultant to scope dorm-by-dorm conversion costs and grid-load implications. Largest single Scope-1 lever KUA has.',
+    category: 'energy',
+    expectedReductionMtCO2e: 800,
+    estimatedCostUsd: 45000,
+    difficulty: 'high',
+    urgency: 'high',
+    confidence: 'medium',
+    owner: 'Facilities Director + Sustainability Office',
+    timeline: 'Study FY26; pilot dorm FY27',
+    status: 'proposed',
+    dataSource: 'Annual heating oil deliveries + per-dorm thermal envelope',
+    nextAction: 'Issue RFP to two engineering firms; review responses with CFO.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_carbon_budget',
+    title: 'Propose 2027-2028 carbon budget to Board',
+    description: 'Formalize a year-by-year emissions allowance the school commits to publicly. Translates the 50%-by-2030 target into board-ratified milestones.',
+    category: 'engagement',
+    expectedReductionMtCO2e: 0,
+    estimatedCostUsd: 0,
+    difficulty: 'medium',
+    urgency: 'high',
+    confidence: 'medium',
+    owner: 'Board of Trustees',
+    timeline: 'Fall 2026 board meeting',
+    status: 'proposed',
+    dataSource: 'src/data/targets.js + Jan-Apr 2026 BMS measured baseline',
+    nextAction: 'Draft 4-page brief; circulate to Board Sustainability Committee chair.',
+    visibility: 'admin',
+  },
+
+  // More public items — student-facing campaigns and visible commitments.
+  {
+    id: 'ra_unplug_nights',
+    title: 'Weekly Sunday "Unplug Night" in dorms',
+    description: 'Students unplug all non-essential electronics + chargers Sunday 8-10 PM. Resident advisors lead. Tracked via after-hours load drop.',
+    category: 'engagement',
+    expectedReductionMtCO2e: 2,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'Sustainability Coordinator + Residential Life',
+    timeline: 'Spring term launch',
+    status: 'proposed',
+    dataSource: 'Per-dorm BMS hour-of-day load curves',
+    nextAction: 'Talk to RAs at next dorm-head meeting.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_lowcarbon_label',
+    title: 'Carbon labels on every dining-hall entree',
+    description: 'Print kg CO₂e per serving on the dining menu card next to each item. Visible nudge toward chicken/vegetarian without removing choice.',
+    category: 'dining',
+    expectedReductionMtCO2e: 8,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'medium',
+    confidence: 'medium',
+    owner: 'Dining Services Director',
+    timeline: 'Next menu cycle',
+    status: 'proposed',
+    dataSource: 'Poore & Nemecek 2018 + dining POS records',
+    nextAction: 'Update menu template; pilot in faculty dining first.',
+    visibility: 'public',
   },
 ];
+
+/** Filter helper. Pass 'public' or 'admin' (or 'all'). */
+export function reductionActionsByVisibility(visibility = 'all') {
+  if (visibility === 'all') return reductionActions;
+  return reductionActions.filter((a) => a.visibility === visibility);
+}

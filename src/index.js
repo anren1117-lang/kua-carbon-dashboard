@@ -52,6 +52,7 @@ const AdminRenewables = lazy(() => import('./pages/admin/AdminRenewables'));
 const AdminSinks = lazy(() => import('./pages/admin/AdminSinks'));
 const AdminMethodology = lazy(() => import('./pages/admin/AdminMethodology'));
 const AdminFramework = lazy(() => import('./pages/admin/AdminFramework'));
+const AdminActions = lazy(() => import('./pages/admin/AdminActions'));
 const AdminAIIngestion = lazy(() => import('./pages/admin/AdminAIIngestion'));
 const HeatingOil = lazy(() => import('./pages/admin/scope1/HeatingOil'));
 const Propane = lazy(() => import('./pages/admin/scope1/Propane'));
@@ -159,6 +160,7 @@ root.render(
             <Route path="sinks/soil" element={<SoilSample />} />
 
             <Route path="methodology" element={<AdminMethodology />} />
+            <Route path="actions" element={<AdminActions />} />
             <Route path="legacy" element={<AdminPortal />} />
           </Route>
         </Routes>
