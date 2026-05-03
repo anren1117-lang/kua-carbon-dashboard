@@ -4,7 +4,9 @@ import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
+import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { Sparkline } from '../components/Sparkline.js';
+import { ProvenancePill } from '../components/ProvenancePill.js';
 
 function useBuildingEnergy(buildingId, enabled) {
   const [state, setState] = useState({ loading: false, data: null, error: null });
@@ -115,22 +117,49 @@ export default function BuildingsPage() {
 
       <ModuleSection
         title="Campus seasonal pattern"
-        hint="Aggregate kWh shape over the year. Winter peaks reflect heating-driven plug load; summer dip is everyone-off-campus."
+        hint="Aggregate shape over the year. Winter peaks reflect heating-driven plug load; summer dip is everyone-off-campus. Solid line = months measured from BMS; dashed = months still on the seasonal-pattern proxy."
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <Sparkline
-            data={monthlyPattern.map((m) => m.emissions)}
-            color="#22d3ee"
-            fill="rgba(34, 211, 238, 0.18)"
-            width={420}
-            height={64}
-            strokeWidth={2}
-            showLast
-          />
-          <div style={{ fontSize: 12, color: '#94a3b8' }}>
-            Jan → Dec, mtCO₂e per month from the ISO-NE 2024 baseline
-          </div>
-        </div>
+        {(() => {
+          const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
+          const measuredCount = measuredKeys.size;
+          const sparkData = monthlyPattern.map((m, i) => ({
+            value: m.emissions,
+            measured: measuredKeys.has(`2026-${String(i + 1).padStart(2, '0')}`),
+          }));
+          return (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <Sparkline
+                  data={sparkData}
+                  color="#22d3ee"
+                  fill="rgba(34, 211, 238, 0.18)"
+                  width={420}
+                  height={64}
+                  strokeWidth={2}
+                  showLast
+                />
+                <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                  Jan → Dec, mtCO₂e per month
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
+                <ProvenancePill provenance="measured" />
+                <span style={{ fontSize: 12, color: '#cbd5e1' }}>{measuredCount} month{measuredCount === 1 ? '' : 's'} from KUA Distech Eclypse BMS (solid)</span>
+                <span style={{ width: 12 }} />
+                <ProvenancePill provenance="estimated" />
+                <span style={{ fontSize: 12, color: '#cbd5e1' }}>{12 - measuredCount} month{12 - measuredCount === 1 ? '' : 's'} from seasonal-pattern proxy (dashed)</span>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
+                <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 }}>Today:</span>
+                Measured months pull from <code>monthlyConsumption.js</code> (master-meter displayedTotal × ISO-NE 2024 grid factor). Projected months use <code>seasonalPatterns.monthlyPattern</code> — winter heating peak / summer trough shape, scaled to plausible NH magnitudes.
+              </div>
+              <div style={{ marginTop: 4, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
+                <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 }}>Target:</span>
+                Each month flips dashed → solid as its BMS export ships; the seasonal-pattern proxy is removed once a full year is measured (~Jan 2027).
+              </div>
+            </>
+          );
+        })()}
       </ModuleSection>
 
       <ModuleSection

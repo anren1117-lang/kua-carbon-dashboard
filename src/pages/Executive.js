@@ -371,8 +371,17 @@ function ScopeRow({ to, label, mt, share, color, sinks, scopeKey }) {
       </div>
       {series && (
         <div style={styles.scopeSpark}>
-          <Sparkline data={series} color={color} fill={`${color}26`} width={120} height={32} />
-          <div style={styles.scopeSparkLabel}>monthly</div>
+          {/* All twelve months are pure seasonal-pattern projections —
+              no per-scope BMS measurement exists yet. Pass measured:false
+              on every point so the Sparkline renders dashed. */}
+          <Sparkline
+            data={series.map((v) => ({ value: v, measured: false }))}
+            color={color}
+            fill={`${color}26`}
+            width={120}
+            height={32}
+          />
+          <div style={styles.scopeSparkLabel}>monthly · projected</div>
         </div>
       )}
       <div style={styles.scopeNums}>

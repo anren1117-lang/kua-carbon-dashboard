@@ -3,6 +3,8 @@ import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
+import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
+import { ProvenancePill } from './ProvenancePill.js';
 import { gridMix } from '../data/gridMix.js';
 import { EnergyEquivalents } from './EnergyEquivalents.js';
 
@@ -236,9 +238,15 @@ export function Scope2LiveDashboard() {
           <span>{isLive ? 'LIVE' : 'PAUSED'}</span>
         </div>
         <p style={styles.dataSource}>Data Source: ISO New England Grid Mix 2024</p>
-        <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 999, background: '#3a2a0d', border: '1px solid #92400e', color: '#fbbf24', fontSize: 12, letterSpacing: 0.5 }}>
-          <span style={{ fontWeight: 700 }}>ESTIMATED BASELINE</span>
-          <span style={{ opacity: 0.8 }}>· {yearlyEmissions} mtCO₂e/year derived from ISO-NE 2024 grid mix · live counters interpolate this annual figure</span>
+        <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: '#0b1220', border: '1px solid #1f2937', fontSize: 12, color: '#cbd5e1', letterSpacing: 0.3, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <ProvenancePill provenance="cited" />
+          <span><strong>{yearlyEmissions} mtCO₂e</strong> · measured BMS kWh × ISO-NE 2024 per-fuel output factors. Live counter interpolates this baseline by elapsed seconds; it is a smooth approximation, not a real-time meter reading.</span>
+        </div>
+        <div style={{ marginTop: 8, fontSize: 11, color: '#94a3b8', maxWidth: 720, lineHeight: 1.5 }}>
+          <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginRight: 6 }}>Today:</span>
+          Counter ticks at a fixed rate derived from the YTD kWh baseline ÷ seconds-in-period.
+          <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginRight: 6, marginLeft: 12 }}>Target:</span>
+          Tick rate becomes time-varying once the BMS relay streams 15-min reads — counter then reflects actual instantaneous load (peak/trough) rather than a smooth average.
         </div>
       </header>
 
@@ -342,16 +350,36 @@ export function Scope2LiveDashboard() {
 
           <div style={styles.timeSection}>
             <h4 style={styles.subTitle}>Monthly Emissions Pattern</h4>
-            <p style={styles.hint}>Emissions vary with heating demand throughout the year</p>
+            <p style={styles.hint}>Emissions vary with heating demand. Months with a green border carry measured BMS data; the rest are seasonal-pattern projections until the BMS export ships.</p>
             <div style={styles.monthGrid}>
-              {monthlyData.map((m, i) => (
-                <div key={i} style={{...styles.monthCard, borderColor: currentMonth === i ? '#22c55e' : '#334155'}}>
-                  <p style={styles.monthName}>{m.month}</p>
-                  <p style={styles.monthValue}>{m.emissions}</p>
-                  <p style={styles.monthUnit}>mtCO2e</p>
-                  <p style={styles.monthHeat}>Heating: {m.heating}</p>
-                </div>
-              ))}
+              {(() => {
+                const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
+                return monthlyData.map((m, i) => {
+                  const measured = measuredKeys.has(`2026-${String(i + 1).padStart(2, '0')}`);
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        ...styles.monthCard,
+                        borderColor: measured ? '#22c55e' : (currentMonth === i ? '#fbbf24' : '#334155'),
+                        borderStyle: measured ? 'solid' : 'dashed',
+                      }}
+                    >
+                      <p style={styles.monthName}>{m.month}</p>
+                      <p style={styles.monthValue}>{m.emissions}</p>
+                      <p style={styles.monthUnit}>mtCO2e</p>
+                      <p style={styles.monthHeat}>{measured ? 'BMS measured' : `Heating: ${m.heating}`}</p>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 10, flexWrap: 'wrap', fontSize: 12 }}>
+              <ProvenancePill provenance="measured" />
+              <span style={{ color: '#94a3b8' }}>solid green border = BMS month</span>
+              <span style={{ width: 8 }} />
+              <ProvenancePill provenance="estimated" />
+              <span style={{ color: '#94a3b8' }}>dashed border = seasonal-pattern proxy</span>
             </div>
           </div>
 
