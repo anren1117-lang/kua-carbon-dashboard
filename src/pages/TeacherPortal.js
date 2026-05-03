@@ -8,19 +8,20 @@ import { hashUserId } from '../utils/hash.js';
 // in dev). Cards link to:
 // - Create a lesson (the new AI-generation editor)
 // - Lesson modules (the curated four)
-// - Carbon Learning Chatbot
-// - Self-paced Learn paths
-// - Student Challenges
 //
 // Plus a "My lessons" panel listing the teacher's own published +
 // draft lessons, with quick links to the student URL for each.
+//
+// Student-facing tools (Carbon Learning Chatbot, self-paced Learn
+// paths, Student Challenges) intentionally do NOT live in this
+// portal. They're public, reachable from the right-side portal nav
+// and from the public Categories dropdown — duplicating them as
+// teacher-portal cards just made the portal noisier without giving
+// teachers anything they couldn't get with one click from the nav.
 
 const tools = [
-  { to: '/teacher/create',  icon: '✏️', title: 'Create a lesson',           body: 'Paste source material — an article, lecture notes, a research excerpt. The AI rewrites it at the chosen level and generates 5 four-option questions, grounded in what you provided.', stat: 'AI-generated · publish to share with class' },
-  { to: '/teacher/lessons', icon: '📚', title: 'Curated lesson modules',    body: 'Four ready-to-run lessons spanning advisory through AP-level. Each includes goals, recommended reading, and an in-class activity prompt.', stat: '4 modules' },
-  { to: '/chatbot',         icon: '💬', title: 'Carbon Learning Chatbot',   body: 'Curriculum-bounded Q&A with citations. Students can use it directly; teachers see what topics surface and where confidence is low.', stat: 'rule-based · LLM-grounded when configured' },
-  { to: '/learn',           icon: '🎓', title: 'Self-paced Learn paths',    body: '11 paths spanning intro through AP. Each step is a 4-option quiz with full per-option explanations.', stat: '11 paths · ~150 questions' },
-  { to: '/challenges',      icon: '🏆', title: 'Student Challenges',        body: 'Dorm-level leaderboard (privacy-by-design). Weekly challenge slate. Individual ranking is opt-in only.', stat: 'Aggregated at dorm level' },
+  { to: '/teacher/create',  icon: '✏️', title: 'Create a lesson',           body: 'Paste source material — an article, lecture notes, a research excerpt. The AI rewrites it at the chosen level and generates a 4-option question quiz, grounded only in what you provided.', stat: 'AI-generated · publish to share with class' },
+  { to: '/teacher/lessons', icon: '📚', title: 'Curated lesson modules',    body: 'Four ready-to-run lessons spanning advisory through AP-level. Each includes goals, recommended reading, and an in-class activity prompt.', stat: '4 modules · ready to teach' },
 ];
 
 function getTeacherHash() {
@@ -89,9 +90,9 @@ function PortalContents() {
   return (
     <ModulePage
       title="Teacher Portal"
-      subtitle="Everything classroom-facing in one place. Create AI-generated lessons from any source material, run curated modules, and track class progress."
+      subtitle="Author AI-generated lessons from any source material, review the curated modules, and track class progress. Public student tools (chatbot, self-paced paths, dorm challenges) live in the regular nav — preview them there as a student would see them."
     >
-      <ModuleSection title="Tools">
+      <ModuleSection title="Teacher tools">
         <div style={styles.grid}>
           {tools.map((c) => (
             <Link key={c.to} to={c.to} style={styles.card} aria-label={`${c.title} — ${c.body}`}>
