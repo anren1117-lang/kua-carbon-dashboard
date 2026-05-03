@@ -4,7 +4,7 @@ import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
-import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
+import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
 import { Sparkline } from '../components/Sparkline.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 
@@ -163,6 +163,65 @@ export default function BuildingsPage() {
       </ModuleSection>
 
       <ModuleSection
+        title="Monthly BMS data quality"
+        hint='Every captured month from the KUA Distech Eclypse All Meters page carries TWO totals: the master-meter "Totals" row at the bottom, and the sum of the per-building submeter rows. They drift apart from CT calibration, branch overlaps, and untracked load between the main meter and the submeter network. We carry both numbers rather than silently picking one.'
+      >
+        <div style={styles.qualityList}>
+          {monthlyReports.map((r) => {
+            const gapPct = ((r.sumOfRows - r.displayedTotal) / r.displayedTotal) * 100;
+            const ratio = Math.min(r.displayedTotal, r.sumOfRows) / Math.max(r.displayedTotal, r.sumOfRows);
+            const monthName = new Date(r.month + '-01').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+            return (
+              <div key={r.month} style={styles.qualityRow}>
+                <div style={styles.qualityMonthCol}>
+                  <div style={styles.qualityMonth}>{monthName}</div>
+                  <div style={styles.qualityCaptured}>captured {r.capturedAt}</div>
+                  <div style={{ marginTop: 6 }}><ProvenancePill provenance="measured" /></div>
+                </div>
+                <div style={styles.qualityBarsCol}>
+                  <div style={styles.qualityRowBar}>
+                    <div style={styles.qualityBarLabel}>
+                      Master-meter total
+                      <span style={styles.qualityBarBadge}>source of truth</span>
+                    </div>
+                    <div style={styles.qualityBarTrack}>
+                      <div style={{ ...styles.qualityBarFill, width: '100%', background: '#22c55e' }} />
+                      <span style={styles.qualityBarValue}>{r.displayedTotal.toLocaleString()} kWh</span>
+                    </div>
+                  </div>
+                  <div style={styles.qualityRowBar}>
+                    <div style={styles.qualityBarLabel}>
+                      Sum of {r.rows.length} submeters
+                      <span style={{ ...styles.qualityBarBadge, color: '#fbbf24', borderColor: '#92400e' }}>
+                        +{gapPct.toFixed(1)}% over master
+                      </span>
+                    </div>
+                    <div style={styles.qualityBarTrack}>
+                      <div style={{ ...styles.qualityBarFill, width: `${(r.sumOfRows / Math.max(r.sumOfRows, r.displayedTotal)) * 100}%`, background: '#fbbf24' }} />
+                      <span style={styles.qualityBarValue}>{r.sumOfRows.toLocaleString()} kWh</span>
+                    </div>
+                  </div>
+                  <div style={styles.qualityGap}>
+                    Gap: {(r.sumOfRows - r.displayedTotal).toLocaleString()} kWh ({gapPct.toFixed(1)}% submeter over master) · agreement {(ratio * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={styles.qualityFooter}>
+          <div style={styles.qualityMethodLine}>
+            <span style={styles.qualityMethodLabel}>Today:</span>
+            Master-meter "displayedTotal" is what the BMS itself reports as the campus total — that's the figure we use for Scope 2 emissions math (gridMix.js GRID_MIX_TOTAL_KWH). The per-building submeter rows are useful for relative ranking (which dorm uses more than which) but the absolute numbers consistently overshoot by 8–10% across all four captured months — a stable, systematic offset, not a one-off anomaly.
+          </div>
+          <div style={styles.qualityMethodLine}>
+            <span style={styles.qualityMethodLabel}>Target:</span>
+            Calibrate the CT (current transformer) clamps on each submeter circuit until the sum of submeter rows lands within 3% of the master meter. Investigate branch overlaps where a downstream submeter may be double-counting load from an upstream one. After calibration, both numbers carry MEASURED provenance with no caveat — currently the submeter sum carries a calibration-drift caveat.
+          </div>
+        </div>
+      </ModuleSection>
+
+      <ModuleSection
         title={`${sorted.length} buildings`}
         hint="Click a row for setpoints, occupancy, and the BMS join number."
       >
@@ -299,6 +358,24 @@ function LivePanel({ buildingId }) {
 }
 
 const styles = {
+  qualityList: { display: 'grid', gap: 12 },
+  qualityRow: { display: 'grid', gridTemplateColumns: 'minmax(140px, 180px) 1fr', gap: 18, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  qualityMonthCol: { borderRight: '1px solid #1f2937', paddingRight: 14 },
+  qualityMonth: { fontSize: 14, color: '#e5e7eb', fontWeight: 700 },
+  qualityCaptured: { fontSize: 11, color: '#64748b', marginTop: 4 },
+  qualityBarsCol: { display: 'grid', gap: 10 },
+  qualityRowBar: { },
+  qualityBarLabel: { fontSize: 12, color: '#cbd5e1', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  qualityBarBadge: { fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#052e1a', color: '#86efac', border: '1px solid #14532d', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 },
+  qualityBarTrack: { position: 'relative', height: 22, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden' },
+  qualityBarFill: { position: 'absolute', top: 0, bottom: 0, left: 0, opacity: 0.4 },
+  qualityBarValue: { position: 'absolute', top: 0, bottom: 0, left: 8, display: 'flex', alignItems: 'center', fontSize: 12, fontVariantNumeric: 'tabular-nums', color: '#e5e7eb', fontWeight: 600 },
+  qualityGap: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+  qualityFooter: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6 },
+  qualityMethodLine: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
+  qualityMethodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
+
   filterRow: { display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' },
   label: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 6 },
   chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
