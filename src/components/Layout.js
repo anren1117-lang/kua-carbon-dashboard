@@ -6,6 +6,7 @@ const navItems = [
   { to: '/executive', label: 'Executive' },
   { to: '/hotspots', label: 'Hotspots' },
   { to: '/buildings', label: 'Buildings' },
+  { to: '/trends', label: 'Trends' },
   { to: '/dining', label: 'Dining' },
   { to: '/transportation', label: 'Transport' },
   { to: '/waste', label: 'Waste' },

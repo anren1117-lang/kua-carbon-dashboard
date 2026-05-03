@@ -221,15 +221,34 @@ function Field({ label, value }) {
 function LivePanel({ buildingId }) {
   const [enabled, setEnabled] = useState(false);
   const { loading, data, error } = useBuildingEnergy(buildingId, enabled);
+
+  function downloadCsv() {
+    const end = new Date();
+    const start = new Date(end.getTime() - 30 * 24 * 3600 * 1000);
+    const url = `/api/meters/readings/export?buildingId=${encodeURIComponent(buildingId)}&start=${start.toISOString()}&end=${end.toISOString()}`;
+    window.open(url, '_blank');
+  }
+
   return (
     <div style={styles.live}>
-      <button
-        type="button"
-        style={styles.liveBtn}
-        onClick={() => setEnabled((v) => !v)}
-      >
-        {enabled ? '× Hide live data' : '↻ Pull live 30-day energy from API'}
-      </button>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          style={styles.liveBtn}
+          onClick={() => setEnabled((v) => !v)}
+          aria-expanded={enabled}
+        >
+          {enabled ? '× Hide live data' : '↻ Pull live 30-day energy from API'}
+        </button>
+        <button
+          type="button"
+          style={styles.liveBtn}
+          onClick={downloadCsv}
+          aria-label="Download last 30 days of readings as CSV"
+        >
+          ↓ Download 30-day CSV
+        </button>
+      </div>
       {enabled && (
         <div style={styles.liveBody}>
           {loading && <div style={styles.liveStatus}>Loading from /api/buildings/{buildingId}/energy …</div>}

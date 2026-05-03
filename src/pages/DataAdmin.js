@@ -112,6 +112,8 @@ export default function DataAdmin() {
         ))}
       </ModuleSection>
 
+      <HealthPanel />
+
       <CsvUploadPanel />
 
       <QualityPanel />
@@ -153,6 +155,89 @@ export default function DataAdmin() {
     </ModulePage>
   );
 }
+
+function HealthPanel() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  function refresh() {
+    setLoading(true); setError(null);
+    fetch('/api/health')
+      .then((r) => r.json().then((j) => ({ ok: r.ok, body: j })))
+      .then(({ ok, body }) => { setData({ ok, ...body }); setLoading(false); })
+      .catch((err) => { setError(err.message); setLoading(false); });
+  }
+
+  useEffect(refresh, []);
+
+  return (
+    <ModuleSection
+      title="Live health"
+      hint="Pings /api/health — adapter reachability, Supabase connectivity, factor registry."
+    >
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button type="button" style={hpStyles.refresh} onClick={refresh} disabled={loading}>
+          {loading ? 'Refreshing…' : '↻ Refresh'}
+        </button>
+        {error && <span style={{ color: '#fca5a5', fontSize: 12 }}>Error: {error}</span>}
+        {data && (
+          <Pill kind={data.ok ? 'good' : 'bad'}>
+            {data.ok ? 'All systems ok' : 'Degraded'}
+          </Pill>
+        )}
+      </div>
+      {data && (
+        <div style={hpStyles.grid}>
+          <HealthCell
+            label="Meter adapter"
+            ok={data.checks.adapter.ok}
+            detail={data.checks.adapter.ok ? `${data.checks.adapter.count} meters` : data.checks.adapter.error}
+          />
+          <HealthCell
+            label="Emission factors"
+            ok={data.checks.factors.ok}
+            detail={`${data.checks.factors.count} factors loaded`}
+          />
+          <HealthCell
+            label="Supabase"
+            ok={!data.checks.supabase.configured ? null : data.checks.supabase.ok}
+            detail={
+              !data.checks.supabase.configured
+                ? 'Not configured (writes go to memory only)'
+                : data.checks.supabase.ok
+                  ? 'Reachable'
+                  : data.checks.supabase.error
+            }
+          />
+        </div>
+      )}
+    </ModuleSection>
+  );
+}
+
+function HealthCell({ label, ok, detail }) {
+  return (
+    <div style={hpStyles.cell}>
+      <div style={hpStyles.cellHead}>
+        <span style={hpStyles.cellLabel}>{label}</span>
+        <Pill kind={ok === null ? 'neutral' : ok ? 'good' : 'bad'}>
+          {ok === null ? 'inactive' : ok ? 'ok' : 'fail'}
+        </Pill>
+      </div>
+      <div style={hpStyles.cellDetail}>{detail}</div>
+    </div>
+  );
+}
+
+const hpStyles = {
+  refresh: { padding: '8px 14px', background: '#0f172a', border: '1px solid #0e7490', borderRadius: 6, color: '#22d3ee', cursor: 'pointer', fontSize: 13, fontWeight: 700 },
+  grid: { marginTop: 14, display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' },
+  cell: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  cellHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  cellLabel: { fontSize: 13, color: '#e5e7eb', fontWeight: 700 },
+  cellDetail: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 },
+};
 
 function CsvUploadPanel() {
   const [csv, setCsv] = useState('');
