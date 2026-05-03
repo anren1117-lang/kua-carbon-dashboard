@@ -103,6 +103,8 @@ src/
 | POST   | `/api/quiz/attempts`              | Log a quiz attempt; GET to read or `?rollup=class` to aggregate |
 | POST   | `/api/chatbot`                    | Curriculum-bounded chatbot: rule-based, with optional LLM rewrite when `ANTHROPIC_API_KEY` is set |
 | POST   | `/api/auth/session`               | Verifies Google OIDC token (or accepts mockSubject in `AUTH_DEV_MODE=1`) and returns a hashed identity |
+| GET    | `/api/health`                     | Component status — meter adapter, Supabase, emission factors |
+| POST   | `/api/cron/sync-bms`              | Pulls last hour from active adapter, persists to Supabase. Auth: Bearer `CRON_SECRET`. Vercel cron schedule: hourly |
 | POST   | `/api/chat`                       | Existing — proxies to Anthropic API for the Ask agent |
 
 ## Switching meter data sources

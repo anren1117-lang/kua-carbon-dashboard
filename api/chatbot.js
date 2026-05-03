@@ -31,6 +31,12 @@
 
 import { matchQuery } from '../src/utils/chatbotMatch.js';
 import { knowledgeArticles } from '../src/data/learningContent.js';
+import { createRateLimit, getClientKey } from '../src/utils/rateLimit.js';
+
+// 12 questions per minute per IP, with bursts up to 12 (capacity = 12,
+// refill ≈ 0.2 / sec). Generous enough for normal classroom use; cheap
+// enough that a runaway tab can't burn through the API budget.
+const limiter = createRateLimit({ capacity: 12, refillPerSec: 0.2 });
 
 function readEnv(key) {
   if (typeof process !== 'undefined' && process.env && process.env[key]) {
@@ -66,6 +72,15 @@ export default async function handler(req, res) {
   const { query, readingLevel } = req.body || {};
   if (!query || typeof query !== 'string' || !query.trim()) {
     res.status(400).json({ error: 'query (string) is required' });
+    return;
+  }
+
+  const limit = limiter.consume(getClientKey(req));
+  if (!limit.allowed) {
+    if (typeof res.setHeader === 'function') {
+      res.setHeader('Retry-After', String(Math.ceil(limit.retryAfterMs / 1000)));
+    }
+    res.status(429).json({ error: 'Too many requests', retryAfterMs: limit.retryAfterMs });
     return;
   }
 

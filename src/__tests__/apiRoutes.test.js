@@ -15,8 +15,11 @@ import quizAttemptsHandler   from '../../api/quiz/attempts.js';
 import chatbotHandler        from '../../api/chatbot.js';
 import authSessionHandler    from '../../api/auth/session.js';
 import readingsExportHandler from '../../api/meters/readings/export.js';
+import healthHandler         from '../../api/health.js';
+import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
+import { createRateLimit }   from '../utils/rateLimit.js';
 
 function makeRes() {
   let statusCode = 200;
@@ -195,6 +198,81 @@ describe('GET /api/meters/readings/export', () => {
   it('400s without start/end', async () => {
     const r = await call(readingsExportHandler, { method: 'GET', query: { buildingId: 'b_miller' } });
     expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('GET /api/health', () => {
+  it('returns 200 ok when adapter is reachable', async () => {
+    const r = await call(healthHandler, { method: 'GET', query: {} });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.ok).toBe(true);
+    expect(r.body.checks.adapter.ok).toBe(true);
+    expect(r.body.checks.adapter.count).toBeGreaterThan(0);
+    expect(r.body.checks.factors.ok).toBe(true);
+  });
+});
+
+describe('POST /api/cron/sync-bms', () => {
+  it('rejects requests without CRON_SECRET set', async () => {
+    delete process.env.CRON_SECRET;
+    const r = await call(cronSyncBmsHandler, { method: 'POST', headers: {}, query: {} });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('accepts a Bearer token matching CRON_SECRET and persists readings', async () => {
+    process.env.CRON_SECRET = 'test-secret-xyz';
+    try {
+      const r = await call(cronSyncBmsHandler, {
+        method: 'POST',
+        headers: { authorization: 'Bearer test-secret-xyz' },
+        query: {},
+      });
+      expect(r.statusCode).toBe(200);
+      expect(r.body.inserted).toBeGreaterThanOrEqual(0);
+      expect(r.body.windowStart).toBeDefined();
+      expect(r.body.windowEnd).toBeDefined();
+    } finally {
+      delete process.env.CRON_SECRET;
+    }
+  });
+
+  it('rejects mismatched Bearer tokens', async () => {
+    process.env.CRON_SECRET = 'test-secret-xyz';
+    try {
+      const r = await call(cronSyncBmsHandler, {
+        method: 'POST',
+        headers: { authorization: 'Bearer wrong' },
+        query: {},
+      });
+      expect(r.statusCode).toBe(401);
+    } finally {
+      delete process.env.CRON_SECRET;
+    }
+  });
+});
+
+describe('rate limiter', () => {
+  it('refuses traffic past capacity', () => {
+    const limit = createRateLimit({ capacity: 3, refillPerSec: 0 });
+    expect(limit.consume('ip1').allowed).toBe(true);
+    expect(limit.consume('ip1').allowed).toBe(true);
+    expect(limit.consume('ip1').allowed).toBe(true);
+    expect(limit.consume('ip1').allowed).toBe(false);
+  });
+
+  it('isolates buckets by key', () => {
+    const limit = createRateLimit({ capacity: 1, refillPerSec: 0 });
+    expect(limit.consume('ip1').allowed).toBe(true);
+    expect(limit.consume('ip2').allowed).toBe(true);
+    expect(limit.consume('ip1').allowed).toBe(false);
+  });
+
+  it('refills tokens over time', async () => {
+    const limit = createRateLimit({ capacity: 1, refillPerSec: 100 }); // 100 per sec
+    expect(limit.consume('ip3').allowed).toBe(true);
+    expect(limit.consume('ip3').allowed).toBe(false);
+    await new Promise((r) => setTimeout(r, 25));
+    expect(limit.consume('ip3').allowed).toBe(true);
   });
 });
 

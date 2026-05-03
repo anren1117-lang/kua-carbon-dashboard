@@ -6,5 +6,8 @@
   "framework": null,
   "rewrites": [
     { "source": "/((?!api/|assets/).*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/cron/sync-bms", "schedule": "0 * * * *" }
   ]
 }
