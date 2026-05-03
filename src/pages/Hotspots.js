@@ -1,5 +1,6 @@
 import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
@@ -85,10 +86,24 @@ export default function Hotspots() {
         title="Monthly emissions trend"
         hint={
           <>
-            Monthly mtCO₂e for the campus. {measuredMonthCount > 0 ? <strong>{measuredMonthCount} month{measuredMonthCount === 1 ? '' : 's'} of real BMS data</strong> : 'No measured months yet'}{measuredMonthCount > 0 ? ` (${Object.keys(measuredMonths).join(', ')})` : ''} — remaining months use the seasonal-pattern proxy until the BMS feeds them in.
+            Monthly mtCO₂e for the campus. {measuredMonthCount > 0 ? <strong>{measuredMonthCount} month{measuredMonthCount === 1 ? '' : 's'} of real BMS data</strong> : 'No measured months yet'}{measuredMonthCount > 0 ? ` (${Object.keys(measuredMonths).join(', ')})` : ''} — remaining months use the seasonal-pattern proxy until the BMS feeds them in. Hover any point: ● = measured, ○ = projected.
           </>
         }
       >
+        <div style={hsStyles.trendProv}>
+          <div style={hsStyles.trendProvRow}>
+            <ProvenancePill provenance="measured" />
+            <span style={hsStyles.trendProvLabel}>Months {Object.keys(measuredMonths).map((k) => k.slice(5)).join(', ') || '(none yet)'}</span>
+          </div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Today:</span> KUA Distech Eclypse BMS All Meters page, monthly displayed totals × ISO-NE 2024 grid factor (0.235 kg/kWh effective). One row per measured month at <code>src/data/monthlyConsumption.js</code>.</div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> Add a measured row each month as the BMS export ships. By Jan 2027 the full year is measured and the projected segment disappears.</div>
+          <div style={{ ...hsStyles.trendProvRow, marginTop: 14, paddingTop: 14, borderTop: '1px solid #1f2937' }}>
+            <ProvenancePill provenance="estimated" />
+            <span style={hsStyles.trendProvLabel}>Months {monthlyPattern.map((_, i) => `2026-${String(i + 1).padStart(2, '0')}`).filter((k) => !measuredMonths[k]).map((k) => k.slice(5)).join(', ') || '(none — full year measured)'}</span>
+          </div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Today:</span> Synthetic seasonal-pattern shape (winter heating peak, summer trough) from <code>src/data/seasonalPatterns.js</code>, scaled to plausible NH boarding-school monthly magnitudes. Pattern shape is informed by ISO-NE seasonal load curves; absolute values are placeholders.</div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> Each month flips estimated → measured the moment its BMS export is added to monthlyConsumption.js. The seasonal-pattern proxy is purely a placeholder until then; it will be removed entirely once a full year is captured.</div>
+        </div>
         <TimeSeriesChart
           data={trendSeries}
           unit="mtCO₂e"
@@ -173,6 +188,14 @@ export default function Hotspots() {
     </ModulePage>
   );
 }
+
+const hsStyles = {
+  trendProv: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, marginBottom: 14 },
+  trendProvRow: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 },
+  trendProvLabel: { fontSize: 13, color: '#e5e7eb', fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
+  trendMethod: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
+  trendMethodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+};
 
 const styles = {
   list: { display: 'grid', gap: 8 },

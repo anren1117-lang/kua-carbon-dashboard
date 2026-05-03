@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ProvenancePill } from '../components/ProvenancePill.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { buildings } from '../data/buildings.js';
 import { meters } from '../data/meters.js';
@@ -45,8 +46,17 @@ export default function TrendBuilder() {
       .then((j) => {
         // Aggregate to the requested interval. The mock adapter respects
         // intervalMinutes already; for the BMS adapter that may not, we
-        // bucket here as a safety net.
-        const series = (j.readings || []).map((r) => ({ t: r.timestamp, v: r.value }));
+        // bucket here as a safety net. Carry per-reading `source` through
+        // as the `measured` flag so the chart can dot it accordingly:
+        //   bms  → measured (live)
+        //   csv  → measured (uploaded utility records)
+        //   mock → projected (synthetic generator)
+        const series = (j.readings || []).map((r) => ({
+          t: r.timestamp,
+          v: r.value,
+          source: r.source,
+          measured: r.source === 'bms' || r.source === 'csv',
+        }));
         setData({ series, count: j.count });
         setLoading(false);
       })
@@ -153,10 +163,38 @@ export default function TrendBuilder() {
       )}
 
       <ModuleSection title="Adapter source">
-        <Pill kind="info">/api/meters/readings → active adapter</Pill>
-        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 10, lineHeight: 1.6 }}>
-          When METER_SOURCE=mock (default), readings are deterministically generated from each meter's annual baseline shaped by day-of-week, month-of-year, and hour-of-day patterns. Switch to METER_SOURCE=bms once the on-campus relay is wired to point at live Eclypse data.
-        </p>
+        {(() => {
+          const series = data?.series || [];
+          const counts = series.reduce((acc, r) => { acc[r.source || 'unknown'] = (acc[r.source || 'unknown'] || 0) + 1; return acc; }, {});
+          const total = series.length;
+          const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+          const provenance = dominant === 'bms' || dominant === 'csv' ? 'measured' : dominant === 'mock' ? 'estimated' : 'estimated';
+          return (
+            <>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <ProvenancePill provenance={provenance} />
+                <Pill kind="info">/api/meters/readings → {dominant || 'no data'} adapter</Pill>
+                {total > 0 && (
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                    {Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(' · ')}
+                  </span>
+                )}
+              </div>
+              <div style={{ marginTop: 12, fontSize: 13, color: '#cbd5e1', lineHeight: 1.7 }}>
+                <div><span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 }}>Today:</span>
+                  {dominant === 'mock' && 'Readings are deterministically generated from each meter\'s annual baseline shaped by day-of-week, month-of-year, and hour-of-day patterns. Synthetic — useful for shaping the UI but not for real decisions.'}
+                  {dominant === 'bms' && 'Live readings pulled from KUA\'s on-campus Distech Eclypse relay. Each point is a real meter sample at the requested interval.'}
+                  {dominant === 'csv' && 'Readings imported from a CSV upload — typically utility bills or fuel-delivery invoices reconciled against the BMS.'}
+                  {!dominant && 'No data in the active window.'}
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 }}>Target:</span>
+                  Set METER_SOURCE=bms in the deployment env once the on-campus relay is online — every chart on the page flips estimated → measured automatically. CSV uploads stay available as a backfill path for periods predating the BMS rollout.
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </ModuleSection>
     </ModulePage>
   );

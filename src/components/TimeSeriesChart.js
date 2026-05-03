@@ -119,6 +119,27 @@ export function TimeSeriesChart({
         <path d={areaPath} fill={fill} stroke="none" />
         <path d={linePath} fill="none" stroke={color} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
 
+        {/* Per-point provenance dots: solid = measured, hollow = projected.
+            Only renders when at least one data point carries the measured
+            flag — otherwise stays out of the way. */}
+        {data.some((d) => d.measured !== undefined) && points.map(([x, y], i) => {
+          const isMeasured = !!data[i].measured;
+          return (
+            <circle
+              key={`dot-${i}`}
+              cx={x}
+              cy={y}
+              r={isMeasured ? 3.5 : 3}
+              fill={isMeasured ? color : '#0b1220'}
+              stroke={color}
+              strokeWidth={isMeasured ? 0 : 1.5}
+              strokeDasharray={isMeasured ? '' : '2 1.5'}
+            >
+              <title>{isMeasured ? 'Measured (BMS)' : 'Projected (seasonal pattern)'}</title>
+            </circle>
+          );
+        })}
+
         {/* Hover marker */}
         {hover && (
           <g>
@@ -126,31 +147,43 @@ export function TimeSeriesChart({
             <circle cx={hover.x} cy={hover.y} r={4} fill={color} stroke="#0b1220" strokeWidth={2} />
             <g>
               <rect
-                x={Math.min(hover.x + 8, width - 140)}
-                y={Math.max(padding.top, hover.y - 36)}
-                width={132}
-                height={32}
+                x={Math.min(hover.x + 8, width - 160)}
+                y={Math.max(padding.top, hover.y - 48)}
+                width={150}
+                height={data[hover.idx].measured !== undefined ? 46 : 32}
                 rx={4}
                 fill="#0b1220"
                 stroke="#1f2937"
               />
               <text
-                x={Math.min(hover.x + 14, width - 134)}
-                y={Math.max(padding.top + 12, hover.y - 22)}
+                x={Math.min(hover.x + 14, width - 154)}
+                y={Math.max(padding.top + 12, hover.y - 34)}
                 fill="#cbd5e1"
                 fontSize="11"
               >
                 {formatTime(times[hover.idx], true)}
               </text>
               <text
-                x={Math.min(hover.x + 14, width - 134)}
-                y={Math.max(padding.top + 26, hover.y - 8)}
+                x={Math.min(hover.x + 14, width - 154)}
+                y={Math.max(padding.top + 26, hover.y - 20)}
                 fill={color}
                 fontSize="12"
                 fontWeight="700"
               >
                 {formatNum(values[hover.idx])} {unit}
               </text>
+              {data[hover.idx].measured !== undefined && (
+                <text
+                  x={Math.min(hover.x + 14, width - 154)}
+                  y={Math.max(padding.top + 38, hover.y - 6)}
+                  fill={data[hover.idx].measured ? '#86efac' : '#fbbf24'}
+                  fontSize="10"
+                  fontWeight="700"
+                  letterSpacing="0.5"
+                >
+                  {data[hover.idx].measured ? '● MEASURED (BMS)' : '○ PROJECTED'}
+                </text>
+              )}
             </g>
           </g>
         )}
