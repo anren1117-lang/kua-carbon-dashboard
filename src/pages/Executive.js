@@ -98,15 +98,35 @@ export default function Executive() {
 
       <ModuleSection
         title="Data provenance"
-        hint="What the four numbers above are actually based on. Same vocabulary used everywhere on the dashboard."
+        hint="What the four numbers above are actually based on, plus the upgrade path that will replace each placeholder with measured data."
       >
         <ProvenanceLegend />
-        <ul style={{ paddingLeft: 18, fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginTop: 10 }}>
-          <li><ProvenancePill provenance="estimated" /> <strong>Net annual emissions ({Math.round(NET_MT).toLocaleString()} mt):</strong> derived from gross − sinks below; inherits the lowest-confidence inputs.</li>
-          <li><ProvenancePill provenance="estimated" /> <strong>Gross emissions ({Math.round(GROSS_MT).toLocaleString()} mt):</strong> Scope 1 (1,250 mt placeholder) + Scope 2 (cited, BMS-measured ×2.97 annualization × ISO-NE 2024) + Scope 3 (2,700 mt placeholder). Two of the three are placeholders, so the gross number is dominated by estimates.</li>
-          <li><ProvenancePill provenance="estimated" /> <strong>Forest sequestration ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt):</strong> 7 named stands × per-acre rates inside IPCC LULUCF ranges. Total acreage (~1,000) is cited (KUA disclosure) but the per-stand subdivision is invented.</li>
-          <li><ProvenancePill provenance="cited" /> <strong>On-campus solar ({SOLAR_ANNUAL_KWH.toLocaleString()} kWh/yr):</strong> Whittemore array nameplate × NREL PVWatts capacity factor for KUA latitude.</li>
-        </ul>
+        <div style={execProvStyles.list}>
+          <ExecProvRow
+            provenance="estimated"
+            label={`Net annual emissions (${Math.round(NET_MT).toLocaleString()} mt)`}
+            today="Derived from gross − sinks; inherits the lowest-confidence inputs from below."
+            target="Becomes 'cited' the moment the two estimated scope rows below ship to measured."
+          />
+          <ExecProvRow
+            provenance="estimated"
+            label={`Gross emissions (${Math.round(GROSS_MT).toLocaleString()} mt)`}
+            today="Scope 1 (1,250 mt placeholder) + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 factors × 2.97 annualization) + Scope 3 (2,700 mt placeholder). Two of three are placeholders."
+            target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
+          />
+          <ExecProvRow
+            provenance="estimated"
+            label={`Forest sequestration (${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt)`}
+            today="7 named forest stands × per-acre rates inside IPCC LULUCF ranges. Total acreage (~1,000) is cited but the per-stand subdivision and individual acreages are invented."
+            target="Commission a USFS Forest Inventory & Analysis-style stand inventory: real species composition, age class, basal area, per-stand acreage. Per-acre rates stay; inputs become real."
+          />
+          <ExecProvRow
+            provenance="cited"
+            label={`On-campus solar (${SOLAR_ANNUAL_KWH.toLocaleString()} kWh/yr)`}
+            today="Whittemore array nameplate × NREL PVWatts capacity factor for KUA latitude (43.6°N)."
+            target="Already at target. Improvement comes from a SunSpec-modbus pull of actual generation once the inverter is on the BMS — flips this to measured."
+          />
+        </div>
       </ModuleSection>
 
       <ModuleSection
@@ -377,6 +397,32 @@ function LinkGroup({ label, links }) {
     </div>
   );
 }
+
+function ExecProvRow({ provenance, label, today, target }) {
+  return (
+    <div style={execProvStyles.row}>
+      <div style={execProvStyles.head}>
+        <ProvenancePill provenance={provenance} />
+        <span style={execProvStyles.label}>{label}</span>
+      </div>
+      <div style={execProvStyles.method}>
+        <span style={execProvStyles.methodLabel}>Today:</span> {today}
+      </div>
+      <div style={execProvStyles.method}>
+        <span style={execProvStyles.methodLabel}>Target:</span> {target}
+      </div>
+    </div>
+  );
+}
+
+const execProvStyles = {
+  list: { display: 'grid', gap: 12, marginTop: 14 },
+  row: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  head: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 },
+  label: { fontSize: 14, color: '#e5e7eb', fontWeight: 700 },
+  method: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
+  methodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+};
 
 function EqCell({ icon, value, label }) {
   return (

@@ -206,40 +206,39 @@ export default function AdminPlanAgent() {
         <details style={styles.sourcesBlock}>
           <summary style={styles.sourcesSummary}>Where do these numbers come from?</summary>
           <div style={styles.provenanceLegend}><ProvenanceLegend compact /></div>
-          <ul style={styles.sourceList}>
-            <li>
-              <ProvenancePill provenance="estimated" />{' '}
-              <strong>Scope 1 ({SCOPE1_TOTAL_MT.toLocaleString()} mt/yr):</strong> placeholder for heating fuel + refrigerants + fleet. The number was hand-set; KUA's actual fuel deliveries and refrigerant logs have not been integrated. Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope1Mt</code>.
-            </li>
-            <li>
-              <ProvenancePill provenance="measured" />{' '}
-              <strong>Scope 2 kWh ({(649439).toLocaleString()} kWh YTD):</strong> KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03. Source: <code>src/data/envysionSnapshot.js</code>.
-            </li>
-            <li>
-              <ProvenancePill provenance="cited" />{' '}
-              <strong>Scope 2 mtCO₂e ({Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized):</strong> measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, etc.) summed over the ISO-NE 2024 generation mix; system rate ≈ 0.235 kg/kWh, in the eGRID NEWE 2022 range. Source: <code>src/data/gridMix.js</code>.
-            </li>
-            <li>
-              <ProvenancePill provenance="estimated" />{' '}
-              <strong>Scope 3 ({SCOPE3_TOTAL_MT.toLocaleString()} mt/yr):</strong> placeholder for student travel + dining + waste + procurement + commuting + upstream fuel. Hand-set order-of-magnitude figure; no measured inventory of any of these categories exists yet. Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope3Mt</code>.
-            </li>
-            <li>
-              <ProvenancePill provenance="estimated" />{' '}
-              <strong>Sinks ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt/yr):</strong> 7 named forest stands × per-acre sequestration rates. The per-acre rates (mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2) sit inside IPCC LULUCF default ranges, but the stand names ("North Hill", "Potato Patch", "Chellis Pond riparian", etc.) and individual acreages are placeholders — not from a KUA forest inventory. Source: <code>src/data/sinks.js forestStands</code>.
-            </li>
-            <li>
-              <ProvenancePill provenance="cited" />{' '}
-              <strong>Total forest acres (~1,000):</strong> KUA disclosure ("campus is 1,300 acres total, ~1,000 forested") corroborated by Wikipedia. Real number; only the per-stand subdivision is invented.
-            </li>
-            <li>
-              <ProvenancePill provenance="cited" />{' '}
-              <strong>Enrollment ({TOTAL_STUDENTS}):</strong> KUA "By the Numbers" page + Wikipedia. Source: <code>src/data/students.js TOTAL_STUDENTS</code>.
-            </li>
-            <li>
-              <ProvenancePill provenance="cited" />{' '}
-              <strong>Annualization factor (×{(SCOPE2_ANNUAL_MT/SCOPE1_TOTAL_MT*0+ (365/123)).toFixed(2)}):</strong> 365 days ÷ days-into-year as of the BMS snapshot (123 on 2026-05-03). Source: <code>src/data/envysionSnapshot.js ANNUALIZE_FACTOR</code>.
-            </li>
-          </ul>
+          <div style={styles.contextProvList}>
+            <CtxRow provenance="estimated" label={`Scope 1 (${SCOPE1_TOTAL_MT.toLocaleString()} mt/yr)`}
+              today="Hand-set placeholder for heating fuel + refrigerants + fleet, sized to typical NH boarding-school footprints. KUA fuel deliveries and refrigerant logs have not been integrated."
+              target="Annual fuel-delivery invoices (heating oil + propane) per building × EPA Stationary Combustion factors. HVAC technician service-report mass balance × IPCC AR6 GWP100 for refrigerants. Fleet fuel-card records × EPA gasoline/diesel factors. Flips estimated → measured."
+              sourcePath="src/pages/Executive.js SCOPE_TOTALS.scope1Mt" />
+            <CtxRow provenance="measured" label={`Scope 2 kWh (${(649439).toLocaleString()} kWh YTD)`}
+              today="KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03 (123 days into 2026)."
+              target="Already measured. Improvement: drop the ×2.97 annualization once a full year of BMS data is captured."
+              sourcePath="src/data/envysionSnapshot.js" />
+            <CtxRow provenance="cited" label={`Scope 2 mtCO₂e (${Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized)`}
+              today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range."
+              target="Already at target methodology. Refresh as eGRID NEWE 2024 publishes (expected late 2026)."
+              sourcePath="src/data/gridMix.js" />
+            <CtxRow provenance="estimated" label={`Scope 3 (${SCOPE3_TOTAL_MT.toLocaleString()} mt/yr)`}
+              today="Hand-set order-of-magnitude figure for student travel + dining + waste + procurement + commuting + upstream fuel. No measured inventory of any of these categories exists yet."
+              target="Student travel: KUA travel office departure logs + ICAO calculator. Dining: Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream) × EPA WARM v15.1. Procurement: Business Office spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fuel-economy. Each subcategory ships independently → cited."
+              sourcePath="src/pages/Executive.js SCOPE_TOTALS.scope3Mt" />
+            <CtxRow provenance="estimated" label={`Sinks (${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt/yr)`}
+              today='7 named forest stands × per-acre sequestration rates (IPCC LULUCF defaults: mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2). Stand names ("North Hill", "Potato Patch", "Chellis Pond riparian", etc.) and per-stand acreages are placeholders.'
+              target="Commission a USFS Forest Inventory & Analysis-style stand survey of the actual KUA woodlot — species composition, age class, basal area, real per-stand acreage. IPCC per-acre rates stay; inputs become real. Flips estimated → cited."
+              sourcePath="src/data/sinks.js forestStands" />
+            <CtxRow provenance="cited" label={`Total forest acres (~1,000)`}
+              today='KUA disclosure ("campus is 1,300 acres total, ~1,000 forested") corroborated by Wikipedia. Real number.'
+              target="No upgrade needed. The acres figure is solid; only the per-stand subdivision is the placeholder." />
+            <CtxRow provenance="cited" label={`Enrollment (${TOTAL_STUDENTS})`}
+              today='KUA "By the Numbers" page + Wikipedia.'
+              target="No upgrade needed. Will refresh annually from the KUA registrar feed when integrated."
+              sourcePath="src/data/students.js TOTAL_STUDENTS" />
+            <CtxRow provenance="cited" label={`Annualization factor (×${(365/123).toFixed(2)})`}
+              today="365 days ÷ 123 days-into-year as of BMS snapshot 2026-05-03."
+              target="Drops to ×1.0 (i.e. removed) once a full calendar year of BMS data is captured (~Jan 2027)."
+              sourcePath="src/data/envysionSnapshot.js ANNUALIZE_FACTOR" />
+          </div>
           <div style={styles.sourceCaveat}>
             Plan items below each carry their own provenance pill (measured / cited / estimated) plus a <em>Data source</em> line citing the methodology category behind their mt and $ benchmarks. Almost every rule-library item is currently <em>estimated</em> because KUA-specific inputs (Miller Hall boiler load, T8 fixture count, faculty commute distances, international student travel mileage) haven't been inventoried — the methodology is sound, the input quantities are best-effort. The AI agent is instructed to default to <em>estimated</em> when in doubt, and never to inflate confidence.
           </div>
@@ -344,6 +343,26 @@ function Select({ label, value, onChange, options }) {
   );
 }
 
+function CtxRow({ provenance, label, today, target, sourcePath }) {
+  return (
+    <div style={styles.ctxRow}>
+      <div style={styles.ctxHead}>
+        <ProvenancePill provenance={provenance} />
+        <span style={styles.ctxLabel}>{label}</span>
+      </div>
+      <div style={styles.ctxMethod}>
+        <span style={styles.ctxMethodLabel}>Today:</span> {today}
+      </div>
+      <div style={styles.ctxMethod}>
+        <span style={styles.ctxMethodLabel}>Target:</span> {target}
+      </div>
+      {sourcePath && (
+        <div style={styles.ctxSourcePath}>Source: <code>{sourcePath}</code></div>
+      )}
+    </div>
+  );
+}
+
 function Hero({ label, value, unit, accent }) {
   return (
     <div style={{ ...styles.hero, borderLeftColor: accent }}>
@@ -408,6 +427,13 @@ const styles = {
   sourceList: { paddingLeft: 18, fontSize: 12, color: '#cbd5e1', lineHeight: 1.7, marginTop: 8, marginBottom: 8 },
   provenanceLegend: { display: 'flex', gap: 14, alignItems: 'center', marginTop: 10, marginBottom: 6, flexWrap: 'wrap', fontSize: 11, color: '#94a3b8' },
   sourceCaveat: { marginTop: 8, fontSize: 12, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 8, borderTop: '1px solid #1f2937' },
+  contextProvList: { display: 'grid', gap: 10, marginTop: 12 },
+  ctxRow: { padding: '12px 14px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 8 },
+  ctxHead: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 },
+  ctxLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 700 },
+  ctxMethod: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
+  ctxMethodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+  ctxSourcePath: { marginTop: 6, fontSize: 11, color: '#64748b' },
   actionRow: { display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' },
   primaryBtn: { padding: '10px 18px', background: '#22d3ee', color: '#0b1220', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 700, cursor: 'pointer' },
   dangerBtn: { padding: '10px 14px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
