@@ -152,28 +152,36 @@ export default function Executive() {
       </ModuleSection>
 
       <ModuleSection title="Direct module links">
-        <div style={styles.linkGrid}>
-          {[
-            { to: '/hotspots', label: 'Hotspots' },
-            { to: '/buildings', label: 'Buildings' },
-            { to: '/trends', label: 'Trend Builder' },
-            { to: '/dining', label: 'Dining' },
-            { to: '/transportation', label: 'Transportation' },
-            { to: '/waste', label: 'Waste' },
-            { to: '/procurement', label: 'Procurement' },
-            { to: '/renewables-os', label: 'Renewables' },
-            { to: '/sinks-os', label: 'Sinks' },
-            { to: '/goals', label: 'Goals & Targets' },
-            { to: '/admin/actions', label: 'Actions (institutional)' },
-            { to: '/actions', label: 'Actions (student-facing)' },
-            { to: '/challenges', label: 'Student Challenges' },
-            { to: '/teacher', label: 'Teacher Tools' },
-            { to: '/chatbot', label: 'Carbon Chatbot' },
-            { to: '/data-admin', label: 'Data Admin' },
-          ].map((l) => (
-            <Link key={l.to} to={l.to} style={styles.linkCard}>{l.label} →</Link>
-          ))}
-        </div>
+        <LinkGroup label="Operations & data" links={[
+          { to: '/hotspots',        label: 'Hotspots' },
+          { to: '/buildings',       label: 'Buildings' },
+          { to: '/trends',          label: 'Trend Builder' },
+          { to: '/methodology',     label: 'Methodology' },
+          { to: '/data-admin',      label: 'Data Admin' },
+        ]} />
+        <LinkGroup label="By category" links={[
+          { to: '/dining',          label: 'Dining' },
+          { to: '/transportation',  label: 'Transportation' },
+          { to: '/waste',           label: 'Waste' },
+          { to: '/procurement',     label: 'Procurement' },
+        ]} />
+        <LinkGroup label="Reductions & drawdown" links={[
+          { to: '/admin/actions',   label: 'Actions (institutional)' },
+          { to: '/goals',           label: 'Goals & Targets' },
+          { to: '/renewables-os',   label: 'Renewables' },
+          { to: '/sinks-os',        label: 'Sinks' },
+        ]} />
+        <LinkGroup label="Reporting" links={[
+          { to: '/report',          label: 'Annual Report' },
+          { to: '/scenarios',       label: 'Scenarios' },
+          { to: '/credits',         label: 'Carbon Credits' },
+        ]} />
+        <LinkGroup label="Student & faculty-facing" links={[
+          { to: '/actions',         label: 'Actions (student-facing)' },
+          { to: '/challenges',      label: 'Student Challenges' },
+          { to: '/teacher',         label: 'Teacher Tools' },
+          { to: '/chatbot',         label: 'Carbon Chatbot' },
+        ]} />
       </ModuleSection>
     </ModulePage>
   );
@@ -225,6 +233,19 @@ function ScopeRow({ to, label, mt, share, color, sinks, scopeKey }) {
   );
 }
 
+function LinkGroup({ label, links }) {
+  return (
+    <div style={styles.linkGroup}>
+      <div style={styles.linkGroupLabel}>{label}</div>
+      <div style={styles.linkGrid}>
+        {links.map((l) => (
+          <Link key={l.to} to={l.to} style={styles.linkCard}>{l.label} →</Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function EqCell({ icon, value, label }) {
   return (
     <div style={styles.eqCell}>
@@ -260,6 +281,8 @@ const styles = {
   eqValue: { fontSize: 22, color: '#e5e7eb', fontWeight: 800, marginTop: 4, fontVariantNumeric: 'tabular-nums', lineHeight: 1 },
   eqLabel: { fontSize: 11, color: '#94a3b8', marginTop: 6, lineHeight: 1.3 },
 
+  linkGroup: { marginTop: 12 },
+  linkGroupLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 8 },
   linkGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 },
   linkCard: { padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, color: '#cbd5e1', textDecoration: 'none', fontSize: 13, fontWeight: 600 },
 };
