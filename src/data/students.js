@@ -24,8 +24,14 @@ function makeHash(seed) {
   return ('00000000' + ((h >>> 0).toString(16))).slice(-8);
 }
 
+// KUA enrollment ≈ 340 students per the school's "By the Numbers" page
+// (and Wikipedia infobox). Roughly 70% boarding / 30% day per public
+// admissions material; we approximate that mix here. Update the number
+// once a year as the actual roster comes in via SIS export.
+const TOTAL_ENROLLMENT = 340;
+
 /** @type {StudentProfile[]} */
-export const students = Array.from({ length: 600 }, (_, i) => ({
+export const students = Array.from({ length: TOTAL_ENROLLMENT }, (_, i) => ({
   studentIdHash: makeHash(i),
   dormId: dormCycle[i % dormCycle.length],
   grade: /** @type {9|10|11|12} */ ([9, 10, 11, 12][i % 4]),

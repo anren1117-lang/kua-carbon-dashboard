@@ -13,8 +13,11 @@ const summary = {
   grossLow: 3242, grossHigh: 5572, grossMid: 4150,
   sinkLow: -4000, sinkHigh: -2000,
   netLow: -758, netHigh: 3572, netMid: 1150,
-  perStudentLow: -1.3, perStudentHigh: 6.0, perStudentMid: 1.9,
-  studentCount: 600,
+  // Per-student values are net mt ÷ ~340 enrolled students (KUA's actual
+  // headcount per the school's "By the Numbers" page). Range reflects
+  // the gross/sinks low/mid/high spread.
+  perStudentLow: -2.2, perStudentHigh: 10.5, perStudentMid: 3.4,
+  studentCount: 340,
 };
 
 const styles = {

@@ -181,7 +181,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'KUA\'s situation',
-        body: 'Here are the **headline numbers** for KUA\'s footprint, in plain language:\n\n**Gross emissions: ~4,150 tons CO₂e per year.** That\'s the total released by KUA\'s operations and indirect activities. About 1,000 tons from heating fuel (Scope 1), 222 tons from purchased electricity (Scope 2), and 3,000 tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~3,000 tons CO₂e per year drawdown.** KUA owns roughly **1,000 acres of forest** in New Hampshire. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools **don\'t even measure this** — KUA does, which is unusual.\n\n**Net carbon balance: ~1,150 tons CO₂e per year.** That\'s gross minus sequestration. Per student: about **1.9 mtCO₂e/year**. For comparison, peer boarding schools are typically **6–10 mtCO₂e/student/year** — KUA looks lower largely because we count our forest, but also because the New England grid is fairly clean.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. The range of plausible values is wide right now (−760 to +3,572 mtCO₂e net). As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.',
+        body: 'Here are the **headline numbers** for KUA\'s footprint, in plain language:\n\n**Gross emissions: ~4,150 tons CO₂e per year.** That\'s the total released by KUA\'s operations and indirect activities. About 1,000 tons from heating fuel (Scope 1), 222 tons from purchased electricity (Scope 2), and 3,000 tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~3,000 tons CO₂e per year drawdown.** KUA owns roughly **1,000 acres of forest** in New Hampshire. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools **don\'t even measure this** — KUA does, which is unusual.\n\n**Net carbon balance: ~1,150 tons CO₂e per year.** That\'s gross minus sequestration. Per student: about **3.4 mtCO₂e/year**. For comparison, peer boarding schools are typically **6–10 mtCO₂e/student/year** — KUA looks lower largely because we count our forest, but also because the New England grid is fairly clean.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. The range of plausible values is wide right now (−760 to +3,572 mtCO₂e net). As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.',
       },
       {
         type: 'quiz',
@@ -451,7 +451,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Sinks — the only category that goes the other way',
-        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is the **~1,000 acres of campus forest**. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates = **2,000–4,000 mtCO₂e/year** drawdown, with a mid-estimate of about **3,000 mtCO₂e/year**.\n\n**Why does this matter so much?** Because it\'s **almost the same magnitude as KUA\'s gross emissions**. If gross emissions are ~4,150 mtCO₂e/year and sequestration is ~3,000 mtCO₂e/year, then **net emissions are only ~1,150 mtCO₂e/year**. Per student, that\'s about 1.9 mtCO₂e — far below most peer schools, which sit at 6–10 mtCO₂e per student. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university footprint studies and found that on-campus sequestration was rarely measured even at institutions with significant forested land. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks.** Middlebury College reports as "carbon neutral" by purchasing carbon credits equal to their gross emissions — a financial drawdown rather than a physical one. KUA\'s 3,000 mtCO₂e/year is REAL — those CO₂ molecules are actually being pulled out of the air, on KUA land, by trees you can walk up to and measure.',
+        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is the **~1,000 acres of campus forest**. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates = **2,000–4,000 mtCO₂e/year** drawdown, with a mid-estimate of about **3,000 mtCO₂e/year**.\n\n**Why does this matter so much?** Because it\'s **almost the same magnitude as KUA\'s gross emissions**. If gross emissions are ~4,150 mtCO₂e/year and sequestration is ~3,000 mtCO₂e/year, then **net emissions are only ~1,150 mtCO₂e/year**. Per student, that\'s about 3.4 mtCO₂e — far below most peer schools, which sit at 6–10 mtCO₂e per student. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university footprint studies and found that on-campus sequestration was rarely measured even at institutions with significant forested land. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks.** Middlebury College reports as "carbon neutral" by purchasing carbon credits equal to their gross emissions — a financial drawdown rather than a physical one. KUA\'s 3,000 mtCO₂e/year is REAL — those CO₂ molecules are actually being pulled out of the air, on KUA land, by trees you can walk up to and measure.',
       },
       {
         type: 'concept',
@@ -745,7 +745,7 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: per-student net footprint',
-        scenario: 'KUA gross: ~4,150 mtCO₂e. Sequestration: ~3,000 mtCO₂e. Enrollment: ~600 students.',
+        scenario: 'KUA gross: ~4,150 mtCO₂e. Sequestration: ~3,000 mtCO₂e. Enrollment: ~340 students.',
         given: [
           { label: 'Gross', value: '4,150 mtCO₂e/yr' },
           { label: 'Sequestration', value: '3,000 mtCO₂e/yr' },
@@ -753,10 +753,10 @@ const paths = [
         ],
         question: 'Net per student:',
         options: [
-          { text: '~1.9 mtCO₂e/student', correct: true, explanation: 'Right. Net = 1,150. Per student = 1,150/600 = 1.92 mtCO₂e.' },
+          { text: '~3.4 mtCO₂e/student', correct: true, explanation: 'Right. Net = 1,150. Per student = 1,150/340 = 3.38 mtCO₂e.' },
           { text: '~6.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
           { text: '~4.2 mtCO₂e/student', correct: false, explanation: 'Almost — that\'s the gross-only per student. Net is lower because the forest pulls some carbon back.' },
-          { text: '~5.0 mtCO₂e/student', correct: false, explanation: 'Sequestration per student (3,000/600 = 5.0). The net is gross minus sinks, divided by enrollment.' },
+          { text: '~8.8 mtCO₂e/student', correct: false, explanation: 'That is sequestration per student alone (3,000/340 = 8.8). The net is gross minus sinks, divided by enrollment.' },
         ],
       },
       {
@@ -779,7 +779,7 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA\'s ~1.9 mtCO₂e/student. How does that compare to peer boarding schools?',
+        question: 'KUA\'s ~3.4 mtCO₂e/student. How does that compare to peer boarding schools?',
         options: [
           { text: 'About the same', correct: false, explanation: 'Most peer boarding schools are 6–10 mt/student because they don\'t count sinks.' },
           { text: 'Lower than peers', correct: true, explanation: 'Right. Phillips Exeter ~10, Andover ~9. KUA looks lower mostly because we measure on-campus sequestration.' },
@@ -789,7 +789,7 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA reports ~1.9 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
+        question: 'KUA reports ~3.4 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
         options: [
           { text: 'It would drop, because more students share the same fixed emissions', correct: true, explanation: 'Right. **Most KUA emissions are roughly fixed costs of operating the campus** — heating buildings, generating administrative emissions, maintaining facilities. Adding students adds some marginal emissions (more food, more travel) but proportionally less. Per-student would drop because the denominator grows faster than the numerator. This is why "per-student" can be a deceptive metric on its own — it rewards growth without necessarily reducing total impact.' },
           { text: 'It would stay exactly the same', correct: false, explanation: 'Per-student divides total by enrollment. Both numbers change with growth, but not proportionally. Per-student typically falls.' },
@@ -800,7 +800,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'You can verify the dashboard yourself',
-        body: 'Net ~1,150 mt/yr ± ~1,580 (combined uncertainty). 72% of gross from Scope 3. Per student ~1.9 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
+        body: 'Net ~1,150 mt/yr ± ~1,580 (combined uncertainty). 72% of gross from Scope 3. Per student ~3.4 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
       },
     ],
   },
@@ -1138,7 +1138,7 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: same school, different methodology',
-        scenario: 'Two schools have IDENTICAL physical operations: 600 students, 4,150 mtCO₂e gross, 3,000 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
+        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,150 mtCO₂e gross, 3,000 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
         given: [
           { label: 'Gross (both)', value: '4,150 mtCO₂e' },
           { label: 'Sequestration (real)', value: '3,000 mtCO₂e' },
@@ -1146,10 +1146,10 @@ const paths = [
         ],
         question: 'Difference in published per-student footprint:',
         options: [
-          { text: 'Both publish ~1.9 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
-          { text: 'A: ~1.9 mt; B: ~6.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,150 − 3,000) / 600 = 1.92. B: 4,150 / 600 = 6.92. Same physical campus, 3.6× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
+          { text: 'Both publish ~3.4 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
+          { text: 'A: ~3.4 mt; B: ~12.2 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,150 − 3,000) / 340 = 3.38. B: 4,150 / 340 = 12.21. Same physical campus, 3.6× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
           { text: 'Both publish ~6.9 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
-          { text: 'A: ~5.0 mt; B: ~5.0 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 1.9 (A) and 6.9 (B).' },
+          { text: 'A: ~5.0 mt; B: ~5.0 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 3.4 (A) and 12.2 (B).' },
         ],
       },
       {

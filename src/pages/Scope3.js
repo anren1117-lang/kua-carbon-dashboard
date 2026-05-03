@@ -172,9 +172,9 @@ function Scope3() {
               { input: 'WARM compost factor', value: '+40 kg CO₂e/ton', source: 'EPA WARM v15 — food waste composted' },
             ],
             math: [
-              'food_waste_tons = 600 students × 100 lb/yr / 2,000 lb/ton = 30 tons',
-              'baseline_emissions = 30 × 520 = 15,600 kg = 15.6 mtCO₂e',
-              'compost_emissions  = 30 × 40 = 1,200 kg = 1.2 mtCO₂e',
+              'food_waste_tons = 340 students × 100 lb/yr / 2,000 lb/ton = 17 tons',
+              'baseline_emissions = 17 × 520 = 8,840 kg = 8.84 mtCO₂e',
+              'compost_emissions  = 17 × 40 = 680 kg = 0.68 mtCO₂e',
               'savings = 14.4 mtCO₂e/yr at 100% diversion',
               '',
               '# Range with realistic diversion rates (50-100%) and waste levels: 10-24',

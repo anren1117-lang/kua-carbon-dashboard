@@ -22,8 +22,13 @@ function makeHash(seed) {
   return ('00000000' + ((h >>> 0).toString(16))).slice(-8);
 }
 
+// KUA faculty ≈ 52 per the school's "By the Numbers" page (Wikipedia
+// agrees). Student-to-teacher ratio 6:1, average class size 11. Update
+// once a year as the HR roster comes in.
+const TOTAL_FACULTY = 52;
+
 /** @type {TeacherStaffProfile[]} */
-export const staff = Array.from({ length: 110 }, (_, i) => ({
+export const staff = Array.from({ length: TOTAL_FACULTY }, (_, i) => ({
   staffIdHash: makeHash(i),
   department: departments[i % departments.length],
   role: i % 7 === 0 ? 'admin' : i % 11 === 0 ? 'maintenance' : i % 3 === 0 ? 'staff' : 'teacher',

@@ -11,7 +11,7 @@ import { supabase } from '../supabaseClient';
 
 const PRELIM = {
   scope1: 1000, scope2: 222, scope3: 3000,
-  sinks: 3000, students: 600,
+  sinks: 3000, students: 340,
 };
 
 function compose(records) {

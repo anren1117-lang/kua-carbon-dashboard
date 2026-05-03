@@ -112,7 +112,7 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
             <div style={styles.estimateValue}>
               {estimate.perStudent}<span style={styles.estimateUnit}>mtCO₂e</span>
             </div>
-            <div style={styles.estimateRange}>≈ 600 students</div>
+            <div style={styles.estimateRange}>≈ 340 students</div>
           </div>
           {estimate.thirdMetric && (
             <div style={styles.estimateCell}>
