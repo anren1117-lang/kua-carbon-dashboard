@@ -70,8 +70,10 @@ and every meter-driven view goes through the adapter at `src/adapters/meter/`.
 **Teacher portal** (`/teacher` is the hub)
 | Route               | Purpose |
 |---------------------|---------|
-| `/teacher`          | Portal home — cards linking to all classroom-facing tools |
-| `/teacher/lessons`  | Lesson modules, class progress, auto-generated discussion prompts |
+| `/teacher`          | **Password-gated** portal home — cards + "my lessons" panel |
+| `/teacher/create`   | **NEW** — paste source material, AI generates reading + 5 four-option questions, publish a `/lessons/:id` URL to share with class |
+| `/teacher/lessons`  | Curated lesson modules, class progress, auto-generated discussion prompts |
+| `/lessons/:id`      | **NEW** — student-facing lesson view (reading + quiz). Attempts log to `/api/quiz/attempts` |
 | `/chatbot`          | Carbon Learning Chatbot (rule-based; LLM-grounded when API key set) |
 | `/learn`            | Self-paced learning agent (multi-path quizzes) |
 | `/challenges`       | Dorm-level student leaderboard (privacy-by-design, opt-in) |
@@ -168,6 +170,10 @@ src/
 | POST   | `/api/chatbot`                    | Curriculum-bounded chatbot (rule-based + grounded LLM rewrite) |
 | POST   | `/api/auth/session`               | Verifies Google OIDC token; returns hashed identity |
 | POST   | `/api/auth/logout`                | Clears server-side session state |
+| POST   | `/api/teacher/lessons`            | **NEW** — generates AI reading + 4-option questions from pasted source material; persists |
+| GET    | `/api/teacher/lessons?id=` / `?createdByHash=` | Read a lesson, or list a teacher's lessons |
+| PATCH  | `/api/teacher/lessons`            | Update a lesson (publish/unpublish) |
+| DELETE | `/api/teacher/lessons?id=`        | Delete a lesson |
 | GET    | `/api/health`                     | Component status (adapter, Supabase, factors) |
 | POST   | `/api/cron/sync-bms`              | Hourly cron — pulls last hour from adapter, persists to Supabase |
 | POST   | `/api/chat`                       | Existing — proxies to Anthropic API for /ask |

@@ -15,6 +15,8 @@ import quizAttemptsHandler   from '../../api/quiz/attempts.js';
 import chatbotHandler        from '../../api/chatbot.js';
 import authSessionHandler    from '../../api/auth/session.js';
 import authLogoutHandler     from '../../api/auth/logout.js';
+import teacherLessonsHandler from '../../api/teacher/lessons.js';
+import { _resetLessonStoreForTests } from '../storage/lessonStore.js';
 import readingsExportHandler from '../../api/meters/readings/export.js';
 import healthHandler         from '../../api/health.js';
 import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
@@ -199,6 +201,112 @@ describe('GET /api/meters/readings/export', () => {
   it('400s without start/end', async () => {
     const r = await call(readingsExportHandler, { method: 'GET', query: { buildingId: 'b_miller' } });
     expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('/api/teacher/lessons', () => {
+  it('rejects POST without a hashed teacherIdHash', async () => {
+    _resetLessonStoreForTests();
+    const r = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.1' },
+      body: { teacherIdHash: 'Mr. Smith', title: 'T', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.body.error).toMatch(/hashed/i);
+  });
+
+  it('persists a stub-generated lesson when no API key is set', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const r = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.2' },
+      body: {
+        teacherIdHash: 'staff_a1b2c3d4',
+        title: 'Methane basics',
+        topic: 'climate_basics',
+        readingLevel: 'novice',
+        sourceMaterial: 'Methane is CH4. It traps heat 28x more effectively than CO2 over 100 years.',
+        status: 'draft',
+      },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.lesson.title).toBe('Methane basics');
+    expect(r.body.lesson.questions.length).toBeGreaterThan(0);
+    expect(r.body.lesson.status).toBe('draft');
+    expect(r.body.lesson.id).toMatch(/^lesson_/);
+  });
+
+  it('GET ?id= reads back the lesson', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.3' },
+      body: {
+        teacherIdHash: 'staff_a1b2c3d4',
+        title: 'Recall test',
+        topic: 'food',
+        readingLevel: 'intermediate',
+        sourceMaterial: 'Beef averages 60 kg CO2e per kg.',
+      },
+    });
+    const id = created.body.lesson.id;
+    const r = await call(teacherLessonsHandler, { method: 'GET', query: { id } });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.lesson.id).toBe(id);
+  });
+
+  it('GET filters by createdByHash', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.4' },
+      body: { teacherIdHash: 'staff_aaaa1111', title: 'Mine',  topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
+    });
+    await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.5' },
+      body: { teacherIdHash: 'staff_bbbb2222', title: 'Other', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
+    });
+    const r = await call(teacherLessonsHandler, { method: 'GET', query: { createdByHash: 'staff_aaaa1111' } });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.lessons.length).toBe(1);
+    expect(r.body.lessons[0].title).toBe('Mine');
+  });
+
+  it('PATCH updates an existing lesson', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.6' },
+      body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Draft', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x', status: 'draft' },
+    });
+    const id = created.body.lesson.id;
+    const patched = await call(teacherLessonsHandler, {
+      method: 'PATCH',
+      body: { id, status: 'published' },
+    });
+    expect(patched.statusCode).toBe(200);
+    expect(patched.body.lesson.status).toBe('published');
+  });
+
+  it('DELETE removes a lesson', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.7' },
+      body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Bye', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
+    });
+    const id = created.body.lesson.id;
+    const del = await call(teacherLessonsHandler, { method: 'DELETE', query: { id } });
+    expect(del.statusCode).toBe(200);
+    const after = await call(teacherLessonsHandler, { method: 'GET', query: { id } });
+    expect(after.statusCode).toBe(404);
   });
 });
 

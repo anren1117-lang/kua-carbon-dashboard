@@ -33,6 +33,8 @@ const DataAdmin = lazy(() => import('./pages/DataAdmin'));
 const CarbonChat = lazy(() => import('./pages/CarbonChat'));
 const Teacher = lazy(() => import('./pages/Teacher'));
 const TeacherPortal = lazy(() => import('./pages/TeacherPortal'));
+const LessonEditor = lazy(() => import('./pages/LessonEditor'));
+const StudentLesson = lazy(() => import('./pages/StudentLesson'));
 const Plan = lazy(() => import('./pages/Plan'));
 const Drawdown = lazy(() => import('./pages/Drawdown'));
 const Waste = lazy(() => import('./pages/Waste'));
@@ -111,6 +113,8 @@ root.render(
             <Route path="/chatbot" element={<CarbonChat />} />
             <Route path="/teacher" element={<TeacherPortal />} />
             <Route path="/teacher/lessons" element={<Teacher />} />
+            <Route path="/teacher/create" element={<LessonEditor />} />
+            <Route path="/lessons/:id" element={<StudentLesson />} />
             <Route path="/plan" element={<Plan />} />
             <Route path="/drawdown" element={<Drawdown />} />
             <Route path="/waste" element={<Waste />} />
