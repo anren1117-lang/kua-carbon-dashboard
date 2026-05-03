@@ -32,6 +32,7 @@ import { URL } from 'node:url';
 import metersHandler          from '../api/meters/index.js';
 import readingsHandler        from '../api/meters/readings.js';
 import readingsImportHandler  from '../api/meters/readings/import.js';
+import readingsExportHandler  from '../api/meters/readings/export.js';
 import qualityHandler         from '../api/meters/quality.js';
 import buildingEnergyHandler  from '../api/buildings/[id]/energy.js';
 import emissionsCalculate     from '../api/emissions/calculate.js';
@@ -61,6 +62,10 @@ function adaptResponse(res) {
     res.end(JSON.stringify(data));
     return res;
   };
+  res.send = (data) => {
+    res.end(typeof data === 'string' ? data : JSON.stringify(data));
+    return res;
+  };
 }
 
 // Match a request URL/method to a Vercel-style handler.
@@ -70,6 +75,7 @@ async function route(req, res, url) {
 
   if (m === 'GET'  && path === '/api/meters')                    return metersHandler(req, res);
   if (m === 'GET'  && path === '/api/meters/readings')           return readingsHandler(req, res);
+  if (m === 'GET'  && path === '/api/meters/readings/export')    return readingsExportHandler(req, res);
   if (m === 'POST' && path === '/api/meters/readings/import')    return readingsImportHandler(req, res);
   if (m === 'GET'  && path === '/api/meters/quality')            return qualityHandler(req, res);
   if (m === 'POST' && path === '/api/emissions/calculate')       return emissionsCalculate(req, res);

@@ -95,7 +95,8 @@ src/
 |--------|-----------------------------------|---------|
 | GET    | `/api/meters`                     | List meters (filter by building/type) |
 | GET    | `/api/meters/readings`            | Interval readings for a window |
-| POST   | `/api/meters/readings/import`     | Bulk-import readings (mock no-op) |
+| POST   | `/api/meters/readings/import`     | Bulk-import readings (CsvMeterAdapter persists to in-memory store) |
+| GET    | `/api/meters/readings/export`     | Returns CSV (round-trips with the import format) |
 | GET    | `/api/meters/quality`             | Anomaly + gap report per meter |
 | GET    | `/api/buildings/[id]/energy`      | Per-building rollup (kWh, peak kW, mtCO2e, intensities) |
 | POST   | `/api/emissions/calculate`        | Convert any activity quantity to kgCO2e using a stored factor |
@@ -161,7 +162,6 @@ ranking is opt-in only.
 
 ### Next phases (not yet started)
 
-- **Cryptographic JWT verification on /api/auth/session.** The current handler validates `iss`/`aud`/`exp`/`email` domain but does not yet verify Google's signature against their JWKs. Wire `jose` + `jwks-rsa` once the dependency budget allows. Production will need this before SSO replaces the dev-mode mock.
 - **Persistent storage.** Quiz attempts and CSV-imported readings live in process memory and reset on cold start. The schemas are documented in their respective ledger files; phase 2 ports both to Supabase.
 - **Live data ingestion.** Stand up the on-campus relay against the real Eclypse REST endpoints and set `BMS_BASE_URL` on Vercel. Replace static `envysionSnapshot` with periodic API calls to `/api/buildings/[id]/energy`.
 - **Chatbot grounding upgrade.** The current `/api/chatbot` LLM mode passes the matched articles into the system prompt. Phase 2 replaces keyword retrieval with vector-similarity over embedded knowledge content for better article selection on long-tail queries.

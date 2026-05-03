@@ -10,6 +10,8 @@ import { TOTAL_STUDENTS } from '../data/students.js';
 import { TOTAL_STAFF } from '../data/staff.js';
 import { rankActions } from '../utils/hotspots.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
+import { monthlyPattern } from '../data/seasonalPatterns.js';
+import { Sparkline } from '../components/Sparkline.js';
 
 // Executive Dashboard — what a head of school or trustee should see in
 // the first 30 seconds. Aggregates the most-load-bearing numbers from
@@ -58,6 +60,7 @@ export default function Executive() {
             mt={SCOPE_TOTALS.scope1Mt}
             share={(SCOPE_TOTALS.scope1Mt / GROSS_MT) * 100}
             color="#fbbf24"
+            scopeKey="scope1"
           />
           <ScopeRow
             to="/scope-2"
@@ -65,6 +68,7 @@ export default function Executive() {
             mt={SCOPE_TOTALS.scope2Mt}
             share={(SCOPE_TOTALS.scope2Mt / GROSS_MT) * 100}
             color="#22d3ee"
+            scopeKey="scope2"
           />
           <ScopeRow
             to="/scope-3"
@@ -72,6 +76,7 @@ export default function Executive() {
             mt={SCOPE_TOTALS.scope3Mt}
             share={(SCOPE_TOTALS.scope3Mt / GROSS_MT) * 100}
             color="#ef4444"
+            scopeKey="scope3"
           />
           <ScopeRow
             to="/sinks-os"
@@ -166,7 +171,28 @@ export default function Executive() {
   );
 }
 
-function ScopeRow({ to, label, mt, share, color, sinks }) {
+// Approximate the per-scope monthly shape using the same monthly pattern
+// the live ticker uses — Scope 2 follows ISO-NE seasonal grid usage, and
+// Scope 1 is heavily heating-driven so we accentuate the winter peaks.
+function scopeMonthlySeries(scopeKey, total) {
+  const baseShape = monthlyPattern.map((m) => m.multiplier);
+  let shape = baseShape;
+  if (scopeKey === 'scope1') {
+    // Steeper winter peak, near-zero summer trough.
+    shape = baseShape.map((v) => Math.pow(v, 1.6));
+  } else if (scopeKey === 'scope3') {
+    // Peaks at fall/spring break travel; minor summer dip.
+    shape = baseShape.map((v, i) => {
+      const travelBoost = (i === 11 || i === 5 || i === 2) ? 1.18 : 1;
+      return v * travelBoost;
+    });
+  }
+  const sum = shape.reduce((s, v) => s + v, 0);
+  return shape.map((v) => (v / sum) * total);
+}
+
+function ScopeRow({ to, label, mt, share, color, sinks, scopeKey }) {
+  const series = scopeKey ? scopeMonthlySeries(scopeKey, Math.abs(mt)) : null;
   return (
     <Link to={to} style={{ ...styles.scopeRow, borderLeftColor: color }}>
       <div style={{ flex: 1 }}>
@@ -175,6 +201,12 @@ function ScopeRow({ to, label, mt, share, color, sinks }) {
           <div style={{ ...styles.scopeFill, width: `${Math.min(100, share)}%`, background: color }} />
         </div>
       </div>
+      {series && (
+        <div style={styles.scopeSpark}>
+          <Sparkline data={series} color={color} fill={`${color}26`} width={120} height={32} />
+          <div style={styles.scopeSparkLabel}>monthly</div>
+        </div>
+      )}
       <div style={styles.scopeNums}>
         <div style={{ ...styles.scopeMt, color: sinks ? '#86efac' : '#e5e7eb' }}>
           {sinks ? mt.toFixed(0) : Math.round(mt).toLocaleString()}
@@ -201,6 +233,8 @@ const styles = {
   scopeLabel: { fontSize: 14, color: '#cbd5e1', fontWeight: 600 },
   scopeBar: { marginTop: 8, height: 8, background: '#0f172a', borderRadius: 4, overflow: 'hidden' },
   scopeFill: { height: '100%' },
+  scopeSpark: { textAlign: 'center', minWidth: 120 },
+  scopeSparkLabel: { fontSize: 10, color: '#64748b', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
   scopeNums: { textAlign: 'right', minWidth: 90 },
   scopeMt: { fontSize: 22, fontWeight: 800, lineHeight: 1, fontVariantNumeric: 'tabular-nums' },
   scopeUnit: { fontSize: 11, color: '#64748b', marginTop: 4 },

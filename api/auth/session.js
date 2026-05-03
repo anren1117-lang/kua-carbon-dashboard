@@ -31,6 +31,7 @@
 //   AUTH_DEV_MODE         when "1", mockSubject is accepted and no JWT verification runs
 
 import { hashUserId } from '../../src/utils/hash.js';
+import { verifyGoogleIdToken } from '../../src/utils/googleJwt.js';
 
 function readEnv(key) {
   if (typeof process !== 'undefined' && process.env && process.env[key]) {
@@ -62,21 +63,6 @@ function initials(email) {
   return (segs[0][0] + segs[1][0]).toUpperCase();
 }
 
-// Decode (NOT verify) a JWT — for inspection only. Production must
-// verify the signature against Google's JWKs; that's wired through the
-// jose dependency in phase-2 (omitted here so this file stays
-// dependency-free during initial deployment).
-function decodeJwtPayload(jwt) {
-  try {
-    const [, payloadB64] = jwt.split('.');
-    if (!payloadB64) return null;
-    const json = Buffer.from(payloadB64.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString();
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -103,28 +89,18 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Phase-1: structural validation only (decode payload, check domain,
-  // verify aud + iss + exp). Production must add cryptographic JWT
-  // signature verification against Google's published JWKs — wire
-  // `jose` and `jwks-rsa` once the dependency budget allows.
-  const payload = decodeJwtPayload(idToken);
-  if (!payload) {
-    res.status(400).json({ error: 'idToken is not a valid JWT' });
-    return;
-  }
-  if (payload.iss !== 'https://accounts.google.com' && payload.iss !== 'accounts.google.com') {
-    res.status(401).json({ error: 'Issuer must be Google' });
-    return;
-  }
+  // Cryptographic verification against Google's published JWKs.
+  // Pass the configured audience (Google OAuth client ID for KUA); if
+  // the env var is unset we still verify signature + iss + exp + email
+  // domain, just without the aud check.
   const expectedAud = readEnv('AUTH_GOOGLE_AUDIENCE');
-  if (expectedAud && payload.aud !== expectedAud) {
-    res.status(401).json({ error: 'Audience mismatch' });
+  const verification = await verifyGoogleIdToken(idToken, { audience: expectedAud || undefined });
+  if (!verification.valid) {
+    res.status(401).json({ error: `Token verification failed: ${verification.reason}` });
     return;
   }
-  if (payload.exp && payload.exp * 1000 < Date.now()) {
-    res.status(401).json({ error: 'Token expired' });
-    return;
-  }
+  const payload = verification.payload;
+
   const allowed = parseAllowedDomains();
   const domain = emailDomain(payload.email || '');
   if (allowed.length > 0 && !allowed.includes(domain)) {

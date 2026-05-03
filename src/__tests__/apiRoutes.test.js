@@ -14,16 +14,28 @@ import emissionsCalculate    from '../../api/emissions/calculate.js';
 import quizAttemptsHandler   from '../../api/quiz/attempts.js';
 import chatbotHandler        from '../../api/chatbot.js';
 import authSessionHandler    from '../../api/auth/session.js';
+import readingsExportHandler from '../../api/meters/readings/export.js';
 import { _resetForTests }    from '../data/quizLedger.js';
+import { verifyGoogleIdToken } from '../utils/googleJwt.js';
 
 function makeRes() {
   let statusCode = 200;
   let body = null;
+  let raw = null;
+  const headers = {};
   const res = {
     status(code) { statusCode = code; return res; },
     json(payload) { body = payload; return res; },
+    setHeader(k, v) { headers[k] = v; return res; },
+    send(payload) { raw = payload; return res; },
   };
-  return { res, get statusCode() { return statusCode; }, get body() { return body; } };
+  return {
+    res,
+    get statusCode() { return statusCode; },
+    get body() { return body; },
+    get raw()  { return raw; },
+    get headers() { return headers; },
+  };
 }
 
 async function call(handler, req) {
@@ -160,6 +172,49 @@ describe('POST /api/quiz/attempts', () => {
     expect(apes.correct).toBe(1);
     expect(apes.accuracy).toBe(0.5);
     expect(apes.topics.sort()).toEqual(['food', 'scopes']);
+  });
+});
+
+describe('GET /api/meters/readings/export', () => {
+  it('returns CSV text with the standard header', async () => {
+    const r = await call(readingsExportHandler, {
+      method: 'GET',
+      query: {
+        buildingId: 'b_miller',
+        start: '2026-04-01T00:00:00Z',
+        end:   '2026-04-02T00:00:00Z',
+      },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.headers['Content-Type']).toMatch(/text\/csv/);
+    expect(r.raw.startsWith('meter_id,timestamp,value,unit,interval_minutes')).toBe(true);
+    // Mock adapter generates 24 hourly readings + header row.
+    expect(r.raw.trim().split('\n').length).toBe(25);
+  });
+
+  it('400s without start/end', async () => {
+    const r = await call(readingsExportHandler, { method: 'GET', query: { buildingId: 'b_miller' } });
+    expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('verifyGoogleIdToken', () => {
+  it('rejects malformed JWTs', async () => {
+    const r = await verifyGoogleIdToken('not.a.jwt');
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/segments|alg|signature/i);
+  });
+
+  it('rejects empty input', async () => {
+    const r = await verifyGoogleIdToken('');
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/Malformed/);
+  });
+
+  it('rejects tokens with the wrong number of segments', async () => {
+    const r = await verifyGoogleIdToken('only.two');
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/Malformed/);
   });
 });
 

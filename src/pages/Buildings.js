@@ -3,6 +3,8 @@ import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/Modul
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { monthlyPattern } from '../data/seasonalPatterns.js';
+import { Sparkline } from '../components/Sparkline.js';
 
 function useBuildingEnergy(buildingId, enabled) {
   const [state, setState] = useState({ loading: false, data: null, error: null });
@@ -107,6 +109,26 @@ export default function BuildingsPage() {
                 <Chip key={c} active={filter === c} onClick={() => setFilter(c)}>{c === 'all' ? 'All' : c}</Chip>
               ))}
             </div>
+          </div>
+        </div>
+      </ModuleSection>
+
+      <ModuleSection
+        title="Campus seasonal pattern"
+        hint="Aggregate kWh shape over the year. Winter peaks reflect heating-driven plug load; summer dip is everyone-off-campus."
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <Sparkline
+            data={monthlyPattern.map((m) => m.emissions)}
+            color="#22d3ee"
+            fill="rgba(34, 211, 238, 0.18)"
+            width={420}
+            height={64}
+            strokeWidth={2}
+            showLast
+          />
+          <div style={{ fontSize: 12, color: '#94a3b8' }}>
+            Jan → Dec, mtCO₂e per month from the ISO-NE 2024 baseline
           </div>
         </div>
       </ModuleSection>

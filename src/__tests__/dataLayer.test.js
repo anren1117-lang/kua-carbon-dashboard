@@ -18,6 +18,7 @@ import { matchQuery, pickQuizForTopic } from '../utils/chatbotMatch.js';
 import { parseMeterCsv } from '../utils/csvMeterParser.js';
 import { ingestCsv, _resetCsvStore, CsvMeterAdapter } from '../adapters/meter/CsvMeterAdapter.js';
 import { forestStands, ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES, soilCarbonStored } from '../data/sinks.js';
+import { formatMeterCsv } from '../utils/csvMeterFormatter.js';
 
 describe('data layer integrity', () => {
   it('every electricity meter points to a known building', () => {
@@ -294,6 +295,26 @@ describe('Sinks data', () => {
 
   it('soilCarbonStored is monotonic in %OC', () => {
     expect(soilCarbonStored(2, 100)).toBeLessThan(soilCarbonStored(4, 100));
+  });
+});
+
+describe('CSV round-trip', () => {
+  it('formatMeterCsv → parseMeterCsv preserves rows', () => {
+    const original = [
+      { id: 'm_elec_b_miller_1', meterId: 'm_elec_b_miller', buildingId: 'b_miller', meterType: 'electricity', timestamp: '2026-04-01T00:00:00.000Z', intervalMinutes: 60, value: 5.2, unit: 'kWh', dataQuality: 'actual', source: 'mock' },
+      { id: 'm_elec_b_miller_2', meterId: 'm_elec_b_miller', buildingId: 'b_miller', meterType: 'electricity', timestamp: '2026-04-01T01:00:00.000Z', intervalMinutes: 60, value: 5.4, unit: 'kWh', dataQuality: 'actual', source: 'mock' },
+    ];
+    const csv = formatMeterCsv(original);
+    const { readings, errors } = parseMeterCsv(csv);
+    expect(errors).toEqual([]);
+    expect(readings.length).toBe(original.length);
+    expect(readings[0].meterId).toBe('m_elec_b_miller');
+    expect(readings[0].value).toBe(5.2);
+  });
+
+  it('CSV has header on first line', () => {
+    const csv = formatMeterCsv([]);
+    expect(csv.split('\n')[0]).toBe('meter_id,timestamp,value,unit,interval_minutes,demand_kw,data_quality');
   });
 
   it('rolls up building energy summary', async () => {
