@@ -152,18 +152,74 @@ export default function StudentLesson() {
         })}
       </ModuleSection>
 
-      {done && (
-        <ModuleSection title="Your score">
-          <MetricGrid metrics={[
-            { label: 'Correct',     value: `${right} / ${total}`, accent: '#86efac' },
-            { label: 'Percent',     value: `${pct}%`,             accent: pct >= 80 ? '#86efac' : pct >= 50 ? '#fbbf24' : '#fca5a5' },
-            { label: 'Lesson topic', value: lesson.topic.replace('_', ' '),   accent: '#22d3ee' },
-          ]} />
-          <p style={{ color: '#94a3b8', marginTop: 14, fontSize: 14, lineHeight: 1.6 }}>
-            Your responses were logged anonymously to your teacher's class progress view.
-          </p>
-        </ModuleSection>
-      )}
+      {done && (() => {
+        const wrong = total - right;
+        const tone = pct === 100 ? 'Perfect score — you nailed every question.'
+          : pct >= 80 ? 'Strong showing. Skim the explanations on the ones you missed.'
+          : pct >= 50 ? 'Good effort. Worth re-reading and re-trying — every option has an explanation that teaches the misconception.'
+          : 'Plenty to revisit. Re-read the section above; the explanations below show where each pick went sideways.';
+        return (
+          <>
+            <ModuleSection title="Your score">
+              <div style={styles.scoreCard}>
+                <div style={styles.scoreLabel}>Final score</div>
+                <div>
+                  <span style={styles.scoreHero}>{right}<span style={{ color: '#475569', fontWeight: 600 }}> / {total}</span></span>
+                  <span style={styles.scoreUnit}>({pct}%)</span>
+                </div>
+                <div style={styles.scoreRow}>
+                  <Pill kind="good">✓ {right} right</Pill>
+                  <Pill kind="bad">✗ {wrong} wrong</Pill>
+                </div>
+                <div style={styles.scoreNote}>{tone}</div>
+              </div>
+            </ModuleSection>
+
+            <ModuleSection title="Question-by-question report" hint="Every question, what you picked, what was correct, and why.">
+              <div style={styles.reportList}>
+                {lesson.questions.map((q, qIdx) => {
+                  const myPick = picked[qIdx];
+                  const myOpt = myPick != null ? q.options[myPick] : null;
+                  const correctOpt = q.options.find((o) => o.correct);
+                  const kind = myOpt?.correct ? 'right' : myOpt ? 'wrong' : 'skipped';
+                  return (
+                    <div key={qIdx} style={styles.reportRow(kind)}>
+                      <div>
+                        <span style={styles.reportNum}>Q{qIdx + 1}</span>
+                        <span style={styles.reportMark(kind)}>
+                          {kind === 'right' ? '✓ Correct' : kind === 'wrong' ? '✗ Wrong' : '– Not answered'}
+                        </span>
+                      </div>
+                      <div style={styles.reportQ}>{q.question}</div>
+                      {myOpt && (
+                        <div style={styles.reportLine}>
+                          <span style={styles.reportLineLabel}>You picked:</span>
+                          {myOpt.text}
+                        </div>
+                      )}
+                      {kind !== 'right' && correctOpt && (
+                        <div style={styles.reportLine}>
+                          <span style={styles.reportLineLabel}>Correct answer:</span>
+                          {correctOpt.text}
+                        </div>
+                      )}
+                      {(myOpt || correctOpt) && (
+                        <div style={styles.reportLine}>
+                          <span style={styles.reportLineLabel}>Why:</span>
+                          {(myOpt && myOpt.explanation) || (correctOpt && correctOpt.explanation) || ''}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p style={{ color: '#94a3b8', marginTop: 14, fontSize: 13, lineHeight: 1.6 }}>
+                Your responses were logged anonymously to your teacher's class progress view.
+              </p>
+            </ModuleSection>
+          </>
+        );
+      })()}
     </ModulePage>
   );
 }
@@ -177,5 +233,39 @@ const styles = {
   qMark: (k) => ({ fontSize: 11, fontWeight: 700, color: k === 'good' ? '#86efac' : '#fca5a5' }),
   qExplain: { marginTop: 12, padding: 10, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6, display: 'grid', gap: 8 },
   qExplainRow: { display: 'grid', gridTemplateColumns: '32px 1fr', gap: 8, fontSize: 13, lineHeight: 1.5, alignItems: 'start' },
+
+  scoreCard: { padding: '20px 22px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10, textAlign: 'left' },
+  scoreLabel: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 12 },
+  scoreHero: { fontSize: 'clamp(28px, 6vw, 38px)', color: '#e5e7eb', fontWeight: 800, lineHeight: 1, fontVariantNumeric: 'tabular-nums' },
+  scoreUnit: { fontSize: 16, color: '#94a3b8', fontWeight: 500, marginLeft: 8 },
+  scoreRow: { marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' },
+  scoreNote: { marginTop: 14, fontSize: 14, color: '#94a3b8', lineHeight: 1.6 },
+
+  reportList: { display: 'grid', gap: 10 },
+  reportRow: (kind) => ({
+    padding: '14px 16px',
+    background: '#0f172a',
+    border: '1px solid',
+    borderColor: kind === 'right' ? '#14532d' : kind === 'wrong' ? '#7f1d1d' : '#334155',
+    borderLeft: '4px solid',
+    borderLeftColor: kind === 'right' ? '#22c55e' : kind === 'wrong' ? '#ef4444' : '#64748b',
+    borderRadius: 8,
+  }),
+  reportNum: { fontSize: 12, color: '#64748b', fontWeight: 700, letterSpacing: 0.6 },
+  reportMark: (kind) => ({
+    display: 'inline-block',
+    fontSize: 11,
+    padding: '3px 10px',
+    borderRadius: 999,
+    fontWeight: 700,
+    marginLeft: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    background: kind === 'right' ? '#052e1a' : kind === 'wrong' ? '#3a0d12' : '#1e293b',
+    color: kind === 'right' ? '#86efac' : kind === 'wrong' ? '#fca5a5' : '#cbd5e1',
+  }),
+  reportQ: { marginTop: 8, fontSize: 15, color: '#e5e7eb', fontWeight: 600, lineHeight: 1.5 },
+  reportLine: { marginTop: 8, fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 },
+  reportLineLabel: { color: '#64748b', fontWeight: 600, marginRight: 6 },
   qExplainBody: { gridColumn: '2 / 3', fontSize: 12, color: '#94a3b8', marginTop: 2 },
 };

@@ -35,12 +35,17 @@ function readEnv(key) {
   return undefined;
 }
 
-const SYSTEM_PROMPT = `You are an instructional designer for KUA's carbon-literacy curriculum. A teacher has pasted in source material and asked you to turn it into a student-facing lesson.
+const MIN_QUESTIONS = 3;
+const MAX_QUESTIONS = 10;
+const DEFAULT_QUESTIONS = 5;
+
+function buildSystemPrompt(numQuestions) {
+  return `You are an instructional designer for KUA's carbon-literacy curriculum. A teacher has pasted in source material and asked you to turn it into a student-facing lesson.
 
 Strict rules:
 1. Use ONLY the source material the teacher provided. Do not invent facts about KUA, do not invent numbers, do not pull in claims that don't appear in the source. If the material is too thin to support a lesson, say so in the "reading" field and produce zero questions.
 2. Match the requested reading level: novice = 6-10 short sentences, plain language, no jargon. intermediate = 10-15 sentences, can use scope/GWP/kgCO2e terms. advanced = 15-25 sentences with calculations and quantitative reasoning.
-3. Generate exactly 5 four-option multiple-choice questions. Each question must:
+3. Generate exactly ${numQuestions} four-option multiple-choice questions. Each question must:
    - Test a fact or inference from the source material (not your prior knowledge).
    - Have exactly 4 options.
    - Have exactly 1 correct option.
@@ -62,6 +67,7 @@ Strict rules:
 }
 
 No markdown, no preamble, no trailing commentary. Pure JSON.`;
+}
 
 function buildUserMessage({ title, topic, readingLevel, sourceMaterial }) {
   return `Title: ${title}
@@ -78,9 +84,12 @@ function isHashedId(s) {
   return typeof s === 'string' && /^[a-z]+_[0-9a-f]+$/.test(s);
 }
 
-function validateGenerated(parsed) {
+function validateGenerated(parsed, expectedCount) {
   if (!parsed || typeof parsed.reading !== 'string') return 'missing reading';
   if (!Array.isArray(parsed.questions)) return 'missing questions array';
+  if (expectedCount && parsed.questions.length !== expectedCount) {
+    return `expected ${expectedCount} questions, got ${parsed.questions.length}`;
+  }
   for (let i = 0; i < parsed.questions.length; i++) {
     const q = parsed.questions[i];
     if (!q || typeof q.question !== 'string') return `question ${i + 1} malformed`;
@@ -97,23 +106,24 @@ function validateGenerated(parsed) {
   return null;
 }
 
-async function generateLesson({ title, topic, readingLevel, sourceMaterial }) {
+async function generateLesson({ title, topic, readingLevel, sourceMaterial, numQuestions }) {
   const apiKey = readEnv('ANTHROPIC_API_KEY');
   if (!apiKey) {
-    // No key — fall back to a minimal local stub so the dev flow works.
+    // No key — fall back to a minimal local stub. Generate `numQuestions`
+    // placeholder items so the editor preview + student report shape is
+    // realistic during development.
+    const stubQuestions = Array.from({ length: numQuestions }, (_, i) => ({
+      question: `Stub question ${i + 1} — placeholder. Set ANTHROPIC_API_KEY for real AI generation.`,
+      options: [
+        { text: 'Option A', correct: true,  explanation: 'Always correct in the stub.' },
+        { text: 'Option B', correct: false, explanation: 'Stub distractor.' },
+        { text: 'Option C', correct: false, explanation: 'Stub distractor.' },
+        { text: 'Option D', correct: false, explanation: 'Stub distractor.' },
+      ],
+    }));
     return {
       reading: `[Stub — set ANTHROPIC_API_KEY for AI generation.]\n\n${sourceMaterial.slice(0, 600)}`,
-      questions: [
-        {
-          question: 'This is a placeholder question because no AI key is configured. Which is correct?',
-          options: [
-            { text: 'Option A',  correct: true,  explanation: 'Always correct in the stub.' },
-            { text: 'Option B',  correct: false, explanation: 'Stub.' },
-            { text: 'Option C',  correct: false, explanation: 'Stub.' },
-            { text: 'Option D',  correct: false, explanation: 'Stub.' },
-          ],
-        },
-      ],
+      questions: stubQuestions,
     };
   }
 
@@ -126,8 +136,8 @@ async function generateLesson({ title, topic, readingLevel, sourceMaterial }) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
-      system: SYSTEM_PROMPT,
+      max_tokens: Math.min(8000, 800 + numQuestions * 600),
+      system: buildSystemPrompt(numQuestions),
       messages: [{ role: 'user', content: buildUserMessage({ title, topic, readingLevel, sourceMaterial }) }],
     }),
   });
@@ -147,7 +157,7 @@ async function generateLesson({ title, topic, readingLevel, sourceMaterial }) {
   } catch (err) {
     throw new Error(`Generated output is not valid JSON: ${err.message}`);
   }
-  const reason = validateGenerated(parsed);
+  const reason = validateGenerated(parsed, numQuestions);
   if (reason) throw new Error(`Generated lesson is malformed: ${reason}`);
   return parsed;
 }
@@ -164,7 +174,7 @@ export default async function handler(req, res) {
         return;
       }
 
-      const { teacherIdHash, title, topic, readingLevel, classId, sourceMaterial, status } = req.body || {};
+      const { teacherIdHash, title, topic, readingLevel, classId, sourceMaterial, status, numQuestions: rawNum } = req.body || {};
       if (!isHashedId(teacherIdHash)) {
         res.status(400).json({ error: 'teacherIdHash must be a hashed id (e.g. staff_a1b2c3d4)' });
         return;
@@ -186,7 +196,13 @@ export default async function handler(req, res) {
         return;
       }
 
-      const generated = await generateLesson({ title, topic, readingLevel, sourceMaterial });
+      // Question count: default 5, accept 3..10. Out-of-range values get
+      // clamped silently rather than 400'd so a teacher's typo doesn't
+      // discard their pasted material.
+      let numQuestions = Number.isFinite(Number(rawNum)) ? Math.round(Number(rawNum)) : DEFAULT_QUESTIONS;
+      numQuestions = Math.max(MIN_QUESTIONS, Math.min(MAX_QUESTIONS, numQuestions));
+
+      const generated = await generateLesson({ title, topic, readingLevel, sourceMaterial, numQuestions });
       const lesson = await saveLesson({
         createdByHash: teacherIdHash,
         title, topic, readingLevel, classId,

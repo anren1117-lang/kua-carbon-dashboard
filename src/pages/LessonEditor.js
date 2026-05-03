@@ -50,6 +50,7 @@ export default function LessonEditor() {
   const [topic, setTopic] = useState(TOPICS[0].id);
   const [readingLevel, setReadingLevel] = useState('intermediate');
   const [classId, setClassId] = useState('');
+  const [numQuestions, setNumQuestions] = useState(5);
   const [sourceMaterial, setSourceMaterial] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -114,6 +115,7 @@ export default function LessonEditor() {
           topic,
           readingLevel,
           classId: classId.trim() || undefined,
+          numQuestions,
           sourceMaterial,
           status: targetStatus,
         }),
@@ -172,6 +174,21 @@ export default function LessonEditor() {
               style={styles.input}
               maxLength={64}
             />
+          </Field>
+          <Field label={`Number of questions (${numQuestions})`}>
+            <input
+              type="range"
+              min={3}
+              max={10}
+              step={1}
+              value={numQuestions}
+              onChange={(e) => setNumQuestions(Number(e.target.value))}
+              style={{ width: '100%' }}
+              aria-label="Number of questions to generate"
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginTop: 4 }}>
+              <span>3</span><span>5</span><span>10</span>
+            </div>
           </Field>
         </div>
 

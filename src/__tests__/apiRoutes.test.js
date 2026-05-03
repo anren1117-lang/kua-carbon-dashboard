@@ -247,6 +247,48 @@ describe('/api/teacher/lessons', () => {
     expect(r.body.error).toMatch(/hashed/i);
   });
 
+  it('honors numQuestions on the stub generator', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const r = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.20' },
+      body: {
+        teacherIdHash: 'staff_a1b2c3d4',
+        title: '7-question test',
+        topic: 'food',
+        readingLevel: 'novice',
+        sourceMaterial: 'x',
+        numQuestions: 7,
+      },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.lesson.questions.length).toBe(7);
+    for (const q of r.body.lesson.questions) {
+      expect(q.options.length).toBe(4);
+      expect(q.options.filter((o) => o.correct).length).toBe(1);
+      for (const o of q.options) expect(typeof o.explanation).toBe('string');
+    }
+  });
+
+  it('clamps numQuestions to the 3..10 range', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const big = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.21' },
+      body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Too many', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x', numQuestions: 50 },
+    });
+    expect(big.body.lesson.questions.length).toBe(10);
+
+    const tiny = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.22' },
+      body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Too few',  topic: 'food', readingLevel: 'novice', sourceMaterial: 'x', numQuestions: 1 },
+    });
+    expect(tiny.body.lesson.questions.length).toBe(3);
+  });
+
   it('persists a stub-generated lesson when no API key is set', async () => {
     _resetLessonStoreForTests();
     delete process.env.ANTHROPIC_API_KEY;
