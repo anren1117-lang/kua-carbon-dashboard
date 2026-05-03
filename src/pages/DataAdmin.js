@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { PasswordGate } from '../components/PasswordGate.js';
 import { meters } from '../data/meters.js';
 import { emissionFactors } from '../data/emissionFactors.js';
 import { buildings } from '../data/buildings.js';
@@ -29,7 +30,24 @@ const ADAPTER_STATUS = {
   bms:         { kind: 'info', label: 'Scaffold (needs env)' },
 };
 
+// Shares the same localStorage key as the existing AdminLayout login, so
+// signing into /admin/* once also unlocks /data-admin (and vice versa).
 export default function DataAdmin() {
+  return (
+    <PasswordGate
+      title="Data Admin"
+      subtitle="Operational tools — live health, CSV upload, factor registry, meter quality. Sign in with the admin password."
+      envKey="ADMIN_PASSWORD"
+      storageKey="adminLoggedIn"
+      defaultPassword="KUA2026"
+      accent="#22d3ee"
+    >
+      <DataAdminContent />
+    </PasswordGate>
+  );
+}
+
+function DataAdminContent() {
   const activeSource = readMeterSource();
   const electricityMeters = meters.filter((m) => m.type === 'electricity');
   const buildingsWithBmsNumber = buildings.filter((b) => b.bmsNumber != null).length;

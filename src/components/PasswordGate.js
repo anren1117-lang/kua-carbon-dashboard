@@ -30,7 +30,11 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(storageKey) === 'unlocked') setUnlocked(true);
+      // Accept either 'true' (matches the existing AdminLayout convention)
+      // or 'unlocked' (older PasswordGate convention) so a single admin
+      // login covers both /admin/* and any PasswordGate-wrapped page.
+      const v = localStorage.getItem(storageKey);
+      if (v === 'true' || v === 'unlocked') setUnlocked(true);
     } catch {}
   }, [storageKey]);
 
@@ -45,7 +49,9 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
   function tryUnlock(e) {
     e.preventDefault();
     if (pw === expectedPassword()) {
-      try { localStorage.setItem(storageKey, 'unlocked'); } catch {}
+      // Write 'true' to match the existing AdminLayout convention so
+      // shared keys (e.g. 'adminLoggedIn') keep both gates in sync.
+      try { localStorage.setItem(storageKey, 'true'); } catch {}
       setUnlocked(true);
       setError(null);
     } else {
