@@ -6,6 +6,7 @@ import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { reductionActions } from '../data/reductionActions.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
+import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
@@ -44,13 +45,29 @@ export default function Hotspots() {
   const totalMt = (totalKwh * KG_PER_KWH_ISO_NE) / 1000;
   const top3Share = ranked.slice(0, 3).reduce((s, h) => s + h.percentOfTotal, 0);
 
-  // Annual emissions trend — uses the seasonal monthly pattern as a
-  // mid-year proxy. Replace with measured monthly rollups once the
-  // BMS adapter is feeding real readings into Supabase.
-  const trendSeries = monthlyPattern.map((m, i) => ({
-    t: new Date(2026, i, 15).toISOString(),
-    v: m.emissions,
-  }));
+  // Annual emissions trend.
+  // - Months we have measured BMS data for: use displayedTotal × ISO-NE factor.
+  // - Months we don't: fall back to the synthetic seasonal-pattern shape,
+  //   scaled to the campus YTD baseline so the y-axis stays consistent.
+  // The two are merged into a single series; the chart hint flags which
+  // months are real vs projected.
+  const measuredMonths = Object.fromEntries(
+    campusMonthlyTotals().map((r) => [r.month, r.displayedTotal]),
+  );
+  const trendSeries = monthlyPattern.map((m, i) => {
+    const monthKey = `2026-${String(i + 1).padStart(2, '0')}`;
+    const measuredKwh = measuredMonths[monthKey];
+    const measured = measuredKwh != null;
+    const mt = measured
+      ? (measuredKwh * KG_PER_KWH_ISO_NE) / 1000
+      : m.emissions; // seasonal-pattern proxy, already in mtCO2e
+    return {
+      t: new Date(2026, i, 15).toISOString(),
+      v: mt,
+      measured,
+    };
+  });
+  const measuredMonthCount = Object.keys(measuredMonths).length;
 
   return (
     <ModulePage
@@ -65,8 +82,12 @@ export default function Hotspots() {
       ]} />
 
       <ModuleSection
-        title="Annual emissions trend"
-        hint="Monthly mtCO₂e for the campus. Winter peaks reflect heating-driven plug load; the summer dip is everyone-off-campus."
+        title="Monthly emissions trend"
+        hint={
+          <>
+            Monthly mtCO₂e for the campus. {measuredMonthCount > 0 ? <strong>{measuredMonthCount} month{measuredMonthCount === 1 ? '' : 's'} of real BMS data</strong> : 'No measured months yet'}{measuredMonthCount > 0 ? ` (${Object.keys(measuredMonths).join(', ')})` : ''} — remaining months use the seasonal-pattern proxy until the BMS feeds them in.
+          </>
+        }
       >
         <TimeSeriesChart
           data={trendSeries}
@@ -75,7 +96,7 @@ export default function Hotspots() {
           fill="rgba(239, 68, 68, 0.12)"
           width={900}
           height={220}
-          title="Jan → Dec, monthly mtCO₂e"
+          title={measuredMonthCount > 0 ? `Jan → Dec, monthly mtCO₂e (${measuredMonthCount} measured + ${12 - measuredMonthCount} projected)` : 'Jan → Dec, monthly mtCO₂e (all projected)'}
         />
       </ModuleSection>
 
