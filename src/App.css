@@ -115,6 +115,36 @@ a[href="#main"]:focus {
   }
 }
 
+/* Print stylesheet for the Annual Report page. Hide the public nav,
+   footer, and any element flagged .no-print. Force light backgrounds
+   so ink doesn't get burned on dark theme. */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #1f2937 !important;
+  }
+  header, footer, nav, .nav-scroll, .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .annual-report {
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000 !important;
+  }
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+  /* Page break between major sections so we don't split tables. */
+  .annual-report section {
+    page-break-inside: avoid;
+  }
+}
+
 /* The original CRA scaffold rules below are kept for backward compat with any
    component that might still reference these classes. */
 .App {

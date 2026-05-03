@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build + test (Vite)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: src
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Vitest
+        run: npx vitest run
+
+      - name: Build
+        run: npm run build
+
+      - name: Bundle-size guardrail
+        run: |
+          INITIAL=$(ls -l dist/assets/index-*.js | awk '{print $5}')
+          echo "Initial bundle: $INITIAL bytes"
+          # Fail the build if the initial bundle goes over 600 KB.
+          # Code-splitting keeps it ~415 KB today; 600 KB gives us headroom
+          # while still catching the kind of regression that drops a heavy
+          # dep onto the eager-loaded path.
+          if [ "$INITIAL" -gt 614400 ]; then
+            echo "::error::Initial bundle exceeded 600 KB ($INITIAL bytes). Code-split a route or remove an eager dep."
+            exit 1
+          fi

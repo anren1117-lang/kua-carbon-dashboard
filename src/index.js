@@ -17,6 +17,7 @@ const Sinks2 = lazy(() => import('./pages/Sinks2'));
 const Executive = lazy(() => import('./pages/Executive'));
 const TrendBuilder = lazy(() => import('./pages/TrendBuilder'));
 const Goals = lazy(() => import('./pages/Goals'));
+const AnnualReport = lazy(() => import('./pages/AnnualReport'));
 const Scenarios = lazy(() => import('./pages/Scenarios'));
 const Methodology = lazy(() => import('./pages/Methodology'));
 const CarbonCredits = lazy(() => import('./pages/CarbonCredits'));
@@ -91,6 +92,7 @@ root.render(
             <Route path="/executive" element={<Executive />} />
             <Route path="/trends" element={<TrendBuilder />} />
             <Route path="/goals" element={<Goals />} />
+            <Route path="/report" element={<AnnualReport />} />
             <Route path="/scenarios" element={<Scenarios />} />
             <Route path="/methodology" element={<Methodology />} />
             <Route path="/credits" element={<CarbonCredits />} />

@@ -1,10 +1,16 @@
-# KUA Carbon Dashboard
+# KUA Carbon Operating System
 
-The active codebase for the KUA Carbon Operating System. This directory is the
-Vite project; the repo root holds Vercel-side config (`vercel.json`) and the
-serverless API routes under `/api/`.
+A React + Vercel app that turns the Kimball Union Academy carbon
+dashboard into a complete OS for measuring, learning from, and acting on
+campus emissions.
 
-## Setup
+This directory is the Vite project. The repo root holds Vercel-side
+config (`vercel.json`, `/api/`), the on-campus relay (`/relay/`), and
+Supabase migrations (`/supabase/migrations/`).
+
+---
+
+## Quickstart
 
 ```bash
 cd src
@@ -12,167 +18,236 @@ npm install
 npm run dev       # http://localhost:5173
 npm run build
 npm run preview
-npm test          # vitest
+npm test          # vitest — 83+ tests
 ```
+
+Run the on-campus relay (separate process, talks to the BMS):
+
+```bash
+cd relay
+node server.js    # http://localhost:3001
+```
+
+---
 
 ## Module map
 
-The app is split into OS-level modules and the older scope-by-scope pages.
-All OS modules read from the shared data layer in `src/data/` via the
-utilities in `src/utils/`.
+22 routes plus the existing admin tree. Every OS module reads from
+`src/data/` via the utilities in `src/utils/`, and every meter-driven
+view goes through the adapter at `src/adapters/meter/`.
 
 | Route               | Purpose |
 |---------------------|---------|
-| `/`                 | Executive overview (NetEstimate, scope donut, peer comparison, signposts) |
+| `/`                 | Public homepage (NetEstimate, scope donut, peer comparison, signposts) |
+| `/executive`        | Executive Dashboard — top metrics from every module + carbon equivalents |
+| `/report`           | Annual Report — printable trustee-facing summary (window.print() ready) |
 | `/hotspots`         | Ranked highest-emitting buildings + categories with severity badges |
-| `/buildings`        | All buildings with sortable intensity views (kWh, kg/sqft, kg/occupant) and per-building drill-down (BMS join number, setpoints, occupancy) |
-| `/dining`           | Meal-category emissions, supplier ranking, food-waste summary, menu-scenario "what-if" picker |
+| `/buildings`        | All buildings, sortable; per-building drill-down with live API + CSV download |
+| `/trends`           | Trend Builder — meter × window × interval time-series chart with hover tooltip |
+| `/dining`           | Meal-category emissions, supplier ranking, food-waste, menu-scenario picker |
 | `/transportation`   | Fleet, carpool savings, air travel, school trips, faculty/staff commute mix |
-| `/trends`           | Trend Builder — pick building + window + interval, render time-series chart with hover tooltip |
-| `/goals`            | Goals & Targets — reduction trajectories with on-track / lagging / off-track status |
 | `/waste`            | Waste streams + diversion rate + monthly trend |
-| `/procurement`      | Spend-based Scope-3 estimates by category |
+| `/procurement`      | Spend-based Scope-3 Cat-1 estimates by category |
+| `/renewables-os`    | Solar generation, exports, avoided emissions, future build-out roadmap |
+| `/sinks-os`         | Forest stand inventory, soil sampling program, sequestration methodology |
+| `/goals`            | Reduction targets with linear trajectories and on-track/lagging/off-track |
 | `/actions`          | AI Carbon Advisor v1 — rule-based ranking of reduction actions |
-| `/challenges`       | Dorm-level student leaderboard (privacy-by-design, opt-in for individual ranking) |
-| `/teacher`          | Lesson modules, class progress (mock), discussion prompts auto-generated from KUA's data |
-| `/chatbot`          | Carbon Learning Chatbot v1 — keyword-matched Q&A over the knowledge base + per-topic quizzes |
-| `/data-admin`       | Adapter status, full emission-factor registry with citations, meter registry with BMS join numbers |
-| `/scope-1` … `/sinks` | Pre-existing scope-detail pages |
-| `/learn`            | Pre-existing self-paced learning agent (multi-path quizzes) |
-| `/ask`              | Pre-existing free-form environmental Q&A (Anthropic API + web search) |
+| `/challenges`       | Dorm-level student leaderboard (privacy-by-design, opt-in) |
+| `/teacher`          | Lesson modules, class progress, auto-generated discussion prompts |
+| `/chatbot`          | Carbon Learning Chatbot (rule-based; LLM-grounded when API key set) |
+| `/data-admin`       | Adapter status, live health probe, CSV upload, factor registry, meter quality |
+| `/scope-1` … `/sinks` `/credits` `/scenarios` `/methodology` | Pre-existing scope-detail pages |
+| `/learn`            | Self-paced learning agent (multi-path quizzes) |
+| `/ask`              | Free-form environmental Q&A (Anthropic API + web search) |
 | `/admin`            | Password-gated CRUD admin |
+
+---
 
 ## Architecture
 
 ```
 src/
-├── data/                Mock data + JSDoc-typed shapes. UI imports from here, never inlines.
-│   ├── buildings.js     Building registry (sqft, occupants, hvac schedule)
-│   ├── meters.js        Meter registry (one electricity meter per building + fuel masters)
-│   ├── envysionSnapshot.js  Point-in-time Envysion observations (kW, voltage)
-│   ├── gridMix.js       ISO-NE 2024 system mix
-│   ├── seasonalPatterns.js  Day-of-week / month-of-year / hour-of-day shapes
-│   ├── emissionFactors.js   kgCO2e per unit, with citations
-│   ├── dorms.js         Dorm registry (joins to buildings.js by buildingId)
-│   ├── students.js      600 mock student profiles, hashed IDs only
-│   ├── staff.js         110 mock staff profiles, hashed IDs only
-│   ├── dining.js        Menu items, vendors, ingredient purchases, food-waste logs, scenarios
-│   ├── transportation.js  Fleet, commute, carpool, school trips, air travel
-│   ├── waste.js         Monthly waste streams
-│   ├── procurement.js   Paper / IT / cleaning / apparel records
-│   ├── reductionActions.js  Action plans for the AI Carbon Advisor
-│   ├── learningContent.js   Knowledge articles for the chatbot
-│   └── index.js         Barrel export
+├── data/                   Mock data + JSDoc-typed shapes. UI imports from here, never inlines.
+│   ├── buildings.js        Building registry (sqft, occupants, hvac, bmsNumber)
+│   ├── meters.js           Meter registry (one electricity meter per building + fuel masters)
+│   ├── envysionSnapshot.js Point-in-time Envysion observations (kW, voltage)
+│   ├── gridMix.js          ISO-NE 2024 system mix
+│   ├── seasonalPatterns.js Day-of-week / month / hour shapes
+│   ├── emissionFactors.js  kgCO2e per unit, with citations
+│   ├── dorms.js            Dorm registry (joins to buildings.js)
+│   ├── students.js         600 mock student profiles, hashed IDs only
+│   ├── staff.js            110 mock staff profiles, hashed IDs only
+│   ├── dining.js           Menu items, vendors, ingredient purchases, food-waste, scenarios
+│   ├── transportation.js   Fleet, commute, carpool, school trips, air travel
+│   ├── waste.js            Monthly waste streams
+│   ├── procurement.js      Paper / IT / cleaning / apparel records
+│   ├── renewables.js       Solar sites + monthly generation pattern
+│   ├── sinks.js            Forest stands + soil samples + sequestration math
+│   ├── targets.js          Reduction targets + linear-trajectory helpers
+│   ├── reductionActions.js Action plans for the AI Carbon Advisor
+│   ├── learningContent.js  Knowledge articles for the chatbot
+│   ├── quizLedger.js       In-memory quiz attempts (write-through to Supabase)
+│   └── index.js            Barrel export
 │
-├── adapters/meter/      Adapter pattern — every UI/API caller goes through this.
+├── adapters/meter/         Adapter pattern — every UI/API caller goes through here.
 │   ├── MeterDataAdapter.js   Interface (JSDoc only)
-│   ├── MockMeterAdapter.js   Working implementation (deterministic from baselines + shapes)
-│   ├── CsvMeterAdapter.js          Stub — wire to CSV ingestion
-│   ├── UtilityApiMeterAdapter.js   Stub — wire to Liberty Utilities / UtilityAPI.com
-│   ├── BmsMeterAdapter.js          Stub — wire to Envysion / BACnet
+│   ├── MockMeterAdapter.js   Working — deterministic from baselines + shapes
+│   ├── CsvMeterAdapter.js    Working — reads/writes via readingsStore (memory + Supabase)
+│   ├── BmsMeterAdapter.js    Working scaffold — Distech Eclypse REST API; needs env + relay
+│   ├── UtilityApiMeterAdapter.js   Stub
 │   └── index.js              Factory: getMeterAdapter() picks based on METER_SOURCE env
 │
+├── storage/
+│   ├── supabaseServer.js   Lazy server-side Supabase client (service-role key)
+│   ├── quizStore.js        Quiz attempts: memory + Supabase write-through
+│   └── readingsStore.js    CSV-imported readings: memory + Supabase write-through
+│
 ├── utils/
-│   ├── emissions.js     quantityToKgCO2e, kgToMt, annualElectricityMt
-│   ├── aggregation.js   sumBy, kwhByBuilding, allocateByGridMix, intensities
-│   ├── anomaly.js       detectAnomalies (z-score, gap, flat, stale), qualityScore
-│   ├── hash.js          hashUserId — privacy-safe ID generator
-│   ├── comparison.js    percentChange, trendKind, yoyMonthly
-│   ├── hotspots.js      buildingHotspots, rankActions
-│   ├── equivalents.js   energyEquivalents (Tesla/iPhone/bulb), carbonEquivalents (cars, trees, homes)
-│   └── chatbotMatch.js  matchQuery — keyword-matched intent for the chatbot
+│   ├── emissions.js        quantityToKgCO2e, kgToMt, annualElectricityMt
+│   ├── aggregation.js      sumBy, kwhByBuilding, allocateByGridMix, intensities
+│   ├── anomaly.js          detectAnomalies (z-score, gap, flat, stale), qualityScore
+│   ├── hash.js             hashUserId — privacy-safe ID generator
+│   ├── comparison.js       percentChange, trendKind, yoyMonthly
+│   ├── hotspots.js         buildingHotspots, rankActions
+│   ├── equivalents.js      energyEquivalents (Tesla/iPhone/bulb), carbonEquivalents
+│   ├── chatbotMatch.js     matchQuery — keyword-matched intent for the chatbot
+│   ├── csvMeterParser.js   CSV → MeterReading[] with PII guard
+│   ├── csvMeterFormatter.js MeterReading[] → CSV (round-trips with parser)
+│   ├── googleJwt.js        RS256 verification against Google JWKs (no extra dep)
+│   └── rateLimit.js        Token-bucket rate limiter for /api/chatbot
 │
 ├── components/
-│   ├── ModuleShell.js   Shared ModulePage / ModuleSection / MetricGrid / Pill primitives
+│   ├── ModuleShell.js      ModulePage / ModuleSection / MetricGrid / Pill primitives
 │   ├── EnergyEquivalents.js  "Equal to X Teslas / iPhones / bulb-hours" card
-│   └── (existing)       Layout, NetEstimate, ScopeDonut, LearnAgent, etc.
+│   ├── Sparkline.js        Tiny inline SVG sparkline
+│   ├── TimeSeriesChart.js  Full SVG line chart with axes, grid, hover tooltip
+│   └── (existing)          Layout, NetEstimate, ScopeDonut, LearnAgent, etc.
 │
-├── pages/               Route-level pages — see Module map above.
-└── __tests__/dataLayer.test.js  29 vitest cases covering data integrity, math, adapter, chatbot
+├── pages/                  Route-level pages — see Module map.
+└── __tests__/              dataLayer.test.js + apiRoutes.test.js (83 cases total)
 ```
 
-### Vercel API routes (in `/api/` at repo root)
+---
+
+## API endpoints (`/api/`)
 
 | Method | Path                              | Purpose |
 |--------|-----------------------------------|---------|
 | GET    | `/api/meters`                     | List meters (filter by building/type) |
 | GET    | `/api/meters/readings`            | Interval readings for a window |
-| POST   | `/api/meters/readings/import`     | Bulk-import readings (CsvMeterAdapter persists to in-memory store) |
-| GET    | `/api/meters/readings/export`     | Returns CSV (round-trips with the import format) |
+| POST   | `/api/meters/readings/import`     | Bulk-import readings (mirrors to Supabase if configured) |
+| GET    | `/api/meters/readings/export`     | Returns CSV; round-trips with import |
 | GET    | `/api/meters/quality`             | Anomaly + gap report per meter |
-| GET    | `/api/buildings/[id]/energy`      | Per-building rollup (kWh, peak kW, mtCO2e, intensities) |
-| POST   | `/api/emissions/calculate`        | Convert any activity quantity to kgCO2e using a stored factor |
-| POST   | `/api/quiz/attempts`              | Log a quiz attempt; GET to read or `?rollup=class` to aggregate |
-| POST   | `/api/chatbot`                    | Curriculum-bounded chatbot: rule-based, with optional LLM rewrite when `ANTHROPIC_API_KEY` is set |
-| POST   | `/api/auth/session`               | Verifies Google OIDC token (or accepts mockSubject in `AUTH_DEV_MODE=1`) and returns a hashed identity |
-| POST   | `/api/auth/logout`                | Clears server-side session state + Set-Cookie clearing header |
-| GET    | `/api/health`                     | Component status — meter adapter, Supabase, emission factors |
-| POST   | `/api/cron/sync-bms`              | Pulls last hour from active adapter, persists to Supabase. Auth: Bearer `CRON_SECRET`. Vercel cron schedule: hourly |
-| POST   | `/api/chat`                       | Existing — proxies to Anthropic API for the Ask agent |
+| GET    | `/api/buildings/[id]/energy`      | Per-building rollup |
+| POST   | `/api/emissions/calculate`        | Convert any activity to kgCO2e |
+| POST   | `/api/quiz/attempts`              | Log quiz attempt; GET to read or `?rollup=class` |
+| POST   | `/api/chatbot`                    | Curriculum-bounded chatbot (rule-based + grounded LLM rewrite) |
+| POST   | `/api/auth/session`               | Verifies Google OIDC token; returns hashed identity |
+| POST   | `/api/auth/logout`                | Clears server-side session state |
+| GET    | `/api/health`                     | Component status (adapter, Supabase, factors) |
+| POST   | `/api/cron/sync-bms`              | Hourly cron — pulls last hour from adapter, persists to Supabase |
+| POST   | `/api/chat`                       | Existing — proxies to Anthropic API for /ask |
+
+---
+
+## Environment variables
+
+See `.env.example` at repo root. Summary:
+
+| Var | Used by | Notes |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | `/api/chat`, `/api/chatbot` | Optional; chatbot falls back to rule-based when missing |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | client | Public — read-only access |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | API handlers | Required for write-through persistence |
+| `METER_SOURCE` (or `VITE_METER_SOURCE`) | meter adapter factory | `mock` (default) / `csv` / `utility_api` / `bms` |
+| `BMS_BASE_URL` / `BMS_USERNAME` / `BMS_PASSWORD` / `BMS_POINT_MAP` | BmsMeterAdapter | Required when METER_SOURCE=bms |
+| `AUTH_GOOGLE_AUDIENCE` / `AUTH_ALLOWED_DOMAINS` / `AUTH_DEV_MODE` | `/api/auth/session` | Production needs the first two; dev mode skips signature verification |
+| `CRON_SECRET` | `/api/cron/sync-bms` | Required — endpoint refuses every request without it |
+| `PORT` | relay/server.js | Defaults to 3001 |
+
+---
 
 ## Switching meter data sources
 
-Set `METER_SOURCE` (or `VITE_METER_SOURCE` for client-side) to one of
-`mock`, `csv`, `utility_api`, `bms`. Defaults to `mock`.
+The dashboard is data-source-agnostic. Set `METER_SOURCE` to one of:
 
-### BMS (Distech Eclypse) — environment
+- `mock` (default) — deterministic readings from baseline shapes. Works with no setup.
+- `csv` — readings come from CSV uploads via `/data-admin` or POSTs to `/api/meters/readings/import`.
+- `bms` — Distech Eclypse REST API. Requires `BMS_*` env vars and an on-campus relay (cloud Vercel can't reach `10.1.1.27` directly).
+- `utility_api` — stub.
 
-The `BmsMeterAdapter` targets the Distech Eclypse REST API. Set:
+### On-campus relay
 
-| Env var          | Purpose                                                              |
-|------------------|----------------------------------------------------------------------|
-| `BMS_BASE_URL`   | e.g. `https://campus-relay.kua.org` (NOT `10.1.1.27` from the cloud) |
-| `BMS_USERNAME`   | Eclypse REST username                                                |
-| `BMS_PASSWORD`   | Eclypse REST password                                                |
-| `BMS_POINT_MAP`  | JSON: `{ "<meterId>": "<eclypse object path>" }`                     |
+Cloud-hosted Vercel can't open TCP connections to RFC1918 addresses, so
+the BMS at `10.1.1.27` is unreachable from cloud functions. The relay
+in `/relay/` solves this:
 
-Example `BMS_POINT_MAP`:
+1. Run `node relay/server.js` on a campus machine (Mac mini, Pi, VM) joined to the LAN.
+2. Expose it via Cloudflare Tunnel / Tailscale Funnel / static-IP rule.
+3. Set `BMS_BASE_URL` on Vercel to the tunnel's public URL.
+4. Optionally, declare the hourly Vercel cron in `vercel.json` (already done) and set `CRON_SECRET` so `/api/cron/sync-bms` can run automatically.
 
-```json
-{
-  "m_elec_b_miller":     "protocols/bacnet/local/objects/analog-value,5/present-value",
-  "m_elec_b_whittemore": "protocols/bacnet/local/objects/analog-value,11/present-value"
-}
-```
+See `/relay/README.md` for LaunchAgent / systemd unit examples.
 
-### On-campus relay (required for cloud Vercel)
-
-The Eclypse controller at `10.1.1.27` is reachable only on the KUA LAN.
-Vercel Functions can't open that connection. To bridge:
-
-1. Run a small relay (Raspberry Pi, on-campus VM, or any machine joined to the campus network) that exposes the same `/api/...` endpoints as this app.
-2. Make the relay reachable from the public internet using Cloudflare Tunnel, Tailscale Funnel, or a static-IP firewall rule.
-3. Set `BMS_BASE_URL=https://<relay-host>` in the Vercel project so cloud-side requests get proxied through the relay onto the campus network.
-
-`CsvMeterAdapter` and `UtilityApiMeterAdapter` remain stubs.
+---
 
 ## Privacy model
 
-Every user-linked record stores `*_id_hash`, never a name or SIS ID. The
-`hashUserId(role, canonicalId)` utility produces stable, role-scoped hashes
-so the same person hashes differently across record types. Public
-dashboards must aggregate at dorm/grade/department level; individual
-ranking is opt-in only.
+Every user-linked record stores `*_id_hash`, never a name or SIS ID.
+
+- `hashUserId(role, canonicalId)` produces stable, role-scoped hashes — the same person hashes differently across `student` / `staff` / `parent`.
+- Public dashboards aggregate at dorm/grade/department level. Individual ranking is opt-in only.
+- The `quiz_attempts` Supabase table enforces the hashed-identifier format with a `CHECK` constraint at the database boundary.
+- The CSV parser rejects uploads with `name` / `email` / `student_id` / `sis_id` / `address` / `phone` columns up-front.
+
+---
+
+## Storage
+
+- `quizStore.js` and `readingsStore.js` are write-through abstractions. Always write to in-process memory; additionally mirror to Supabase when `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` are set server-side.
+- Tables live in `supabase/migrations/`.
+- Reads prefer Supabase when configured, fall back to memory if the read fails — a brief Supabase outage degrades to "stale until next read" rather than hard failure.
+
+---
+
+## Production guardrails
+
+- **Rate limit** on `/api/chatbot`: token bucket, 12 req/min per IP, returns 429 with `Retry-After`.
+- **Cron auth**: `/api/cron/sync-bms` refuses every request unless `CRON_SECRET` is set and matches.
+- **JWT verification**: `/api/auth/session` uses Node's built-in crypto to verify RS256 against Google's published JWKs (cached 6h).
+- **Bundle guardrail**: GitHub Actions CI fails the build if the initial bundle exceeds 600 KB (today's value: ~416 KB).
+- **CI**: `.github/workflows/ci.yml` runs vitest + build on every push and PR.
+
+---
+
+## Accessibility
+
+- Skip-to-content link as first focusable element.
+- `:focus-visible` global style — 2px cyan outline that's readable on every dark card.
+- Chat thread is `role="log"` + `aria-live="polite"`.
+- Disclosure rows on `/buildings` and `/actions` are real `<button>` elements with `aria-expanded` + `aria-controls`.
+- `prefers-reduced-motion` respected.
+- Print stylesheet hides nav + footer, force light theme on `/report`.
+
+---
 
 ## Roadmap status
 
-| Step | Status |
+| Phase | Status |
 |------|--------|
 | 1. Data models, mock data, calc utilities | ✅ |
-| 2. Meter API + adapter (Mock + Eclypse scaffold) | ✅ |
-| 3. OS module pages (Hotspots, Buildings, Dining, Transport, Waste, Procurement, Actions, Challenges, Teacher, Chatbot, Data Admin) | ✅ |
-| 4. Rule-based AI Carbon Advisor + recommendation ranking | ✅ |
-| 5. Privacy / hash IDs / dorm-level aggregation | ✅ |
-| 6. README + Vercel build verification | ✅ |
+| 2. Meter API + adapter (Mock + Eclypse + CSV adapters working) | ✅ |
+| 3. OS module pages (16 routes) | ✅ |
+| 4. AI Carbon Advisor + recommendation ranking | ✅ |
+| 5. Privacy / hash IDs / dorm-level aggregation / DB-level constraint | ✅ |
+| 6. Production guardrails (rate limit, JWT, cron auth, CI, bundle budget) | ✅ |
+| 7. Storage (Supabase write-through + memory fallback) | ✅ |
+| 8. Live data UX (Trend Builder, CSV download, health panel) | ✅ |
+| 9. Trustee artifacts (Goals & Targets, Annual Report) | ✅ |
 
-### Storage
+### Open items for future phases
 
-Two storage paths land together in `src/storage/`:
-
-- `quizStore.js` and `readingsStore.js` are write-through abstractions. They always write to an in-process memory store (so dev / tests work with no setup), and additionally mirror writes to Supabase whenever both `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set in the server-side env.
-- Tables are defined in `supabase/migrations/20260503000000_quiz_and_csv_storage.sql`. The `quiz_attempts` table enforces the `hashUserId()` format with a `CHECK` constraint so raw names / SIS IDs are rejected at the database boundary.
-- Reads prefer Supabase when configured, with a memory fallback if the call fails — so a brief Supabase outage downgrades to "stale until next read" rather than a hard failure.
-
-### Next phases (not yet started)
-- **Live data ingestion.** Stand up the on-campus relay against the real Eclypse REST endpoints and set `BMS_BASE_URL` on Vercel. Replace static `envysionSnapshot` with periodic API calls to `/api/buildings/[id]/energy`.
-- **Chatbot grounding upgrade.** The current `/api/chatbot` LLM mode passes the matched articles into the system prompt. Phase 2 replaces keyword retrieval with vector-similarity over embedded knowledge content for better article selection on long-tail queries.
+- Stand up the on-campus relay against the real Eclypse REST endpoints. Cloud Vercel is wired; just needs the relay tunnel + env vars.
+- Replace `matchQuery()` keyword retrieval with vector-similarity over embedded knowledge content for better long-tail chatbot accuracy.
+- Wire cookie-based auth + Supabase session rows; today the session hash lives in `sessionStorage` only.
+- Refactor the legacy `/scope-1`, `/scope-2`, `/scope-3` pages onto the OS data layer (currently still inline).
