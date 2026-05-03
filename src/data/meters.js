@@ -1,12 +1,12 @@
 // Meter registry. One electricity meter per monitored building, plus
-// campus-level fuel master meters. annualBaselineValue is derived from
-// the live KUA Eclypse BMS snapshot in envysionSnapshot.js — each
-// building's year-to-date kWh through 2026-05-03, scaled by 365/123 to
-// project a full-year figure. The MockMeterAdapter uses these to shape
-// interval readings.
+// campus-level fuel master meters. annualBaselineValue is the kWh
+// each meter has logged year-to-date through SNAPSHOT_AS_OF
+// (2026-05-03), pulled directly from envysionSnapshot.js. NOT
+// annualized — the dashboard shows real "this year so far" numbers
+// rather than a projected full-year figure.
 
 import { buildings } from './buildings.js';
-import { envysionSnapshot, ANNUALIZE_FACTOR } from './envysionSnapshot.js';
+import { envysionSnapshot } from './envysionSnapshot.js';
 
 /**
  * @typedef {Object} Meter
@@ -26,7 +26,7 @@ const ytdByBuilding = Object.fromEntries(
 function annualKwhFor(buildingId) {
   const ytd = ytdByBuilding[buildingId];
   if (ytd == null) return 1000; // Fallback for any building missing from the snapshot.
-  return Math.round(ytd * ANNUALIZE_FACTOR);
+  return ytd;
 }
 
 /** @type {Meter[]} */

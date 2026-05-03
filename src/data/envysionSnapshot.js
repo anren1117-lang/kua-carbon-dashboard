@@ -42,6 +42,10 @@ export const envysionSnapshot = [
   { buildingId: 'b_childcare',  energyUsedKwh:   4976, powerKw:  0.2, avgVoltage: 211 },
 ];
 
-// Helper: annualize a YTD value to a full-year projection. The same
-// scaling factor is used in meters.js to derive annualBaselineValue.
+// The figures here are year-to-date measurements, NOT a full-year
+// projection. The dashboard treats them as period totals through
+// SNAPSHOT_AS_OF (2026-05-03). Pages that want a full-year
+// projection can multiply by 365 / SNAPSHOT_DAYS_INTO_YEAR — the
+// `ANNUALIZE_FACTOR` export below is provided for that case but is
+// NOT applied to the baseline by default.
 export const ANNUALIZE_FACTOR = 365 / SNAPSHOT_DAYS_INTO_YEAR; // ≈ 2.9675
