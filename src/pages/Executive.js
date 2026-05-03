@@ -52,12 +52,36 @@ export default function Executive() {
     .map((a) => ({ action: a, campusMt: a.expectedReductionMtCO2e * TOTAL_STUDENTS }))
     .sort((x, y) => y.campusMt - x.campusMt);
   const totalPersonalCampusMt = personalRanked.reduce((s, r) => s + r.campusMt, 0);
-  // Specific personal-vs-policy comparison the slide deck loves:
-  // chicken-over-beef student commitment, campus-wide, vs the dining
-  // services 20% beef-cut policy.
-  const beefPersonal = personalActions.find((a) => a.id === 'ra_choose_chicken');
-  const beefPolicy   = adminActions.find((a) => a.id === 'ra_beef_cut20');
-  const beefPersonalCampusMt = beefPersonal ? beefPersonal.expectedReductionMtCO2e * TOTAL_STUDENTS : 0;
+  // Matched personal-vs-policy pairs. Each row pits a single behavioral
+  // commitment (student, ×340) against the school-side policy that
+  // targets the same emission source. When personal-side > policy-side,
+  // the campaign is a better use of leadership attention than the
+  // matching policy debate. We pull dynamically from data so future
+  // edits to reductionActions.js automatically flow through.
+  const findP = (id) => personalActions.find((a) => a.id === id);
+  const findA = (id) => adminActions.find((a) => a.id === id);
+  const matchedPairs = [
+    { theme: 'Dining',    personalId: 'ra_choose_chicken',   policyId: 'ra_beef_cut20',         personalLabel: 'Every student picks chicken or vegetarian over beef',                policyLabel: '20% beef cut in dining menus' },
+    { theme: 'Commuting', personalId: 'ra_carpool_offcampus', policyId: 'ra_commute_policy',     personalLabel: 'Every student carpools to off-campus events with 3+ riders',         policyLabel: 'Faculty/staff commute incentive policy' },
+    { theme: 'Energy',    personalId: 'ra_short_showers',    policyId: 'ra_led_retrofit',        personalLabel: 'Every student keeps showers to 4 minutes',                           policyLabel: 'Replace remaining T8 fluorescents with LEDs' },
+    { theme: 'Waste',     personalId: 'ra_compost_clean',    policyId: 'ra_compost_expand',      personalLabel: 'Every student sorts food waste cleanly (no contamination)',          policyLabel: 'Expand compost collection to all dining stations' },
+  ]
+    .map(({ theme, personalId, policyId, personalLabel, policyLabel }) => {
+      const p = findP(personalId);
+      const a = findA(policyId);
+      if (!p || !a) return null;
+      const personalCampus = p.expectedReductionMtCO2e * TOTAL_STUDENTS;
+      const policyCampus = a.expectedReductionMtCO2e;
+      return {
+        theme,
+        personalLabel,
+        policyLabel,
+        personalCampus,
+        policyCampus,
+        delta: personalCampus - policyCampus,
+      };
+    })
+    .filter(Boolean);
 
   return (
     <ModulePage
@@ -150,18 +174,40 @@ export default function Executive() {
           </div>
         </div>
 
-        {beefPersonal && beefPolicy && (
-          <div style={styles.personalCompare}>
-            <div style={styles.personalCompareTitle}>The student-vs-policy moment</div>
-            <div style={styles.personalCompareBody}>
-              Every student picking chicken or vegetarian over beef =
-              <strong style={styles.personalCompareNum}> {beefPersonalCampusMt.toFixed(0)} mtCO₂e/yr</strong> campus-wide
-              <span style={styles.personalCompareVs}>vs.</span>
-              the dining director's 20% beef-cut menu policy =
-              <strong style={styles.personalCompareNum}> {beefPolicy.expectedReductionMtCO2e} mtCO₂e/yr</strong>.
-              Behavior beats policy here by {(beefPersonalCampusMt - beefPolicy.expectedReductionMtCO2e).toFixed(0)} mtCO₂e/yr.
+        {matchedPairs.length > 0 && (
+          <>
+            <div style={styles.personalCompareSectionTitle}>
+              Where student behavior outperforms the matching policy
             </div>
-          </div>
+            <div style={styles.matchedGrid}>
+              {matchedPairs.map((pair, i) => {
+                const personalWins = pair.delta > 0;
+                return (
+                  <div key={i} style={{ ...styles.matchedCard, borderLeftColor: personalWins ? '#22c55e' : '#f59e0b' }}>
+                    <div style={styles.matchedTheme}>{pair.theme}</div>
+                    <div style={styles.matchedRow}>
+                      <div style={styles.matchedLeft}>
+                        <div style={styles.matchedLabel}>{pair.personalLabel}</div>
+                        <div style={styles.matchedNumGreen}>{pair.personalCampus.toFixed(0)}<span style={styles.matchedUnit}>mt/yr</span></div>
+                        <div style={styles.matchedSub}>×{TOTAL_STUDENTS} students</div>
+                      </div>
+                      <div style={styles.matchedVs}>vs</div>
+                      <div style={styles.matchedRight}>
+                        <div style={styles.matchedLabel}>{pair.policyLabel}</div>
+                        <div style={styles.matchedNumAmber}>{pair.policyCampus.toFixed(0)}<span style={styles.matchedUnit}>mt/yr</span></div>
+                        <div style={styles.matchedSub}>policy lever</div>
+                      </div>
+                    </div>
+                    <div style={styles.matchedDelta}>
+                      {personalWins
+                        ? `Student behavior wins by ${pair.delta.toFixed(0)} mtCO₂e/yr`
+                        : `Policy lever wins by ${(-pair.delta).toFixed(0)} mtCO₂e/yr — but only if dining services adopts it`}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         <div style={styles.personalList}>
@@ -348,11 +394,20 @@ const styles = {
   personalHeroNum: { fontSize: 40, fontWeight: 800, color: '#86efac', lineHeight: 1, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'baseline', gap: 8 },
   personalHeroUnit: { fontSize: 16, color: '#86efac', fontWeight: 600, opacity: 0.8 },
   personalHeroLabel: { marginTop: 10, fontSize: 14, color: '#cbd5e1', lineHeight: 1.5 },
-  personalCompare: { padding: '14px 16px', background: '#0b1220', border: '1px dashed #f59e0b', borderRadius: 8, marginBottom: 14 },
-  personalCompareTitle: { fontSize: 11, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 6 },
-  personalCompareBody: { fontSize: 14, color: '#e5e7eb', lineHeight: 1.6 },
-  personalCompareNum: { color: '#fbbf24', fontVariantNumeric: 'tabular-nums' },
-  personalCompareVs: { display: 'inline-block', margin: '0 8px', padding: '0 6px', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 },
+  personalCompareSectionTitle: { fontSize: 12, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 10, marginTop: 4 },
+  matchedGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 10, marginBottom: 14 },
+  matchedCard: { padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #22c55e', borderRadius: 8 },
+  matchedTheme: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 10 },
+  matchedRow: { display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 10 },
+  matchedLeft: { textAlign: 'left' },
+  matchedRight: { textAlign: 'left' },
+  matchedLabel: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.4, marginBottom: 6, minHeight: 32 },
+  matchedNumGreen: { fontSize: 22, color: '#86efac', fontWeight: 800, lineHeight: 1, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'baseline', gap: 4 },
+  matchedNumAmber: { fontSize: 22, color: '#fbbf24', fontWeight: 800, lineHeight: 1, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'baseline', gap: 4 },
+  matchedUnit: { fontSize: 11, fontWeight: 600, opacity: 0.8 },
+  matchedSub: { fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: 600 },
+  matchedVs: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, padding: '4px 6px', alignSelf: 'center' },
+  matchedDelta: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #1f2937', fontSize: 12, color: '#86efac', fontWeight: 600, lineHeight: 1.4 },
   personalList: { display: 'grid', gap: 6 },
   personalRow: { display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, color: 'inherit', textDecoration: 'none' },
   personalRank: { fontSize: 13, color: '#86efac', fontWeight: 800, fontVariantNumeric: 'tabular-nums', minWidth: 28 },
