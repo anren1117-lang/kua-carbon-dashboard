@@ -99,6 +99,9 @@ src/
 | GET    | `/api/meters/quality`             | Anomaly + gap report per meter |
 | GET    | `/api/buildings/[id]/energy`      | Per-building rollup (kWh, peak kW, mtCO2e, intensities) |
 | POST   | `/api/emissions/calculate`        | Convert any activity quantity to kgCO2e using a stored factor |
+| POST   | `/api/quiz/attempts`              | Log a quiz attempt; GET to read or `?rollup=class` to aggregate |
+| POST   | `/api/chatbot`                    | Curriculum-bounded chatbot: rule-based, with optional LLM rewrite when `ANTHROPIC_API_KEY` is set |
+| POST   | `/api/auth/session`               | Verifies Google OIDC token (or accepts mockSubject in `AUTH_DEV_MODE=1`) and returns a hashed identity |
 | POST   | `/api/chat`                       | Existing — proxies to Anthropic API for the Ask agent |
 
 ## Switching meter data sources
@@ -158,7 +161,7 @@ ranking is opt-in only.
 
 ### Next phases (not yet started)
 
-- **Live data ingestion** — wire `BmsMeterAdapter` to a real on-campus relay so cloud Vercel reads from `10.1.1.27`. Replace the static `envysionSnapshot` with API calls to `/api/buildings/[id]/energy`.
-- **Chatbot RAG upgrade** — swap `matchQuery()` keyword scoring for embedded knowledge-content retrieval and an LLM-driven answer renderer. The page surface stays the same.
-- **Quiz attempt logging** — persist chatbot quiz attempts so the Teacher page can display real class results instead of mock data.
-- **Authentication for opt-in features** — plumb school SSO so individual student progress and per-staff carpool participation can be securely recorded behind login.
+- **Cryptographic JWT verification on /api/auth/session.** The current handler validates `iss`/`aud`/`exp`/`email` domain but does not yet verify Google's signature against their JWKs. Wire `jose` + `jwks-rsa` once the dependency budget allows. Production will need this before SSO replaces the dev-mode mock.
+- **Persistent storage.** Quiz attempts and CSV-imported readings live in process memory and reset on cold start. The schemas are documented in their respective ledger files; phase 2 ports both to Supabase.
+- **Live data ingestion.** Stand up the on-campus relay against the real Eclypse REST endpoints and set `BMS_BASE_URL` on Vercel. Replace static `envysionSnapshot` with periodic API calls to `/api/buildings/[id]/energy`.
+- **Chatbot grounding upgrade.** The current `/api/chatbot` LLM mode passes the matched articles into the system prompt. Phase 2 replaces keyword retrieval with vector-similarity over embedded knowledge content for better article selection on long-tail queries.

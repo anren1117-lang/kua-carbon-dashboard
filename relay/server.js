@@ -36,6 +36,8 @@ import qualityHandler         from '../api/meters/quality.js';
 import buildingEnergyHandler  from '../api/buildings/[id]/energy.js';
 import emissionsCalculate     from '../api/emissions/calculate.js';
 import quizAttemptsHandler    from '../api/quiz/attempts.js';
+import chatbotHandler         from '../api/chatbot.js';
+import authSessionHandler     from '../api/auth/session.js';
 
 const PORT = Number(process.env.PORT || 3001);
 
@@ -72,6 +74,8 @@ async function route(req, res, url) {
   if (m === 'GET'  && path === '/api/meters/quality')            return qualityHandler(req, res);
   if (m === 'POST' && path === '/api/emissions/calculate')       return emissionsCalculate(req, res);
   if ((m === 'GET' || m === 'POST') && path === '/api/quiz/attempts') return quizAttemptsHandler(req, res);
+  if (m === 'POST' && path === '/api/chatbot')                        return chatbotHandler(req, res);
+  if (m === 'POST' && path === '/api/auth/session')                   return authSessionHandler(req, res);
 
   // /api/buildings/:id/energy
   const energyMatch = path.match(/^\/api\/buildings\/([^/]+)\/energy$/);

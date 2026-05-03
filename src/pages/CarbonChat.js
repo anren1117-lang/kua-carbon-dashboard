@@ -3,22 +3,51 @@ import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { matchQuery, pickQuizForTopic } from '../utils/chatbotMatch.js';
 import { hashUserId } from '../utils/hash.js';
 
-// Anonymous-but-stable hash for the current browser session. In phase 2
-// this is replaced by an SSO-issued hashUserId(); for now, a fresh one
-// per session is enough to make the Teacher rollup meaningful without
-// recording any PII.
-function getSessionHash() {
+// Stable hash for the current user. Two paths:
+//
+// 1. SSO (preferred when configured) — the page calls /api/auth/session
+//    once on mount with a Google ID token (or, in dev mode, a mock
+//    subject) and caches the returned userIdHash in sessionStorage.
+//
+// 2. Anonymous fallback — when no SSO is available, mint a per-session
+//    random subject and hash that. Quiz attempts still aggregate per
+//    session, just without identity continuity across reloads.
+//
+// Either way, the client never holds the underlying email / SIS ID.
+const SESSION_KEY = 'kua_chat_session_hash';
+
+function getCachedHash() {
+  try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; }
+}
+function setCachedHash(h) {
+  try { sessionStorage.setItem(SESSION_KEY, h); } catch {}
+}
+
+async function getSessionHash() {
+  const cached = getCachedHash();
+  if (cached) return cached;
+
+  // Try the SSO endpoint in dev-mock mode. If AUTH_DEV_MODE isn't set
+  // server-side this 400s and we fall through to the anonymous path.
   try {
-    const k = 'kua_chat_session';
-    let s = sessionStorage.getItem(k);
-    if (!s) {
-      s = `s${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-      sessionStorage.setItem(k, s);
+    const r = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mockSubject: `anon-${Date.now()}-${Math.random()}@dev.local`, role: 'student' }),
+    });
+    if (r.ok) {
+      const j = await r.json();
+      if (j.userIdHash) {
+        setCachedHash(j.userIdHash);
+        return j.userIdHash;
+      }
     }
-    return hashUserId('student', s);
-  } catch {
-    return hashUserId('student', `anon_${Date.now()}`);
-  }
+  } catch {}
+
+  // Fallback: local hash. Same shape so the server still accepts it.
+  const local = hashUserId('student', `anon_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
+  setCachedHash(local);
+  return local;
 }
 
 // Carbon Learning Chatbot v1 — rule-based.
@@ -67,35 +96,52 @@ export default function CarbonChat() {
     if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
   }, [messages]);
 
-  function ask(q) {
+  async function ask(q) {
     if (!q || !q.trim()) return;
     const userMsg = { role: 'user', text: q.trim(), id: Date.now() };
     setMessages((m) => [...m, userMsg]);
     setInput('');
 
-    const result = matchQuery(q, { readingLevel });
-    let botMsg;
-    if (!result.best || result.score < 2) {
-      botMsg = {
+    // Optimistic placeholder so the user sees the bot is "working".
+    const placeholderId = Date.now() + 1;
+    setMessages((m) => [...m, { role: 'bot', id: placeholderId, text: 'Thinking…', confidence: 'medium', loading: true }]);
+
+    try {
+      const r = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q, readingLevel }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json();
+      setMessages((m) => m.map((msg) => msg.id === placeholderId ? {
         role: 'bot',
-        id: Date.now() + 1,
-        text: "I don't have a confident answer to that one. Try rephrasing, or ask a sustainability lead or teacher. Topics I cover well: carbon footprints, Scope 1/2/3, energy, food emissions, transportation, waste, and KUA-specific data.",
-        confidence: 'low',
-      };
-    } else {
-      botMsg = {
-        role: 'bot',
-        id: Date.now() + 1,
-        text: result.best.body,
-        title: result.best.title,
-        topic: result.best.topic,
-        sourceDoc: result.best.sourceDoc,
-        related: result.related,
-        readingLevel: result.best.readingLevel,
-        confidence: result.score >= 6 ? 'high' : 'medium',
-      };
+        id: placeholderId,
+        text: j.answer,
+        title: j.title,
+        sourceDoc: j.sourceDoc,
+        related: j.related,
+        readingLevel: j.readingLevel,
+        confidence: j.confidence,
+        mode: j.mode,
+      } : msg));
+    } catch {
+      // Network unreachable (e.g. offline preview) — fall back to the
+      // local rule-based matcher so the page still works.
+      const result = matchQuery(q, { readingLevel });
+      const fallback = !result.best || result.score < 2
+        ? { text: "I don't have a confident answer to that one. Try rephrasing, or ask a sustainability lead or teacher.", confidence: 'low' }
+        : {
+            text: result.best.body,
+            title: result.best.title,
+            sourceDoc: result.best.sourceDoc,
+            related: result.related,
+            readingLevel: result.best.readingLevel,
+            confidence: result.score >= 6 ? 'high' : 'medium',
+            mode: 'rule',
+          };
+      setMessages((m) => m.map((msg) => msg.id === placeholderId ? { role: 'bot', id: placeholderId, ...fallback } : msg));
     }
-    setMessages((m) => [...m, botMsg]);
   }
 
   function startQuiz(topic) {
@@ -104,22 +150,25 @@ export default function CarbonChat() {
     setQuizPick(null);
   }
 
-  function pickQuizAnswer(i) {
+  async function pickQuizAnswer(i) {
     if (!quiz || quizPick != null) return;
     setQuizPick(i);
     const opt = quiz.options[i];
     // Fire-and-forget log — failure is silent so the UI never blocks.
-    fetch('/api/quiz/attempts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userIdHash: getSessionHash(),
-        quizId: quiz.id,
-        topic: quiz.topic,
-        correct: !!opt.correct,
-        pickedIndex: i,
-      }),
-    }).catch(() => {});
+    try {
+      const userIdHash = await getSessionHash();
+      await fetch('/api/quiz/attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userIdHash,
+          quizId: quiz.id,
+          topic: quiz.topic,
+          correct: !!opt.correct,
+          pickedIndex: i,
+        }),
+      });
+    } catch {}
   }
 
   return (
@@ -279,9 +328,16 @@ function BotBubble({ message }) {
         {message.title && (
           <div style={styles.botTitleRow}>
             <span style={styles.botTitle}>{message.title}</span>
-            <Pill kind={message.confidence === 'high' ? 'good' : message.confidence === 'medium' ? 'warn' : 'bad'}>
-              {message.confidence} confidence
-            </Pill>
+            <span style={{ display: 'inline-flex', gap: 6 }}>
+              {message.mode && (
+                <Pill kind={message.mode === 'llm' ? 'info' : 'neutral'}>
+                  {message.mode === 'llm' ? 'AI' : 'rule-based'}
+                </Pill>
+              )}
+              <Pill kind={message.confidence === 'high' ? 'good' : message.confidence === 'medium' ? 'warn' : 'bad'}>
+                {message.confidence} confidence
+              </Pill>
+            </span>
           </div>
         )}
         <div style={styles.botText}>{message.text}</div>

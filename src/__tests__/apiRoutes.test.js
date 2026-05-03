@@ -12,6 +12,8 @@ import qualityHandler        from '../../api/meters/quality.js';
 import buildingEnergyHandler from '../../api/buildings/[id]/energy.js';
 import emissionsCalculate    from '../../api/emissions/calculate.js';
 import quizAttemptsHandler   from '../../api/quiz/attempts.js';
+import chatbotHandler        from '../../api/chatbot.js';
+import authSessionHandler    from '../../api/auth/session.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 
 function makeRes() {
@@ -158,6 +160,80 @@ describe('POST /api/quiz/attempts', () => {
     expect(apes.correct).toBe(1);
     expect(apes.accuracy).toBe(0.5);
     expect(apes.topics.sort()).toEqual(['food', 'scopes']);
+  });
+});
+
+describe('POST /api/chatbot', () => {
+  it('returns rule-mode answer for a high-confidence query (no API key needed)', async () => {
+    const r = await call(chatbotHandler, {
+      method: 'POST',
+      body: { query: 'what is a carbon footprint', readingLevel: 'novice' },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.mode).toBe('rule');
+    expect(r.body.confidence).toBe('high');
+    expect(r.body.title).toMatch(/carbon footprint/i);
+  });
+
+  it('returns low-confidence message for off-topic queries', async () => {
+    const r = await call(chatbotHandler, {
+      method: 'POST',
+      body: { query: 'who won the super bowl in 2023' },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.confidence).toBe('low');
+  });
+
+  it('400s without a query', async () => {
+    const r = await call(chatbotHandler, { method: 'POST', body: {} });
+    expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('POST /api/auth/session', () => {
+  it('rejects requests without an idToken when AUTH_DEV_MODE is unset', async () => {
+    delete process.env.AUTH_DEV_MODE;
+    const r = await call(authSessionHandler, { method: 'POST', body: {} });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('returns a hashed identity in dev mode', async () => {
+    process.env.AUTH_DEV_MODE = '1';
+    try {
+      const r = await call(authSessionHandler, {
+        method: 'POST',
+        body: { mockSubject: 'jane.doe@kua.org', role: 'student' },
+      });
+      expect(r.statusCode).toBe(200);
+      expect(r.body.userIdHash).toMatch(/^student_[0-9a-f]+$/);
+      expect(r.body.role).toBe('student');
+      expect(r.body.displayHint).toBe('JD');
+      expect(r.body.mode).toBe('dev');
+    } finally {
+      delete process.env.AUTH_DEV_MODE;
+    }
+  });
+
+  it('produces stable hashes across calls', async () => {
+    process.env.AUTH_DEV_MODE = '1';
+    try {
+      const a = await call(authSessionHandler, { method: 'POST', body: { mockSubject: 'alice@kua.org', role: 'student' } });
+      const b = await call(authSessionHandler, { method: 'POST', body: { mockSubject: 'alice@kua.org', role: 'student' } });
+      expect(a.body.userIdHash).toBe(b.body.userIdHash);
+    } finally {
+      delete process.env.AUTH_DEV_MODE;
+    }
+  });
+
+  it('produces different hashes for different roles', async () => {
+    process.env.AUTH_DEV_MODE = '1';
+    try {
+      const student = await call(authSessionHandler, { method: 'POST', body: { mockSubject: 'alice@kua.org', role: 'student' } });
+      const staff   = await call(authSessionHandler, { method: 'POST', body: { mockSubject: 'alice@kua.org', role: 'staff'   } });
+      expect(student.body.userIdHash).not.toBe(staff.body.userIdHash);
+    } finally {
+      delete process.env.AUTH_DEV_MODE;
+    }
   });
 });
 
