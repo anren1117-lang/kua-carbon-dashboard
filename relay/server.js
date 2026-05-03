@@ -39,6 +39,7 @@ import emissionsCalculate     from '../api/emissions/calculate.js';
 import quizAttemptsHandler    from '../api/quiz/attempts.js';
 import chatbotHandler         from '../api/chatbot.js';
 import authSessionHandler     from '../api/auth/session.js';
+import authLogoutHandler       from '../api/auth/logout.js';
 import healthHandler           from '../api/health.js';
 import cronSyncBmsHandler      from '../api/cron/sync-bms.js';
 
@@ -84,6 +85,7 @@ async function route(req, res, url) {
   if ((m === 'GET' || m === 'POST') && path === '/api/quiz/attempts') return quizAttemptsHandler(req, res);
   if (m === 'POST' && path === '/api/chatbot')                        return chatbotHandler(req, res);
   if (m === 'POST' && path === '/api/auth/session')                   return authSessionHandler(req, res);
+  if (m === 'POST' && path === '/api/auth/logout')                    return authLogoutHandler(req, res);
   if (m === 'GET'  && path === '/api/health')                         return healthHandler(req, res);
   if ((m === 'GET' || m === 'POST') && path === '/api/cron/sync-bms') return cronSyncBmsHandler(req, res);
 

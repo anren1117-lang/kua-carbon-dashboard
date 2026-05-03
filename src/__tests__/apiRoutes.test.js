@@ -14,6 +14,7 @@ import emissionsCalculate    from '../../api/emissions/calculate.js';
 import quizAttemptsHandler   from '../../api/quiz/attempts.js';
 import chatbotHandler        from '../../api/chatbot.js';
 import authSessionHandler    from '../../api/auth/session.js';
+import authLogoutHandler     from '../../api/auth/logout.js';
 import readingsExportHandler from '../../api/meters/readings/export.js';
 import healthHandler         from '../../api/health.js';
 import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
@@ -198,6 +199,20 @@ describe('GET /api/meters/readings/export', () => {
   it('400s without start/end', async () => {
     const r = await call(readingsExportHandler, { method: 'GET', query: { buildingId: 'b_miller' } });
     expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('POST /api/auth/logout', () => {
+  it('returns 200 and a clearing Set-Cookie header', async () => {
+    const r = await call(authLogoutHandler, { method: 'POST' });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.ok).toBe(true);
+    expect(r.headers['Set-Cookie']).toMatch(/Max-Age=0/);
+  });
+
+  it('rejects non-POST', async () => {
+    const r = await call(authLogoutHandler, { method: 'GET' });
+    expect(r.statusCode).toBe(405);
   });
 });
 

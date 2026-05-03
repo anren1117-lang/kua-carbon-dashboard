@@ -28,6 +28,8 @@ utilities in `src/utils/`.
 | `/buildings`        | All buildings with sortable intensity views (kWh, kg/sqft, kg/occupant) and per-building drill-down (BMS join number, setpoints, occupancy) |
 | `/dining`           | Meal-category emissions, supplier ranking, food-waste summary, menu-scenario "what-if" picker |
 | `/transportation`   | Fleet, carpool savings, air travel, school trips, faculty/staff commute mix |
+| `/trends`           | Trend Builder — pick building + window + interval, render time-series chart with hover tooltip |
+| `/goals`            | Goals & Targets — reduction trajectories with on-track / lagging / off-track status |
 | `/waste`            | Waste streams + diversion rate + monthly trend |
 | `/procurement`      | Spend-based Scope-3 estimates by category |
 | `/actions`          | AI Carbon Advisor v1 — rule-based ranking of reduction actions |
@@ -103,6 +105,7 @@ src/
 | POST   | `/api/quiz/attempts`              | Log a quiz attempt; GET to read or `?rollup=class` to aggregate |
 | POST   | `/api/chatbot`                    | Curriculum-bounded chatbot: rule-based, with optional LLM rewrite when `ANTHROPIC_API_KEY` is set |
 | POST   | `/api/auth/session`               | Verifies Google OIDC token (or accepts mockSubject in `AUTH_DEV_MODE=1`) and returns a hashed identity |
+| POST   | `/api/auth/logout`                | Clears server-side session state + Set-Cookie clearing header |
 | GET    | `/api/health`                     | Component status — meter adapter, Supabase, emission factors |
 | POST   | `/api/cron/sync-bms`              | Pulls last hour from active adapter, persists to Supabase. Auth: Bearer `CRON_SECRET`. Vercel cron schedule: hourly |
 | POST   | `/api/chat`                       | Existing — proxies to Anthropic API for the Ask agent |

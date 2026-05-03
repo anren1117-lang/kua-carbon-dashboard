@@ -19,6 +19,7 @@ import { parseMeterCsv } from '../utils/csvMeterParser.js';
 import { ingestCsv, _resetCsvStore, CsvMeterAdapter } from '../adapters/meter/CsvMeterAdapter.js';
 import { forestStands, ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES, soilCarbonStored } from '../data/sinks.js';
 import { formatMeterCsv } from '../utils/csvMeterFormatter.js';
+import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
 
 describe('data layer integrity', () => {
   it('every electricity meter points to a known building', () => {
@@ -315,6 +316,50 @@ describe('CSV round-trip', () => {
   it('CSV has header on first line', () => {
     const csv = formatMeterCsv([]);
     expect(csv.split('\n')[0]).toBe('meter_id,timestamp,value,unit,interval_minutes,demand_kw,data_quality');
+  });
+});
+
+describe('Reduction targets', () => {
+  it('every target has consistent baseline + target relationship', () => {
+    for (const t of reductionTargets) {
+      expect(t.targetYear).toBeGreaterThan(t.baselineYear);
+      expect(t.percentReduction).toBeGreaterThan(0);
+      expect(t.percentReduction).toBeLessThanOrEqual(100);
+      expect(t.baselineValue).toBeGreaterThan(0);
+    }
+  });
+
+  it('trajectory is monotonically decreasing', () => {
+    const t = reductionTargets.find((t) => t.scope === 'gross');
+    let prev = Infinity;
+    for (let y = t.baselineYear; y <= t.targetYear; y++) {
+      const v = targetTrajectoryAt(t, y);
+      expect(v).toBeLessThanOrEqual(prev);
+      prev = v;
+    }
+  });
+
+  it('trajectory hits the target at the target year', () => {
+    const t = reductionTargets[0];
+    const expected = t.baselineValue * (1 - t.percentReduction / 100);
+    expect(targetTrajectoryAt(t, t.targetYear)).toBeCloseTo(expected, 3);
+  });
+
+  it('trajectory clamps before baseline + after target', () => {
+    const t = reductionTargets[0];
+    expect(targetTrajectoryAt(t, t.baselineYear - 5)).toBe(t.baselineValue);
+    expect(targetTrajectoryAt(t, t.targetYear + 5)).toBeCloseTo(t.baselineValue * (1 - t.percentReduction / 100), 3);
+  });
+
+  it('trajectoryStatus picks the right bucket', () => {
+    const t = reductionTargets[0];
+    // At baseline year, expected = baseline. So actual === baseline → on track.
+    expect(trajectoryStatus(t, t.baselineValue, t.baselineYear)).toBe('on_track');
+    // 50% over expected → off track
+    const expected2026 = targetTrajectoryAt(t, 2026);
+    expect(trajectoryStatus(t, expected2026 * 1.5, 2026)).toBe('off_track');
+    // 5% over → lagging
+    expect(trajectoryStatus(t, expected2026 * 1.05, 2026)).toBe('lagging');
   });
 
   it('rolls up building energy summary', async () => {

@@ -11,6 +11,7 @@ const navItems = [
   { to: '/transportation', label: 'Transport' },
   { to: '/waste', label: 'Waste' },
   { to: '/procurement', label: 'Procurement' },
+  { to: '/goals', label: 'Goals' },
   { to: '/actions', label: 'Actions' },
   { to: '/challenges', label: 'Challenges' },
   { to: '/teacher', label: 'Teacher' },
