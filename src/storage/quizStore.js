@@ -1,0 +1,93 @@
+// Quiz attempt storage abstraction. Picks Supabase when configured,
+// in-memory otherwise. The /api/quiz/attempts handler talks to this
+// instead of quizLedger.js directly.
+
+import { getSupabaseServer } from './supabaseServer.js';
+import { recordAttempt as memRecord, listAttempts as memList, attemptsByClass as memByClass, _resetForTests as memReset } from '../data/quizLedger.js';
+
+/**
+ * @param {Omit<import('../data/quizLedger.js').QuizAttempt, 'id'|'submittedAt'>} attempt
+ */
+export async function recordAttempt(attempt) {
+  // Always write to memory for sync read paths (e.g. tests).
+  const persisted = memRecord(attempt);
+
+  // Mirror to Supabase when available. Failure is logged but not thrown
+  // — the API call has already returned 200 to the client by the time
+  // we get here under normal flow, so a Supabase outage shouldn't break
+  // user-facing logging.
+  const sb = await getSupabaseServer();
+  if (sb) {
+    try {
+      const { error } = await sb.from('quiz_attempts').insert({
+        id: persisted.id.startsWith('qa_') ? undefined : persisted.id,
+        user_id_hash: persisted.userIdHash,
+        class_id: persisted.classId ?? null,
+        quiz_id: persisted.quizId,
+        topic: persisted.topic,
+        correct: persisted.correct,
+        picked_index: persisted.pickedIndex,
+        submitted_at: persisted.submittedAt,
+      });
+      if (error) console.warn('quiz_attempts write failed:', error.message);
+    } catch (err) {
+      console.warn('quiz_attempts write threw:', err.message);
+    }
+  }
+  return persisted;
+}
+
+export async function listAttempts() {
+  const sb = await getSupabaseServer();
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('quiz_attempts').select('*').order('submitted_at', { ascending: false }).limit(500);
+      if (error) throw error;
+      return data.map((r) => ({
+        id: r.id,
+        submittedAt: r.submitted_at,
+        userIdHash: r.user_id_hash,
+        classId: r.class_id ?? undefined,
+        quizId: r.quiz_id,
+        topic: r.topic,
+        correct: r.correct,
+        pickedIndex: r.picked_index,
+      }));
+    } catch (err) {
+      console.warn('quiz_attempts read failed, falling back to memory:', err.message);
+    }
+  }
+  return memList();
+}
+
+export async function attemptsByClass() {
+  const sb = await getSupabaseServer();
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('quiz_attempts').select('class_id, correct, topic');
+      if (error) throw error;
+      const out = {};
+      for (const r of data) {
+        const key = r.class_id || 'unassigned';
+        if (!out[key]) out[key] = { total: 0, correct: 0, topics: new Set() };
+        out[key].total += 1;
+        if (r.correct) out[key].correct += 1;
+        out[key].topics.add(r.topic);
+      }
+      return Object.entries(out).map(([classId, v]) => ({
+        classId,
+        total: v.total,
+        correct: v.correct,
+        accuracy: v.total ? v.correct / v.total : 0,
+        topics: Array.from(v.topics),
+      }));
+    } catch (err) {
+      console.warn('quiz_attempts rollup failed, falling back to memory:', err.message);
+    }
+  }
+  return memByClass();
+}
+
+export function _resetStoreForTests() {
+  memReset();
+}

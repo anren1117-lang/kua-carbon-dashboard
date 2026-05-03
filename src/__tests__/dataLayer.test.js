@@ -265,7 +265,7 @@ describe('CsvMeterAdapter', () => {
       'm_elec_b_miller,2026-04-01T00:00:00Z,5.2,kWh,60',
       'm_elec_b_miller,2026-04-01T01:00:00Z,5.4,kWh,60',
     ].join('\n');
-    const r = ingestCsv(csv);
+    const r = await ingestCsv(csv);
     expect(r.inserted).toBe(2);
     expect(r.errors).toEqual([]);
 

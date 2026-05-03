@@ -1,45 +1,32 @@
-// CsvMeterAdapter — parses uploaded CSV and serves readings out of an
-// in-memory store. Phase 2 swaps the in-memory store for a Supabase
-// `meter_readings` table (schema documented in src/data/quizLedger.js
-// alongside the quiz_attempts schema).
-//
-// The /data-admin upload form posts CSV text to /api/meters/readings/import
-// after parsing client-side via parseMeterCsv(). When METER_SOURCE=csv,
-// queries go through this adapter and read from the same store.
+// CsvMeterAdapter — parses uploaded CSV and serves readings out of the
+// readingsStore. The store mirrors writes to Supabase (table
+// meter_readings_csv) when SUPABASE_URL + SUPABASE_SERVICE_KEY are set,
+// otherwise stays in process memory.
 
 import { parseMeterCsv } from '../../utils/csvMeterParser.js';
 import { meters } from '../../data/meters.js';
 import { getBuilding } from '../../data/buildings.js';
 import { quantityToKgCO2e, kgToMt } from '../../utils/emissions.js';
 import { detectAnomalies, qualityScore } from '../../utils/anomaly.js';
+import { insertReadings, readReadings, _resetReadingsStoreForTests } from '../../storage/readingsStore.js';
 
-/** @type {import('./MeterDataAdapter.js').MeterReading[]} */
-const store = [];
-
-/** Ingest a CSV blob; returns { inserted, errors }. Mostly for tests + the upload form. */
-export function ingestCsv(csv) {
+/** Ingest a CSV blob; returns { inserted, errors }. */
+export async function ingestCsv(csv) {
   const { readings, errors } = parseMeterCsv(csv);
-  if (errors.length === 0) {
-    for (const r of readings) store.push(r);
+  if (errors.length === 0 && readings.length > 0) {
+    await insertReadings(readings);
   }
   return { inserted: readings.length, errors };
 }
 
 /** Test-only escape hatch. */
 export function _resetCsvStore() {
-  store.length = 0;
-}
-
-function withinWindow(reading, startMs, endMs) {
-  const t = new Date(reading.timestamp).getTime();
-  return t >= startMs && t < endMs;
+  _resetReadingsStoreForTests();
 }
 
 /** @type {import('./MeterDataAdapter.js').MeterDataAdapter} */
 export const CsvMeterAdapter = {
   async listMeters() {
-    // CSV doesn't tell us about meters — it just feeds readings against
-    // the registry in src/data/meters.js. Return that registry.
     return meters.map((m) => ({
       id: m.id,
       buildingId: m.buildingId,
@@ -51,24 +38,12 @@ export const CsvMeterAdapter = {
   },
 
   async getReadings({ meterId, buildingId, start, end }) {
-    const startMs = new Date(start).getTime();
-    const endMs   = new Date(end).getTime();
-    return store.filter((r) => {
-      if (meterId && r.meterId !== meterId) return false;
-      if (buildingId && r.buildingId !== buildingId) return false;
-      return withinWindow(r, startMs, endMs);
-    });
+    return readReadings({ meterId, buildingId, start, end });
   },
 
   async importReadings(readings) {
-    let inserted = 0;
-    for (const r of readings) {
-      // Minimum-viable validation: it must look like a MeterReading.
-      if (!r || !r.meterId || !r.timestamp || typeof r.value !== 'number') continue;
-      store.push({ ...r, source: 'csv', dataQuality: r.dataQuality || 'actual' });
-      inserted++;
-    }
-    return { inserted };
+    const valid = (readings || []).filter((r) => r && r.meterId && r.timestamp && typeof r.value === 'number');
+    return insertReadings(valid.map((r) => ({ ...r, source: 'csv', dataQuality: r.dataQuality || 'actual' })));
   },
 
   async getQuality({ meterId, start, end }) {

@@ -2,11 +2,13 @@
 // Body: { userIdHash, quizId, topic, correct, pickedIndex, classId? }
 // GET  /api/quiz/attempts → list (Teacher dashboard rollup)
 //
-// In phase 1 the ledger is in-memory inside the serverless function,
-// so it resets between cold starts. Phase 2 swaps the ledger for a
-// Supabase table — see src/data/quizLedger.js for the schema.
+// Uses the quizStore abstraction: writes mirror to Supabase when
+// SUPABASE_URL + SUPABASE_SERVICE_KEY are configured, otherwise
+// in-memory only. See src/storage/quizStore.js for the contract and
+// supabase/migrations/20260503000000_quiz_and_csv_storage.sql for the
+// table schema.
 
-import { recordAttempt, listAttempts, attemptsByClass } from '../../src/data/quizLedger.js';
+import { recordAttempt, listAttempts, attemptsByClass } from '../../src/storage/quizStore.js';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -21,7 +23,7 @@ export default async function handler(req, res) {
       res.status(400).json({ error: 'userIdHash must be a hashed identifier (e.g. student_a1b2c3d4)' });
       return;
     }
-    const attempt = recordAttempt({ userIdHash, quizId, topic, correct, pickedIndex, classId });
+    const attempt = await recordAttempt({ userIdHash, quizId, topic, correct, pickedIndex, classId });
     res.status(200).json({ attempt });
     return;
   }
@@ -29,10 +31,12 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const rollup = req.query?.rollup === 'class';
     if (rollup) {
-      res.status(200).json({ classes: attemptsByClass() });
+      const classes = await attemptsByClass();
+      res.status(200).json({ classes });
       return;
     }
-    res.status(200).json({ attempts: listAttempts() });
+    const attempts = await listAttempts();
+    res.status(200).json({ attempts });
     return;
   }
 

@@ -90,6 +90,31 @@ button {
   }
 }
 
+/* Accessibility: visible focus ring on every focusable element. Default
+   browser styling is too subtle on this dark theme; this gives a 2px
+   cyan ring that is visible against every card background. */
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip-to-content link — visually hidden until focused via Tab. */
+a[href="#main"]:focus {
+  left: 8px !important;
+  top: 8px !important;
+  position: fixed !important;
+}
+
+/* Respect prefers-reduced-motion for any future transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* The original CRA scaffold rules below are kept for backward compat with any
    component that might still reference these classes. */
 .App {

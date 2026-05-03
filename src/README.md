@@ -160,8 +160,14 @@ ranking is opt-in only.
 | 5. Privacy / hash IDs / dorm-level aggregation | ✅ |
 | 6. README + Vercel build verification | ✅ |
 
-### Next phases (not yet started)
+### Storage
 
-- **Persistent storage.** Quiz attempts and CSV-imported readings live in process memory and reset on cold start. The schemas are documented in their respective ledger files; phase 2 ports both to Supabase.
+Two storage paths land together in `src/storage/`:
+
+- `quizStore.js` and `readingsStore.js` are write-through abstractions. They always write to an in-process memory store (so dev / tests work with no setup), and additionally mirror writes to Supabase whenever both `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set in the server-side env.
+- Tables are defined in `supabase/migrations/20260503000000_quiz_and_csv_storage.sql`. The `quiz_attempts` table enforces the `hashUserId()` format with a `CHECK` constraint so raw names / SIS IDs are rejected at the database boundary.
+- Reads prefer Supabase when configured, with a memory fallback if the call fails — so a brief Supabase outage downgrades to "stale until next read" rather than a hard failure.
+
+### Next phases (not yet started)
 - **Live data ingestion.** Stand up the on-campus relay against the real Eclypse REST endpoints and set `BMS_BASE_URL` on Vercel. Replace static `envysionSnapshot` with periodic API calls to `/api/buildings/[id]/energy`.
 - **Chatbot grounding upgrade.** The current `/api/chatbot` LLM mode passes the matched articles into the system prompt. Phase 2 replaces keyword retrieval with vector-similarity over embedded knowledge content for better article selection on long-tail queries.

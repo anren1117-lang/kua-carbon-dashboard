@@ -216,7 +216,13 @@ export default function CarbonChat() {
 
           {messages.length > 0 && (
             <ModuleSection title="Conversation">
-              <div style={styles.thread} ref={threadRef}>
+              <div
+                style={styles.thread}
+                ref={threadRef}
+                role="log"
+                aria-live="polite"
+                aria-label="Chat conversation"
+              >
                 {messages.map((m) => (
                   m.role === 'user'
                     ? <UserBubble key={m.id} text={m.text} />
@@ -230,15 +236,20 @@ export default function CarbonChat() {
             <form
               style={styles.inputRow}
               onSubmit={(e) => { e.preventDefault(); ask(input); }}
+              aria-label="Ask the carbon learning chatbot"
             >
+              <label htmlFor="chatbot-input" style={{ position: 'absolute', left: -9999 }}>
+                Question for the carbon chatbot
+              </label>
               <input
+                id="chatbot-input"
                 style={styles.input}
                 type="text"
                 placeholder="Ask anything about climate, energy, KUA's footprint..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
               />
-              <button type="submit" style={styles.sendBtn} disabled={!input.trim()}>Send</button>
+              <button type="submit" style={styles.sendBtn} disabled={!input.trim()} aria-label="Send question">Send</button>
             </form>
             <div style={styles.disclaimer}>
               Answers are estimates from a curated knowledge base. They are not audited carbon-accounting facts.

@@ -46,25 +46,28 @@ const styles = {
   adminLink: { padding: '6px 10px', borderRadius: 6, fontSize: 14, color: '#cbd5e1', textDecoration: 'none', border: '1px solid #334155', whiteSpace: 'nowrap', flexShrink: 0 },
   main: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' },
   footer: { borderTop: '1px solid #1f2937', padding: '20px 24px', textAlign: 'center', fontSize: 12, color: '#64748b' },
+  // Visually hidden until focused — standard "skip to content" pattern.
+  skipLink: { position: 'absolute', left: -9999, top: 8, padding: '8px 12px', background: '#22d3ee', color: '#0b1220', textDecoration: 'none', borderRadius: 4, fontWeight: 700, zIndex: 100 },
 };
 
 function Layout() {
   return (
     <div style={styles.shell}>
+      <a href="#main" style={styles.skipLink}>Skip to main content</a>
       <header style={styles.header}>
         <div style={styles.headerInner}>
-          <NavLink to="/" style={styles.brand}>KUA Carbon</NavLink>
-          <nav style={styles.nav} className="nav-scroll">
+          <NavLink to="/" style={styles.brand} aria-label="KUA Carbon — go to overview">KUA Carbon</NavLink>
+          <nav style={styles.nav} className="nav-scroll" aria-label="Primary">
             {navItems.map(({ to, label, end }) => (
               <NavLink key={to} to={to} end={end} style={styles.link}>
                 {label}
               </NavLink>
             ))}
           </nav>
-          <NavLink to="/admin" style={styles.adminLink}>Admin</NavLink>
+          <NavLink to="/admin" style={styles.adminLink} aria-label="Admin portal">Admin</NavLink>
         </div>
       </header>
-      <main style={styles.main}>
+      <main id="main" style={styles.main} tabIndex="-1">
         <Outlet />
       </main>
       <footer style={styles.footer}>

@@ -83,7 +83,14 @@ export default function Actions() {
             const meta = CATEGORY_META[action.category] || { label: action.category, accent: '#94a3b8' };
             return (
               <div key={action.id} style={styles.actionCard(meta.accent)}>
-                <div style={styles.cardHead} onClick={() => setExpanded(isExpanded ? null : action.id)}>
+                <button
+                  type="button"
+                  style={{ ...styles.cardHead, background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
+                  onClick={() => setExpanded(isExpanded ? null : action.id)}
+                  aria-expanded={isExpanded}
+                  aria-controls={`action-detail-${action.id}`}
+                  aria-label={`${action.title} — ${isExpanded ? 'collapse' : 'expand'} details`}
+                >
                   <div style={{ flex: 1 }}>
                     <div style={styles.rankLine}>
                       <span style={styles.rank}>#{i + 1}</span>
@@ -97,7 +104,7 @@ export default function Actions() {
                     <div style={styles.impactValue}>{action.expectedReductionMtCO2e.toFixed(0)}</div>
                     <div style={styles.impactUnit}>mtCO₂e/yr</div>
                   </div>
-                </div>
+                </button>
 
                 <div style={styles.statRow}>
                   <Stat label="Cost" value={action.estimatedCostUsd === 0 ? '$0' : `$${action.estimatedCostUsd.toLocaleString()}`} />
@@ -108,7 +115,7 @@ export default function Actions() {
                 </div>
 
                 {isExpanded && (
-                  <div style={styles.expanded}>
+                  <div id={`action-detail-${action.id}`} style={styles.expanded}>
                     <Field label="Owner" value={action.owner} />
                     <Field label="Timeline" value={action.timeline} />
                     <Field label="Data source" value={action.dataSource} />

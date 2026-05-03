@@ -142,7 +142,14 @@ export default function BuildingsPage() {
             const isOpen = expanded === b.id;
             return (
               <div key={b.id} style={styles.row(CATEGORY_COLORS[b.category])}>
-                <div style={styles.head} onClick={() => setExpanded(isOpen ? null : b.id)}>
+                <button
+                  type="button"
+                  style={{ ...styles.head, background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
+                  onClick={() => setExpanded(isOpen ? null : b.id)}
+                  aria-expanded={isOpen}
+                  aria-controls={`building-detail-${b.id}`}
+                  aria-label={`${b.name} — ${isOpen ? 'collapse' : 'expand'} details`}
+                >
                   <div style={{ flex: 1 }}>
                     <div style={styles.rowTop}>
                       {b.bmsNumber != null && <span style={styles.bmsTag}>#{b.bmsNumber}</span>}
@@ -153,10 +160,10 @@ export default function BuildingsPage() {
                       {Math.round(b.kwh).toLocaleString()} kWh · {b.mt.toFixed(2)} mtCO₂e · {b.kgPerSqft.toFixed(1)} kg/sqft · {b.kgPerOccupant.toFixed(1)} kg/occupant
                     </div>
                   </div>
-                  <span style={styles.arrow}>{isOpen ? '▼' : '▶'}</span>
-                </div>
+                  <span style={styles.arrow} aria-hidden="true">{isOpen ? '▼' : '▶'}</span>
+                </button>
                 {isOpen && (
-                  <>
+                  <div id={`building-detail-${b.id}`}>
                     <div style={styles.detail}>
                       <Field label="Square footage" value={`${b.sqft.toLocaleString()} sqft`} />
                       <Field label="Occupants" value={b.occupants} />
@@ -169,7 +176,7 @@ export default function BuildingsPage() {
                       {b.bmsNumber != null && <Field label="Distech BMS number" value={`#${b.bmsNumber}`} />}
                     </div>
                     <LivePanel buildingId={b.id} />
-                  </>
+                  </div>
                 )}
               </div>
             );
