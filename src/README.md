@@ -73,9 +73,38 @@ src/
 ## Switching meter data sources
 
 Set `METER_SOURCE` (or `VITE_METER_SOURCE` for client-side) to one of
-`mock`, `csv`, `utility_api`, `bms`. Defaults to `mock`. The non-mock
-adapters are stubs — they throw on use until wired to their respective
-backends.
+`mock`, `csv`, `utility_api`, `bms`. Defaults to `mock`.
+
+### BMS (Distech Eclypse) — environment
+
+The `BmsMeterAdapter` targets the Distech Eclypse REST API. Set:
+
+| Env var          | Purpose                                                              |
+|------------------|----------------------------------------------------------------------|
+| `BMS_BASE_URL`   | e.g. `https://campus-relay.kua.org` (NOT `10.1.1.27` from the cloud) |
+| `BMS_USERNAME`   | Eclypse REST username                                                |
+| `BMS_PASSWORD`   | Eclypse REST password                                                |
+| `BMS_POINT_MAP`  | JSON: `{ "<meterId>": "<eclypse object path>" }`                     |
+
+Example `BMS_POINT_MAP`:
+
+```json
+{
+  "m_elec_b_miller":     "protocols/bacnet/local/objects/analog-value,5/present-value",
+  "m_elec_b_whittemore": "protocols/bacnet/local/objects/analog-value,11/present-value"
+}
+```
+
+### On-campus relay (required for cloud Vercel)
+
+The Eclypse controller at `10.1.1.27` is reachable only on the KUA LAN.
+Vercel Functions can't open that connection. To bridge:
+
+1. Run a small relay (Raspberry Pi, on-campus VM, or any machine joined to the campus network) that exposes the same `/api/...` endpoints as this app.
+2. Make the relay reachable from the public internet using Cloudflare Tunnel, Tailscale Funnel, or a static-IP firewall rule.
+3. Set `BMS_BASE_URL=https://<relay-host>` in the Vercel project so cloud-side requests get proxied through the relay onto the campus network.
+
+`CsvMeterAdapter` and `UtilityApiMeterAdapter` remain stubs.
 
 ## Privacy model
 

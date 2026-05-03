@@ -2,7 +2,7 @@
 // from here rather than reaching into individual files.
 
 export { emissionFactors, getFactor, getFactorByKey } from './emissionFactors.js';
-export { buildings, getBuilding } from './buildings.js';
+export { buildings, getBuilding, getBuildingByBmsNumber } from './buildings.js';
 export { meters, getMeter, listMetersForBuilding } from './meters.js';
 export { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, GRID_MIX_YEAR } from './gridMix.js';
 export { dayOfWeekPattern, monthlyPattern, hourOfDayShape } from './seasonalPatterns.js';

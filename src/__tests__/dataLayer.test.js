@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildings, getBuilding } from '../data/buildings.js';
+import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { dorms } from '../data/dorms.js';
@@ -12,12 +12,28 @@ import { rankActions, buildingHotspots } from '../utils/hotspots.js';
 import { trendKind } from '../utils/comparison.js';
 import { hashUserId } from '../utils/hash.js';
 import { MockMeterAdapter } from '../adapters/meter/MockMeterAdapter.js';
+import { BmsMeterAdapter } from '../adapters/meter/BmsMeterAdapter.js';
+import { energyEquivalents, carbonEquivalents } from '../utils/equivalents.js';
 
 describe('data layer integrity', () => {
   it('every electricity meter points to a known building', () => {
     const ids = new Set(buildings.map((b) => b.id));
     const elec = meters.filter((m) => m.type === 'electricity');
     elec.forEach((m) => expect(ids.has(m.buildingId)).toBe(true));
+  });
+
+  it('every building has a unique BMS number that round-trips through getBuildingByBmsNumber', () => {
+    const seen = new Set();
+    for (const b of buildings) {
+      if (b.bmsNumber == null) continue;
+      expect(seen.has(b.bmsNumber)).toBe(false);
+      seen.add(b.bmsNumber);
+      expect(getBuildingByBmsNumber(b.bmsNumber)?.id).toBe(b.id);
+    }
+  });
+
+  it('Barn Field House (#10) is registered', () => {
+    expect(getBuildingByBmsNumber(10)?.id).toBe('b_barnfield');
   });
 
   it('every dorm points to a known building', () => {
@@ -147,6 +163,28 @@ describe('MockMeterAdapter', () => {
       expect(r.value).toBeGreaterThan(0);
       expect(r.source).toBe('mock');
     });
+  });
+
+  it('returns sane equivalents for a known kWh figure', () => {
+    const eq = energyEquivalents(82); // exactly one Tesla charge
+    expect(eq.teslaCharges).toBe(1);
+    expect(eq.iphoneCharges).toBeGreaterThan(4000);
+    expect(eq.bulbHours).toBeGreaterThan(1000);
+  });
+
+  it('handles zero / negative kWh gracefully', () => {
+    expect(energyEquivalents(0).teslaCharges).toBe(0);
+    expect(energyEquivalents(-50).teslaCharges).toBe(0);
+  });
+
+  it('carbonEquivalents converts mt to common reference units', () => {
+    const eq = carbonEquivalents(46);
+    expect(eq.carYears).toBe(10);
+    expect(eq.treeYears).toBeGreaterThan(700);
+  });
+
+  it('BmsMeterAdapter throws a helpful error when env is missing', async () => {
+    await expect(BmsMeterAdapter.listMeters()).rejects.toThrow(/BMS_BASE_URL/);
   });
 
   it('rolls up building energy summary', async () => {

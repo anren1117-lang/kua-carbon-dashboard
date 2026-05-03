@@ -4,6 +4,7 @@ import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { gridMix } from '../data/gridMix.js';
+import { EnergyEquivalents } from './EnergyEquivalents.js';
 
 // The original campus-electricity dashboard — live emissions counter, time
 // analysis, per-building data, ISO-NE grid mix breakdown. Lives on /scope-2
@@ -282,10 +283,14 @@ export function Scope2LiveDashboard() {
           </div>
 
           <div style={styles.statsGrid}>
-            <div style={styles.statCard}><p style={styles.statLabel}>Total Electricity</p><p style={styles.statValue}>2,316,469</p><p style={styles.statUnit}>kWh/year</p></div>
+            <div style={styles.statCard}><p style={styles.statLabel}>Total Electricity</p><p style={styles.statValue}>{totalKwh.toLocaleString()}</p><p style={styles.statUnit}>kWh/year</p></div>
             <div style={styles.statCard}><p style={styles.statLabel}>Zero-Emission</p><p style={styles.statValue}>48%</p><p style={styles.statUnit}>of grid mix</p></div>
             <div style={styles.statCard}><p style={styles.statLabel}>Buildings</p><p style={styles.statValue}>{buildingsData.length}</p><p style={styles.statUnit}>monitored</p></div>
             <div style={styles.statCard}><p style={styles.statLabel}>Emission Factor</p><p style={styles.statValue}>0.096</p><p style={styles.statUnit}>kg CO2/kWh</p></div>
+          </div>
+
+          <div style={{ maxWidth: 700, margin: '0 auto 20px' }}>
+            <EnergyEquivalents kwh={totalKwh} label="This year's electricity is equivalent to" />
           </div>
 
           <div style={styles.mixSummary}>

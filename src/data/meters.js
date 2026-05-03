@@ -21,7 +21,7 @@ const annualKwhByBuilding = {
   b_fitch:      15427, b_silvergym:  11407, b_flickinger:  9717, b_chellis:    5217,
   b_welch:       5511, b_dexter:      5105, b_densmore:    4768, b_kurth:      3784,
   b_baxter:      2403, b_bryant:      2288, b_rowe:        2072, b_bishop:     1826,
-  b_childcare:   1738, b_mikula:      1595,
+  b_childcare:   1738, b_mikula:      1595, b_barnfield:  12500,
 };
 
 /** @type {Meter[]} */
