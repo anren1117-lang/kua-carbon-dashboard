@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { meters } from '../data/meters.js';
 import { emissionFactors } from '../data/emissionFactors.js';
@@ -111,6 +111,8 @@ export default function DataAdmin() {
         ))}
       </ModuleSection>
 
+      <QualityPanel />
+
       <ModuleSection
         title="Meter registry"
         hint="One row per meter. The bmsNumber column is the join key for Distech Eclypse — match against /api/rest/v1/protocols/bacnet/local/objects/<id>."
@@ -148,6 +150,95 @@ export default function DataAdmin() {
     </ModulePage>
   );
 }
+
+function QualityPanel() {
+  const [enabled, setEnabled] = useState(false);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const ctrl = new AbortController();
+    const end = new Date();
+    const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+    setLoading(true); setError(null);
+    fetch(`/api/meters/quality?start=${start.toISOString()}&end=${end.toISOString()}`, { signal: ctrl.signal })
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then((j) => { setData(j); setLoading(false); })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setError(err.message); setLoading(false);
+      });
+    return () => ctrl.abort();
+  }, [enabled]);
+
+  return (
+    <ModuleSection
+      title="Meter quality"
+      hint="Live anomaly + gap detection over the last 7 days, served by /api/meters/quality. Score is 100 minus a per-issue penalty."
+    >
+      {!enabled && (
+        <button
+          type="button"
+          onClick={() => setEnabled(true)}
+          style={qpStyles.runBtn}
+        >
+          ↻ Run quality scan
+        </button>
+      )}
+      {enabled && (
+        <>
+          {loading && <div style={qpStyles.status}>Scanning every meter for the last 7 days …</div>}
+          {error && <div style={{ ...qpStyles.status, color: '#fca5a5' }}>Error: {error}</div>}
+          {data && (
+            <>
+              <div style={qpStyles.summary}>
+                {data.reports.length} meters scanned ·{' '}
+                {data.reports.reduce((s, r) => s + r.issues.length, 0)} issues found ·{' '}
+                avg score {Math.round(data.reports.reduce((s, r) => s + r.qualityScore, 0) / Math.max(1, data.reports.length))}
+              </div>
+              <div style={qpStyles.list}>
+                {data.reports
+                  .sort((a, b) => a.qualityScore - b.qualityScore)
+                  .slice(0, 10)
+                  .map((r) => (
+                    <div key={r.meterId} style={qpStyles.row}>
+                      <div style={qpStyles.left}>
+                        <code style={qpStyles.id}>{r.meterId}</code>
+                        <span style={qpStyles.readings}>{r.totalReadings} readings</span>
+                      </div>
+                      <div style={qpStyles.right}>
+                        <Pill kind={r.qualityScore >= 80 ? 'good' : r.qualityScore >= 50 ? 'warn' : 'bad'}>
+                          score {r.qualityScore}
+                        </Pill>
+                        <span style={qpStyles.issues}>
+                          {r.issues.length === 0 ? 'no issues' : `${r.issues.length} issue${r.issues.length === 1 ? '' : 's'}`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </ModuleSection>
+  );
+}
+
+const qpStyles = {
+  runBtn: { padding: '10px 18px', background: '#0f172a', color: '#22d3ee', border: '1px solid #0e7490', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 700 },
+  status: { fontSize: 13, color: '#94a3b8', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
+  summary: { fontSize: 13, color: '#cbd5e1', marginBottom: 12 },
+  list: { display: 'grid', gap: 6 },
+  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  left: { display: 'flex', alignItems: 'center', gap: 12 },
+  right: { display: 'flex', alignItems: 'center', gap: 10 },
+  id: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, color: '#cbd5e1' },
+  readings: { fontSize: 11, color: '#64748b' },
+  issues: { fontSize: 12, color: '#94a3b8' },
+};
 
 const styles = {
   adapterGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 },

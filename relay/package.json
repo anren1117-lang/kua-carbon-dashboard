@@ -1,0 +1,11 @@
+{
+  "name": "kua-carbon-relay",
+  "version": "0.1.0",
+  "description": "On-campus relay that exposes the carbon dashboard's /api/* handlers to the cloud, bridging the LAN-only Distech Eclypse BMS to Vercel.",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

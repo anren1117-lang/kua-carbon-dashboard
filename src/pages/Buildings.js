@@ -1,8 +1,30 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+
+function useBuildingEnergy(buildingId, enabled) {
+  const [state, setState] = useState({ loading: false, data: null, error: null });
+  useEffect(() => {
+    if (!enabled || !buildingId) return;
+    const controller = new AbortController();
+    const end = new Date();
+    const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+    setState({ loading: true, data: null, error: null });
+    fetch(`/api/buildings/${encodeURIComponent(buildingId)}/energy?start=${start.toISOString()}&end=${end.toISOString()}`, {
+      signal: controller.signal,
+    })
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then((data) => setState({ loading: false, data, error: null }))
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setState({ loading: false, data: null, error: err.message });
+      });
+    return () => controller.abort();
+  }, [buildingId, enabled]);
+  return state;
+}
 
 const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
@@ -112,17 +134,20 @@ export default function BuildingsPage() {
                   <span style={styles.arrow}>{isOpen ? '▼' : '▶'}</span>
                 </div>
                 {isOpen && (
-                  <div style={styles.detail}>
-                    <Field label="Square footage" value={`${b.sqft.toLocaleString()} sqft`} />
-                    <Field label="Occupants" value={b.occupants} />
-                    {b.dormPopulation > 0 && <Field label="Dorm population" value={b.dormPopulation} />}
-                    <Field label="HVAC schedule" value={b.hvacSchedule} />
-                    <Field label="Heating setpoint" value={`${b.setpointHeatingF}°F`} />
-                    <Field label="Cooling setpoint" value={`${b.setpointCoolingF}°F`} />
-                    {b.powerKw != null && <Field label="Last observed demand" value={`${b.powerKw} kW`} />}
-                    {b.avgVoltage != null && <Field label="Avg voltage" value={`${b.avgVoltage} V`} />}
-                    {b.bmsNumber != null && <Field label="Distech BMS number" value={`#${b.bmsNumber}`} />}
-                  </div>
+                  <>
+                    <div style={styles.detail}>
+                      <Field label="Square footage" value={`${b.sqft.toLocaleString()} sqft`} />
+                      <Field label="Occupants" value={b.occupants} />
+                      {b.dormPopulation > 0 && <Field label="Dorm population" value={b.dormPopulation} />}
+                      <Field label="HVAC schedule" value={b.hvacSchedule} />
+                      <Field label="Heating setpoint" value={`${b.setpointHeatingF}°F`} />
+                      <Field label="Cooling setpoint" value={`${b.setpointCoolingF}°F`} />
+                      {b.powerKw != null && <Field label="Last observed demand" value={`${b.powerKw} kW`} />}
+                      {b.avgVoltage != null && <Field label="Avg voltage" value={`${b.avgVoltage} V`} />}
+                      {b.bmsNumber != null && <Field label="Distech BMS number" value={`#${b.bmsNumber}`} />}
+                    </div>
+                    <LivePanel buildingId={b.id} />
+                  </>
                 )}
               </div>
             );
@@ -164,6 +189,38 @@ function Field({ label, value }) {
   );
 }
 
+function LivePanel({ buildingId }) {
+  const [enabled, setEnabled] = useState(false);
+  const { loading, data, error } = useBuildingEnergy(buildingId, enabled);
+  return (
+    <div style={styles.live}>
+      <button
+        type="button"
+        style={styles.liveBtn}
+        onClick={() => setEnabled((v) => !v)}
+      >
+        {enabled ? '× Hide live data' : '↻ Pull live 30-day energy from API'}
+      </button>
+      {enabled && (
+        <div style={styles.liveBody}>
+          {loading && <div style={styles.liveStatus}>Loading from /api/buildings/{buildingId}/energy …</div>}
+          {error && <div style={{ ...styles.liveStatus, color: '#fca5a5' }}>Error: {error}</div>}
+          {data && (
+            <div style={styles.liveGrid}>
+              <Field label="Live total (30d)" value={`${data.totalKwh.toLocaleString()} kWh`} />
+              <Field label="Peak demand" value={`${data.peakKw} kW`} />
+              <Field label="Live mtCO₂e" value={data.mtCO2e.toFixed(3)} />
+              <Field label="Live kg/sqft" value={data.mtCO2ePerSqft.toFixed(2)} />
+              <Field label="Live kg/occupant" value={data.mtCO2ePerOccupant.toFixed(2)} />
+              <Field label="Daily samples" value={data.dailyKwh.length} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const styles = {
   filterRow: { display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' },
   label: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 6 },
@@ -188,4 +245,10 @@ const styles = {
   field: { display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' },
   fieldLabel: { color: '#64748b', fontWeight: 600 },
   fieldValue: { color: '#cbd5e1', textAlign: 'right' },
+
+  live: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #1f2937' },
+  liveBtn: { padding: '8px 14px', background: '#0f172a', color: '#22d3ee', border: '1px solid #0e7490', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700, letterSpacing: 0.4 },
+  liveBody: { marginTop: 12, padding: 12, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
+  liveStatus: { fontSize: 12, color: '#94a3b8', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
+  liveGrid: { display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' },
 };
