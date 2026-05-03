@@ -49,9 +49,12 @@ function Scope2() {
       <ScopePageInfo
         color="#f59e0b"
         estimate={{
-          total: '222', totalRange: 'documented · 222', perStudent: 0.4, documented: true,
-          thirdMetric: { label: 'kWh consumed', value: '2.3M', note: 'campus-wide annual' },
-          note: 'This is the only line currently sourced from real measurement: 2,316,469 kWh from the campus real-time meter × the ISO-NE 2024 grid emission factor. Liberty Utilities is the distribution utility but the meter is the source of truth.',
+          total: '~452', totalRange: '380 – 520 (annualized)', perStudent: 1.3,
+          thirdMetric: { label: 'kWh measured', value: '649k', note: 'YTD through 2026-05-03' },
+          provenance: 'cited',
+          note: 'kWh side is measured (BMS); mtCO₂e side is cited (per-fuel ISO-NE 2024 output factors). The only scope on the dashboard with real metered inputs.',
+          currentMethod: 'Measured kWh × cited emission factors. kWh: 649,439 kWh year-to-date through 2026-05-03 from KUA Distech Eclypse BMS All Meters page (real meter, 123 days of data) × annualization factor 2.97 = ~1.93M kWh/yr equivalent. Emission factor: per-fuel output rates (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. Effective system rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 published range.',
+          futureMethod: 'Drop the ×2.97 annualization once a full calendar year of BMS data is captured (~Jan 2027) — flips kWh side from "annualized estimate" to a true measured-year figure. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[
           { title: 'ISO New England Electric Generator Air Emissions Report 2024', use: '643 lb CO₂/MWh in-region · 177 lb CO₂/MWh imported (Canadian hydro share)' },

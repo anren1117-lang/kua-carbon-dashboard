@@ -72,9 +72,12 @@ function Scope3() {
       <ScopePageInfo
         color="#8b5cf6"
         estimate={{
-          total: '~3,000', totalRange: '2,000 – 3,800', perStudent: 5.0,
+          total: '~3,000', totalRange: '2,000 – 3,800', perStudent: 8.8,
           thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
-          note: 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel alone dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the single highest-impact line item per student affected.',
+          provenance: 'estimated',
+          note: 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.',
+          currentMethod: 'Hand-set assumptions × cited methodologies. Travel: ~50 international students × ~3 mtCO₂e per round trip + ~150 US boarders × 3-4 trips/yr × ~1 mt each + study abroad + athletic teams (ICAO calculator + DEFRA 2024 RF multiplier). Goods: EEIO spend-based using guessed annual spend × USEEIO sector factors. Waste: assumed tonnage × EPA WARM v15.1 net factors (+0.52 landfill, -0.10 recycling, +0.04 compost). Commuting: residential-school adjustment (most live on campus). Upstream fuel: ~15-20% uplift on Scope 1+2.',
+          futureMethod: 'Each subcategory ships independently and flips estimated → cited as inputs become real. Travel: KUA travel office departure logs + study abroad ledger + athletics bus routes. Dining (Cat 1 portion): Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream). Procurement: Business Office annual spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fleet fuel-economy. The methodologies are already standard; only KUA-specific inputs are pending.',
         }}
         references={[
           { title: 'Kool, B. (2025)', source: 'Sustainability Accounting at Royal Roads University', use: 'Student air travel scale at residential institutions' },

@@ -66,7 +66,10 @@ function Scope1() {
         estimate={{
           total: '~1,000', totalRange: '800 – 1,500', perStudent: 1.6,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
-          note: 'Heating fuel is the overwhelming driver. Refrigerant leakage and fleet vehicles add roughly 20–50 mtCO₂e between them. The estimate replaces with a measured number once heating-oil and propane delivery records are entered through the Admin Portal.',
+          provenance: 'estimated',
+          note: 'Heating fuel is the overwhelming driver. Refrigerant leakage and fleet vehicles add roughly 20–50 mtCO₂e between them.',
+          currentMethod: 'Hand-set placeholder. Heating fuel: assumed 100k–150k gal heating-oil-equivalent (oil + propane combined) sized to typical NH boarding-school footprints × EPA Stationary Combustion factors (10.16 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane). Refrigerant leakage and fleet are placeholder order-of-magnitude figures (20–50 mt combined). KUA delivery records and HVAC service logs have not been integrated.',
+          futureMethod: 'Heating fuel → annual delivery invoices per building entered via Admin Portal (fuel_bills table) × EPA factors → flips to MEASURED. Refrigerants → HVAC technician service-report mass balance × IPCC AR6 GWP100 → MEASURED. Fleet → KUA fuel-card records × EPA Mobile Combustion factors → MEASURED. Once all three integrate, this page reads measured end-to-end.',
         }}
         references={[
           { title: 'EPA GHG Emission Factors Hub (2024)', source: 'Stationary Combustion Table 2', use: '10.16 kg CO₂/gal heating oil; 5.72 kg CO₂/gal propane' },

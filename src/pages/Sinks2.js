@@ -1,5 +1,6 @@
 import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import {
   forestStands,
   soilSamples,
@@ -40,6 +41,44 @@ export default function Sinks() {
         { label: 'Soil carbon stored',   value: Math.round(totalSoilStored).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: 'Top 30 cm' },
         { label: 'Forest stands',        value: forestStands.length, accent: '#22d3ee' },
       ]} />
+
+      <ModuleSection title="Data provenance" hint="What the four numbers above are based on, and the upgrade path that replaces each placeholder with measured data.">
+        <ProvenanceLegend />
+        <div style={styles.provList}>
+          <div style={styles.provRow}>
+            <div style={styles.provHead}>
+              <ProvenancePill provenance="cited" />
+              <span style={styles.provLabel}>Total forest acres ({TOTAL_FOREST_ACRES.toLocaleString()})</span>
+            </div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> KUA disclosure ("campus is 1,300 acres total, ~1,000 forested") corroborated by Wikipedia. Real number.</div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> No upgrade needed. The acres figure is solid.</div>
+          </div>
+          <div style={styles.provRow}>
+            <div style={styles.provHead}>
+              <ProvenancePill provenance="estimated" />
+              <span style={styles.provLabel}>Annual sequestration ({ANNUAL_SEQUESTRATION_MT.toFixed(0)} mtCO₂e/yr)</span>
+            </div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> 7 placeholder forest stands (named "North Hill", "Potato Patch", "Chellis Pond riparian", etc. — not from a KUA forest inventory) × per-acre rates that sit inside IPCC LULUCF default ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total acreage and the mix of mature hardwood / softwood / transitional / open-grown is real-ish; the per-stand subdivision and individual acreages are invented.</div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> Commission a USFS Forest Inventory & Analysis-style stand survey of the actual KUA woodlot — species composition, age class, basal area, real per-stand acreage. IPCC per-acre rates stay (they're appropriate for this regional + age-class mix); inputs become real. Flips estimated → cited.</div>
+          </div>
+          <div style={styles.provRow}>
+            <div style={styles.provHead}>
+              <ProvenancePill provenance="estimated" />
+              <span style={styles.provLabel}>Soil carbon stored ({Math.round(totalSoilStored).toLocaleString()} mtCO₂e)</span>
+            </div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> Average %OC across the synthetic soil samples (top 30 cm) × total forest acreage × bulk density × 3.67 (CO₂/C ratio). The soil samples themselves are placeholder values, not from a soil-coring campaign on KUA land.</div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> Run a real soil-coring campaign across representative KUA stands (5-10 cores per stand at multiple depths). Lab analysis for %OC + bulk density. Stock is calculated the same way; only the inputs become real. Flips estimated → measured. Note: soil carbon stock is a stock, not an annual flux — separate from annual sequestration above.</div>
+          </div>
+          <div style={styles.provRow}>
+            <div style={styles.provHead}>
+              <ProvenancePill provenance="estimated" />
+              <span style={styles.provLabel}>Forest stands ({forestStands.length})</span>
+            </div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> 7 placeholder stands. The names, individual acreages, age classes, and dominant species are best-effort guesses sized so totals match the cited 1,000-acre disclosure.</div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> Replaced with real stands from the FIA-style inventory above. Number of stands is whatever the survey returns — could be 4 or 12.</div>
+          </div>
+        </div>
+      </ModuleSection>
 
       <ModuleSection
         title="Forest stands"
@@ -118,6 +157,13 @@ export default function Sinks() {
 }
 
 const styles = {
+  provList: { display: 'grid', gap: 10, marginTop: 14 },
+  provRow: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  provHead: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 },
+  provLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 700 },
+  provMethod: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
+  provMethodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
   list: { display: 'grid', gap: 8 },
   row: { display: 'flex', gap: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #22c55e', borderRadius: 8, alignItems: 'center' },
   head: { display: 'flex', alignItems: 'center', gap: 10 },

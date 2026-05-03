@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ProvenancePill } from './ProvenancePill.js';
 
 const styles = {
   wrap: { marginTop: 24, display: 'grid', gap: 16 },
@@ -18,6 +19,10 @@ const styles = {
   estimateRange: { fontSize: 13, color: '#64748b', marginTop: 4 },
   estimateNote: { marginTop: 14, fontSize: 16, color: '#cbd5e1', lineHeight: 1.7 },
   documented: { fontSize: 12, padding: '3px 10px', borderRadius: 999, background: '#052e1a', color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginLeft: 10, fontWeight: 700 },
+  methodBlock: { marginTop: 16, paddingTop: 14, borderTop: '1px solid #1f2937', display: 'grid', gap: 8 },
+  methodRow: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 },
+  methodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 8 },
+  provHeadPill: { marginLeft: 10 },
   refList: { paddingLeft: 22, fontSize: 16, color: '#cbd5e1', lineHeight: 1.9, margin: 0 },
   refTitle: { color: '#e5e7eb', fontWeight: 700 },
   refSource: { color: '#94a3b8' },
@@ -97,7 +102,10 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
       <section style={styles.card(color)}>
         <h2 style={styles.cardTitle}>
           KUA's preliminary estimate
-          {estimate.documented && <span style={styles.documented}>Documented</span>}
+          {estimate.provenance
+            ? <span style={styles.provHeadPill}><ProvenancePill provenance={estimate.provenance} /></span>
+            : estimate.documented && <span style={styles.documented}>Documented</span>
+          }
         </h2>
         <div style={styles.estimateRow}>
           <div style={styles.estimateCell}>
@@ -122,7 +130,21 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
             </div>
           )}
         </div>
-        <p style={styles.estimateNote}>{estimate.note}</p>
+        {estimate.note && <p style={styles.estimateNote}>{estimate.note}</p>}
+        {(estimate.currentMethod || estimate.futureMethod) && (
+          <div style={styles.methodBlock}>
+            {estimate.currentMethod && (
+              <div style={styles.methodRow}>
+                <span style={styles.methodLabel}>Today:</span>{estimate.currentMethod}
+              </div>
+            )}
+            {estimate.futureMethod && (
+              <div style={styles.methodRow}>
+                <span style={styles.methodLabel}>Target:</span>{estimate.futureMethod}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       <section style={styles.card(color)}>
