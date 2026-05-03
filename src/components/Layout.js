@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 const navItems = [
   { to: '/', label: 'Overview', end: true },
+  { to: '/executive', label: 'Executive' },
   { to: '/hotspots', label: 'Hotspots' },
   { to: '/buildings', label: 'Buildings' },
   { to: '/dining', label: 'Dining' },
@@ -17,7 +18,7 @@ const navItems = [
   { to: '/scope-2', label: 'Scope 2' },
   { to: '/scope-3', label: 'Scope 3' },
   { to: '/renewables-os', label: 'Renewables' },
-  { to: '/sinks', label: 'Sinks' },
+  { to: '/sinks-os', label: 'Sinks' },
   { to: '/credits', label: 'Credits' },
   { to: '/scenarios', label: 'Scenarios' },
   { to: '/methodology', label: 'Methodology' },

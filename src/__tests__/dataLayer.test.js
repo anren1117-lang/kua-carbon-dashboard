@@ -15,6 +15,9 @@ import { MockMeterAdapter } from '../adapters/meter/MockMeterAdapter.js';
 import { BmsMeterAdapter } from '../adapters/meter/BmsMeterAdapter.js';
 import { energyEquivalents, carbonEquivalents } from '../utils/equivalents.js';
 import { matchQuery, pickQuizForTopic } from '../utils/chatbotMatch.js';
+import { parseMeterCsv } from '../utils/csvMeterParser.js';
+import { ingestCsv, _resetCsvStore, CsvMeterAdapter } from '../adapters/meter/CsvMeterAdapter.js';
+import { forestStands, ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES, soilCarbonStored } from '../data/sinks.js';
 
 describe('data layer integrity', () => {
   it('every electricity meter points to a known building', () => {
@@ -210,6 +213,87 @@ describe('MockMeterAdapter', () => {
       expect(q.options.length).toBe(4);
       expect(q.options.filter((o) => o.correct).length).toBe(1);
     }
+  });
+});
+
+describe('CSV meter parser', () => {
+  it('parses a well-formed CSV', () => {
+    const csv = [
+      'meter_id,timestamp,value,unit,interval_minutes',
+      'm_elec_b_miller,2026-04-01T00:00:00Z,5.2,kWh,60',
+      'm_elec_b_miller,2026-04-01T01:00:00Z,5.4,kWh,60',
+    ].join('\n');
+    const r = parseMeterCsv(csv);
+    expect(r.errors).toEqual([]);
+    expect(r.readings.length).toBe(2);
+    expect(r.readings[0].source).toBe('csv');
+    expect(r.readings[0].buildingId).toBe('b_miller');
+  });
+
+  it('rejects PII-looking columns', () => {
+    const csv = 'meter_id,timestamp,value,unit,interval_minutes,name\nm_elec_b_miller,2026-04-01T00:00:00Z,5.2,kWh,60,Anren';
+    const r = parseMeterCsv(csv);
+    expect(r.errors[0]).toMatch(/personal data/);
+    expect(r.readings.length).toBe(0);
+  });
+
+  it('flags unknown meter ids', () => {
+    const csv = 'meter_id,timestamp,value,unit,interval_minutes\nm_does_not_exist,2026-04-01T00:00:00Z,5.2,kWh,60';
+    const r = parseMeterCsv(csv);
+    expect(r.errors[0]).toMatch(/unknown meter_id/);
+  });
+
+  it('flags non-numeric values', () => {
+    const csv = 'meter_id,timestamp,value,unit,interval_minutes\nm_elec_b_miller,2026-04-01T00:00:00Z,abc,kWh,60';
+    const r = parseMeterCsv(csv);
+    expect(r.errors[0]).toMatch(/not numeric/);
+  });
+
+  it('flags missing required columns', () => {
+    const csv = 'meter_id,timestamp,value\nm_elec_b_miller,2026-04-01T00:00:00Z,5.2';
+    const r = parseMeterCsv(csv);
+    expect(r.errors.some((e) => e.includes('missing required column'))).toBe(true);
+  });
+});
+
+describe('CsvMeterAdapter', () => {
+  it('round-trips ingest → getReadings', async () => {
+    _resetCsvStore();
+    const csv = [
+      'meter_id,timestamp,value,unit,interval_minutes',
+      'm_elec_b_miller,2026-04-01T00:00:00Z,5.2,kWh,60',
+      'm_elec_b_miller,2026-04-01T01:00:00Z,5.4,kWh,60',
+    ].join('\n');
+    const r = ingestCsv(csv);
+    expect(r.inserted).toBe(2);
+    expect(r.errors).toEqual([]);
+
+    const readings = await CsvMeterAdapter.getReadings({
+      buildingId: 'b_miller',
+      start: '2026-04-01T00:00:00Z',
+      end:   '2026-04-02T00:00:00Z',
+    });
+    expect(readings.length).toBe(2);
+  });
+});
+
+describe('Sinks data', () => {
+  it('every stand has positive acres + sequestration rate', () => {
+    for (const s of forestStands) {
+      expect(s.acres).toBeGreaterThan(0);
+      expect(s.mtco2eAcreYr).toBeGreaterThan(0);
+    }
+  });
+
+  it('totals are consistent with the per-stand records', () => {
+    const acres = forestStands.reduce((s, x) => s + x.acres, 0);
+    const seq   = forestStands.reduce((s, x) => s + x.acres * x.mtco2eAcreYr, 0);
+    expect(acres).toBe(TOTAL_FOREST_ACRES);
+    expect(Math.abs(seq - ANNUAL_SEQUESTRATION_MT)).toBeLessThan(0.01);
+  });
+
+  it('soilCarbonStored is monotonic in %OC', () => {
+    expect(soilCarbonStored(2, 100)).toBeLessThan(soilCarbonStored(4, 100));
   });
 
   it('rolls up building energy summary', async () => {

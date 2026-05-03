@@ -13,6 +13,8 @@ const Scope3 = lazy(() => import('./pages/Scope3'));
 const Renewables = lazy(() => import('./pages/Renewables'));
 const Renewables2 = lazy(() => import('./pages/Renewables2'));
 const Sinks = lazy(() => import('./pages/Sinks'));
+const Sinks2 = lazy(() => import('./pages/Sinks2'));
+const Executive = lazy(() => import('./pages/Executive'));
 const Scenarios = lazy(() => import('./pages/Scenarios'));
 const Methodology = lazy(() => import('./pages/Methodology'));
 const CarbonCredits = lazy(() => import('./pages/CarbonCredits'));
@@ -83,6 +85,8 @@ root.render(
             <Route path="/renewables" element={<Renewables />} />
             <Route path="/renewables-os" element={<Renewables2 />} />
             <Route path="/sinks" element={<Sinks />} />
+            <Route path="/sinks-os" element={<Sinks2 />} />
+            <Route path="/executive" element={<Executive />} />
             <Route path="/scenarios" element={<Scenarios />} />
             <Route path="/methodology" element={<Methodology />} />
             <Route path="/credits" element={<CarbonCredits />} />

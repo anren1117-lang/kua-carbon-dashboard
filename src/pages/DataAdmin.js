@@ -3,6 +3,7 @@ import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/Modul
 import { meters } from '../data/meters.js';
 import { emissionFactors } from '../data/emissionFactors.js';
 import { buildings } from '../data/buildings.js';
+import { parseMeterCsv } from '../utils/csvMeterParser.js';
 
 // Data Admin — health and provenance of the data layer. Phase-1 surfaces:
 // (a) which adapters are wired vs stubs, (b) every emission factor with
@@ -111,6 +112,8 @@ export default function DataAdmin() {
         ))}
       </ModuleSection>
 
+      <CsvUploadPanel />
+
       <QualityPanel />
 
       <ModuleSection
@@ -150,6 +153,131 @@ export default function DataAdmin() {
     </ModulePage>
   );
 }
+
+function CsvUploadPanel() {
+  const [csv, setCsv] = useState('');
+  const [preview, setPreview] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [serverResult, setServerResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  function onFile(e) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    f.text().then((text) => {
+      setCsv(text);
+      setPreview(parseMeterCsv(text));
+      setServerResult(null);
+      setError(null);
+    });
+  }
+
+  function onTextChange(e) {
+    setCsv(e.target.value);
+    setPreview(null);
+    setServerResult(null);
+    setError(null);
+  }
+
+  function onPreview() {
+    setPreview(parseMeterCsv(csv));
+    setServerResult(null);
+    setError(null);
+  }
+
+  function onUpload() {
+    if (!preview || preview.errors.length || preview.readings.length === 0) return;
+    setBusy(true);
+    fetch('/api/meters/readings/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ readings: preview.readings }),
+    })
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then((j) => { setServerResult(j); setBusy(false); })
+      .catch((err) => { setError(err.message); setBusy(false); });
+  }
+
+  return (
+    <ModuleSection
+      title="CSV upload"
+      hint={
+        <>
+          Required columns: <code>meter_id, timestamp, value, unit, interval_minutes</code>.
+          Optional: <code>demand_kw, data_quality</code>. Files containing
+          name/email/student_id columns are rejected to prevent accidental PII uploads.
+        </>
+      }
+    >
+      <div style={csvStyles.row}>
+        <label style={csvStyles.fileBtn}>
+          📎 Pick a file
+          <input type="file" accept=".csv,text/csv" onChange={onFile} style={{ display: 'none' }} />
+        </label>
+        <span style={csvStyles.or}>or paste below</span>
+      </div>
+      <textarea
+        style={csvStyles.textarea}
+        value={csv}
+        onChange={onTextChange}
+        placeholder={'meter_id,timestamp,value,unit,interval_minutes\nm_elec_b_miller,2026-04-01T00:00:00Z,5.2,kWh,60\nm_elec_b_miller,2026-04-01T01:00:00Z,5.4,kWh,60'}
+        rows={6}
+      />
+      <div style={csvStyles.actions}>
+        <button type="button" style={csvStyles.preview} onClick={onPreview} disabled={!csv.trim()}>
+          Preview parse
+        </button>
+        <button
+          type="button"
+          style={csvStyles.upload}
+          onClick={onUpload}
+          disabled={!preview || preview.errors.length > 0 || preview.readings.length === 0 || busy}
+        >
+          {busy ? 'Uploading…' : `Import ${preview?.readings.length ?? 0} rows`}
+        </button>
+      </div>
+
+      {preview && (
+        <div style={csvStyles.result}>
+          <div style={csvStyles.resultLine}>
+            <Pill kind={preview.errors.length === 0 && preview.readings.length > 0 ? 'good' : preview.errors.length > 0 ? 'bad' : 'warn'}>
+              {preview.readings.length} valid · {preview.errors.length} error{preview.errors.length === 1 ? '' : 's'}
+            </Pill>
+          </div>
+          {preview.errors.length > 0 && (
+            <ul style={csvStyles.errList}>
+              {preview.errors.slice(0, 8).map((e, i) => <li key={i} style={csvStyles.errItem}>{e}</li>)}
+              {preview.errors.length > 8 && <li style={csvStyles.errItem}>… and {preview.errors.length - 8} more</li>}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {serverResult && (
+        <div style={{ ...csvStyles.result, marginTop: 8 }}>
+          <Pill kind="good">Server inserted {serverResult.inserted} rows</Pill>
+        </div>
+      )}
+      {error && (
+        <div style={{ ...csvStyles.result, marginTop: 8, color: '#fca5a5' }}>Error: {error}</div>
+      )}
+    </ModuleSection>
+  );
+}
+
+const csvStyles = {
+  row: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 },
+  fileBtn: { padding: '8px 14px', background: '#0f172a', border: '1px solid #0e7490', borderRadius: 6, color: '#22d3ee', cursor: 'pointer', fontSize: 13, fontWeight: 700 },
+  or: { fontSize: 12, color: '#64748b' },
+  textarea: { width: '100%', boxSizing: 'border-box', padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#cbd5e1', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.5, resize: 'vertical' },
+  actions: { display: 'flex', gap: 8, marginTop: 10 },
+  preview: { padding: '8px 14px', background: 'transparent', border: '1px solid #334155', borderRadius: 6, color: '#cbd5e1', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
+  upload: { padding: '8px 14px', background: '#22d3ee', color: '#0b1220', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 700 },
+  result: { marginTop: 12, padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  resultLine: { display: 'flex', alignItems: 'center', gap: 8 },
+  errList: { margin: 0, marginTop: 8, paddingLeft: 20, color: '#fca5a5', fontSize: 12, lineHeight: 1.6 },
+  errItem: {},
+};
 
 function QualityPanel() {
   const [enabled, setEnabled] = useState(false);
