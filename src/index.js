@@ -35,6 +35,8 @@ const Teacher = lazy(() => import('./pages/Teacher'));
 const TeacherPortal = lazy(() => import('./pages/TeacherPortal'));
 const LessonEditor = lazy(() => import('./pages/LessonEditor'));
 const StudentLesson = lazy(() => import('./pages/StudentLesson'));
+const LessonsCatalog = lazy(() => import('./pages/LessonsCatalog'));
+const TeacherLessonResults = lazy(() => import('./pages/TeacherLessonResults'));
 const Plan = lazy(() => import('./pages/Plan'));
 const Drawdown = lazy(() => import('./pages/Drawdown'));
 const Waste = lazy(() => import('./pages/Waste'));
@@ -114,7 +116,9 @@ root.render(
             <Route path="/teacher" element={<TeacherPortal />} />
             <Route path="/teacher/lessons" element={<Teacher />} />
             <Route path="/teacher/create" element={<LessonEditor />} />
+            <Route path="/lessons" element={<LessonsCatalog />} />
             <Route path="/lessons/:id" element={<StudentLesson />} />
+            <Route path="/teacher/results/:lessonId" element={<TeacherLessonResults />} />
             <Route path="/plan" element={<Plan />} />
             <Route path="/drawdown" element={<Drawdown />} />
             <Route path="/waste" element={<Waste />} />

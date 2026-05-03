@@ -16,6 +16,7 @@ const topItems = [
   { to: '/buildings', label: 'Buildings' },
   { to: '/methodology', label: 'Methodology' },
   { to: '/report',    label: 'Report' },
+  { to: '/lessons',   label: 'Lessons' },
 ];
 
 const categoryItems = [

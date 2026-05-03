@@ -8,7 +8,7 @@
 // supabase/migrations/20260503000000_quiz_and_csv_storage.sql for the
 // table schema.
 
-import { recordAttempt, listAttempts, attemptsByClass } from '../../src/storage/quizStore.js';
+import { recordAttempt, listAttempts, attemptsByClass, attemptsForLesson, lessonResults } from '../../src/storage/quizStore.js';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -29,8 +29,18 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const rollup = req.query?.rollup === 'class';
-    if (rollup) {
+    const { rollup, lessonId } = req.query || {};
+    if (lessonId && rollup === 'students') {
+      const results = await lessonResults(lessonId);
+      res.status(200).json({ lessonId, students: results });
+      return;
+    }
+    if (lessonId) {
+      const attempts = await attemptsForLesson(lessonId);
+      res.status(200).json({ lessonId, attempts });
+      return;
+    }
+    if (rollup === 'class') {
       const classes = await attemptsByClass();
       res.status(200).json({ classes });
       return;

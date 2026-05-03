@@ -75,7 +75,10 @@ function MyLessons() {
               {l.classId ? ` · ${l.classId}` : ''}
             </div>
           </div>
-          <Link to={`/lessons/${l.id}`} style={lessonStyles.viewBtn}>Student view →</Link>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <Link to={`/teacher/results/${l.id}`} style={lessonStyles.resultsBtn}>📊 Results</Link>
+            <Link to={`/lessons/${l.id}`} style={lessonStyles.viewBtn}>Student view →</Link>
+          </div>
         </div>
       ))}
     </div>
@@ -160,6 +163,7 @@ const lessonStyles = {
   title: { fontSize: 15, color: '#e5e7eb', fontWeight: 600 },
   meta: { fontSize: 12, color: '#94a3b8' },
   viewBtn: { padding: '6px 12px', background: '#0f172a', border: '1px solid #0e7490', borderRadius: 6, color: '#22d3ee', textDecoration: 'none', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' },
+  resultsBtn: { padding: '6px 12px', background: '#0f172a', border: '1px solid #14532d', borderRadius: 6, color: '#86efac', textDecoration: 'none', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' },
   empty: { padding: 20, background: '#0b1220', border: '1px dashed #334155', borderRadius: 8, textAlign: 'center' },
   cta: { display: 'inline-block', padding: '8px 16px', background: '#22c55e', color: '#0b1220', borderRadius: 6, textDecoration: 'none', fontWeight: 700, fontSize: 13 },
 };

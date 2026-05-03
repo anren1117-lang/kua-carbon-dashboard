@@ -165,6 +165,37 @@ describe('POST /api/quiz/attempts', () => {
     expect(reject.statusCode).toBe(400);
   });
 
+  it('filters attempts by lessonId', async () => {
+    _resetForTests();
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_a1b2c3d4', quizId: 'lesson_abc_q0', topic: 'food',   correct: true,  pickedIndex: 1, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_a1b2c3d4', quizId: 'lesson_abc_q1', topic: 'food',   correct: false, pickedIndex: 0, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_e5f6a7b8', quizId: 'lesson_xyz_q0', topic: 'energy', correct: true,  pickedIndex: 2 } });
+
+    const r = await call(quizAttemptsHandler, { method: 'GET', query: { lessonId: 'lesson_abc' } });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.lessonId).toBe('lesson_abc');
+    expect(r.body.attempts.length).toBe(2);
+  });
+
+  it('rolls up student scores per lesson', async () => {
+    _resetForTests();
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_a1b2c3d4', quizId: 'lesson_abc_q0', topic: 'food', correct: true,  pickedIndex: 1, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_a1b2c3d4', quizId: 'lesson_abc_q1', topic: 'food', correct: true,  pickedIndex: 1, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_a1b2c3d4', quizId: 'lesson_abc_q2', topic: 'food', correct: false, pickedIndex: 0, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_e5f6a7b8', quizId: 'lesson_abc_q0', topic: 'food', correct: false, pickedIndex: 0, classId: 'APES-3' } });
+
+    const r = await call(quizAttemptsHandler, { method: 'GET', query: { lessonId: 'lesson_abc', rollup: 'students' } });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.students.length).toBe(2);
+    const s1 = r.body.students.find((s) => s.userIdHash === 'student_a1b2c3d4');
+    expect(s1.right).toBe(2);
+    expect(s1.total).toBe(3);
+    expect(s1.accuracy).toBeCloseTo(2 / 3, 3);
+    const s2 = r.body.students.find((s) => s.userIdHash === 'student_e5f6a7b8');
+    expect(s2.right).toBe(0);
+    expect(s2.total).toBe(1);
+  });
+
   it('rolls up attempts by class', async () => {
     _resetForTests();
     await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_aaaa1111', quizId: 'q_scope2', topic: 'scopes', correct: true, pickedIndex: 1, classId: 'APES-3' } });

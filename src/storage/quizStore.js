@@ -88,6 +88,47 @@ export async function attemptsByClass() {
   return memByClass();
 }
 
+/**
+ * Returns every attempt whose quizId starts with `<lessonId>_q`. Used by
+ * the teacher results view (/teacher/results/:lessonId) to roll up
+ * per-student scores on a single lesson.
+ *
+ * @param {string} lessonId
+ */
+export async function attemptsForLesson(lessonId) {
+  const prefix = `${lessonId}_q`;
+  const all = await listAttempts();
+  return all.filter((a) => a.quizId.startsWith(prefix));
+}
+
+/**
+ * Roll up per-student scores on a single lesson. Returns one row per
+ * unique userIdHash with their right/total/percent.
+ *
+ * @param {string} lessonId
+ */
+export async function lessonResults(lessonId) {
+  const attempts = await attemptsForLesson(lessonId);
+  /** @type {Map<string, { right: number, total: number, last: string, classId?: string }>} */
+  const byUser = new Map();
+  for (const a of attempts) {
+    const cur = byUser.get(a.userIdHash) || { right: 0, total: 0, last: a.submittedAt, classId: a.classId };
+    cur.total += 1;
+    if (a.correct) cur.right += 1;
+    if (a.submittedAt > cur.last) cur.last = a.submittedAt;
+    cur.classId = cur.classId || a.classId;
+    byUser.set(a.userIdHash, cur);
+  }
+  return [...byUser.entries()].map(([userIdHash, v]) => ({
+    userIdHash,
+    right: v.right,
+    total: v.total,
+    accuracy: v.total ? v.right / v.total : 0,
+    lastAttemptAt: v.last,
+    classId: v.classId,
+  })).sort((a, b) => b.lastAttemptAt.localeCompare(a.lastAttemptAt));
+}
+
 export function _resetStoreForTests() {
   memReset();
 }
