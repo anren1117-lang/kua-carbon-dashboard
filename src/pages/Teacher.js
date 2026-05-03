@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { knowledgeArticles } from '../data/learningContent.js';
 import { reductionActions } from '../data/reductionActions.js';
@@ -80,6 +80,21 @@ const MOCK_CLASS_RESULTS = [
 
 export default function Teacher() {
   const [expanded, setExpanded] = useState(LESSON_MODULES[0].id);
+  const [liveRollup, setLiveRollup] = useState(null);
+  const [liveError, setLiveError] = useState(null);
+
+  // Pull the live rollup from /api/quiz/attempts. Phase 1: in-memory
+  // ledger reset on cold starts → typically empty until a student
+  // takes a quiz in the same function instance. Mock table below stays
+  // visible whenever the live rollup has zero rows.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/quiz/attempts?rollup=class')
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then((j) => { if (!cancelled) setLiveRollup(j.classes || []); })
+      .catch((err) => { if (!cancelled) setLiveError(err.message); });
+    return () => { cancelled = true; };
+  }, []);
 
   const articleById = Object.fromEntries(knowledgeArticles.map((a) => [a.id, a]));
   const topActions = reductionActions.slice(0, 4);
@@ -137,31 +152,65 @@ export default function Teacher() {
       </ModuleSection>
 
       <ModuleSection
-        title="Class learning progress (mock)"
-        hint="Sample data — Phase-2 will pull live attempts from the chatbot quiz logs."
+        title={liveRollup && liveRollup.length > 0 ? 'Class learning progress (live)' : 'Class learning progress (mock)'}
+        hint={
+          liveRollup && liveRollup.length > 0
+            ? 'Live rollup of chatbot quiz attempts grouped by class assignment. Empty rows clear when the in-memory ledger resets between cold starts.'
+            : liveError
+              ? `Live rollup unavailable (${liveError}). Showing sample data.`
+              : 'No live attempts logged yet — sample data shown. Take a quiz in /chatbot to populate this.'
+        }
       >
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Class</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Students</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Completed</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Avg score</th>
-              <th style={styles.th}>Most recent topic</th>
-            </tr>
-          </thead>
-          <tbody>
-            {MOCK_CLASS_RESULTS.map((c) => (
-              <tr key={c.class}>
-                <td style={styles.td}>{c.class}</td>
-                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.students}</td>
-                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.completed}/{c.students}</td>
-                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: c.avgScore >= 80 ? '#86efac' : c.avgScore >= 70 ? '#fbbf24' : '#fca5a5' }}>{c.avgScore}%</td>
-                <td style={{ ...styles.td, color: '#94a3b8' }}>{c.lastTopic}</td>
+        {liveRollup && liveRollup.length > 0 ? (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Class</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Attempts</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Correct</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Accuracy</th>
+                <th style={styles.th}>Topics covered</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {liveRollup.map((c) => {
+                const pct = Math.round(c.accuracy * 100);
+                return (
+                  <tr key={c.classId}>
+                    <td style={styles.td}>{c.classId}</td>
+                    <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.total}</td>
+                    <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.correct}</td>
+                    <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: pct >= 80 ? '#86efac' : pct >= 70 ? '#fbbf24' : '#fca5a5' }}>{pct}%</td>
+                    <td style={{ ...styles.td, color: '#94a3b8' }}>{c.topics.join(', ')}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Class</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Students</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Completed</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Avg score</th>
+                <th style={styles.th}>Most recent topic</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MOCK_CLASS_RESULTS.map((c) => (
+                <tr key={c.class}>
+                  <td style={styles.td}>{c.class}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.students}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.completed}/{c.students}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: c.avgScore >= 80 ? '#86efac' : c.avgScore >= 70 ? '#fbbf24' : '#fca5a5' }}>{c.avgScore}%</td>
+                  <td style={{ ...styles.td, color: '#94a3b8' }}>{c.lastTopic}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </ModuleSection>
 
       <ModuleSection

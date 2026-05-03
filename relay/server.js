@@ -35,6 +35,7 @@ import readingsImportHandler  from '../api/meters/readings/import.js';
 import qualityHandler         from '../api/meters/quality.js';
 import buildingEnergyHandler  from '../api/buildings/[id]/energy.js';
 import emissionsCalculate     from '../api/emissions/calculate.js';
+import quizAttemptsHandler    from '../api/quiz/attempts.js';
 
 const PORT = Number(process.env.PORT || 3001);
 
@@ -70,6 +71,7 @@ async function route(req, res, url) {
   if (m === 'POST' && path === '/api/meters/readings/import')    return readingsImportHandler(req, res);
   if (m === 'GET'  && path === '/api/meters/quality')            return qualityHandler(req, res);
   if (m === 'POST' && path === '/api/emissions/calculate')       return emissionsCalculate(req, res);
+  if ((m === 'GET' || m === 'POST') && path === '/api/quiz/attempts') return quizAttemptsHandler(req, res);
 
   // /api/buildings/:id/energy
   const energyMatch = path.match(/^\/api\/buildings\/([^/]+)\/energy$/);

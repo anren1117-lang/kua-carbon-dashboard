@@ -1,6 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { matchQuery, pickQuizForTopic } from '../utils/chatbotMatch.js';
+import { hashUserId } from '../utils/hash.js';
+
+// Anonymous-but-stable hash for the current browser session. In phase 2
+// this is replaced by an SSO-issued hashUserId(); for now, a fresh one
+// per session is enough to make the Teacher rollup meaningful without
+// recording any PII.
+function getSessionHash() {
+  try {
+    const k = 'kua_chat_session';
+    let s = sessionStorage.getItem(k);
+    if (!s) {
+      s = `s${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      sessionStorage.setItem(k, s);
+    }
+    return hashUserId('student', s);
+  } catch {
+    return hashUserId('student', `anon_${Date.now()}`);
+  }
+}
 
 // Carbon Learning Chatbot v1 — rule-based.
 //
@@ -83,6 +102,24 @@ export default function CarbonChat() {
     const q = pickQuizForTopic(topic);
     setQuiz(q);
     setQuizPick(null);
+  }
+
+  function pickQuizAnswer(i) {
+    if (!quiz || quizPick != null) return;
+    setQuizPick(i);
+    const opt = quiz.options[i];
+    // Fire-and-forget log — failure is silent so the UI never blocks.
+    fetch('/api/quiz/attempts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userIdHash: getSessionHash(),
+        quizId: quiz.id,
+        topic: quiz.topic,
+        correct: !!opt.correct,
+        pickedIndex: i,
+      }),
+    }).catch(() => {});
   }
 
   return (
@@ -193,7 +230,7 @@ export default function CarbonChat() {
                       key={i}
                       type="button"
                       disabled={showResult}
-                      onClick={() => setQuizPick(i)}
+                      onClick={() => pickQuizAnswer(i)}
                       style={{ ...styles.quizOption, background: bg, borderColor: border }}
                     >
                       {o.text}

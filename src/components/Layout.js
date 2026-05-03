@@ -16,7 +16,7 @@ const navItems = [
   { to: '/scope-1', label: 'Scope 1' },
   { to: '/scope-2', label: 'Scope 2' },
   { to: '/scope-3', label: 'Scope 3' },
-  { to: '/renewables', label: 'Renewables' },
+  { to: '/renewables-os', label: 'Renewables' },
   { to: '/sinks', label: 'Sinks' },
   { to: '/credits', label: 'Credits' },
   { to: '/scenarios', label: 'Scenarios' },

@@ -11,6 +11,8 @@ import readingsImportHandler from '../../api/meters/readings/import.js';
 import qualityHandler        from '../../api/meters/quality.js';
 import buildingEnergyHandler from '../../api/buildings/[id]/energy.js';
 import emissionsCalculate    from '../../api/emissions/calculate.js';
+import quizAttemptsHandler   from '../../api/quiz/attempts.js';
+import { _resetForTests }    from '../data/quizLedger.js';
 
 function makeRes() {
   let statusCode = 200;
@@ -122,6 +124,40 @@ describe('GET /api/buildings/:id/energy', () => {
       query: { start: '2026-04-01T00:00:00Z', end: '2026-04-08T00:00:00Z' },
     });
     expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('POST /api/quiz/attempts', () => {
+  it('records a valid attempt and rejects raw identifiers', async () => {
+    _resetForTests();
+
+    const ok = await call(quizAttemptsHandler, {
+      method: 'POST',
+      body: { userIdHash: 'student_a1b2c3d4', quizId: 'q_scope2', topic: 'scopes', correct: true, pickedIndex: 1, classId: 'APES-3' },
+    });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.body.attempt.quizId).toBe('q_scope2');
+
+    const reject = await call(quizAttemptsHandler, {
+      method: 'POST',
+      body: { userIdHash: 'Anren Wei', quizId: 'q_food', topic: 'food', correct: false, pickedIndex: 0 },
+    });
+    expect(reject.statusCode).toBe(400);
+  });
+
+  it('rolls up attempts by class', async () => {
+    _resetForTests();
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_aaaa1111', quizId: 'q_scope2', topic: 'scopes', correct: true, pickedIndex: 1, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_aaaa2222', quizId: 'q_food',   topic: 'food',   correct: false, pickedIndex: 0, classId: 'APES-3' } });
+    await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_aaaa3333', quizId: 'q_food',   topic: 'food',   correct: true,  pickedIndex: 2, classId: 'Bio-5'  } });
+
+    const r = await call(quizAttemptsHandler, { method: 'GET', query: { rollup: 'class' } });
+    expect(r.statusCode).toBe(200);
+    const apes = r.body.classes.find((c) => c.classId === 'APES-3');
+    expect(apes.total).toBe(2);
+    expect(apes.correct).toBe(1);
+    expect(apes.accuracy).toBe(0.5);
+    expect(apes.topics.sort()).toEqual(['food', 'scopes']);
   });
 });
 
