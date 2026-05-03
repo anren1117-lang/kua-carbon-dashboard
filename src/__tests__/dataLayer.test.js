@@ -14,6 +14,7 @@ import { hashUserId } from '../utils/hash.js';
 import { MockMeterAdapter } from '../adapters/meter/MockMeterAdapter.js';
 import { BmsMeterAdapter } from '../adapters/meter/BmsMeterAdapter.js';
 import { energyEquivalents, carbonEquivalents } from '../utils/equivalents.js';
+import { matchQuery, pickQuizForTopic } from '../utils/chatbotMatch.js';
 
 describe('data layer integrity', () => {
   it('every electricity meter points to a known building', () => {
@@ -185,6 +186,30 @@ describe('MockMeterAdapter', () => {
 
   it('BmsMeterAdapter throws a helpful error when env is missing', async () => {
     await expect(BmsMeterAdapter.listMeters()).rejects.toThrow(/BMS_BASE_URL/);
+  });
+
+  it('chatbot matches keyword queries to the right article', () => {
+    const r1 = matchQuery('what is a carbon footprint');
+    expect(r1.best?.id).toBe('ka_what_is_footprint');
+
+    const r2 = matchQuery('why does beef have higher emissions');
+    expect(r2.best?.id).toBe('ka_beef_emissions');
+
+    const r3 = matchQuery('scope 1 vs scope 2');
+    expect(r3.best?.id).toBe('ka_scopes');
+  });
+
+  it('chatbot returns no match for off-topic queries', () => {
+    const r = matchQuery('what is the weather in tokyo');
+    expect(r.score).toBeLessThan(2);
+  });
+
+  it('chatbot quiz bank has 4 options per question', () => {
+    for (const topic of ['scopes', 'food', 'energy', 'kua_specific']) {
+      const q = pickQuizForTopic(topic);
+      expect(q.options.length).toBe(4);
+      expect(q.options.filter((o) => o.correct).length).toBe(1);
+    }
   });
 
   it('rolls up building energy summary', async () => {

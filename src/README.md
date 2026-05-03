@@ -15,7 +15,32 @@ npm run preview
 npm test          # vitest
 ```
 
-## Architecture (Phase 1 — data + adapter layer)
+## Module map
+
+The app is split into OS-level modules and the older scope-by-scope pages.
+All OS modules read from the shared data layer in `src/data/` via the
+utilities in `src/utils/`.
+
+| Route               | Purpose |
+|---------------------|---------|
+| `/`                 | Executive overview (NetEstimate, scope donut, peer comparison, signposts) |
+| `/hotspots`         | Ranked highest-emitting buildings + categories with severity badges |
+| `/buildings`        | All buildings with sortable intensity views (kWh, kg/sqft, kg/occupant) and per-building drill-down (BMS join number, setpoints, occupancy) |
+| `/dining`           | Meal-category emissions, supplier ranking, food-waste summary, menu-scenario "what-if" picker |
+| `/transportation`   | Fleet, carpool savings, air travel, school trips, faculty/staff commute mix |
+| `/waste`            | Waste streams + diversion rate + monthly trend |
+| `/procurement`      | Spend-based Scope-3 estimates by category |
+| `/actions`          | AI Carbon Advisor v1 — rule-based ranking of reduction actions |
+| `/challenges`       | Dorm-level student leaderboard (privacy-by-design, opt-in for individual ranking) |
+| `/teacher`          | Lesson modules, class progress (mock), discussion prompts auto-generated from KUA's data |
+| `/chatbot`          | Carbon Learning Chatbot v1 — keyword-matched Q&A over the knowledge base + per-topic quizzes |
+| `/data-admin`       | Adapter status, full emission-factor registry with citations, meter registry with BMS join numbers |
+| `/scope-1` … `/sinks` | Pre-existing scope-detail pages |
+| `/learn`            | Pre-existing self-paced learning agent (multi-path quizzes) |
+| `/ask`              | Pre-existing free-form environmental Q&A (Anthropic API + web search) |
+| `/admin`            | Password-gated CRUD admin |
+
+## Architecture
 
 ```
 src/
@@ -51,11 +76,17 @@ src/
 │   ├── anomaly.js       detectAnomalies (z-score, gap, flat, stale), qualityScore
 │   ├── hash.js          hashUserId — privacy-safe ID generator
 │   ├── comparison.js    percentChange, trendKind, yoyMonthly
-│   └── hotspots.js      buildingHotspots, rankActions
+│   ├── hotspots.js      buildingHotspots, rankActions
+│   ├── equivalents.js   energyEquivalents (Tesla/iPhone/bulb), carbonEquivalents (cars, trees, homes)
+│   └── chatbotMatch.js  matchQuery — keyword-matched intent for the chatbot
 │
-├── components/          UI components. Read from data/ and call api/ for live values.
-├── pages/               Route-level pages.
-└── __tests__/dataLayer.test.js  Smoke tests for the data + adapter contract
+├── components/
+│   ├── ModuleShell.js   Shared ModulePage / ModuleSection / MetricGrid / Pill primitives
+│   ├── EnergyEquivalents.js  "Equal to X Teslas / iPhones / bulb-hours" card
+│   └── (existing)       Layout, NetEstimate, ScopeDonut, LearnAgent, etc.
+│
+├── pages/               Route-level pages — see Module map above.
+└── __tests__/dataLayer.test.js  29 vitest cases covering data integrity, math, adapter, chatbot
 ```
 
 ### Vercel API routes (in `/api/` at repo root)
@@ -114,9 +145,20 @@ so the same person hashes differently across record types. Public
 dashboards must aggregate at dorm/grade/department level; individual
 ranking is opt-in only.
 
-## Roadmap
+## Roadmap status
 
-This commit lands roadmap steps 1 + 2 (data models + meter adapter).
-Steps 3–6 (Hotspots, Buildings, Dining, Transportation, Student
-Challenges, Learning Chatbot, Data Admin pages, AI Carbon Advisor,
-README polish) follow in subsequent PRs.
+| Step | Status |
+|------|--------|
+| 1. Data models, mock data, calc utilities | ✅ |
+| 2. Meter API + adapter (Mock + Eclypse scaffold) | ✅ |
+| 3. OS module pages (Hotspots, Buildings, Dining, Transport, Waste, Procurement, Actions, Challenges, Teacher, Chatbot, Data Admin) | ✅ |
+| 4. Rule-based AI Carbon Advisor + recommendation ranking | ✅ |
+| 5. Privacy / hash IDs / dorm-level aggregation | ✅ |
+| 6. README + Vercel build verification | ✅ |
+
+### Next phases (not yet started)
+
+- **Live data ingestion** — wire `BmsMeterAdapter` to a real on-campus relay so cloud Vercel reads from `10.1.1.27`. Replace the static `envysionSnapshot` with API calls to `/api/buildings/[id]/energy`.
+- **Chatbot RAG upgrade** — swap `matchQuery()` keyword scoring for embedded knowledge-content retrieval and an LLM-driven answer renderer. The page surface stays the same.
+- **Quiz attempt logging** — persist chatbot quiz attempts so the Teacher page can display real class results instead of mock data.
+- **Authentication for opt-in features** — plumb school SSO so individual student progress and per-staff carpool participation can be securely recorded behind login.

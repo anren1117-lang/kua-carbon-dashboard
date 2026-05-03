@@ -22,6 +22,10 @@ import Dining from './pages/Dining';
 import Transportation from './pages/Transportation';
 import StudentChallenges from './pages/StudentChallenges';
 import DataAdmin from './pages/DataAdmin';
+import CarbonChat from './pages/CarbonChat';
+import Teacher from './pages/Teacher';
+import Waste from './pages/Waste';
+import Procurement from './pages/Procurement';
 import AdminHome from './pages/admin/AdminHome';
 import AdminScope1 from './pages/admin/AdminScope1';
 import AdminScope2 from './pages/admin/AdminScope2';
@@ -75,6 +79,10 @@ root.render(
           <Route path="/transportation" element={<Transportation />} />
           <Route path="/challenges" element={<StudentChallenges />} />
           <Route path="/data-admin" element={<DataAdmin />} />
+          <Route path="/chatbot" element={<CarbonChat />} />
+          <Route path="/teacher" element={<Teacher />} />
+          <Route path="/waste" element={<Waste />} />
+          <Route path="/procurement" element={<Procurement />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
