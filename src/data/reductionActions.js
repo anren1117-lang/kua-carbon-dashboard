@@ -1,17 +1,21 @@
-// Reduction actions, audience-split.
+// Reduction actions, audience-split. Two strict rules:
 //
-// PUBLIC (visibility: 'public') — things a student can personally
-// choose to do without anyone's approval. Voice is second-person
-// ("Take a 4-minute shower", "Pick chicken over beef"). The expected
-// reduction is the per-student annual savings if THIS student adopts
-// the behavior; the public Actions page totals it across the student
-// body to show "if everyone did this" impact.
+// PUBLIC (visibility: 'public') — INDIVIDUAL behavioral actions a
+// single student can choose to take, today, without anyone's
+// approval. Voice is second-person ("Take a 4-minute shower").
+// Owner is the student themselves. expectedReductionMtCO2e is the
+// PER-STUDENT annual savings; the page multiplies by enrollment to
+// show "if every student does this" campus-wide impact.
 //
-// ADMIN (visibility: 'admin') — things only the school as an
-// institution can do. Voice is third-person institutional ("KUA's
-// facilities team will…", "Dining Services should…"). Owners are
-// real KUA roles. These are the items that show up at sustainability-
-// committee meetings, not in dorm posters.
+// ADMIN (visibility: 'admin') — POLICY changes (standing rules,
+// adopted standards, new programs baked into the school's operations)
+// or FACILITY changes (boilers, meters, BMS schedules, capital
+// installations). Voice is third-person institutional. Owners are
+// real KUA roles (Facilities Director, Dining Services, Board of
+// Trustees, etc.). expectedReductionMtCO2e is the WHOLE-SCHOOL
+// annual reduction. Behavioral campaigns / one-off challenges do
+// NOT belong here — they're either student-driven (public) or
+// reframed as a permanent policy.
 
 /**
  * @typedef {Object} ReductionAction
@@ -306,20 +310,20 @@ export const reductionActions = [
     visibility: 'admin',
   },
   {
-    id: 'ra_carpool_challenge',
-    title: 'Faculty/staff carpool challenge — Spring',
-    description: '6-week opt-in carpool program with a leaderboard and small incentives. Target 20% participation among solo drivers.',
+    id: 'ra_commute_policy',
+    title: 'Adopt a faculty/staff commute incentive policy',
+    description: 'Standing policy: $50/month carpool stipend, $500/yr e-bike subsidy, designated carpool parking near the academic buildings. Replaces the one-off carpool campaigns with a permanent benefit baked into the employment package.',
     category: 'transportation',
-    expectedReductionMtCO2e: 12,
-    estimatedCostUsd: 1200,
-    difficulty: 'low',
+    expectedReductionMtCO2e: 28,
+    estimatedCostUsd: 35000,
+    difficulty: 'medium',
     urgency: 'medium',
     confidence: 'medium',
-    owner: 'Sustainability Coordinator',
-    timeline: 'April–May 2026',
+    owner: 'HR + Head of School',
+    timeline: 'FY27 benefits cycle',
     status: 'proposed',
-    dataSource: 'Staff commute survey + carpool log mock data',
-    nextAction: 'Finalize prize budget and launch sign-up form.',
+    dataSource: 'Staff commute survey + EPA passenger-vehicle factor',
+    nextAction: 'Draft policy text; cost estimate to CFO; HR review.',
     visibility: 'admin',
   },
   {
@@ -422,6 +426,74 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'src/data/targets.js + Jan-Apr 2026 BMS measured baseline',
     nextAction: 'Draft 4-page brief; circulate to Board Sustainability Committee chair.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_no_single_use',
+    title: 'Adopt a no-single-use-plastics policy in dining + events',
+    description: 'Standing policy: no single-use plastic cups, utensils, plates, or straws in any campus dining setting (including events and athletics). Vendor contracts updated at next renewal.',
+    category: 'waste',
+    expectedReductionMtCO2e: 5,
+    estimatedCostUsd: 4000,
+    difficulty: 'medium',
+    urgency: 'medium',
+    confidence: 'medium',
+    owner: 'Dining Services Director + Sustainability Office',
+    timeline: 'Fall 2026',
+    status: 'proposed',
+    dataSource: 'KUA dining vendor invoices; EPA WARM v15',
+    nextAction: 'Inventory current single-use SKUs; identify reusable replacements with vendor.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_procurement_standard',
+    title: 'Adopt a sustainable IT procurement standard',
+    description: 'Standing rule: every laptop / monitor / printer purchase must meet EPEAT Gold (or equivalent) and carry a 5-year minimum service life. Cuts replacement-cycle Scope 3 + e-waste.',
+    category: 'procurement',
+    expectedReductionMtCO2e: 6,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'IT Director + Procurement',
+    timeline: 'Next purchase cycle',
+    status: 'proposed',
+    dataSource: 'EPA EEIO v2.0; KUA IT procurement records',
+    nextAction: 'Update IT purchasing guideline doc; brief department heads.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_miller_boiler',
+    title: 'Replace Miller Hall boiler with high-efficiency condensing unit',
+    description: 'Existing boiler is ~30 years old, ~78% efficient. Replacement target: ≥95% condensing unit. Single largest building-level Scope 1 reduction we can do without going all-electric.',
+    category: 'energy',
+    expectedReductionMtCO2e: 45,
+    estimatedCostUsd: 95000,
+    difficulty: 'high',
+    urgency: 'medium',
+    confidence: 'high',
+    owner: 'Facilities Director',
+    timeline: 'Summer 2027 install (after academic year)',
+    status: 'proposed',
+    dataSource: 'Heating-oil delivery records for Miller; manufacturer efficiency specs',
+    nextAction: 'Solicit two engineering quotes; rebate review with Liberty Utilities.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_submeter_buildout',
+    title: 'Add submeters to the 4 remaining unmetered buildings',
+    description: 'Currently 19 of 23 buildings have BMS submeters. Adding the last 4 (chapel, faculty housing, maintenance shop, farm program) closes the visibility gap so every kWh is attributable.',
+    category: 'energy',
+    expectedReductionMtCO2e: 3,
+    estimatedCostUsd: 18000,
+    difficulty: 'medium',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'Facilities Director',
+    timeline: '6 months',
+    status: 'proposed',
+    dataSource: 'BMS meter inventory + facilities map',
+    nextAction: 'Get installer quote; coordinate downtime windows with maintenance.',
     visibility: 'admin',
   },
 ];
