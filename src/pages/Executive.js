@@ -42,6 +42,23 @@ export default function Executive() {
   const cEq = carbonEquivalents(GROSS_MT);
   const perStudent = NET_MT / TOTAL_STUDENTS;
 
+  // Personal-action multiplier: each public action's per-student annual
+  // savings × enrollment = the campus-scale impact if every student
+  // adopts the behavior. We rank by this campus number (not the
+  // per-student number) because that's the lever from a leadership
+  // perspective — should the school fund a behavioral campaign?
+  const personalActions = reductionActionsByVisibility('public');
+  const personalRanked = personalActions
+    .map((a) => ({ action: a, campusMt: a.expectedReductionMtCO2e * TOTAL_STUDENTS }))
+    .sort((x, y) => y.campusMt - x.campusMt);
+  const totalPersonalCampusMt = personalRanked.reduce((s, r) => s + r.campusMt, 0);
+  // Specific personal-vs-policy comparison the slide deck loves:
+  // chicken-over-beef student commitment, campus-wide, vs the dining
+  // services 20% beef-cut policy.
+  const beefPersonal = personalActions.find((a) => a.id === 'ra_choose_chicken');
+  const beefPolicy   = adminActions.find((a) => a.id === 'ra_beef_cut20');
+  const beefPersonalCampusMt = beefPersonal ? beefPersonal.expectedReductionMtCO2e * TOTAL_STUDENTS : 0;
+
   return (
     <ModulePage
       title="Executive Dashboard"
@@ -116,6 +133,58 @@ export default function Executive() {
         </div>
         <div style={styles.actionFoot}>
           {adminActions.length} institutional actions in queue · {totalActionImpact.toFixed(0)} mtCO₂e/yr potential if every one ships · student-side commitments live on the public <Link to="/actions" style={{ color: '#86efac' }}>Actions</Link> page
+        </div>
+      </ModuleSection>
+
+      <ModuleSection
+        title={`Personal action × ${TOTAL_STUDENTS} students`}
+        hint="Behavioral campaigns aren't engagement theater. At our enrollment, several student-side habits are larger campus levers than the matching institutional policy — worth funding as much as a facility upgrade."
+      >
+        <div style={styles.personalHero}>
+          <div style={styles.personalHeroNum}>
+            {Math.round(totalPersonalCampusMt).toLocaleString()}
+            <span style={styles.personalHeroUnit}>mtCO₂e/yr</span>
+          </div>
+          <div style={styles.personalHeroLabel}>
+            if every student adopts every personal action — {(totalPersonalCampusMt / GROSS_MT * 100).toFixed(1)}% of KUA's gross emissions, roughly {(totalPersonalCampusMt / ANNUAL_SEQUESTRATION_MT * 100).toFixed(0)}% of what our forest sequesters annually
+          </div>
+        </div>
+
+        {beefPersonal && beefPolicy && (
+          <div style={styles.personalCompare}>
+            <div style={styles.personalCompareTitle}>The student-vs-policy moment</div>
+            <div style={styles.personalCompareBody}>
+              Every student picking chicken or vegetarian over beef =
+              <strong style={styles.personalCompareNum}> {beefPersonalCampusMt.toFixed(0)} mtCO₂e/yr</strong> campus-wide
+              <span style={styles.personalCompareVs}>vs.</span>
+              the dining director's 20% beef-cut menu policy =
+              <strong style={styles.personalCompareNum}> {beefPolicy.expectedReductionMtCO2e} mtCO₂e/yr</strong>.
+              Behavior beats policy here by {(beefPersonalCampusMt - beefPolicy.expectedReductionMtCO2e).toFixed(0)} mtCO₂e/yr.
+            </div>
+          </div>
+        )}
+
+        <div style={styles.personalList}>
+          {personalRanked.map(({ action, campusMt }, i) => (
+            <Link key={action.id} to="/actions" style={styles.personalRow}>
+              <div style={styles.personalRank}>#{i + 1}</div>
+              <div style={{ flex: 1 }}>
+                <div style={styles.personalTitle}>{action.title}</div>
+                <div style={styles.personalMeta}>
+                  {Math.round(action.expectedReductionMtCO2e * 1000)} kg/student/yr × {TOTAL_STUDENTS} students
+                </div>
+              </div>
+              <div style={styles.personalNum}>
+                {campusMt < 1
+                  ? `${Math.round(campusMt * 1000).toLocaleString()} kg`
+                  : `${campusMt.toFixed(1)} mt`}
+                <span style={styles.personalNumUnit}>CO₂e/yr</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div style={styles.actionFoot}>
+          Per-student kg figures from the Actions page · students multiply by {TOTAL_STUDENTS} (current enrollment) · adoption rates of 30–50% are realistic for sustained campaigns
         </div>
       </ModuleSection>
 
@@ -274,6 +343,23 @@ const styles = {
   actionTitle: { fontSize: 14, color: '#e5e7eb', fontWeight: 700 },
   actionMeta: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
   actionFoot: { marginTop: 12, fontSize: 12, color: '#64748b' },
+
+  personalHero: { padding: '20px 22px', background: 'linear-gradient(135deg, #052e1a 0%, #0b1220 100%)', border: '1px solid #14532d', borderRadius: 10, marginBottom: 14 },
+  personalHeroNum: { fontSize: 40, fontWeight: 800, color: '#86efac', lineHeight: 1, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'baseline', gap: 8 },
+  personalHeroUnit: { fontSize: 16, color: '#86efac', fontWeight: 600, opacity: 0.8 },
+  personalHeroLabel: { marginTop: 10, fontSize: 14, color: '#cbd5e1', lineHeight: 1.5 },
+  personalCompare: { padding: '14px 16px', background: '#0b1220', border: '1px dashed #f59e0b', borderRadius: 8, marginBottom: 14 },
+  personalCompareTitle: { fontSize: 11, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 6 },
+  personalCompareBody: { fontSize: 14, color: '#e5e7eb', lineHeight: 1.6 },
+  personalCompareNum: { color: '#fbbf24', fontVariantNumeric: 'tabular-nums' },
+  personalCompareVs: { display: 'inline-block', margin: '0 8px', padding: '0 6px', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 },
+  personalList: { display: 'grid', gap: 6 },
+  personalRow: { display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, color: 'inherit', textDecoration: 'none' },
+  personalRank: { fontSize: 13, color: '#86efac', fontWeight: 800, fontVariantNumeric: 'tabular-nums', minWidth: 28 },
+  personalTitle: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
+  personalMeta: { fontSize: 12, color: '#64748b', marginTop: 2, fontVariantNumeric: 'tabular-nums' },
+  personalNum: { fontSize: 18, color: '#86efac', fontWeight: 800, fontVariantNumeric: 'tabular-nums', minWidth: 110, textAlign: 'right' },
+  personalNumUnit: { fontSize: 10, color: '#64748b', marginLeft: 4, fontWeight: 600 },
 
   eqGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 },
   eqCell: { padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, textAlign: 'center' },
