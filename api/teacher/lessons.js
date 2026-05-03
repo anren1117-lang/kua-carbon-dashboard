@@ -141,7 +141,20 @@ async function generateLesson({ title, topic, readingLevel, sourceMaterial, numQ
       messages: [{ role: 'user', content: buildUserMessage({ title, topic, readingLevel, sourceMaterial }) }],
     }),
   });
-  if (!r.ok) throw new Error(`Anthropic API ${r.status}`);
+  if (!r.ok) {
+    // Surface the actual Anthropic error rather than a status-only message.
+    // 400s in particular often look like "model: \"...\" does not match
+    // expected pattern" or "messages.0.content: string does not match",
+    // and the teacher needs to see that to know what to change.
+    let detail = '';
+    try {
+      const body = await r.json();
+      detail = body?.error?.message || body?.message || JSON.stringify(body);
+    } catch {
+      try { detail = await r.text(); } catch {}
+    }
+    throw new Error(`Anthropic API ${r.status}${detail ? ` — ${detail}` : ''}`);
+  }
   const j = await r.json();
   const text = (j.content || [])
     .filter((c) => c.type === 'text')

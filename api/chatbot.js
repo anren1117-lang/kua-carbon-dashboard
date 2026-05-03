@@ -144,7 +144,14 @@ export default async function handler(req, res) {
     });
 
     if (!apiRes.ok) {
-      throw new Error(`Anthropic API ${apiRes.status}`);
+      let detail = '';
+      try {
+        const body = await apiRes.json();
+        detail = body?.error?.message || body?.message || JSON.stringify(body);
+      } catch {
+        try { detail = await apiRes.text(); } catch {}
+      }
+      throw new Error(`Anthropic API ${apiRes.status}${detail ? ` — ${detail}` : ''}`);
     }
     const json = await apiRes.json();
     const text = (json.content || [])
