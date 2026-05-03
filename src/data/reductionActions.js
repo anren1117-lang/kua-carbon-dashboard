@@ -1,6 +1,17 @@
-// Reduction Actions — proposed campus interventions with owner, cost,
-// expected CO2e reduction, status. Power the AI Carbon Advisor and the
-// recommendation ranking.
+// Reduction actions, audience-split.
+//
+// PUBLIC (visibility: 'public') — things a student can personally
+// choose to do without anyone's approval. Voice is second-person
+// ("Take a 4-minute shower", "Pick chicken over beef"). The expected
+// reduction is the per-student annual savings if THIS student adopts
+// the behavior; the public Actions page totals it across the student
+// body to show "if everyone did this" impact.
+//
+// ADMIN (visibility: 'admin') — things only the school as an
+// institution can do. Voice is third-person institutional ("KUA's
+// facilities team will…", "Dining Services should…"). Owners are
+// real KUA roles. These are the items that show up at sustainability-
+// committee meetings, not in dorm posters.
 
 /**
  * @typedef {Object} ReductionAction
@@ -8,29 +19,228 @@
  * @property {string} title
  * @property {string} description
  * @property {'energy'|'dining'|'transportation'|'waste'|'procurement'|'engagement'} category
- * @property {number} expectedReductionMtCO2e   Annualized
- * @property {number} estimatedCostUsd          0 if behavioural
+ * @property {number} expectedReductionMtCO2e
+ *   For 'public': per-student annual savings (mt) if one student adopts the behavior.
+ *   For 'admin':  whole-school annual reduction (mt).
+ * @property {number} estimatedCostUsd
  * @property {'low'|'medium'|'high'} difficulty
  * @property {'low'|'medium'|'high'} urgency
  * @property {'high'|'medium'|'low'} confidence
  * @property {string} owner
+ *   For 'public': the student themselves ('You').
+ *   For 'admin':  the KUA role responsible (e.g. 'Facilities Director').
  * @property {string} timeline
  * @property {'proposed'|'in_progress'|'completed'|'blocked'} status
  * @property {string} dataSource
  * @property {string} nextAction
  * @property {'public'|'admin'} visibility
- *   public = student- / parent- / trustee-facing items it's fine to publish:
- *           behavioral, dining, dorm engagement, low-cost public commitments.
- *   admin  = sustainability-staff-internal items: capex, vendor selection,
- *           pre-board figures, anything not yet ratified or budget-sensitive.
  */
 
 /** @type {ReductionAction[]} */
 export const reductionActions = [
+
+  // ─────────────────────────────────────────────────────────────
+  // PUBLIC — what one student can do, in their voice.
+  // expectedReductionMtCO2e = per-student annual savings.
+  // ─────────────────────────────────────────────────────────────
+
+  {
+    id: 'ra_choose_chicken',
+    title: 'Pick chicken or vegetarian instead of beef at the dining hall',
+    description: 'One beef serving is roughly 10× the carbon of the same chicken serving and ~50× the carbon of a vegetarian one. Even half-swapping moves the needle.',
+    category: 'dining',
+    expectedReductionMtCO2e: 0.20,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'medium',
+    confidence: 'high',
+    owner: 'You',
+    timeline: 'Today, every meal',
+    status: 'proposed',
+    dataSource: 'Poore & Nemecek 2018; KUA dining POS records',
+    nextAction: 'Try a chicken or vegetarian entrée at your next two meals.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_short_showers',
+    title: 'Keep showers to 4 minutes or under',
+    description: 'Hot water = oil-fired water heater = Scope 1 emissions. A 10-minute shower is roughly 2× the carbon of a 4-minute shower.',
+    category: 'energy',
+    expectedReductionMtCO2e: 0.08,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'high',
+    owner: 'You',
+    timeline: 'Today',
+    status: 'proposed',
+    dataSource: 'KUA hot-water boiler oil consumption + per-shower energy estimates',
+    nextAction: 'Set a timer on your phone for your next shower.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_unplug_chargers',
+    title: 'Unplug chargers and electronics when you leave the dorm',
+    description: '"Phantom load" from idle chargers and devices accounts for 5-10% of dorm electricity. Strip-power them off when you head to class.',
+    category: 'energy',
+    expectedReductionMtCO2e: 0.04,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'You',
+    timeline: 'Today',
+    status: 'proposed',
+    dataSource: 'BMS per-dorm hour-of-day load curves; phantom-load fraction estimates',
+    nextAction: 'Get a power strip with a switch; flip it off on your way out.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_lights_off',
+    title: 'Lights off when you leave a room',
+    description: 'Sounds obvious. Most dorms still have lights on in empty rooms most of the day per the BMS load curves. Each LED bulb left on for 8 hours = ~0.05 kWh.',
+    category: 'energy',
+    expectedReductionMtCO2e: 0.02,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'high',
+    owner: 'You',
+    timeline: 'Today',
+    status: 'proposed',
+    dataSource: 'After-hours BMS load curves vs. occupied-hours load',
+    nextAction: 'Just do it. Tell your roommate too.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_walk_short_trips',
+    title: 'Walk or bike for trips under a mile instead of asking for a ride',
+    description: 'Most rides off campus are under 5 miles round-trip. Walking or biking the short ones cuts gasoline emissions and is faster than waiting on a ride anyway.',
+    category: 'transportation',
+    expectedReductionMtCO2e: 0.05,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'You',
+    timeline: 'Whenever the trip is short',
+    status: 'proposed',
+    dataSource: 'EPA passenger-vehicle emission factor (0.351 kg CO₂/mi)',
+    nextAction: 'Next time you need to grab something at the village store, walk.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_carpool_offcampus',
+    title: 'Carpool to off-campus events with 3+ riders',
+    description: 'Whether it\'s an away game, a movie, or break travel — three people in one car instead of three cars cuts the emissions for the trip by roughly 2/3.',
+    category: 'transportation',
+    expectedReductionMtCO2e: 0.10,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'medium',
+    confidence: 'high',
+    owner: 'You',
+    timeline: 'Every off-campus trip',
+    status: 'proposed',
+    dataSource: 'EPA passenger-vehicle emission factor; carpool log mock data',
+    nextAction: 'Post in the dorm group chat the next time you have a trip planned.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_compost_clean',
+    title: 'Sort food waste into the right bin (no contamination)',
+    description: 'Composting only works if it isn\'t contaminated with plastic, foil, or non-compostable packaging. Each contaminated batch gets diverted to landfill where it produces methane.',
+    category: 'waste',
+    expectedReductionMtCO2e: 0.03,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'You',
+    timeline: 'Every dining-hall meal',
+    status: 'proposed',
+    dataSource: 'EPA WARM v15 (landfill methane vs compost); KUA waste hauler invoices',
+    nextAction: 'Read the bin labels next time you scrape your tray.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_reusable_bottle',
+    title: 'Use a reusable water bottle, skip single-use plastic',
+    description: 'A reusable bottle replaces dozens of single-use ones. The carbon is in the bottle\'s production + transport, not the water in it.',
+    category: 'procurement',
+    expectedReductionMtCO2e: 0.01,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'You',
+    timeline: 'Today',
+    status: 'proposed',
+    dataSource: 'EPA EEIO + plastic-bottle LCA studies',
+    nextAction: 'Fill it up at the water fountain instead of the vending machine.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_line_dry',
+    title: 'Line-dry laundry when the weather is good',
+    description: 'Tumble dryers are one of the most energy-intensive single appliances on campus. Air-drying saves the entire dryer cycle.',
+    category: 'energy',
+    expectedReductionMtCO2e: 0.06,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'high',
+    owner: 'You',
+    timeline: 'Spring/fall',
+    status: 'proposed',
+    dataSource: 'Per-cycle dryer energy estimates + ISO-NE 2024 grid factor',
+    nextAction: 'Hang stuff outside or on a rack for the next load.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_dorm_competition',
+    title: 'Get your dorm to win the energy reduction competition',
+    description: 'Per-dorm weekly kWh leaderboard. The winning dorm gets a sustainability dinner at term\'s end — and your dorm\'s standing is on the public Challenges page.',
+    category: 'engagement',
+    expectedReductionMtCO2e: 0.02,
+    estimatedCostUsd: 800,
+    difficulty: 'low',
+    urgency: 'medium',
+    confidence: 'medium',
+    owner: 'You + your dorm',
+    timeline: 'Every term',
+    status: 'proposed',
+    dataSource: 'Per-building BMS readings + dorm population',
+    nextAction: 'Check this week\'s standings on /challenges and tell your hallmates.',
+    visibility: 'public',
+  },
+  {
+    id: 'ra_unplug_nights',
+    title: 'Take part in Sunday "Unplug Night" 8-10 PM',
+    description: 'Every Sunday evening, the dorm goes phone-and-laptop-off for two hours. RAs lead. Visible in the BMS as a measurable load drop.',
+    category: 'engagement',
+    expectedReductionMtCO2e: 0.01,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'You + your RA',
+    timeline: 'Every Sunday this term',
+    status: 'proposed',
+    dataSource: 'Per-dorm BMS hour-of-day load curves',
+    nextAction: 'Show up to your dorm common room at 8 PM Sunday.',
+    visibility: 'public',
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // ADMIN — institutional decisions, school voice.
+  // expectedReductionMtCO2e = whole-school annual reduction.
+  // ─────────────────────────────────────────────────────────────
+
   {
     id: 'ra_dorm_thermo',
-    title: 'Lower dorm winter thermostat by 2°F (70 → 68°F)',
-    description: 'Adjust default heating setpoint in all dorms during occupied hours; preserve 70°F option on individual override.',
+    title: 'Lower dorm winter setpoint from 70°F to 68°F',
+    description: 'KUA\'s facilities team can adjust the default heating setpoint in all dorms during occupied hours; preserve a 70°F option on individual override.',
     category: 'energy',
     expectedReductionMtCO2e: 18,
     estimatedCostUsd: 0,
@@ -42,12 +252,12 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'KUA dorm heating-fuel records + 3% per °F rule',
     nextAction: 'Pilot in 2 dorms for one month, measure delta vs control.',
-    visibility: 'public',
+    visibility: 'admin',
   },
   {
     id: 'ra_beef_cut20',
-    title: 'Reduce beef portions by 20% and add chicken/vegetarian alternatives',
-    description: 'Replace 1 of 5 weekly beef entrées with a chicken or plant-based equivalent. Maintain caloric and protein parity.',
+    title: 'Reduce beef portions 20% in dining services',
+    description: 'KUA Dining replaces 1 of 5 weekly beef entrées with a chicken or plant-based equivalent. Maintain caloric and protein parity.',
     category: 'dining',
     expectedReductionMtCO2e: 56,
     estimatedCostUsd: 0,
@@ -59,7 +269,58 @@ export const reductionActions = [
     status: 'proposed',
     dataSource: 'POS records + Poore & Nemecek (2018)',
     nextAction: 'Coordinate with chef on substitute recipes; survey student acceptance.',
-    visibility: 'public',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_lowcarbon_label',
+    title: 'Print kg CO₂e per serving on the dining menu cards',
+    description: 'KUA Dining adds a carbon label next to each entrée — visible nudge toward chicken/vegetarian without removing choice.',
+    category: 'dining',
+    expectedReductionMtCO2e: 8,
+    estimatedCostUsd: 0,
+    difficulty: 'low',
+    urgency: 'medium',
+    confidence: 'medium',
+    owner: 'Dining Services Director',
+    timeline: 'Next menu cycle',
+    status: 'proposed',
+    dataSource: 'Poore & Nemecek 2018 + dining POS records',
+    nextAction: 'Update the menu template; pilot in faculty dining first.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_compost_expand',
+    title: 'Expand compost collection to all dining stations',
+    description: 'Add separated compost bins to plate-scrape, salad bar, and faculty dining. Reduce landfill waste tonnage. Owned by Dining Services + the waste hauler contract.',
+    category: 'waste',
+    expectedReductionMtCO2e: 4,
+    estimatedCostUsd: 2400,
+    difficulty: 'low',
+    urgency: 'low',
+    confidence: 'medium',
+    owner: 'Dining Services Director',
+    timeline: '60 days',
+    status: 'proposed',
+    dataSource: 'Food waste logs Feb–Mar 2026',
+    nextAction: 'Order bins; train dining staff on contamination protocols.',
+    visibility: 'admin',
+  },
+  {
+    id: 'ra_carpool_challenge',
+    title: 'Faculty/staff carpool challenge — Spring',
+    description: '6-week opt-in carpool program with a leaderboard and small incentives. Target 20% participation among solo drivers.',
+    category: 'transportation',
+    expectedReductionMtCO2e: 12,
+    estimatedCostUsd: 1200,
+    difficulty: 'low',
+    urgency: 'medium',
+    confidence: 'medium',
+    owner: 'Sustainability Coordinator',
+    timeline: 'April–May 2026',
+    status: 'proposed',
+    dataSource: 'Staff commute survey + carpool log mock data',
+    nextAction: 'Finalize prize budget and launch sign-up form.',
+    visibility: 'admin',
   },
   {
     id: 'ra_gym_hvac_after9',
@@ -74,7 +335,7 @@ export const reductionActions = [
     owner: 'Facilities Director',
     timeline: '90 days',
     status: 'proposed',
-    dataSource: 'Envysion late-night demand readings',
+    dataSource: 'Eclypse late-night demand readings',
     nextAction: 'Get BMS quote from existing vendor.',
     visibility: 'admin',
   },
@@ -96,45 +357,11 @@ export const reductionActions = [
     visibility: 'admin',
   },
   {
-    id: 'ra_carpool_challenge',
-    title: 'Faculty/staff carpool challenge — Spring',
-    description: '6-week opt-in carpool program with leaderboard and small incentives. Target 20% participation among solo drivers.',
-    category: 'transportation',
-    expectedReductionMtCO2e: 12,
-    estimatedCostUsd: 1200,
-    difficulty: 'low',
-    urgency: 'medium',
-    confidence: 'medium',
-    owner: 'Sustainability Coordinator',
-    timeline: 'April–May 2026',
-    status: 'proposed',
-    dataSource: 'Staff commute survey + carpool log mock data',
-    nextAction: 'Finalize prize budget and launch sign-up form.',
-    visibility: 'public',
-  },
-  {
-    id: 'ra_compost_expand',
-    title: 'Expand compost collection to all dining stations',
-    description: 'Add separated compost bins to plate-scrape, salad bar, and faculty dining. Reduce landfill waste tonnage.',
-    category: 'waste',
-    expectedReductionMtCO2e: 4,
-    estimatedCostUsd: 2400,
-    difficulty: 'low',
-    urgency: 'low',
-    confidence: 'medium',
-    owner: 'Dining Services Director',
-    timeline: '60 days',
-    status: 'proposed',
-    dataSource: 'Food waste logs Feb–Mar 2026',
-    nextAction: 'Order bins; train dining staff on contamination protocols.',
-    visibility: 'public',
-  },
-  {
     id: 'ra_int_student_offset',
     title: 'Voluntary travel offset program for international students',
     description: 'Optional fee at enrollment that funds verified removal credits for international student round-trip flights.',
     category: 'transportation',
-    expectedReductionMtCO2e: 0, // Not a reduction; framed as compensation
+    expectedReductionMtCO2e: 0,
     estimatedCostUsd: 0,
     difficulty: 'low',
     urgency: 'low',
@@ -146,25 +373,6 @@ export const reductionActions = [
     nextAction: 'Identify acceptable removal-credit registry; draft opt-in language.',
     visibility: 'admin',
   },
-  {
-    id: 'ra_dorm_competition',
-    title: 'Dorm energy reduction competition',
-    description: 'Public dorm-level leaderboard tracking weekly kWh delta vs baseline. Winning dorm gets sustainability dinner.',
-    category: 'engagement',
-    expectedReductionMtCO2e: 6,
-    estimatedCostUsd: 800,
-    difficulty: 'low',
-    urgency: 'medium',
-    confidence: 'medium',
-    owner: 'Sustainability Coordinator',
-    timeline: 'February–March 2026',
-    status: 'proposed',
-    dataSource: 'Per-building meter readings + dorm population',
-    nextAction: 'Set up weekly auto-email with delta rankings.',
-    visibility: 'public',
-  },
-
-  // Admin-only items: capex, vendor selection, board-level decisions.
   {
     id: 'ra_solar_phase2',
     title: 'Approve Phase-2 solar — 60 kW Miller rooftop array',
@@ -201,7 +409,7 @@ export const reductionActions = [
   },
   {
     id: 'ra_carbon_budget',
-    title: 'Propose 2027-2028 carbon budget to Board',
+    title: 'Propose 2027-2028 carbon budget to the Board',
     description: 'Formalize a year-by-year emissions allowance the school commits to publicly. Translates the 50%-by-2030 target into board-ratified milestones.',
     category: 'engagement',
     expectedReductionMtCO2e: 0,
@@ -215,42 +423,6 @@ export const reductionActions = [
     dataSource: 'src/data/targets.js + Jan-Apr 2026 BMS measured baseline',
     nextAction: 'Draft 4-page brief; circulate to Board Sustainability Committee chair.',
     visibility: 'admin',
-  },
-
-  // More public items — student-facing campaigns and visible commitments.
-  {
-    id: 'ra_unplug_nights',
-    title: 'Weekly Sunday "Unplug Night" in dorms',
-    description: 'Students unplug all non-essential electronics + chargers Sunday 8-10 PM. Resident advisors lead. Tracked via after-hours load drop.',
-    category: 'engagement',
-    expectedReductionMtCO2e: 2,
-    estimatedCostUsd: 0,
-    difficulty: 'low',
-    urgency: 'low',
-    confidence: 'medium',
-    owner: 'Sustainability Coordinator + Residential Life',
-    timeline: 'Spring term launch',
-    status: 'proposed',
-    dataSource: 'Per-dorm BMS hour-of-day load curves',
-    nextAction: 'Talk to RAs at next dorm-head meeting.',
-    visibility: 'public',
-  },
-  {
-    id: 'ra_lowcarbon_label',
-    title: 'Carbon labels on every dining-hall entree',
-    description: 'Print kg CO₂e per serving on the dining menu card next to each item. Visible nudge toward chicken/vegetarian without removing choice.',
-    category: 'dining',
-    expectedReductionMtCO2e: 8,
-    estimatedCostUsd: 0,
-    difficulty: 'low',
-    urgency: 'medium',
-    confidence: 'medium',
-    owner: 'Dining Services Director',
-    timeline: 'Next menu cycle',
-    status: 'proposed',
-    dataSource: 'Poore & Nemecek 2018 + dining POS records',
-    nextAction: 'Update menu template; pilot in faculty dining first.',
-    visibility: 'public',
   },
 ];
 

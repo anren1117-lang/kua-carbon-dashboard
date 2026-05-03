@@ -113,8 +113,16 @@ export default function AdminActions() {
                     <div style={styles.cardSub}>{action.description}</div>
                   </div>
                   <div style={styles.impact}>
-                    <div style={styles.impactValue}>{action.expectedReductionMtCO2e.toFixed(0)}</div>
-                    <div style={styles.impactUnit}>mtCO₂e/yr</div>
+                    <div style={styles.impactValue}>
+                      {action.expectedReductionMtCO2e >= 1
+                        ? action.expectedReductionMtCO2e.toFixed(0)
+                        : (action.expectedReductionMtCO2e * 1000).toFixed(0)}
+                    </div>
+                    <div style={styles.impactUnit}>
+                      {action.expectedReductionMtCO2e >= 1
+                        ? 'mtCO₂e/yr'
+                        : 'kg/yr · per student'}
+                    </div>
                   </div>
                 </button>
 

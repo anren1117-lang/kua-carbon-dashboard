@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { reductionActions, reductionActionsByVisibility } from '../data/reductionActions.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 import { rankActions } from '../utils/hotspots.js';
 
-// Public Actions page — filtered to visibility='public'. Admin-only
+// Public Actions page — student-voice list. expectedReductionMtCO2e
+// on each action is the per-student annual savings if YOU adopt the
+// behavior; the campus total is that × the student body. Admin-only
 // items (capex, vendor selection, board-level) live behind the
 // /admin gate at /admin/actions.
 
@@ -47,32 +50,33 @@ export default function Actions() {
     return true;
   });
 
-  const totalProposed = publicActions.filter((a) => a.status === 'proposed').length;
-  const totalInProgress = publicActions.filter((a) => a.status === 'in_progress').length;
-  const totalImpactMt = publicActions.reduce((s, a) => s + a.expectedReductionMtCO2e, 0);
-  const totalImpactIfAll = totalImpactMt;
+  // Per-student savings if YOU adopt this single action.
+  const myTotalIfAll = publicActions.reduce((s, a) => s + a.expectedReductionMtCO2e, 0);
+  // Campus-wide impact if EVERY student adopted EVERY action.
+  const campusTotalIfAll = myTotalIfAll * TOTAL_STUDENTS;
+  const topPersonal = ranked[0]?.action;
 
   return (
     <ModulePage
-      title="AI Carbon Advisor"
+      title="What you can do"
       subtitle={
         <>
-          Ranked reduction actions with owner, cost, expected impact, and confidence. Ranking score = expected reduction × urgency × confidence − difficulty penalty.
+          Things <em>you</em> can choose today — no permissions, no committee, no budget. Each card shows how much carbon
+          {' '}<strong>you personally</strong>{' '}
+          save per year, and how much KUA saves if every student does it.
           {adminOnlyCount > 0 && (
             <>
-              {' '}
-              <strong style={{ color: '#fbbf24' }}>{adminOnlyCount} additional action{adminOnlyCount === 1 ? '' : 's'}</strong>{' '}
-              involving capital, vendor selection, or board-level decisions are restricted to the <Link to="/admin/actions" style={{ color: '#22d3ee' }}>admin Actions view</Link>.
+              {' '}School-side decisions (HVAC, dining menus, capital projects) are tracked separately on the <Link to="/admin/actions" style={{ color: '#22d3ee' }}>admin Actions view</Link>.
             </>
           )}
         </>
       }
     >
       <MetricGrid metrics={[
-        { label: 'Proposed actions', value: totalProposed, accent: '#22d3ee' },
-        { label: 'In progress', value: totalInProgress, accent: '#fbbf24' },
-        { label: 'Total potential', value: totalImpactIfAll.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: 'If every action shipped' },
-        { label: 'Top action', value: ranked[0].action.expectedReductionMtCO2e.toFixed(0), unit: 'mtCO₂e/yr', accent: '#ef4444', note: ranked[0].action.title },
+        { label: 'Things you can do', value: publicActions.length, accent: '#22d3ee' },
+        { label: 'If you do all of them', value: myTotalIfAll.toFixed(2), unit: 'mtCO₂e/yr', accent: '#fbbf24', note: 'per student per year' },
+        { label: 'If every student does',  value: campusTotalIfAll.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: `× ${TOTAL_STUDENTS} students` },
+        { label: 'Biggest single lever',   value: topPersonal ? `${(topPersonal.expectedReductionMtCO2e * 1000).toFixed(0)} kg` : '—', unit: 'CO₂e/yr', accent: '#ef4444', note: topPersonal?.title.split('—')[0].trim() ?? '' },
       ]} />
 
       <ModuleSection title="Filter">
@@ -119,8 +123,14 @@ export default function Actions() {
                     <div style={styles.cardSub}>{action.description}</div>
                   </div>
                   <div style={styles.impact}>
-                    <div style={styles.impactValue}>{action.expectedReductionMtCO2e.toFixed(0)}</div>
-                    <div style={styles.impactUnit}>mtCO₂e/yr</div>
+                    <div style={styles.impactValue}>
+                      {action.expectedReductionMtCO2e >= 1
+                        ? action.expectedReductionMtCO2e.toFixed(0)
+                        : (action.expectedReductionMtCO2e * 1000).toFixed(0)}
+                    </div>
+                    <div style={styles.impactUnit}>
+                      {action.expectedReductionMtCO2e >= 1 ? 'mtCO₂e/yr' : 'kg CO₂e/yr · you'}
+                    </div>
                   </div>
                 </button>
 
