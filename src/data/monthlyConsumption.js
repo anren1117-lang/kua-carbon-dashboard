@@ -33,10 +33,37 @@
 /** @type {MonthlyReport[]} */
 export const monthlyReports = [
   {
+    month: '2026-03',
+    capturedAt: '2026-05-03',
+    displayedTotal: 136576,
+    sumOfRows:      148737,
+    rows: [
+      { buildingId: 'b_baxter',     kwh:  2121, powerKw:  2.2, avgVoltage: 211 },
+      { buildingId: 'b_bishop',     kwh:  1211, powerKw:  0.4, avgVoltage: 243 },
+      { buildingId: 'b_miller',     kwh: 34285, powerKw: 35.3, avgVoltage: 211 },
+      { buildingId: 'b_fitch',      kwh: 12875, powerKw: 12.8, avgVoltage: 211 },
+      { buildingId: 'b_flickinger', kwh:  7294, powerKw: 11.3, avgVoltage: 211 },
+      { buildingId: 'b_barrette',   kwh: 29243, powerKw: 40.9, avgVoltage: 211 },
+      { buildingId: 'b_barnfield',  kwh:  3672, powerKw:  4.4, avgVoltage: 210 },
+      { buildingId: 'b_whittemore', kwh: 15675, powerKw:  8.2, avgVoltage: 210 },
+      { buildingId: 'b_silvergym',  kwh:  6852, powerKw:  3.6, avgVoltage: 210 },
+      { buildingId: 'b_densmore',   kwh:  3326, powerKw:  5.5, avgVoltage: 211 },
+      { buildingId: 'b_bryant',     kwh:  1498, powerKw:  1.5, avgVoltage: 211 },
+      { buildingId: 'b_dexter',     kwh:  3764, powerKw:  0.2, avgVoltage: 211 },
+      { buildingId: 'b_rowe',       kwh:  1334, powerKw:  1.3, avgVoltage: 209 },
+      { buildingId: 'b_welch',      kwh:  4385, powerKw:  3.8, avgVoltage: 122 },
+      { buildingId: 'b_kilton',     kwh: 13870, powerKw:  9.2, avgVoltage: 122 },
+      { buildingId: 'b_kurth',      kwh:  1128, powerKw:  6.2, avgVoltage: 244 },
+      { buildingId: 'b_chellis',    kwh:  3875, powerKw:  6.6, avgVoltage: 243 },
+      { buildingId: 'b_mikula',     kwh:  1387, powerKw:  1.9, avgVoltage: 243 },
+      { buildingId: 'b_childcare',  kwh:   942, powerKw:  0.2, avgVoltage: 211 },
+    ],
+  },
+  {
     month: '2026-04',
     capturedAt: '2026-05-03',
     displayedTotal: 128895,
-    sumOfRows: 142395,
+    sumOfRows:      142395,
     rows: [
       { buildingId: 'b_baxter',     kwh:  2087, powerKw:  1.7, avgVoltage: 211 },
       { buildingId: 'b_bishop',     kwh:  1004, powerKw:  0.4, avgVoltage: 243 },
