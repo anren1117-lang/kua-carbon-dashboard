@@ -25,7 +25,8 @@
 //     summary: string,
 //     plan: [{
 //       id, title, why, expectedMtPerYear, estimatedCostUsd,
-//       ownerRole, timeline, category, difficulty, paybackYears
+//       ownerRole, timeline, category, difficulty, paybackYears,
+//       dataSource         // where the mt and $ benchmarks come from
 //     }],
 //     totalExpectedMtPerYear: number,
 //     percentOfGross: number,
@@ -68,7 +69,8 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
       "timeline": "this-quarter|this-year|this-3-years",
       "category": "scope1|scope2|scope3|sinks|engagement",
       "difficulty": "easy|medium|hard",
-      "paybackYears": 0
+      "paybackYears": 0,
+      "dataSource": "Cite the type of source the mt + $ benchmarks come from. Examples: 'Project Drawdown plant-rich diets', 'NREL PVWatts simulation for NH', 'EPA WARM model v15.1', 'NEEP cold-climate heat-pump performance data', 'GHG Protocol Scope 3 Cat 7 + ICCT fuel economy', 'EPA ENERGY STAR commercial LED savings'. Do NOT fabricate specific page numbers or precise paper titles."
     }
   ]
 }
@@ -120,23 +122,26 @@ function buildUserMessage(context, history) {
   return lines.join('\n');
 }
 
+// Each rule includes a `source` so the page can show where the mt + $
+// benchmarks came from. Sources reference real organizations and standard
+// methodologies — not fabricated paper titles.
 const RULE_LIBRARY = [
-  { id: 'r_dorm_thermo',     title: 'Lower dorm winter setpoint from 70°F to 68°F',                          mt: 18,   cost:    0, owner: 'Facilities Director',     timeline: 'this-quarter',  category: 'scope1', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope1','engagement'] },
-  { id: 'r_beef_cut20',      title: 'Reduce beef portions 20% in dining services menu',                      mt: 56,   cost:    0, owner: 'Dining Services Director', timeline: 'this-quarter',  category: 'scope3', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope3','engagement'] },
-  { id: 'r_lowcarbon_label', title: 'Print kg CO₂e per serving on dining menu cards',                        mt: 8,    cost: 5000, owner: 'Dining Services Director', timeline: 'this-quarter',  category: 'engagement', difficulty: 'easy',   payback: 1,  forApp: ['low','medium','high'], forPriority: ['scope3','engagement'] },
-  { id: 'r_compost_expand',  title: 'Expand compost collection to all dining stations',                      mt: 4,    cost:25000, owner: 'Dining Services Director', timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 30, forApp: ['medium','high'],       forPriority: ['scope3'] },
-  { id: 'r_commute_policy',  title: 'Adopt a faculty/staff commute incentive policy',                        mt: 28,   cost:60000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 11, forApp: ['medium','high'],       forPriority: ['scope3','engagement'] },
-  { id: 'r_gym_hvac_after9', title: 'Auto-shutoff Whittemore HVAC after 9 PM',                               mt: 9,    cost:15000, owner: 'Facilities Director',     timeline: 'this-quarter',  category: 'scope2', difficulty: 'easy',   payback: 8,  forApp: ['low','medium','high'], forPriority: ['scope2','scope1'] },
-  { id: 'r_led_retrofit',    title: 'Replace remaining T8 fluorescent lighting with LEDs',                   mt: 7,    cost:100000,owner: 'Facilities Director',     timeline: 'this-year',     category: 'scope2', difficulty: 'medium', payback: 71, forApp: ['medium','high'],       forPriority: ['scope2'] },
-  { id: 'r_int_student_offset',title: 'Voluntary travel offset program for international students',          mt: 150,  cost: 4500, owner: 'Travel Office',            timeline: 'this-year',     category: 'scope3', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope3'] },
-  { id: 'r_solar_phase2',    title: 'Approve Phase-2 solar — 60 kW Miller rooftop array',                    mt: 6,    cost:175000,owner: 'Board of Trustees',        timeline: 'this-year',     category: 'scope2', difficulty: 'hard',   payback: 145,forApp: ['medium','high'],       forPriority: ['scope2','engagement'] },
-  { id: 'r_oil_to_heatpump', title: 'Heating-oil to heat-pump conversion — start feasibility study',         mt: 800,  cost:300000,owner: 'Board of Trustees',        timeline: 'this-3-years',  category: 'scope1', difficulty: 'hard',   payback: 2,  forApp: ['high'],                forPriority: ['scope1'] },
-  { id: 'r_carbon_budget',   title: 'Propose 2027-2028 institutional carbon budget to the Board',            mt: 0,    cost:    0, owner: 'Head of School',           timeline: 'this-quarter',  category: 'engagement', difficulty: 'medium', payback: 0,  forApp: ['low','medium','high'], forPriority: ['engagement','scope1','scope2','scope3'] },
-  { id: 'r_no_single_use',   title: 'Adopt a no-single-use-plastics policy in dining + events',              mt: 5,    cost:10000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 4,  forApp: ['medium','high'],       forPriority: ['scope3','engagement'] },
-  { id: 'r_procurement_std', title: 'Adopt a sustainable IT procurement standard',                           mt: 6,    cost: 5000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 4,  forApp: ['low','medium','high'], forPriority: ['scope3'] },
-  { id: 'r_miller_boiler',   title: 'Replace Miller Hall boiler with high-efficiency condensing unit',       mt: 45,   cost:380000,owner: 'Facilities Director',     timeline: 'this-3-years',  category: 'scope1', difficulty: 'hard',   payback: 42, forApp: ['medium','high'],       forPriority: ['scope1'] },
-  { id: 'r_forest_easement', title: 'Place permanent conservation easement on 1,000 acres of campus forest', mt: 0,    cost:25000, owner: 'Board of Trustees',        timeline: 'this-year',     category: 'sinks', difficulty: 'medium', payback: 0,  forApp: ['low','medium','high'], forPriority: ['sinks','engagement'] },
-  { id: 'r_recs',            title: 'Buy NH-class-1 RECs to cover 100% of remaining grid scope-2',           mt: 200,  cost:14000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope2', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope2','engagement'] },
+  { id: 'r_dorm_thermo',     title: 'Lower dorm winter setpoint from 70°F to 68°F',                          mt: 18,   cost:    0, owner: 'Facilities Director',     timeline: 'this-quarter',  category: 'scope1', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope1','engagement'],         source: 'EIA RECS heating demand × 1°F = ~3% rule + KUA dorm heating-oil load' },
+  { id: 'r_beef_cut20',      title: 'Reduce beef portions 20% in dining services menu',                      mt: 56,   cost:    0, owner: 'Dining Services Director', timeline: 'this-quarter',  category: 'scope3', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope3','engagement'],         source: 'Project Drawdown plant-rich diets + FAO LEAP per-meal beef GHG factors' },
+  { id: 'r_lowcarbon_label', title: 'Print kg CO₂e per serving on dining menu cards',                        mt: 8,    cost: 5000, owner: 'Dining Services Director', timeline: 'this-quarter',  category: 'engagement', difficulty: 'easy', payback: 1, forApp: ['low','medium','high'], forPriority: ['scope3','engagement'],          source: 'Behavioral-economics studies of menu carbon labels (typical 8–14% beef substitution)' },
+  { id: 'r_compost_expand',  title: 'Expand compost collection to all dining stations',                      mt: 4,    cost:25000, owner: 'Dining Services Director', timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 30, forApp: ['medium','high'],       forPriority: ['scope3'],                       source: 'EPA WARM model v15.1 — landfill methane avoided per ton diverted' },
+  { id: 'r_commute_policy',  title: 'Adopt a faculty/staff commute incentive policy',                        mt: 28,   cost:60000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 11, forApp: ['medium','high'],       forPriority: ['scope3','engagement'],          source: 'GHG Protocol Scope 3 Cat 7 commuting + ICCT US fleet fuel-economy data, KUA staff = 52' },
+  { id: 'r_gym_hvac_after9', title: 'Auto-shutoff Whittemore HVAC after 9 PM',                               mt: 9,    cost:15000, owner: 'Facilities Director',     timeline: 'this-quarter',  category: 'scope2', difficulty: 'easy',   payback: 8,  forApp: ['low','medium','high'], forPriority: ['scope2','scope1'],              source: 'ASHRAE 90.1 unoccupied schedules + KUA Whittemore submeter (Eclypse BMS)' },
+  { id: 'r_led_retrofit',    title: 'Replace remaining T8 fluorescent lighting with LEDs',                   mt: 7,    cost:100000,owner: 'Facilities Director',     timeline: 'this-year',     category: 'scope2', difficulty: 'medium', payback: 71, forApp: ['medium','high'],       forPriority: ['scope2'],                       source: 'EPA ENERGY STAR commercial LED retrofit savings + KUA fixture inventory' },
+  { id: 'r_int_student_offset',title: 'Voluntary travel offset program for international students',          mt: 150,  cost: 4500, owner: 'Travel Office',            timeline: 'this-year',     category: 'scope3', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope3'],                       source: 'ICAO carbon calculator × KUA international roster + Gold Standard offset prices ($25–35/mt)' },
+  { id: 'r_solar_phase2',    title: 'Approve Phase-2 solar — 60 kW Miller rooftop array',                    mt: 6,    cost:175000,owner: 'Board of Trustees',        timeline: 'this-year',     category: 'scope2', difficulty: 'hard',   payback: 145,forApp: ['medium','high'],       forPriority: ['scope2','engagement'],          source: 'NREL PVWatts simulation for KUA latitude 43.6°N + ISO-NE 2024 grid offset' },
+  { id: 'r_oil_to_heatpump', title: 'Heating-oil to heat-pump conversion — start feasibility study',         mt: 800,  cost:300000,owner: 'Board of Trustees',        timeline: 'this-3-years',  category: 'scope1', difficulty: 'hard',   payback: 2,  forApp: ['high'],                forPriority: ['scope1'],                       source: 'NEEP cold-climate heat-pump performance data + RMI residential CCHP load modeling for NH' },
+  { id: 'r_carbon_budget',   title: 'Propose 2027-2028 institutional carbon budget to the Board',            mt: 0,    cost:    0, owner: 'Head of School',           timeline: 'this-quarter',  category: 'engagement', difficulty: 'medium', payback: 0,  forApp: ['low','medium','high'], forPriority: ['engagement','scope1','scope2','scope3'], source: 'GHG Protocol Corporate Standard — institutional-target framing (engagement, no direct mt)' },
+  { id: 'r_no_single_use',   title: 'Adopt a no-single-use-plastics policy in dining + events',              mt: 5,    cost:10000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 4,  forApp: ['medium','high'],       forPriority: ['scope3','engagement'],          source: 'EPA WARM v15.1 + Ellen MacArthur Foundation single-use plastics LCA' },
+  { id: 'r_procurement_std', title: 'Adopt a sustainable IT procurement standard',                           mt: 6,    cost: 5000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope3', difficulty: 'medium', payback: 4,  forApp: ['low','medium','high'], forPriority: ['scope3'],                       source: 'EPEAT criteria + Microsoft + Google published device lifecycle emissions' },
+  { id: 'r_miller_boiler',   title: 'Replace Miller Hall boiler with high-efficiency condensing unit',       mt: 45,   cost:380000,owner: 'Facilities Director',     timeline: 'this-3-years',  category: 'scope1', difficulty: 'hard',   payback: 42, forApp: ['medium','high'],       forPriority: ['scope1'],                       source: 'DOE high-efficiency condensing-boiler benchmarks + KUA fuel-delivery records' },
+  { id: 'r_forest_easement', title: 'Place permanent conservation easement on 1,000 acres of campus forest', mt: 0,    cost:25000, owner: 'Board of Trustees',        timeline: 'this-year',     category: 'sinks', difficulty: 'medium', payback: 0,  forApp: ['low','medium','high'], forPriority: ['sinks','engagement'],           source: 'USFS Forest Inventory & Analysis — protects existing 2,650 mt/yr sink (no new mt added)' },
+  { id: 'r_recs',            title: 'Buy NH-class-1 RECs to cover 100% of remaining grid scope-2',           mt: 200,  cost:14000, owner: 'Director of Operations',   timeline: 'this-year',     category: 'scope2', difficulty: 'easy',   payback: 0,  forApp: ['low','medium','high'], forPriority: ['scope2','engagement'],          source: 'NEPOOL GIS REC market price (~$70/MWh) × KUA annualized scope-2 kWh' },
 ];
 
 function ruleBasedPlan(context, history) {
@@ -172,6 +177,7 @@ function ruleBasedPlan(context, history) {
     category:          r.category,
     difficulty:        r.difficulty,
     paybackYears:      r.payback,
+    dataSource:        r.source,
   }));
   return final;
 }
@@ -293,6 +299,7 @@ export default async function handler(req, res) {
       category:          ['scope1','scope2','scope3','sinks','engagement'].includes(p.category) ? p.category : 'scope1',
       difficulty:        ['easy','medium','hard'].includes(p.difficulty) ? p.difficulty : 'medium',
       paybackYears:      Number(p.paybackYears) || 0,
+      dataSource:        String(p.dataSource || 'AI estimate (no specific source provided)').slice(0, 280),
     }));
 
     const totalExpectedMtPerYear = plan.reduce((s, p) => s + p.expectedMtPerYear, 0);

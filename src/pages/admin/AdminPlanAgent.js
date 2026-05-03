@@ -202,6 +202,20 @@ export default function AdminPlanAgent() {
           <div style={styles.contextSummaryItem}><strong>Net:</strong> {(context.grossMt - context.sinksMt).toLocaleString()} mtCO₂e/yr</div>
           <div style={styles.contextSummaryItem}><strong>Enrollment:</strong> {context.enrollment.toLocaleString()}</div>
         </div>
+        <details style={styles.sourcesBlock}>
+          <summary style={styles.sourcesSummary}>Where do these numbers come from?</summary>
+          <ul style={styles.sourceList}>
+            <li><strong>Scope 1 ({SCOPE1_TOTAL_MT.toLocaleString()} mt/yr):</strong> internal estimate of heating fuel + refrigerants + fleet — to be replaced with measured fuel deliveries (EPA mandatory reporting factors). Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope1Mt</code>.</li>
+            <li><strong>Scope 2 ({Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized):</strong> KUA Distech Eclypse BMS YTD-through-2026-05-03 metered kWh × ISO-NE 2024 grid mix factors (eGRID NEWE 2022 cross-check). Sources: <code>src/data/envysionSnapshot.js</code>, <code>src/data/gridMix.js</code>.</li>
+            <li><strong>Scope 3 ({SCOPE3_TOTAL_MT.toLocaleString()} mt/yr):</strong> internal estimate covering student travel + dining + waste + procurement + commuting + upstream fuel. Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope3Mt</code>.</li>
+            <li><strong>Sinks ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt/yr):</strong> 7 mapped forest stands × per-acre sequestration rates from IPCC LULUCF defaults (mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2). Source: <code>src/data/sinks.js forestStands</code>.</li>
+            <li><strong>Enrollment ({TOTAL_STUDENTS}):</strong> KUA "By the Numbers" + Wikipedia. Source: <code>src/data/students.js TOTAL_STUDENTS</code>.</li>
+            <li><strong>ISO-NE annualization factor:</strong> 365 days ÷ 123 days into 2026 (snapshot date 2026-05-03) ≈ 2.97×. Source: <code>src/data/envysionSnapshot.js ANNUALIZE_FACTOR</code>.</li>
+          </ul>
+          <div style={styles.sourceCaveat}>
+            Plan items below carry their own <em>Data source</em> line under the agent's "why" — they cite the methodology behind each mt and $ benchmark (EPA WARM, NEEP heat pumps, NREL PVWatts, Project Drawdown, GHG Protocol, etc.). The AI agent is instructed not to fabricate specific page numbers; if a source can't be verified, the line says so.
+          </div>
+        </details>
         <div style={styles.actionRow}>
           <button
             type="button"
@@ -340,6 +354,11 @@ function PlanCard({ item, rank, onComplete, onDecline }) {
         </div>
       </div>
       <div style={styles.planWhy}>{item.why}</div>
+      {item.dataSource && (
+        <div style={styles.planSource}>
+          <span style={styles.planSourceLabel}>Data source:</span> {item.dataSource}
+        </div>
+      )}
       <div style={styles.planActions}>
         <button type="button" onClick={onComplete} style={styles.completeBtn}>Mark shipped ✓</button>
         <button type="button" onClick={onDecline}  style={styles.declineBtn}>Take off the table</button>
@@ -355,6 +374,10 @@ const styles = {
   input: { width: '100%', boxSizing: 'border-box', padding: '8px 12px', background: '#0b1220', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontSize: 14 },
   contextSummary: { display: 'flex', gap: 14, marginTop: 14, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, color: '#cbd5e1', flexWrap: 'wrap' },
   contextSummaryItem: { fontVariantNumeric: 'tabular-nums' },
+  sourcesBlock: { marginTop: 10, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, color: '#cbd5e1' },
+  sourcesSummary: { cursor: 'pointer', fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, listStyle: 'revert' },
+  sourceList: { paddingLeft: 18, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginTop: 8, marginBottom: 8 },
+  sourceCaveat: { marginTop: 8, fontSize: 12, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 8, borderTop: '1px solid #1f2937' },
   actionRow: { display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' },
   primaryBtn: { padding: '10px 18px', background: '#22d3ee', color: '#0b1220', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 700, cursor: 'pointer' },
   dangerBtn: { padding: '10px 14px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
@@ -379,6 +402,8 @@ const styles = {
   planPayback: { color: '#64748b' },
   planNumUnit: { fontSize: 10, color: '#94a3b8', fontWeight: 600 },
   planWhy: { marginTop: 10, fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 44 },
+  planSource: { marginTop: 8, fontSize: 11, color: '#94a3b8', lineHeight: 1.5, paddingLeft: 44, fontStyle: 'italic' },
+  planSourceLabel: { color: '#64748b', fontWeight: 700, fontStyle: 'normal', textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 4 },
   planActions: { display: 'flex', gap: 8, marginTop: 12, paddingLeft: 44 },
   completeBtn: { padding: '6px 12px', background: '#052e1a', color: '#86efac', border: '1px solid #14532d', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   declineBtn:  { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
