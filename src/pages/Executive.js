@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
-import { reductionActions } from '../data/reductionActions.js';
+import { reductionActionsByVisibility } from '../data/reductionActions.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -31,9 +31,14 @@ const GROSS_MT = SCOPE_TOTALS.scope1Mt + SCOPE_TOTALS.scope2Mt + SCOPE_TOTALS.sc
 const NET_MT = GROSS_MT - ANNUAL_SEQUESTRATION_MT;
 
 export default function Executive() {
-  const ranked = rankActions(reductionActions);
+  // Executive view = leadership decisions only. Public actions are
+  // per-student behavioral commitments and don't belong in the same
+  // ranked queue as institutional levers (different unit basis, different
+  // owner, different decision-maker). Public actions live on /actions.
+  const adminActions = reductionActionsByVisibility('admin');
+  const ranked = rankActions(adminActions);
   const top3 = ranked.slice(0, 3);
-  const totalActionImpact = reductionActions.reduce((s, a) => s + a.expectedReductionMtCO2e, 0);
+  const totalActionImpact = adminActions.reduce((s, a) => s + a.expectedReductionMtCO2e, 0);
   const cEq = carbonEquivalents(GROSS_MT);
   const perStudent = NET_MT / TOTAL_STUDENTS;
 
@@ -90,12 +95,12 @@ export default function Executive() {
       </ModuleSection>
 
       <ModuleSection
-        title="Top recommended actions"
-        hint="Ranked by impact × urgency × confidence. Full list on the Actions page."
+        title="Top institutional levers"
+        hint="Policy + facility decisions ranked by impact × urgency × confidence. Full queue on the admin Actions page."
       >
         <div style={styles.actionList}>
           {top3.map(({ action }, i) => (
-            <Link key={action.id} to="/actions" style={styles.actionRow}>
+            <Link key={action.id} to="/admin/actions" style={styles.actionRow}>
               <div style={styles.actionRank}>#{i + 1}</div>
               <div style={{ flex: 1 }}>
                 <div style={styles.actionTitle}>{action.title}</div>
@@ -110,7 +115,7 @@ export default function Executive() {
           ))}
         </div>
         <div style={styles.actionFoot}>
-          {reductionActions.length} actions in queue · {totalActionImpact.toFixed(0)} mtCO₂e/yr potential if every action ships
+          {adminActions.length} institutional actions in queue · {totalActionImpact.toFixed(0)} mtCO₂e/yr potential if every one ships · student-side commitments live on the public <Link to="/actions" style={{ color: '#86efac' }}>Actions</Link> page
         </div>
       </ModuleSection>
 
@@ -159,7 +164,8 @@ export default function Executive() {
             { to: '/renewables-os', label: 'Renewables' },
             { to: '/sinks-os', label: 'Sinks' },
             { to: '/goals', label: 'Goals & Targets' },
-            { to: '/actions', label: 'Actions' },
+            { to: '/admin/actions', label: 'Actions (institutional)' },
+            { to: '/actions', label: 'Actions (student-facing)' },
             { to: '/challenges', label: 'Student Challenges' },
             { to: '/teacher', label: 'Teacher Tools' },
             { to: '/chatbot', label: 'Carbon Chatbot' },
