@@ -1,34 +1,47 @@
-// Point-in-time snapshot of Envysion building meter observations
-// (Jan 27 – Feb 25, 2026 reporting window). The annualBaseline values live
-// on the meter registry; this file captures the observed instantaneous
-// power and voltage that the live dashboard displays alongside.
+// KUA Eclypse BMS year-to-date readings, captured 2026-05-03 04:08 ET
+// from the All Meters page of the on-campus dashboard at 10.1.1.27.
+//
+// energyUsedKwh is the year-to-date kWh that meter has logged from
+// 2026-01-01 through the capture timestamp (123 days). powerKw and
+// avgVoltage are the instantaneous demand + average voltage at the
+// time of capture. Replace with live BmsMeterAdapter readings once
+// the on-campus relay is wired.
 
 /**
  * @typedef {Object} EnvysionSnapshotRow
  * @property {string} buildingId
- * @property {number} energyUsedKwh    Period kWh (per Envysion report)
- * @property {number} powerKw          Last-observed instantaneous demand
+ * @property {number} energyUsedKwh    Year-to-date kWh through SNAPSHOT_AS_OF
+ * @property {number} powerKw          Instantaneous demand at capture time
  * @property {number} avgVoltage
  */
 
+export const SNAPSHOT_AS_OF = '2026-05-03';
+export const SNAPSHOT_DAYS_INTO_YEAR = 123;
+export const SNAPSHOT_TOTAL_KWH = 649439;
+
 /** @type {EnvysionSnapshotRow[]} */
 export const envysionSnapshot = [
-  { buildingId: 'b_miller',     energyUsedKwh: 44695, powerKw: 72.7, avgVoltage: 209 },
-  { buildingId: 'b_whittemore', energyUsedKwh: 43193, powerKw: 74.7, avgVoltage: 205 },
-  { buildingId: 'b_barrette',   energyUsedKwh: 35365, powerKw: 28.1, avgVoltage: 209 },
-  { buildingId: 'b_kilton',     energyUsedKwh: 20069, powerKw: 20.1, avgVoltage: 121 },
-  { buildingId: 'b_fitch',      energyUsedKwh: 15427, powerKw: 21.0, avgVoltage: 209 },
-  { buildingId: 'b_silvergym',  energyUsedKwh: 11407, powerKw: 10.2, avgVoltage: 208 },
-  { buildingId: 'b_flickinger', energyUsedKwh:  9717, powerKw: 17.2, avgVoltage: 210 },
-  { buildingId: 'b_chellis',    energyUsedKwh:  5217, powerKw:  7.1, avgVoltage: 240 },
-  { buildingId: 'b_welch',      energyUsedKwh:  5511, powerKw: 12.0, avgVoltage: 121 },
-  { buildingId: 'b_dexter',     energyUsedKwh:  5105, powerKw:  0.6, avgVoltage: 209 },
-  { buildingId: 'b_densmore',   energyUsedKwh:  4768, powerKw: 11.0, avgVoltage: 209 },
-  { buildingId: 'b_kurth',      energyUsedKwh:  3784, powerKw:  2.8, avgVoltage: 243 },
-  { buildingId: 'b_baxter',     energyUsedKwh:  2403, powerKw:  1.9, avgVoltage: 209 },
-  { buildingId: 'b_bryant',     energyUsedKwh:  2288, powerKw:  3.9, avgVoltage: 209 },
-  { buildingId: 'b_rowe',       energyUsedKwh:  2072, powerKw:  2.2, avgVoltage: 208 },
-  { buildingId: 'b_bishop',     energyUsedKwh:  1826, powerKw:  1.6, avgVoltage: 239 },
-  { buildingId: 'b_childcare',  energyUsedKwh:  1738, powerKw:  0.6, avgVoltage: 209 },
-  { buildingId: 'b_mikula',     energyUsedKwh:  1595, powerKw:  1.6, avgVoltage: 240 },
+  { buildingId: 'b_baxter',     energyUsedKwh:   9054, powerKw:  1.7, avgVoltage: 211 },
+  { buildingId: 'b_bishop',     energyUsedKwh:   5567, powerKw:  0.4, avgVoltage: 243 },
+  { buildingId: 'b_miller',     energyUsedKwh: 149055, powerKw: 34.0, avgVoltage: 211 },
+  { buildingId: 'b_fitch',      energyUsedKwh:  55017, powerKw: 12.3, avgVoltage: 211 },
+  { buildingId: 'b_flickinger', energyUsedKwh:  36576, powerKw:  9.5, avgVoltage: 212 },
+  { buildingId: 'b_barrette',   energyUsedKwh: 136024, powerKw: 38.5, avgVoltage: 211 },
+  { buildingId: 'b_barnfield',  energyUsedKwh:  13492, powerKw:  4.5, avgVoltage: 210 },
+  { buildingId: 'b_whittemore', energyUsedKwh: 107140, powerKw:  8.6, avgVoltage: 210 },
+  { buildingId: 'b_silvergym',  energyUsedKwh:  34583, powerKw:  8.5, avgVoltage: 210 },
+  { buildingId: 'b_densmore',   energyUsedKwh:  16941, powerKw:  6.3, avgVoltage: 211 },
+  { buildingId: 'b_bryant',     energyUsedKwh:   7655, powerKw:  1.5, avgVoltage: 211 },
+  { buildingId: 'b_dexter',     energyUsedKwh:  18729, powerKw:  0.2, avgVoltage: 211 },
+  { buildingId: 'b_rowe',       energyUsedKwh:   6634, powerKw:  1.6, avgVoltage: 210 },
+  { buildingId: 'b_welch',      energyUsedKwh:  16314, powerKw:  3.3, avgVoltage: 122 },
+  { buildingId: 'b_kilton',     energyUsedKwh:  55722, powerKw: 14.4, avgVoltage: 122 },
+  { buildingId: 'b_kurth',      energyUsedKwh:   9559, powerKw:  6.1, avgVoltage: 244 },
+  { buildingId: 'b_chellis',    energyUsedKwh:  18556, powerKw:  5.3, avgVoltage: 242 },
+  { buildingId: 'b_mikula',     energyUsedKwh:   6302, powerKw:  2.2, avgVoltage: 243 },
+  { buildingId: 'b_childcare',  energyUsedKwh:   4976, powerKw:  0.2, avgVoltage: 211 },
 ];
+
+// Helper: annualize a YTD value to a full-year projection. The same
+// scaling factor is used in meters.js to derive annualBaselineValue.
+export const ANNUALIZE_FACTOR = 365 / SNAPSHOT_DAYS_INTO_YEAR; // ≈ 2.9675
