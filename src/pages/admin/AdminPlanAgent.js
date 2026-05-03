@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../../components/ModuleShell.js';
+import { ProvenancePill, ProvenanceLegend } from '../../components/ProvenancePill.js';
 import { GRID_MIX_TOTAL_MTCO2E } from '../../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
@@ -204,11 +205,7 @@ export default function AdminPlanAgent() {
         </div>
         <details style={styles.sourcesBlock}>
           <summary style={styles.sourcesSummary}>Where do these numbers come from?</summary>
-          <div style={styles.provenanceLegend}>
-            <ProvenancePill provenance="measured" /> from a real meter or invoice
-            <ProvenancePill provenance="cited" /> published methodology applied to KUA inputs
-            <ProvenancePill provenance="estimated" /> placeholder — needs replacement with measured data
-          </div>
+          <div style={styles.provenanceLegend}><ProvenanceLegend compact /></div>
           <ul style={styles.sourceList}>
             <li>
               <ProvenancePill provenance="estimated" />{' '}
@@ -345,20 +342,6 @@ function Select({ label, value, onChange, options }) {
       </select>
     </Field>
   );
-}
-
-// Provenance badge — three states, color-coded the same way everywhere
-// the page surfaces a number. Estimated = amber (don't trust to 3 sig figs).
-// Cited = cyan (real methodology, defensible). Measured = green (from a
-// meter or invoice).
-function ProvenancePill({ provenance }) {
-  const map = {
-    measured:  { kind: 'good',    label: 'Measured' },
-    cited:     { kind: 'info',    label: 'Cited' },
-    estimated: { kind: 'warn',    label: 'Estimated' },
-  };
-  const cfg = map[provenance] || map.estimated;
-  return <Pill kind={cfg.kind}>{cfg.label}</Pill>;
 }
 
 function Hero({ label, value, unit, accent }) {

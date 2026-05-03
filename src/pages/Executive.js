@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { reductionActionsByVisibility } from '../data/reductionActions.js';
@@ -96,6 +97,19 @@ export default function Executive() {
       ]} />
 
       <ModuleSection
+        title="Data provenance"
+        hint="What the four numbers above are actually based on. Same vocabulary used everywhere on the dashboard."
+      >
+        <ProvenanceLegend />
+        <ul style={{ paddingLeft: 18, fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginTop: 10 }}>
+          <li><ProvenancePill provenance="estimated" /> <strong>Net annual emissions ({Math.round(NET_MT).toLocaleString()} mt):</strong> derived from gross − sinks below; inherits the lowest-confidence inputs.</li>
+          <li><ProvenancePill provenance="estimated" /> <strong>Gross emissions ({Math.round(GROSS_MT).toLocaleString()} mt):</strong> Scope 1 (1,250 mt placeholder) + Scope 2 (cited, BMS-measured ×2.97 annualization × ISO-NE 2024) + Scope 3 (2,700 mt placeholder). Two of the three are placeholders, so the gross number is dominated by estimates.</li>
+          <li><ProvenancePill provenance="estimated" /> <strong>Forest sequestration ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt):</strong> 7 named stands × per-acre rates inside IPCC LULUCF ranges. Total acreage (~1,000) is cited (KUA disclosure) but the per-stand subdivision is invented.</li>
+          <li><ProvenancePill provenance="cited" /> <strong>On-campus solar ({SOLAR_ANNUAL_KWH.toLocaleString()} kWh/yr):</strong> Whittemore array nameplate × NREL PVWatts capacity factor for KUA latitude.</li>
+        </ul>
+      </ModuleSection>
+
+      <ModuleSection
         title="Where the gross number comes from"
         hint="Click any row to drill into that scope's detail."
       >
@@ -171,6 +185,9 @@ export default function Executive() {
           </div>
           <div style={styles.personalHeroLabel}>
             if every student adopts every personal action — {(totalPersonalCampusMt / GROSS_MT * 100).toFixed(1)}% of KUA's gross emissions, roughly {(totalPersonalCampusMt / ANNUAL_SEQUESTRATION_MT * 100).toFixed(0)}% of what our forest sequesters annually
+          </div>
+          <div style={{ marginTop: 8, fontSize: 11, color: '#fbbf24' }}>
+            <ProvenancePill provenance="estimated" /> per-student kg/yr values are placeholders sized to plausible behavior-change benchmarks (Project Drawdown, EPA WARM, ICAO). Treat campus totals as order-of-magnitude until a behavior-survey baseline is taken.
           </div>
         </div>
 

@@ -1,22 +1,34 @@
 import React, { useState } from 'react';
+import { ProvenancePill, ProvenanceLegend } from './ProvenancePill.js';
 
+// Provenance taxonomy:
+//   measured  — BMS / utility / fuel-delivery records integrated.
+//   cited     — published methodology (EPA/IPCC/NREL/etc.) applied to
+//               KUA inputs that are themselves measured or canonical.
+//   estimated — placeholder I (Claude) wrote into the codebase. Not
+//               measured, not cited — needs replacement before anyone
+//               treats it as fact.
 const rows = [
-  { name: 'Scope 1 — Heating fuel',                low: 1000, high: 1500, kind: 'estimate', note: '100k–150k gal heating-oil-equivalent at 10.16 kg CO₂/gal. Replaced as fuel deliveries are logged.' },
-  { name: 'Scope 1 — Refrigerants + fleet',         low: 20,   high: 50,   kind: 'estimate', note: 'Service-report mass balance + fuel-card records.' },
-  { name: 'Scope 2 — Electricity',                  low: 222,  high: 222,  kind: 'documented', note: '2.3M kWh × ISO-NE 2024 (643 lb CO₂/MWh). The one figure currently cited.' },
-  { name: 'Scope 3 — Student travel',               low: 1500, high: 3000, kind: 'estimate', note: 'Internationals (~50) at ~3 mtCO₂e per round trip, US boarders (~150) at ~3–4 trips/yr at ~1 mt each, plus study abroad and athletic teams. Often the largest single category at residential schools (Kool 2025).' },
-  { name: 'Scope 3 — Goods, waste, commuting, upstream fuel', low: 500, high: 800, kind: 'estimate', note: 'EEIO spend-based (Cat 1) + WARM waste + small commuting (residential school) + upstream fuel ~15–20% of Scope 1+2.' },
-  { name: 'Sinks — On-campus sequestration',        low: -4000,high: -2000, kind: 'estimate', note: '~1,000 acres of campus forest × forest accumulation rate. Conservative end uses Birdsey (1992) US-forest average (~2.1 mtCO₂e/acre/yr). Upper end uses Nowak (2013) urban-tree density (0.28 kg C/m²/yr → ~4.2 mtCO₂e/acre/yr) where open-grown trees grow faster. Negative = pulled out of the air.' },
+  { name: 'Scope 1 — Heating fuel',                low: 1000, high: 1500, provenance: 'estimated', note: 'Placeholder. The 100k–150k gal heating-oil-equivalent assumption was hand-set; KUA fuel delivery records have not been integrated. Will become "cited" once delivery invoices feed into the pipeline.' },
+  { name: 'Scope 1 — Refrigerants + fleet',         low: 20,   high: 50,   provenance: 'estimated', note: 'Placeholder. Service-report mass balance + fuel-card records would convert this to cited; neither is integrated yet.' },
+  { name: 'Scope 2 — Electricity (kWh × factor)',   low: 380,  high: 520,  provenance: 'cited',     note: 'kWh side is measured: 649,439 kWh YTD-through-2026-05-03 from KUA Distech Eclypse BMS, annualized ×2.97. Emission factor side is cited: per-fuel output factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range.' },
+  { name: 'Scope 3 — Student travel',               low: 1500, high: 3000, provenance: 'estimated', note: 'Placeholder. The international (~50 students) + US-boarder (~150 students) trip-count assumptions are reasonable order-of-magnitude but not from a measured travel ledger. ICAO calculator + KUA travel office records would convert this to cited.' },
+  { name: 'Scope 3 — Goods, waste, commuting, upstream fuel', low: 500, high: 800, provenance: 'estimated', note: 'Placeholder. EEIO spend-based (Cat 1) + EPA WARM waste + commuting + ~15–20% upstream fuel uplift is the standard methodology; the KUA-specific spend, waste-tonnage, and commute-distance inputs are guesses.' },
+  { name: 'Sinks — On-campus sequestration',        low: -4000,high: -2000, provenance: 'estimated', note: '7 named forest stands × per-acre rates inside IPCC LULUCF ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total 1,000 acres figure is cited (KUA disclosure + Wikipedia), but the per-stand subdivision and acreages are placeholders, not from a forest inventory.' },
 ];
 
+// Sums of the provenance-tagged rows above:
+//   gross low  = 1000 + 20  + 380 + 1500 + 500 = 3,400
+//   gross high = 1500 + 50  + 520 + 3000 + 800 = 5,870
+//   gross mid  ≈ 4,150 (kept for hero continuity)
+//   sinks      = -4,000 to -2,000
+//   net mid    ≈ 1,150 (gross mid + sinks midpoint)
 const summary = {
-  grossLow: 3242, grossHigh: 5572, grossMid: 4150,
+  grossLow: 3400, grossHigh: 5870, grossMid: 4150,
   sinkLow: -4000, sinkHigh: -2000,
-  netLow: -758, netHigh: 3572, netMid: 1150,
-  // Per-student values are net mt ÷ ~340 enrolled students (KUA's actual
-  // headcount per the school's "By the Numbers" page). Range reflects
-  // the gross/sinks low/mid/high spread.
-  perStudentLow: -2.2, perStudentHigh: 10.5, perStudentMid: 3.4,
+  netLow: -700, netHigh: 3870, netMid: 1150,
+  // Per-student values are net mt ÷ 340 enrolled students.
+  perStudentLow: -2.1, perStudentHigh: 11.4, perStudentMid: 3.4,
   studentCount: 340,
 };
 
@@ -42,8 +54,8 @@ const styles = {
   th: { textAlign: 'left', padding: '10px 8px', fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, borderBottom: '1px solid #1f2937', fontWeight: 700 },
   td: { padding: '14px 8px', fontSize: 15, color: '#cbd5e1', borderBottom: '1px solid #1f2937', verticalAlign: 'top' },
   tdNum: { padding: '14px 8px', fontSize: 15, color: '#e5e7eb', borderBottom: '1px solid #1f2937', textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', fontWeight: 600 },
-  pill: (kind) => ({ fontSize: 10, padding: '3px 9px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: 0.6, background: kind === 'documented' ? '#052e1a' : '#3a2a0d', color: kind === 'documented' ? '#86efac' : '#fbbf24', fontWeight: 700 }),
   detailsToggle: { marginTop: 18, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', padding: '9px 18px', borderRadius: 6, fontSize: 13, cursor: 'pointer', fontWeight: 500 },
+  legendRow: { marginTop: 14, paddingTop: 14, borderTop: '1px solid #1f2937' },
   noteList: { marginTop: 18, paddingLeft: 22, fontSize: 14, color: '#94a3b8', lineHeight: 1.9 },
 };
 
@@ -95,7 +107,7 @@ export function NetEstimate() {
                 <tr>
                   <th style={styles.th}>Source</th>
                   <th style={{ ...styles.th, textAlign: 'right' }}>mtCO₂e / yr</th>
-                  <th style={styles.th}>Status</th>
+                  <th style={styles.th}>Provenance</th>
                 </tr>
               </thead>
               <tbody>
@@ -105,11 +117,12 @@ export function NetEstimate() {
                     <td style={styles.tdNum}>
                       {r.low === r.high ? fmt(r.low) : `${fmt(r.low)} to ${fmt(r.high)}`}
                     </td>
-                    <td style={styles.td}><span style={styles.pill(r.kind)}>{r.kind}</span></td>
+                    <td style={styles.td}><ProvenancePill provenance={r.provenance} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <div style={styles.legendRow}><ProvenanceLegend compact /></div>
             <button type="button" style={styles.detailsToggle} onClick={() => setShowNotes((v) => !v)}>
               {showNotes ? 'Hide assumptions' : 'Show assumptions per line'}
             </button>

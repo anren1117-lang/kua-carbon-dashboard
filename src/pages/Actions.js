@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ProvenancePill } from '../components/ProvenancePill.js';
 import { reductionActions, reductionActionsByVisibility } from '../data/reductionActions.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { dorms } from '../data/dorms.js';
@@ -95,7 +96,7 @@ export default function Actions() {
         </>
       }
     >
-      <ModuleSection title="Your impact" hint="The numbers update as you check the box on each action below.">
+      <ModuleSection title="Your impact" hint={<>The numbers update as you check the box on each action below. <ProvenancePill provenance="estimated" /> kg/yr values are placeholder benchmarks — Project Drawdown, EPA WARM, and ICAO methodologies applied to typical behavior-change ranges. Treat as order-of-magnitude.</>}>
         <div style={styles.impactPanel}>
           <div style={styles.scopeRow}>
             <span style={styles.scopeLabel}>If</span>
