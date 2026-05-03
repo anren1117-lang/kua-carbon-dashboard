@@ -20,6 +20,7 @@ import { ingestCsv, _resetCsvStore, CsvMeterAdapter } from '../adapters/meter/Cs
 import { forestStands, ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES, soilCarbonStored } from '../data/sinks.js';
 import { formatMeterCsv } from '../utils/csvMeterFormatter.js';
 import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
+import { extractFileText, FILE_LIMITS } from '../utils/extractFileText.js';
 
 describe('data layer integrity', () => {
   it('every electricity meter points to a known building', () => {
@@ -349,6 +350,39 @@ describe('Reduction targets', () => {
     const t = reductionTargets[0];
     expect(targetTrajectoryAt(t, t.baselineYear - 5)).toBe(t.baselineValue);
     expect(targetTrajectoryAt(t, t.targetYear + 5)).toBeCloseTo(t.baselineValue * (1 - t.percentReduction / 100), 3);
+  });
+
+  it('FILE_LIMITS exposes the expected ceilings', () => {
+    expect(FILE_LIMITS.MAX_BYTES).toBe(5 * 1024 * 1024);
+    expect(FILE_LIMITS.MAX_CHARS).toBe(12000);
+  });
+
+  it('extractFileText pulls plain text out of a .txt blob', async () => {
+    const blob = new File(['Beef averages 60 kg CO2e/kg.'], 'demo.txt', { type: 'text/plain' });
+    const r = await extractFileText(blob);
+    expect(r.kind).toBe('text');
+    expect(r.text).toContain('60 kg');
+    expect(r.truncated).toBe(false);
+    expect(r.sourceFileName).toBe('demo.txt');
+  });
+
+  it('extractFileText truncates oversize text input', async () => {
+    const big = 'x'.repeat(15000);
+    const blob = new File([big], 'big.txt', { type: 'text/plain' });
+    const r = await extractFileText(blob);
+    expect(r.text.length).toBe(12000);
+    expect(r.truncated).toBe(true);
+  });
+
+  it('extractFileText rejects unsupported types', async () => {
+    const blob = new File(['x'], 'demo.dmg', { type: 'application/octet-stream' });
+    await expect(extractFileText(blob)).rejects.toThrow(/Unsupported/);
+  });
+
+  it('extractFileText rejects oversize files', async () => {
+    const huge = 'x'.repeat(6 * 1024 * 1024);
+    const blob = new File([huge], 'huge.txt', { type: 'text/plain' });
+    await expect(extractFileText(blob)).rejects.toThrow(/too large/);
   });
 
   it('trajectoryStatus picks the right bucket', () => {

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { hashUserId } from '../utils/hash.js';
+import { extractFileText, FILE_LIMITS } from '../utils/extractFileText.js';
 
 // Lesson editor — teacher pastes source material, picks reading level
 // + topic, hits Generate. The /api/teacher/lessons endpoint calls
@@ -56,6 +57,49 @@ export default function LessonEditor() {
 
   const charCount = sourceMaterial.length;
   const overLimit = charCount > 12000;
+
+  // File upload state
+  const fileInputRef = useRef(null);
+  const [uploadInfo, setUploadInfo] = useState(null);  // { name, kind, charsExtracted, truncated }
+  const [uploadError, setUploadError] = useState(null);
+  const [extracting, setExtracting] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  async function handleFiles(files) {
+    if (!files || !files.length) return;
+    const file = files[0];
+    setExtracting(true);
+    setUploadError(null);
+    setUploadInfo(null);
+    try {
+      const result = await extractFileText(file);
+      if (!result.text) {
+        throw new Error('Could not extract any text from this file. PDFs that are scanned images need OCR — try a text-based PDF, or paste the text manually.');
+      }
+      setSourceMaterial(result.text);
+      setUploadInfo({
+        name: result.sourceFileName,
+        kind: result.kind,
+        charsExtracted: result.text.length,
+        truncated: result.truncated,
+      });
+      // Default the title from the filename if blank
+      if (!title.trim()) {
+        const base = result.sourceFileName.replace(/\.[^.]+$/, '');
+        setTitle(base.replace(/[-_]/g, ' ').slice(0, 140));
+      }
+    } catch (err) {
+      setUploadError(err.message);
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  function onDrop(e) {
+    e.preventDefault();
+    setDragOver(false);
+    handleFiles(e.dataTransfer?.files);
+  }
 
   async function generate(targetStatus) {
     if (!title.trim() || !sourceMaterial.trim() || overLimit) return;
@@ -133,15 +177,59 @@ export default function LessonEditor() {
 
         <div style={{ marginTop: 14 }}>
           <div style={styles.label}>
-            <span>Source material</span>
+            <span>Upload a file (optional)</span>
+            <span style={{ color: '#64748b', fontSize: 11 }}>.txt, .md, .csv, .json, .pdf · up to 5 MB</span>
+          </div>
+          <div
+            style={{
+              ...styles.dropZone,
+              borderColor: dragOver ? '#22d3ee' : extracting ? '#fbbf24' : '#334155',
+              background: dragOver ? '#0c2a3a' : '#0b1220',
+            }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+            onClick={() => fileInputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+            aria-label="Upload a file — drop here or click to pick"
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.md,.markdown,.csv,.json,.pdf,text/plain,text/markdown,text/csv,application/json,application/pdf"
+              onChange={(e) => handleFiles(e.target.files)}
+              style={{ display: 'none' }}
+            />
+            <div style={styles.dropIcon} aria-hidden="true">📎</div>
+            <div style={styles.dropMain}>
+              {extracting
+                ? 'Extracting text…'
+                : uploadInfo
+                  ? <><strong style={{ color: '#22d3ee' }}>{uploadInfo.name}</strong> — {uploadInfo.charsExtracted.toLocaleString()} chars extracted{uploadInfo.truncated ? ' (truncated to 12,000)' : ''}</>
+                  : 'Drop a file here, or click to pick'}
+            </div>
+            {uploadInfo && (
+              <div style={styles.dropSub}>
+                Source <Pill kind="info">{uploadInfo.kind === 'pdf' ? 'PDF' : 'TEXT'}</Pill> · review the extracted text below before generating
+              </div>
+            )}
+          </div>
+          {uploadError && <div style={styles.uploadError}>{uploadError}</div>}
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={styles.label}>
+            <span>Source material {uploadInfo ? '(extracted from file — edit if needed)' : '(paste or upload)'}</span>
             <span style={{ color: overLimit ? '#fca5a5' : '#64748b', fontSize: 11 }}>
-              {charCount.toLocaleString()} / 12,000 chars
+              {charCount.toLocaleString()} / {FILE_LIMITS.MAX_CHARS.toLocaleString()} chars
             </span>
           </div>
           <textarea
             value={sourceMaterial}
             onChange={(e) => setSourceMaterial(e.target.value)}
-            placeholder="Paste an article excerpt, lecture notes, or a chapter section..."
+            placeholder="Paste an article excerpt, lecture notes, or a chapter section — or upload a file above."
             rows={12}
             style={styles.textarea}
           />
@@ -228,6 +316,11 @@ const styles = {
   input: { width: '100%', boxSizing: 'border-box', padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontSize: 14, fontFamily: 'inherit' },
   textarea: { width: '100%', boxSizing: 'border-box', padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#cbd5e1', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.6, resize: 'vertical' },
   hint: { fontSize: 12, color: '#64748b', marginTop: 8, lineHeight: 1.6 },
+  dropZone: { border: '2px dashed #334155', borderRadius: 10, padding: 20, textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' },
+  dropIcon: { fontSize: 32, marginBottom: 8 },
+  dropMain: { fontSize: 14, color: '#cbd5e1' },
+  dropSub: { marginTop: 8, fontSize: 12, color: '#94a3b8' },
+  uploadError: { marginTop: 10, padding: '8px 12px', background: '#3a0d12', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 13 },
   actions: { marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' },
   draftBtn: { padding: '10px 18px', background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 6, cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' },
   publishBtn: { padding: '10px 18px', background: '#22d3ee', color: '#0b1220', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'inherit' },

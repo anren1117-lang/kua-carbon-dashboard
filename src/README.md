@@ -71,7 +71,7 @@ and every meter-driven view goes through the adapter at `src/adapters/meter/`.
 | Route               | Purpose |
 |---------------------|---------|
 | `/teacher`          | **Password-gated** portal home — cards + "my lessons" panel |
-| `/teacher/create`   | **NEW** — paste source material, AI generates reading + 5 four-option questions, publish a `/lessons/:id` URL to share with class |
+| `/teacher/create`   | **NEW** — paste source material OR upload a file (.txt, .md, .csv, .json, .pdf up to 5 MB); AI generates reading + 5 four-option questions; publish a `/lessons/:id` URL to share with class |
 | `/teacher/lessons`  | Curated lesson modules, class progress, auto-generated discussion prompts |
 | `/lessons/:id`      | **NEW** — student-facing lesson view (reading + quiz). Attempts log to `/api/quiz/attempts` |
 | `/chatbot`          | Carbon Learning Chatbot (rule-based; LLM-grounded when API key set) |
