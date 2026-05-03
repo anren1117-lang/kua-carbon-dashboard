@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "check:nul": "cd .. && node scripts/check-no-nul-bytes.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",

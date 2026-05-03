@@ -28,6 +28,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: NUL byte guard
+        # Scans every tracked source file (.js/.ts/.html/.css/.md/.sql/...)
+        # for literal 0x00 bytes. Fails CI if any are found — see commit
+        # cd2f26a for the original incident.
+        working-directory: ${{ github.workspace }}
+        run: node scripts/check-no-nul-bytes.mjs
+
       - name: Vitest
         run: npx vitest run
 
