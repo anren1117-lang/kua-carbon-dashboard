@@ -16,7 +16,9 @@ const topItems = [
   { to: '/buildings', label: 'Buildings' },
   { to: '/methodology', label: 'Methodology' },
   { to: '/report',    label: 'Report' },
-  { to: '/lessons',   label: 'Lessons' },
+  // /lessons (the published catalog) is reachable via the Learn portal
+  // and via the "Open the full catalog" link on /learn. Keeping it out
+  // of the top nav so the public bar doesn't grow unbounded.
 ];
 
 const categoryItems = [
