@@ -1,0 +1,148 @@
+import React from 'react';
+import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { buildings } from '../data/buildings.js';
+import { envysionSnapshot } from '../data/envysionSnapshot.js';
+import { reductionActions } from '../data/reductionActions.js';
+import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { buildingHotspots, rankActions } from '../utils/hotspots.js';
+
+// Hotspots — ranked view of where emissions are concentrated. Combines a
+// magnitude rollup (per-building electricity) with a category-level summary
+// and overlays the top suggested actions from the AI advisor.
+
+const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; // ≈ 0.0956
+
+export default function Hotspots() {
+  const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
+  const buildingsKwh = envysionSnapshot.map((row) => ({
+    id: row.buildingId,
+    name: buildingsById[row.buildingId]?.name ?? row.buildingId,
+    kwh: row.energyUsedKwh,
+  }));
+  const totalKwh = buildingsKwh.reduce((s, b) => s + b.kwh, 0);
+  const ranked = buildingHotspots(buildingsKwh, totalKwh, KG_PER_KWH_ISO_NE);
+
+  // Categories (rolled up from buildings + Envysion)
+  const byCategory = {};
+  for (const row of envysionSnapshot) {
+    const cat = buildingsById[row.buildingId]?.category ?? 'Other';
+    byCategory[cat] = (byCategory[cat] || 0) + row.energyUsedKwh;
+  }
+  const categoryRows = Object.entries(byCategory)
+    .map(([category, kwh]) => ({
+      category,
+      kwh,
+      mt: (kwh * KG_PER_KWH_ISO_NE) / 1000,
+      share: (kwh / totalKwh) * 100,
+    }))
+    .sort((a, b) => b.kwh - a.kwh);
+
+  const topActions = rankActions(reductionActions).slice(0, 5);
+
+  const totalMt = (totalKwh * KG_PER_KWH_ISO_NE) / 1000;
+  const top3Share = ranked.slice(0, 3).reduce((s, h) => s + h.percentOfTotal, 0);
+
+  return (
+    <ModulePage
+      title="Carbon Hotspots"
+      subtitle="Where emissions are concentrated, ordered by magnitude. Top of the list is where any reduction effort gets the most leverage per hour spent."
+    >
+      <MetricGrid metrics={[
+        { label: 'Total electricity', value: Math.round(totalKwh).toLocaleString(), unit: 'kWh/yr', accent: '#fbbf24' },
+        { label: 'Equivalent emissions', value: totalMt.toFixed(1), unit: 'mtCO₂e', accent: '#ef4444' },
+        { label: 'Top 3 buildings', value: `${top3Share.toFixed(0)}%`, unit: 'of campus', accent: '#22d3ee', note: 'Concentration of impact' },
+        { label: 'Open actions', value: reductionActions.filter((a) => a.status === 'proposed' || a.status === 'in_progress').length, unit: 'in queue', accent: '#86efac' },
+      ]} />
+
+      <ModuleSection
+        title="Highest-emitting buildings"
+        hint="Severity is set by share of total: high ≥ 8%, medium ≥ 3%."
+      >
+        <div style={styles.list}>
+          {ranked.map((h) => (
+            <div key={h.id} style={styles.row}>
+              <div style={styles.rowLeft}>
+                <span style={styles.rank}>#{ranked.indexOf(h) + 1}</span>
+                <div>
+                  <div style={styles.rowTitle}>{h.name}</div>
+                  <div style={styles.rowMeta}>
+                    {h.mtCO2eAnnual.toFixed(1)} mtCO₂e/yr · {h.percentOfTotal.toFixed(1)}% of campus
+                  </div>
+                </div>
+              </div>
+              <Pill kind={h.severity === 'high' ? 'bad' : h.severity === 'medium' ? 'warn' : 'neutral'}>
+                {h.severity}
+              </Pill>
+            </div>
+          ))}
+        </div>
+      </ModuleSection>
+
+      <ModuleSection
+        title="By building category"
+        hint="Aggregated across all buildings of each type."
+      >
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Category</th>
+              <th style={{ ...styles.th, textAlign: 'right' }}>kWh/yr</th>
+              <th style={{ ...styles.th, textAlign: 'right' }}>mtCO₂e/yr</th>
+              <th style={{ ...styles.th, textAlign: 'right' }}>Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categoryRows.map((r) => (
+              <tr key={r.category}>
+                <td style={styles.td}>{r.category}</td>
+                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{Math.round(r.kwh).toLocaleString()}</td>
+                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.mt.toFixed(1)}</td>
+                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.share.toFixed(1)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ModuleSection>
+
+      <ModuleSection
+        title="Top recommended actions"
+        hint="Suggested by the rule-based advisor — see the Actions page for the full list."
+      >
+        <div style={styles.actionList}>
+          {topActions.map(({ action }) => (
+            <div key={action.id} style={styles.actionRow}>
+              <div style={styles.actionHead}>
+                <div style={styles.actionTitle}>{action.title}</div>
+                <Pill kind={action.urgency === 'high' ? 'bad' : action.urgency === 'medium' ? 'warn' : 'neutral'}>
+                  {action.urgency} urgency
+                </Pill>
+              </div>
+              <div style={styles.actionMeta}>
+                ~{action.expectedReductionMtCO2e} mtCO₂e/yr · {action.estimatedCostUsd === 0 ? 'no cost' : `$${action.estimatedCostUsd.toLocaleString()}`} · {action.owner}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ModuleSection>
+    </ModulePage>
+  );
+}
+
+const styles = {
+  list: { display: 'grid', gap: 8 },
+  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  rowLeft: { display: 'flex', alignItems: 'center', gap: 14 },
+  rank: { fontSize: 13, color: '#64748b', fontWeight: 700, fontVariantNumeric: 'tabular-nums', minWidth: 32 },
+  rowTitle: { fontSize: 15, color: '#e5e7eb', fontWeight: 600 },
+  rowMeta: { fontSize: 13, color: '#94a3b8', marginTop: 4 },
+
+  table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
+  th: { textAlign: 'left', padding: '10px 8px', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontSize: 11, borderBottom: '1px solid #1f2937', fontWeight: 700 },
+  td: { padding: '10px 8px', color: '#cbd5e1', borderBottom: '1px solid #1f2937' },
+
+  actionList: { display: 'grid', gap: 10 },
+  actionRow: { padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  actionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' },
+  actionTitle: { fontSize: 15, color: '#e5e7eb', fontWeight: 600 },
+  actionMeta: { fontSize: 13, color: '#94a3b8', marginTop: 8 },
+};

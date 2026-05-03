@@ -15,6 +15,13 @@ import Methodology from './pages/Methodology';
 import CarbonCredits from './pages/CarbonCredits';
 import Learn from './pages/Learn';
 import Assistant from './pages/Assistant';
+import Hotspots from './pages/Hotspots';
+import Actions from './pages/Actions';
+import BuildingsPage from './pages/Buildings';
+import Dining from './pages/Dining';
+import Transportation from './pages/Transportation';
+import StudentChallenges from './pages/StudentChallenges';
+import DataAdmin from './pages/DataAdmin';
 import AdminHome from './pages/admin/AdminHome';
 import AdminScope1 from './pages/admin/AdminScope1';
 import AdminScope2 from './pages/admin/AdminScope2';
@@ -61,6 +68,13 @@ root.render(
           <Route path="/credits" element={<CarbonCredits />} />
           <Route path="/learn" element={<Learn />} />
           <Route path="/ask" element={<Assistant />} />
+          <Route path="/hotspots" element={<Hotspots />} />
+          <Route path="/actions" element={<Actions />} />
+          <Route path="/buildings" element={<BuildingsPage />} />
+          <Route path="/dining" element={<Dining />} />
+          <Route path="/transportation" element={<Transportation />} />
+          <Route path="/challenges" element={<StudentChallenges />} />
+          <Route path="/data-admin" element={<DataAdmin />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
