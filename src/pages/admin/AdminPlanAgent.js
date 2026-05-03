@@ -204,16 +204,47 @@ export default function AdminPlanAgent() {
         </div>
         <details style={styles.sourcesBlock}>
           <summary style={styles.sourcesSummary}>Where do these numbers come from?</summary>
+          <div style={styles.provenanceLegend}>
+            <ProvenancePill provenance="measured" /> from a real meter or invoice
+            <ProvenancePill provenance="cited" /> published methodology applied to KUA inputs
+            <ProvenancePill provenance="estimated" /> placeholder — needs replacement with measured data
+          </div>
           <ul style={styles.sourceList}>
-            <li><strong>Scope 1 ({SCOPE1_TOTAL_MT.toLocaleString()} mt/yr):</strong> internal estimate of heating fuel + refrigerants + fleet — to be replaced with measured fuel deliveries (EPA mandatory reporting factors). Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope1Mt</code>.</li>
-            <li><strong>Scope 2 ({Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized):</strong> KUA Distech Eclypse BMS YTD-through-2026-05-03 metered kWh × ISO-NE 2024 grid mix factors (eGRID NEWE 2022 cross-check). Sources: <code>src/data/envysionSnapshot.js</code>, <code>src/data/gridMix.js</code>.</li>
-            <li><strong>Scope 3 ({SCOPE3_TOTAL_MT.toLocaleString()} mt/yr):</strong> internal estimate covering student travel + dining + waste + procurement + commuting + upstream fuel. Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope3Mt</code>.</li>
-            <li><strong>Sinks ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt/yr):</strong> 7 mapped forest stands × per-acre sequestration rates from IPCC LULUCF defaults (mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2). Source: <code>src/data/sinks.js forestStands</code>.</li>
-            <li><strong>Enrollment ({TOTAL_STUDENTS}):</strong> KUA "By the Numbers" + Wikipedia. Source: <code>src/data/students.js TOTAL_STUDENTS</code>.</li>
-            <li><strong>ISO-NE annualization factor:</strong> 365 days ÷ 123 days into 2026 (snapshot date 2026-05-03) ≈ 2.97×. Source: <code>src/data/envysionSnapshot.js ANNUALIZE_FACTOR</code>.</li>
+            <li>
+              <ProvenancePill provenance="estimated" />{' '}
+              <strong>Scope 1 ({SCOPE1_TOTAL_MT.toLocaleString()} mt/yr):</strong> placeholder for heating fuel + refrigerants + fleet. The number was hand-set; KUA's actual fuel deliveries and refrigerant logs have not been integrated. Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope1Mt</code>.
+            </li>
+            <li>
+              <ProvenancePill provenance="measured" />{' '}
+              <strong>Scope 2 kWh ({(649439).toLocaleString()} kWh YTD):</strong> KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03. Source: <code>src/data/envysionSnapshot.js</code>.
+            </li>
+            <li>
+              <ProvenancePill provenance="cited" />{' '}
+              <strong>Scope 2 mtCO₂e ({Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized):</strong> measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, etc.) summed over the ISO-NE 2024 generation mix; system rate ≈ 0.235 kg/kWh, in the eGRID NEWE 2022 range. Source: <code>src/data/gridMix.js</code>.
+            </li>
+            <li>
+              <ProvenancePill provenance="estimated" />{' '}
+              <strong>Scope 3 ({SCOPE3_TOTAL_MT.toLocaleString()} mt/yr):</strong> placeholder for student travel + dining + waste + procurement + commuting + upstream fuel. Hand-set order-of-magnitude figure; no measured inventory of any of these categories exists yet. Source: <code>src/pages/Executive.js SCOPE_TOTALS.scope3Mt</code>.
+            </li>
+            <li>
+              <ProvenancePill provenance="estimated" />{' '}
+              <strong>Sinks ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt/yr):</strong> 7 named forest stands × per-acre sequestration rates. The per-acre rates (mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2) sit inside IPCC LULUCF default ranges, but the stand names ("North Hill", "Potato Patch", "Chellis Pond riparian", etc.) and individual acreages are placeholders — not from a KUA forest inventory. Source: <code>src/data/sinks.js forestStands</code>.
+            </li>
+            <li>
+              <ProvenancePill provenance="cited" />{' '}
+              <strong>Total forest acres (~1,000):</strong> KUA disclosure ("campus is 1,300 acres total, ~1,000 forested") corroborated by Wikipedia. Real number; only the per-stand subdivision is invented.
+            </li>
+            <li>
+              <ProvenancePill provenance="cited" />{' '}
+              <strong>Enrollment ({TOTAL_STUDENTS}):</strong> KUA "By the Numbers" page + Wikipedia. Source: <code>src/data/students.js TOTAL_STUDENTS</code>.
+            </li>
+            <li>
+              <ProvenancePill provenance="cited" />{' '}
+              <strong>Annualization factor (×{(SCOPE2_ANNUAL_MT/SCOPE1_TOTAL_MT*0+ (365/123)).toFixed(2)}):</strong> 365 days ÷ days-into-year as of the BMS snapshot (123 on 2026-05-03). Source: <code>src/data/envysionSnapshot.js ANNUALIZE_FACTOR</code>.
+            </li>
           </ul>
           <div style={styles.sourceCaveat}>
-            Plan items below carry their own <em>Data source</em> line under the agent's "why" — they cite the methodology behind each mt and $ benchmark (EPA WARM, NEEP heat pumps, NREL PVWatts, Project Drawdown, GHG Protocol, etc.). The AI agent is instructed not to fabricate specific page numbers; if a source can't be verified, the line says so.
+            Plan items below each carry their own provenance pill (measured / cited / estimated) plus a <em>Data source</em> line citing the methodology category behind their mt and $ benchmarks. Almost every rule-library item is currently <em>estimated</em> because KUA-specific inputs (Miller Hall boiler load, T8 fixture count, faculty commute distances, international student travel mileage) haven't been inventoried — the methodology is sound, the input quantities are best-effort. The AI agent is instructed to default to <em>estimated</em> when in doubt, and never to inflate confidence.
           </div>
         </details>
         <div style={styles.actionRow}>
@@ -316,6 +347,20 @@ function Select({ label, value, onChange, options }) {
   );
 }
 
+// Provenance badge — three states, color-coded the same way everywhere
+// the page surfaces a number. Estimated = amber (don't trust to 3 sig figs).
+// Cited = cyan (real methodology, defensible). Measured = green (from a
+// meter or invoice).
+function ProvenancePill({ provenance }) {
+  const map = {
+    measured:  { kind: 'good',    label: 'Measured' },
+    cited:     { kind: 'info',    label: 'Cited' },
+    estimated: { kind: 'warn',    label: 'Estimated' },
+  };
+  const cfg = map[provenance] || map.estimated;
+  return <Pill kind={cfg.kind}>{cfg.label}</Pill>;
+}
+
 function Hero({ label, value, unit, accent }) {
   return (
     <div style={{ ...styles.hero, borderLeftColor: accent }}>
@@ -341,6 +386,7 @@ function PlanCard({ item, rank, onComplete, onDecline }) {
             <Pill kind={item.difficulty === 'easy' ? 'good' : item.difficulty === 'hard' ? 'bad' : 'warn'}>{item.difficulty}</Pill>
             <Pill kind="neutral">{TIMELINE_LABELS[item.timeline] || item.timeline}</Pill>
             <Pill kind="neutral">owner: {item.ownerRole}</Pill>
+            <ProvenancePill provenance={item.provenance} />
           </div>
         </div>
         <div style={styles.planNums}>
@@ -376,7 +422,8 @@ const styles = {
   contextSummaryItem: { fontVariantNumeric: 'tabular-nums' },
   sourcesBlock: { marginTop: 10, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, color: '#cbd5e1' },
   sourcesSummary: { cursor: 'pointer', fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, listStyle: 'revert' },
-  sourceList: { paddingLeft: 18, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginTop: 8, marginBottom: 8 },
+  sourceList: { paddingLeft: 18, fontSize: 12, color: '#cbd5e1', lineHeight: 1.7, marginTop: 8, marginBottom: 8 },
+  provenanceLegend: { display: 'flex', gap: 14, alignItems: 'center', marginTop: 10, marginBottom: 6, flexWrap: 'wrap', fontSize: 11, color: '#94a3b8' },
   sourceCaveat: { marginTop: 8, fontSize: 12, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 8, borderTop: '1px solid #1f2937' },
   actionRow: { display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' },
   primaryBtn: { padding: '10px 18px', background: '#22d3ee', color: '#0b1220', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 700, cursor: 'pointer' },
