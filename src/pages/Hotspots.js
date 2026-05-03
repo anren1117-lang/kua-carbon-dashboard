@@ -1,9 +1,11 @@
 import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { reductionActions } from '../data/reductionActions.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
@@ -42,6 +44,14 @@ export default function Hotspots() {
   const totalMt = (totalKwh * KG_PER_KWH_ISO_NE) / 1000;
   const top3Share = ranked.slice(0, 3).reduce((s, h) => s + h.percentOfTotal, 0);
 
+  // Annual emissions trend — uses the seasonal monthly pattern as a
+  // mid-year proxy. Replace with measured monthly rollups once the
+  // BMS adapter is feeding real readings into Supabase.
+  const trendSeries = monthlyPattern.map((m, i) => ({
+    t: new Date(2026, i, 15).toISOString(),
+    v: m.emissions,
+  }));
+
   return (
     <ModulePage
       title="Carbon Hotspots"
@@ -53,6 +63,21 @@ export default function Hotspots() {
         { label: 'Top 3 buildings', value: `${top3Share.toFixed(0)}%`, unit: 'of campus', accent: '#22d3ee', note: 'Concentration of impact' },
         { label: 'Open actions', value: reductionActions.filter((a) => a.status === 'proposed' || a.status === 'in_progress').length, unit: 'in queue', accent: '#86efac' },
       ]} />
+
+      <ModuleSection
+        title="Annual emissions trend"
+        hint="Monthly mtCO₂e for the campus. Winter peaks reflect heating-driven plug load; the summer dip is everyone-off-campus."
+      >
+        <TimeSeriesChart
+          data={trendSeries}
+          unit="mtCO₂e"
+          color="#ef4444"
+          fill="rgba(239, 68, 68, 0.12)"
+          width={900}
+          height={220}
+          title="Jan → Dec, monthly mtCO₂e"
+        />
+      </ModuleSection>
 
       <ModuleSection
         title="Highest-emitting buildings"

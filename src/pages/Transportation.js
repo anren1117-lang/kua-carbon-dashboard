@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid } from '../components/ModuleShell.js';
+import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { fleetVehicles, fleetFuelLogs, carpoolTrips, schoolTrips, airTravelRecords } from '../data/transportation.js';
 import { staff } from '../data/staff.js';
 import { getFactor } from '../data/emissionFactors.js';
@@ -61,6 +62,30 @@ export default function Transportation() {
         { label: 'Air travel', value: airMt.toFixed(1), unit: 'mtCO₂e', accent: '#ef4444', note: `${airTravelRecords.length} flight records` },
         { label: 'School trips (ground)', value: schoolTripMt.toFixed(2), unit: 'mtCO₂e', accent: '#fbbf24' },
       ]} />
+
+      <ModuleSection
+        title="Carpool savings — last 60 days"
+        hint="Daily kg CO₂e avoided by people doubling up. Weekends drop to zero because logged trips are commute-shaped."
+      >
+        <TimeSeriesChart
+          data={(() => {
+            // Roll up carpoolTrips by date.
+            const byDay = {};
+            for (const t of carpoolTrips) {
+              byDay[t.date] = (byDay[t.date] || 0) + t.estimatedKgCO2eAvoided;
+            }
+            return Object.entries(byDay)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([date, v]) => ({ t: date, v }));
+          })()}
+          unit="kg / day"
+          color="#86efac"
+          fill="rgba(134, 239, 172, 0.18)"
+          width={900}
+          height={200}
+          title="Daily kg CO₂e avoided"
+        />
+      </ModuleSection>
 
       <ModuleSection title="Fleet vehicles">
         <table style={styles.table}>

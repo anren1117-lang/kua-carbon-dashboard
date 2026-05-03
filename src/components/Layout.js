@@ -14,6 +14,10 @@ const topItems = [
   { to: '/hotspots',  label: 'Hotspots' },
   { to: '/plan',      label: 'Plan' },         // Goals + Actions combined
   { to: '/buildings', label: 'Buildings' },
+  { to: '/scope-1',   label: 'Scope 1' },
+  { to: '/scope-2',   label: 'Scope 2' },
+  { to: '/scope-3',   label: 'Scope 3' },
+  { to: '/sinks-os',  label: 'Sinks' },
   { to: '/methodology', label: 'Methodology' },
   { to: '/report',    label: 'Report' },
   // /lessons (the published catalog) is reachable via the Learn portal
@@ -29,11 +33,7 @@ const categoryItems = [
   { to: '/drawdown',       label: 'Drawdown — Renewables + Sinks' },
   { to: '/credits',        label: 'Carbon Credits' },
   { to: '/scenarios',      label: 'Scenarios' },
-  { to: '/scope-1',        label: 'Scope 1 detail' },
-  { to: '/scope-2',        label: 'Scope 2 detail' },
-  { to: '/scope-3',        label: 'Scope 3 detail' },
   { to: '/renewables-os',  label: 'Renewables (standalone)' },
-  { to: '/sinks-os',       label: 'Sinks (standalone)' },
   { to: '/goals',          label: 'Goals (standalone)' },
   { to: '/actions',        label: 'Actions (standalone)' },
   { to: '/trends',         label: 'Trend Builder' },

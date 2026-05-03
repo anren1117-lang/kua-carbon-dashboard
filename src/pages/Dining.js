@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { diningMenuItems, diningVendors, ingredientPurchases, foodWasteLogs, menuScenarios } from '../data/dining.js';
 import { getFactor } from '../data/emissionFactors.js';
 
@@ -141,6 +142,17 @@ export default function Dining() {
           <WasteCell label="Post-consumer" value={wasteSummary.post} color="#ef4444" />
           <WasteCell label="Composted" value={wasteSummary.compost} color="#22c55e" />
           <WasteCell label="Landfilled" value={wasteSummary.landfill} color="#6b7280" />
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <TimeSeriesChart
+            data={foodWasteLogs.map((w) => ({ t: w.date, v: w.preConsumerKg + w.postConsumerKg }))}
+            unit="kg / day"
+            color="#fbbf24"
+            fill="rgba(251, 191, 36, 0.15)"
+            width={900}
+            height={200}
+            title="Daily food waste (kitchen + plate-scrape combined)"
+          />
         </div>
       </ModuleSection>
 
