@@ -32,34 +32,58 @@ node server.js    # http://localhost:3001
 
 ## Module map
 
-22 routes plus the existing admin tree. Every OS module reads from
-`src/data/` via the utilities in `src/utils/`, and every meter-driven
-view goes through the adapter at `src/adapters/meter/`.
+The nav is structured into three groups, surfaced in the public Layout:
 
+- **Top nav** — the audience-agnostic core (Overview, Executive, Hotspots, Plan, Buildings, Methodology, Report).
+- **Categories dropdown** — every source-specific page (Dining, Transport, Waste, Procurement, Drawdown, Credits, Scenarios, the Scope-N detail pages, plus standalone Goals/Actions/Renewables/Sinks/Trends).
+- **Right-side portals** — Learn, Ask, Teacher, Admin. Each is its own audience and its own UI pattern.
+
+Every OS module reads from `src/data/` via the utilities in `src/utils/`,
+and every meter-driven view goes through the adapter at `src/adapters/meter/`.
+
+| Route               | Purpose |
+|---------------------|---------|
+**Public**
 | Route               | Purpose |
 |---------------------|---------|
 | `/`                 | Public homepage (NetEstimate, scope donut, peer comparison, signposts) |
 | `/executive`        | Executive Dashboard — top metrics from every module + carbon equivalents |
-| `/report`           | Annual Report — printable trustee-facing summary (window.print() ready) |
+| `/report`           | Annual Report — printable trustee-facing summary |
 | `/hotspots`         | Ranked highest-emitting buildings + categories with severity badges |
+| `/plan`             | **Combined** — Goals & Targets + Reduction Actions, tabbed |
 | `/buildings`        | All buildings, sortable; per-building drill-down with live API + CSV download |
-| `/trends`           | Trend Builder — meter × window × interval time-series chart with hover tooltip |
+| `/methodology`      | Methodology |
+
+**Categories** (under the Categories dropdown)
+| Route               | Purpose |
+|---------------------|---------|
 | `/dining`           | Meal-category emissions, supplier ranking, food-waste, menu-scenario picker |
 | `/transportation`   | Fleet, carpool savings, air travel, school trips, faculty/staff commute mix |
 | `/waste`            | Waste streams + diversion rate + monthly trend |
 | `/procurement`      | Spend-based Scope-3 Cat-1 estimates by category |
-| `/renewables-os`    | Solar generation, exports, avoided emissions, future build-out roadmap |
-| `/sinks-os`         | Forest stand inventory, soil sampling program, sequestration methodology |
-| `/goals`            | Reduction targets with linear trajectories and on-track/lagging/off-track |
-| `/actions`          | AI Carbon Advisor v1 — rule-based ranking of reduction actions |
-| `/challenges`       | Dorm-level student leaderboard (privacy-by-design, opt-in) |
-| `/teacher`          | Lesson modules, class progress, auto-generated discussion prompts |
+| `/drawdown`         | **Combined** — Renewables + Sinks, tabbed |
+| `/credits`          | Carbon credits |
+| `/scenarios`        | What-if scenarios |
+| `/scope-1` `/scope-2` `/scope-3` | Pre-existing scope-detail pages |
+| `/goals` `/actions` `/renewables-os` `/sinks-os` `/trends` | Standalone routes still reachable |
+
+**Teacher portal** (`/teacher` is the hub)
+| Route               | Purpose |
+|---------------------|---------|
+| `/teacher`          | Portal home — cards linking to all classroom-facing tools |
+| `/teacher/lessons`  | Lesson modules, class progress, auto-generated discussion prompts |
 | `/chatbot`          | Carbon Learning Chatbot (rule-based; LLM-grounded when API key set) |
-| `/data-admin`       | Adapter status, live health probe, CSV upload, factor registry, meter quality |
-| `/scope-1` … `/sinks` `/credits` `/scenarios` `/methodology` | Pre-existing scope-detail pages |
 | `/learn`            | Self-paced learning agent (multi-path quizzes) |
+| `/challenges`       | Dorm-level student leaderboard (privacy-by-design, opt-in) |
+
+**Admin & Ops portal** (`/admin` is the hub)
+| Route               | Purpose |
+|---------------------|---------|
+| `/admin`            | Portal home — cards linking to Data Admin, Trends, the structured CRUD tree, and live record counts |
+| `/data-admin`       | Adapter status, live health probe, CSV upload, factor registry, meter quality |
+| `/admin/scope-1` `/scope-2` `/scope-3` `/renewables` `/sinks` `/methodology` `/framework` `/ai-ingestion` | Structured CRUD admin tree |
+| `/admin/legacy`     | Original password-gated admin portal |
 | `/ask`              | Free-form environmental Q&A (Anthropic API + web search) |
-| `/admin`            | Password-gated CRUD admin |
 
 ---
 
