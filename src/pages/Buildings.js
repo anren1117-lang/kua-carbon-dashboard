@@ -5,6 +5,8 @@ import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
+import { bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { Sparkline } from '../components/Sparkline.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 
@@ -263,6 +265,7 @@ export default function BuildingsPage() {
                       {b.avgVoltage != null && <Field label="Avg voltage" value={`${b.avgVoltage} V`} />}
                       {b.bmsNumber != null && <Field label="Distech BMS number" value={`#${b.bmsNumber}`} />}
                     </div>
+                    <BmsExportPanel buildingId={b.id} />
                     <LivePanel buildingId={b.id} />
                   </div>
                 )}
@@ -302,6 +305,45 @@ function Field({ label, value }) {
     <div style={styles.field}>
       <span style={styles.fieldLabel}>{label}</span>
       <span style={styles.fieldValue}>{value}</span>
+    </div>
+  );
+}
+
+function BmsExportPanel({ buildingId }) {
+  // Look up which PM devices are mapped to this building, sum their
+  // daily kWh series, render as a sparkline + total. Renders nothing
+  // when no PM is mapped — keeps the row clean for un-mapped buildings.
+  const map = getBmsMeterMap();
+  const meterIds = Object.entries(map).filter(([, b]) => b === buildingId).map(([m]) => m);
+  if (meterIds.length === 0) return null;
+  const meters = meterIds.map((id) => bmsExportMeters.find((m) => m.id === id)).filter(Boolean);
+  if (meters.length === 0) return null;
+
+  const dailyMap = new Map();
+  for (const m of meters) {
+    for (const d of (m.daily || [])) {
+      dailyMap.set(d.date, (dailyMap.get(d.date) || 0) + d.kwh);
+    }
+  }
+  const daily = Array.from(dailyMap.entries()).sort().map(([date, kwh]) => ({ value: +kwh.toFixed(1), measured: true, date }));
+  const totalKwh = daily.reduce((s, d) => s + d.value, 0);
+  const peakKw = Math.max(...meters.map((m) => m.peakKw || 0));
+
+  return (
+    <div style={styles.bmsPanel}>
+      <div style={styles.bmsHeader}>
+        <ProvenancePill provenance="measured" />
+        <span style={styles.bmsTitle}>BMS export · last 30 days</span>
+        <span style={styles.bmsMeta}>{meterIds.length} mapped meter{meterIds.length === 1 ? '' : 's'}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Sparkline data={daily} color="#22c55e" fill="rgba(34, 197, 94, 0.18)" width={260} height={48} strokeWidth={2} showLast />
+        <div style={{ fontSize: 12, color: '#cbd5e1' }}>
+          <div><strong>{Math.round(totalKwh).toLocaleString()}</strong> kWh in window</div>
+          <div>peak <strong>{peakKw}</strong> kW</div>
+          <div style={{ color: '#64748b' }}>via {meterIds.join(', ')}</div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -374,6 +416,12 @@ const styles = {
   qualityFooter: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6 },
   qualityMethodLine: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
   qualityMethodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
+  bmsPanel: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #22c55e', borderRadius: 6 },
+  bmsHeader: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' },
+  bmsTitle: { fontSize: 12, color: '#e5e7eb', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 },
+  bmsMeta: { fontSize: 11, color: '#94a3b8' },
+
 
 
   filterRow: { display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' },

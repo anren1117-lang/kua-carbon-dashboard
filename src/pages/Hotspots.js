@@ -2,6 +2,7 @@ import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
+import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { reductionActions } from '../data/reductionActions.js';
@@ -114,6 +115,54 @@ export default function Hotspots() {
           title={measuredMonthCount > 0 ? `Jan → Dec, monthly mtCO₂e (${measuredMonthCount} measured + ${12 - measuredMonthCount} projected)` : 'Jan → Dec, monthly mtCO₂e (all projected)'}
         />
       </ModuleSection>
+
+      {(() => {
+        // Build a campus-daily series from the parsed BMS export. PM_03
+        // is the largest single MainFeed in the export (35,472 kWh over
+        // 30 days), used here as a proxy for the campus daily pattern.
+        // When more PM devices are mapped to buildings, this can sum
+        // across all the mapped main feeds for a proper campus total.
+        const PM_KEY = 'PM_03_MainFeed';
+        const meter = bmsExportMeters.find((m) => m.id === PM_KEY);
+        if (!meter || !meter.daily?.length) return null;
+        const dailySeries = meter.daily.map((d) => ({
+          t: d.date,
+          v: +(d.kwh * KG_PER_KWH_ISO_NE / 1000).toFixed(3), // mtCO₂e
+          measured: true,
+        }));
+        const totalKwh = meter.daily.reduce((s, d) => s + d.kwh, 0);
+        const totalMt  = totalKwh * KG_PER_KWH_ISO_NE / 1000;
+        return (
+          <ModuleSection
+            title="Daily emissions — BMS export window"
+            hint={`Real measured daily data from the parsed Distech Eclypse Meter Trends export. Source: ${PM_KEY}. ${meter.daily.length} days of measured data, ${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}.`}
+          >
+            <div style={hsStyles.trendProv}>
+              <div style={hsStyles.trendProvRow}>
+                <ProvenancePill provenance="measured" />
+                <span style={hsStyles.trendProvLabel}>{meter.daily.length} days · {Math.round(totalKwh).toLocaleString()} kWh · {totalMt.toFixed(1)} mtCO₂e</span>
+              </div>
+              <div style={hsStyles.trendMethod}>
+                <span style={hsStyles.trendMethodLabel}>Today:</span>
+                Daily kWh totals from the parsed BMS export ({PM_KEY} cumulative kWh diffs) × ISO-NE 2024 grid factor (~0.235 kg/kWh effective). Solid dots — every point is measured.
+              </div>
+              <div style={hsStyles.trendMethod}>
+                <span style={hsStyles.trendMethodLabel}>Target:</span>
+                Once more PM main-feed devices are mapped to buildings on /admin/bms-export, this series sums across ALL main feeds for a true campus total. Today it uses just PM_03 as a proxy.
+              </div>
+            </div>
+            <TimeSeriesChart
+              data={dailySeries}
+              unit="mtCO₂e"
+              color="#22c55e"
+              fill="rgba(34, 197, 94, 0.12)"
+              width={900}
+              height={200}
+              title={`Daily mtCO₂e from PM_03_MainFeed (measured)`}
+            />
+          </ModuleSection>
+        );
+      })()}
 
       <ModuleSection
         title="Highest-emitting buildings"
