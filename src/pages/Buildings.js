@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
-import { buildings } from '../data/buildings.js';
+import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
@@ -47,7 +47,7 @@ export default function BuildingsPage() {
 
   const rows = useMemo(() => {
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
-    return buildings.map((b) => {
+    return getEffectiveBuildings().map((b) => {
       const snap = snapshotById[b.id];
       const kwh = snap?.energyUsedKwh ?? 0;
       const mt = (kwh * KG_PER_KWH) / 1000;
