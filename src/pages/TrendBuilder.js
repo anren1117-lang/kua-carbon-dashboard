@@ -55,7 +55,7 @@ export default function TrendBuilder() {
           t: r.timestamp,
           v: r.value,
           source: r.source,
-          measured: r.source === 'bms' || r.source === 'csv',
+          measured: r.source === 'bms' || r.source === 'csv' || r.source === 'bms_export',
         }));
         setData({ series, count: j.count });
         setLoading(false);
@@ -168,7 +168,7 @@ export default function TrendBuilder() {
           const counts = series.reduce((acc, r) => { acc[r.source || 'unknown'] = (acc[r.source || 'unknown'] || 0) + 1; return acc; }, {});
           const total = series.length;
           const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-          const provenance = dominant === 'bms' || dominant === 'csv' ? 'measured' : dominant === 'mock' ? 'estimated' : 'estimated';
+          const provenance = (dominant === 'bms' || dominant === 'csv' || dominant === 'bms_export') ? 'measured' : 'estimated';
           return (
             <>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -185,6 +185,7 @@ export default function TrendBuilder() {
                   {dominant === 'mock' && 'Readings are deterministically generated from each meter\'s annual baseline shaped by day-of-week, month-of-year, and hour-of-day patterns. Synthetic — useful for shaping the UI but not for real decisions.'}
                   {dominant === 'bms' && 'Live readings pulled from KUA\'s on-campus Distech Eclypse relay. Each point is a real meter sample at the requested interval.'}
                   {dominant === 'csv' && 'Readings imported from a CSV upload — typically utility bills or fuel-delivery invoices reconciled against the BMS.'}
+                  {dominant === 'bms_export' && 'Synthesized hourly readings from the parsed Distech Eclypse Meter Trends CSV — daily kWh totals are direct measurements, the hour-of-day distribution is averaged across the export window. Map PM devices to buildings on /admin/bms-export.'}
                   {!dominant && 'No data in the active window.'}
                 </div>
                 <div style={{ marginTop: 6 }}>
