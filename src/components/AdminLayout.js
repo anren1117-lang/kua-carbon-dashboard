@@ -5,6 +5,7 @@ const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/plan-agent', label: 'Plan Agent' },
   { to: '/admin/facilities', label: 'Facilities' },
+  { to: '/admin/bms-export', label: 'BMS Export' },
   { to: '/admin/framework', label: 'Framework' },
   { to: '/admin/ai-ingestion', label: 'AI Agent' },
   { to: '/admin/scope-1', label: 'Scope 1' },

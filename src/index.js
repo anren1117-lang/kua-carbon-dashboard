@@ -55,6 +55,7 @@ const AdminFramework = lazy(() => import('./pages/admin/AdminFramework'));
 const AdminActions = lazy(() => import('./pages/admin/AdminActions'));
 const AdminPlanAgent = lazy(() => import('./pages/admin/AdminPlanAgent'));
 const AdminFacilities = lazy(() => import('./pages/admin/AdminFacilities'));
+const AdminBmsExport = lazy(() => import('./pages/admin/AdminBmsExport'));
 const AdminAIIngestion = lazy(() => import('./pages/admin/AdminAIIngestion'));
 const HeatingOil = lazy(() => import('./pages/admin/scope1/HeatingOil'));
 const Propane = lazy(() => import('./pages/admin/scope1/Propane'));
@@ -165,6 +166,7 @@ root.render(
             <Route path="actions" element={<AdminActions />} />
             <Route path="plan-agent" element={<AdminPlanAgent />} />
             <Route path="facilities" element={<AdminFacilities />} />
+            <Route path="bms-export" element={<AdminBmsExport />} />
             <Route path="legacy" element={<AdminPortal />} />
           </Route>
         </Routes>
