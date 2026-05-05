@@ -1032,7 +1032,7 @@ const paths = [
         question: 'Annual electricity production:',
         options: [
           { text: '~24,500 kWh', correct: false, explanation: 'Too low by an order of magnitude.' },
-          { text: '~245,000 kWh', correct: true, explanation: 'Right. 200 × 8,760 × 0.14 = 245,280 kWh. About 10% of KUA\'s total annual electricity from one rooftop.' },
+          { text: '~245,000 kWh', correct: true, explanation: 'Right. 200 × 8,760 × 0.14 = 245,280 kWh. About 15% of KUA\'s total annual electricity from one rooftop.' },
           { text: '~1.75M kWh', correct: false, explanation: 'Forgot the capacity factor — that\'s 200 kW × 8,760 hr without the 14% adjustment.' },
           { text: '~70,000 kWh', correct: false, explanation: 'You may have used a 4% capacity factor instead of 14%. NH solar typically lands at 13-16%.' },
         ],

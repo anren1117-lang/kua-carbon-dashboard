@@ -4,7 +4,7 @@ import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E, grid
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
-import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
+import { reductionTargets } from '../data/targets.js';
 import { reductionActions } from '../data/reductionActions.js';
 import { rankActions } from '../utils/hotspots.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
@@ -145,32 +145,34 @@ export default function AnnualReport() {
             <tr>
               <th style={styles.th}>Target</th>
               <th style={{ ...styles.th, textAlign: 'right' }}>Baseline</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Target {`(${''})`}</th>
+              <th style={{ ...styles.th, textAlign: 'right' }}>Target</th>
               <th style={{ ...styles.th, textAlign: 'right' }}>Status</th>
             </tr>
           </thead>
           <tbody>
-            {targets.map((t) => {
-              const expected = targetTrajectoryAt(t, year);
-              const status = trajectoryStatus(t, t.baselineValue, year); // baseline as placeholder until live measured value lands
-              return (
-                <tr key={t.id}>
-                  <td style={styles.td}>{t.title}</td>
-                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    {Math.round(t.baselineValue).toLocaleString()} <span style={{ color: '#64748b' }}>({t.baselineYear})</span>
-                  </td>
-                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    −{t.percentReduction}% by {t.targetYear}
-                  </td>
-                  <td style={{ ...styles.td, textAlign: 'right', textTransform: 'capitalize' }}>{status.replace('_', ' ')}</td>
-                </tr>
-              );
-            })}
+            {targets.map((t) => (
+              // Don't print a trajectory status: the actual measured value
+              // for each scope only appears once a full year of measured
+              // data has been ingested, and using the baseline as a stand-in
+              // makes every target read as "off track" (the trajectory has
+              // moved but the baseline hasn't). "Awaiting measurement" is
+              // more honest until live measured data lands.
+              <tr key={t.id}>
+                <td style={styles.td}>{t.title}</td>
+                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  {Math.round(t.baselineValue).toLocaleString()} <span style={{ color: '#64748b' }}>({t.baselineYear})</span>
+                </td>
+                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  −{t.percentReduction}% by {t.targetYear}
+                </td>
+                <td style={{ ...styles.td, textAlign: 'right', color: '#94a3b8', fontStyle: 'italic' }}>Awaiting measurement</td>
+              </tr>
+            ))}
           </tbody>
         </table>
         <p style={{ ...styles.body, marginTop: 12, color: '#475569', fontStyle: 'italic' }}>
-          Targets are preliminary pending board approval. Trajectory status is computed
-          against the linear path between baseline and target year.
+          Targets are preliminary pending board approval. On-track / lagging / off-track
+          status will print once a full measured-year value is available for each scope.
         </p>
       </Section>
 
