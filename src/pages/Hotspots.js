@@ -11,7 +11,8 @@ import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
-import { COMPOSED_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
+import { COMPOSED_ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
 // magnitude rollup (per-building electricity) with a category-level summary
@@ -42,7 +43,11 @@ export default function Hotspots() {
     kwh: bmsByBuilding[b.id] ?? snapshotByBuilding[b.id] ?? 0,
     source: bmsByBuilding[b.id] !== undefined ? 'bms' : (snapshotByBuilding[b.id] !== undefined ? 'snapshot' : 'none'),
   })).filter((b) => b.kwh > 0);
-  const totalKwh = buildingsKwh.reduce((s, b) => s + b.kwh, 0);
+  // Sum of buildings is what we have data for; canonical campus total
+  // comes from composedYtd. They differ because not every building is
+  // mapped + in envysionSnapshot. Show both honestly.
+  const sumOfBuildings = buildingsKwh.reduce((s, b) => s + b.kwh, 0);
+  const totalKwh = COMPOSED_ANNUAL_KWH;
   const ranked = buildingHotspots(buildingsKwh, totalKwh, KG_PER_KWH_ISO_NE);
 
   // Categories rolled up from the same kWh source the rank uses.
@@ -62,7 +67,8 @@ export default function Hotspots() {
 
   const topActions = rankActions(reductionActions).slice(0, 5);
 
-  const totalMt = (totalKwh * KG_PER_KWH_ISO_NE) / 1000;
+  const totalMt = GRID_MIX_ANNUAL_MTCO2E;
+  const buildingsCoverage = (sumOfBuildings / totalKwh) * 100;
   const top3Share = ranked.slice(0, 3).reduce((s, h) => s + h.percentOfTotal, 0);
 
   // Annual emissions trend.
@@ -95,8 +101,9 @@ export default function Hotspots() {
       subtitle="Where emissions are concentrated, ordered by magnitude. Top of the list is where any reduction effort gets the most leverage per hour spent."
     >
       <MetricGrid metrics={[
-        { label: 'Total electricity', value: Math.round(totalKwh).toLocaleString(), unit: 'kWh/yr', accent: '#fbbf24' },
+        { label: 'Campus electricity', value: Math.round(totalKwh).toLocaleString(), unit: 'kWh/yr', accent: '#fbbf24', note: 'Year 1 from composedYtd' },
         { label: 'Equivalent emissions', value: totalMt.toFixed(1), unit: 'mtCO₂e', accent: '#ef4444' },
+        { label: 'Building-level coverage', value: `${buildingsCoverage.toFixed(0)}%`, accent: buildingsCoverage > 80 ? '#22c55e' : '#f59e0b', note: `${Math.round(sumOfBuildings).toLocaleString()} kWh sum of ranked rows below` },
         { label: 'Top 3 buildings', value: `${top3Share.toFixed(0)}%`, unit: 'of campus', accent: '#22d3ee', note: 'Concentration of impact' },
         { label: 'Open actions', value: reductionActions.filter((a) => a.status === 'proposed' || a.status === 'in_progress').length, unit: 'in queue', accent: '#86efac' },
       ]} />
