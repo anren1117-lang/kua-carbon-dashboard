@@ -144,14 +144,24 @@ for (const [meterId, cols] of meters) {
   // a unidirectional meter; for bidirectional meters they're the
   // parasitic load and we count them with sign flipped if we want
   // to track parasitic separately).
+  // Keep hour-of-day and date-key in the SAME timezone. The earlier
+  // version mixed: hourOfDay used local time (.getHours) while dateKey
+  // used UTC (.toISOString().slice(0,10)). On NH-local timestamps that
+  // shifts the daily rollup by ~4-5 hours and so the late-evening
+  // hours of one day land in the next day's daily bucket — daily totals
+  // visibly drift from what a building manager reads off the BMS.
+  // Fixed by using local-date components for both axes.
   const intervals = [];
   for (const d of allDiffs) {
     const corrected = d.dKwh * signFlip; // positive = magnitude in the dominant direction
     if (corrected < -0.1) continue; // small reversal - skip as noise
+    const yyyy = d.t.getFullYear();
+    const mm   = String(d.t.getMonth() + 1).padStart(2, '0');
+    const dd   = String(d.t.getDate()).padStart(2, '0');
     intervals.push({
       t: d.t,
       hourOfDay: d.t.getHours(),
-      dateKey: d.t.toISOString().slice(0, 10),
+      dateKey: `${yyyy}-${mm}-${dd}`,
       kwh: Math.max(0, corrected),
       kw:  Math.max(0, corrected) / d.dt,
       peakKw: d.peakKw,
