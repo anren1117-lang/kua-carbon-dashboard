@@ -67,11 +67,24 @@ export function Scope2BmsInsights() {
     }
     // hourly[h] is now the sum-across-feeds mean kW for that hour.
 
-    // Solar generation: three feeds in the export.
-    const solarFeeds = bmsExportMeters.filter((m) => isSolarFeed(m.id));
+    // Solar generation: only count feeds whose CUMULATIVE COUNTER
+    // DECREASES (direction === 'generation'). A feed labeled "Solar"
+    // whose counter increases is either a stuck meter or a backwards-
+    // installed CT — counting its kWh as generation would inflate the
+    // offset. Excluded feeds are surfaced separately for Facilities.
+    const solarFeedsAll = bmsExportMeters.filter((m) => isSolarFeed(m.id));
+    const solarFeeds = solarFeedsAll.filter((m) => m.direction === 'generation');
+    const solarFeedsBroken = solarFeedsAll.filter((m) => m.direction !== 'generation');
     const solarKwh = solarFeeds.reduce((s, m) => s + m.totalKwh, 0);
     const solarPeakKw = solarFeeds.reduce((s, m) => Math.max(s, m.peakKw), 0);
     const solarOffsetPct = totalConsumptionKwh > 0 ? (solarKwh / totalConsumptionKwh) * 100 : 0;
+
+    // Meter-health surfaces: stuck (no counter movement) + CT-backwards
+    // (counter decreases on a meter that physically can't be generating
+    // — e.g. Kurth Dorm Main, EV Charger, Dryer feeds).
+    const stuckMeters = bmsExportMeters.filter((m) => m.direction === 'stuck');
+    const suspectCtMeters = bmsExportMeters.filter((m) =>
+      m.direction === 'generation' && !isSolarFeed(m.id));
 
     // Total measured emissions in window.
     const totalMt = (totalConsumptionKwh - solarKwh) * KG_PER_KWH / 1000;
@@ -95,7 +108,8 @@ export function Scope2BmsInsights() {
       peakHourIdx, baseHourIdx, peakToBaseRatio,
       consumptionMeterCount,
       totalConsumptionKwh,
-      solarFeeds,
+      solarFeeds, solarFeedsBroken,
+      stuckMeters, suspectCtMeters,
       solarKwh, solarPeakKw, solarOffsetPct,
       totalMt,
       topMeters,
@@ -210,12 +224,13 @@ export function Scope2BmsInsights() {
       </section>
 
       {/* Solar offset breakout */}
-      {insights.solarFeeds.length > 0 && (
+      {(insights.solarFeeds.length > 0 || insights.solarFeedsBroken.length > 0) && (
         <section style={styles.card}>
           <h3 style={styles.cardTitle}>On-campus solar offset</h3>
           <p style={styles.cardHint}>
-            {insights.solarFeeds.length} solar feed{insights.solarFeeds.length === 1 ? '' : 's'} metered in the BMS export.
-            Together they offset {insights.solarOffsetPct.toFixed(1)}% of the campus consumption in this window.
+            {insights.solarFeeds.length} of {insights.solarFeeds.length + insights.solarFeedsBroken.length} metered solar feed{(insights.solarFeeds.length + insights.solarFeedsBroken.length) === 1 ? '' : 's'} are reporting real generation
+            (cumulative-kWh counter decreasing as the inverter exports). Together they offset {insights.solarOffsetPct.toFixed(2)}% of the campus consumption in this window.
+            {insights.solarFeedsBroken.length > 0 && <> {insights.solarFeedsBroken.length} feed{insights.solarFeedsBroken.length === 1 ? ' is' : 's are'} excluded — see "Solar feed health" below.</>}
           </p>
           <div style={styles.solarGrid}>
             {insights.solarFeeds.map((s) => {
@@ -237,9 +252,73 @@ export function Scope2BmsInsights() {
               );
             })}
           </div>
+          {insights.solarFeedsBroken.length > 0 && (
+            <div style={{ marginTop: 14, padding: '12px 14px', background: '#3a0d12', border: '1px solid #7f1d1d', borderRadius: 6 }}>
+              <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>
+                Solar feed health — {insights.solarFeedsBroken.length} excluded
+              </div>
+              {insights.solarFeedsBroken.map((m) => (
+                <div key={m.id} style={{ fontSize: 12, color: '#fca5a5', marginBottom: 4 }}>
+                  <code style={{ color: '#fca5a5' }}>{m.id}</code>
+                  {' — '}
+                  {m.direction === 'stuck' && <>cumulative-kWh counter STUCK at {m.signedCumulative} the entire window. Meter not reporting; service ticket needed.</>}
+                  {m.direction === 'consumption' && <>NET CONSUMER (+{m.totalKwh} kWh, counter increases at night more than during day). Either the CT clamp is backwards or this isn't actually a solar feed. Field-verify.</>}
+                </div>
+              ))}
+            </div>
+          )}
           <div style={styles.todayTarget}>
-            <div><span style={styles.ttLabel}>Today:</span> Real measured generation from the existing arrays. {insights.solarOffsetPct < 5 ? 'Offset is small — Phase-2 capacity expansion has high marginal value.' : 'Meaningful offset already — additional capacity has decreasing marginal value.'}</div>
-            <div><span style={styles.ttLabel}>Target:</span> Update SOLAR_ANNUAL_KWH on the Executive page to use this measured 30-day generation × 12 (annualized), flips that figure from cited → measured. Track variance vs NREL PVWatts prediction for inverter health.</div>
+            <div><span style={styles.ttLabel}>Today:</span> Real measured generation from {insights.solarFeeds.length} working array{insights.solarFeeds.length === 1 ? '' : 's'}. {insights.solarOffsetPct < 1 ? 'Offset is tiny — Phase-2 capacity expansion has very high marginal value.' : insights.solarOffsetPct < 5 ? 'Offset is small — Phase-2 capacity expansion has high marginal value.' : 'Meaningful offset already — additional capacity has decreasing marginal value.'}</div>
+            <div><span style={styles.ttLabel}>Target:</span> Resolve broken solar feeds first (stuck meter + suspect-CT feed) before treating the offset figure as a denominator. Once all 3 arrays report cleanly, update SOLAR_ANNUAL_KWH on the Executive page to use this measured 30-day generation × 12 (seasonally-adjusted) — flips that figure from cited → measured.</div>
+          </div>
+        </section>
+      )}
+
+      {(insights.stuckMeters.length > 0 || insights.suspectCtMeters.length > 0) && (
+        <section style={styles.card}>
+          <h3 style={styles.cardTitle}>Meter health — Facilities action items</h3>
+          <p style={styles.cardHint}>
+            Discovered by reading the cumulative-kWh counter direction across the 30-day window. Two failure
+            modes detected: stuck counters (no movement) and counters that decrease on a meter that physically
+            can't be generating energy — typical of a CT clamp installed backwards.
+          </p>
+
+          {insights.stuckMeters.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>
+                Stuck — {insights.stuckMeters.length} meter{insights.stuckMeters.length === 1 ? '' : 's'} not reporting
+              </div>
+              <div style={styles.subList}>
+                {insights.stuckMeters.map((m) => (
+                  <div key={m.id} style={{ ...styles.subRow, gridTemplateColumns: '1fr 140px' }}>
+                    <code style={styles.subId}>{m.id}</code>
+                    <span style={{ ...styles.subPeak, color: '#fca5a5' }}>stuck @ {m.signedCumulative}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {insights.suspectCtMeters.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>
+                Suspect CT orientation — {insights.suspectCtMeters.length} non-solar meter{insights.suspectCtMeters.length === 1 ? '' : 's'} reading as generation
+              </div>
+              <div style={styles.subList}>
+                {insights.suspectCtMeters.map((m) => (
+                  <div key={m.id} style={{ ...styles.subRow, gridTemplateColumns: '1fr 100px 140px' }}>
+                    <code style={styles.subId}>{m.id}</code>
+                    <span style={styles.subPeak}>{m.totalKwh.toLocaleString()} kWh</span>
+                    <span style={{ ...styles.subPeak, color: '#fbbf24' }}>↓ counter decreasing</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={styles.todayTarget}>
+            <div><span style={styles.ttLabel}>Why this matters:</span> Until these are resolved, the kWh and mtCO₂e totals downstream of these meters are wrong. Stuck meters drop their loads from the campus total; backwards-CT meters either negate or double-count their loads depending on how they aggregate.</div>
+            <div><span style={styles.ttLabel}>Action:</span> Walk the panels with this list. For stuck meters: check power, communications, and meter status LEDs. For suspect-CT meters: verify the CT clamp's arrow points TOWARD the load (away from the source); flip if reversed. Re-run the parser after fixing — the dashboard re-derives every downstream figure.</div>
           </div>
         </section>
       )}
@@ -645,15 +724,12 @@ function buildTimePatterns() {
 }
 
 function DailyView({ data }) {
-  // Cap the y-axis at the 95th percentile × 1.15 so a single anomaly
-  // (e.g. Apr 20's 17,251 kWh CT-calibration spike) doesn't crush the
-  // scale and make every other bar look tiny. Anomaly bars get rendered
-  // pegged at the cap with a "↑" indicator so the chart stays readable
-  // while still flagging the outlier.
-  const sortedKwh = [...data.daily.map((d) => d.kwh)].sort((a, b) => a - b);
-  const p95 = sortedKwh[Math.floor(sortedKwh.length * 0.95)];
-  const trueMax = Math.max(...data.daily.map((d) => d.kwh));
-  const max = Math.max(p95 * 1.15, trueMax * 0.6); // soft cap
+  // Earlier versions flagged "anomalies" (days above mean + 2.5σ) as
+  // red bars. Almost all of those were artifacts of how cumulative-kWh
+  // diffs aggregated across CT-backwards meters, NOT real load events.
+  // Now that the parser detects backwards CTs and stuck meters
+  // explicitly, the daily chart uses straight max-of-data scaling.
+  const max = Math.max(...data.daily.map((d) => d.kwh));
   const peakDay = data.daily.reduce((p, d) => (d.kwh > p.kwh ? d : p), data.daily[0]);
   const lowDay = data.daily.reduce((p, d) => (d.kwh < p.kwh ? d : p), data.daily[0]);
   const weekdayMean = data.daily.filter((d) => !d.isWeekend).reduce((s, d) => s + d.kwh, 0) / data.daily.filter((d) => !d.isWeekend).length;
@@ -663,45 +739,34 @@ function DailyView({ data }) {
   return (
     <>
       <div style={styles.dailyChart}>
-        {data.daily.map((d) => {
-          const isAnomaly = data.anomalies.includes(d);
-          const capped = d.kwh > max; // anomaly pegged at cap
-          const heightPct = Math.min(100, (d.kwh / max) * 100);
-          return (
-            <div key={d.date} style={styles.dayCol}>
-              <div style={styles.dayBarTrack}>
-                <div
-                  style={{
-                    ...styles.dayBar,
-                    height: `${heightPct}%`,
-                    background: isAnomaly ? '#ef4444' : d.isWeekend ? '#22d3ee' : '#fbbf24',
-                  }}
-                  title={`${d.date}: ${d.kwh.toLocaleString()} kWh${isAnomaly ? ' (anomaly)' : ''}${capped ? ` — capped at ${Math.round(max).toLocaleString()} for chart scale` : ''}`}
-                />
-                {capped && (
-                  <div style={{ position: 'absolute', top: 2, left: 0, right: 0, textAlign: 'center', fontSize: 10, color: '#fca5a5', fontWeight: 700, pointerEvents: 'none' }}>↑</div>
-                )}
-                <div style={{ ...styles.meanLine, bottom: `${(data.meanDaily / max) * 100}%` }} />
-              </div>
-              <div style={styles.dayDateTick}>{d.date.slice(8)}</div>
+        {data.daily.map((d) => (
+          <div key={d.date} style={styles.dayCol}>
+            <div style={styles.dayBarTrack}>
+              <div
+                style={{
+                  ...styles.dayBar,
+                  height: `${(d.kwh / max) * 100}%`,
+                  background: d.isWeekend ? '#22d3ee' : '#fbbf24',
+                }}
+                title={`${d.date}: ${d.kwh.toLocaleString()} kWh`}
+              />
+              <div style={{ ...styles.meanLine, bottom: `${(data.meanDaily / max) * 100}%` }} />
             </div>
-          );
-        })}
+            <div style={styles.dayDateTick}>{d.date.slice(8)}</div>
+          </div>
+        ))}
       </div>
       <div style={styles.legendRow}>
         <LegendDot color="#fbbf24">Weekday</LegendDot>
         <LegendDot color="#22d3ee">Weekend</LegendDot>
-        <LegendDot color="#ef4444">Anomaly</LegendDot>
-        <span style={styles.legendNote}>red dashed line = mean</span>
+        <span style={styles.legendNote}>red line = mean</span>
       </div>
       <AnalysisBox
         title="What this means"
         bullets={[
           {
             label: 'Peak day',
-            text: `${peakDay.date} at ${peakDay.kwh.toLocaleString()} kWh — ${data.anomalies.includes(peakDay)
-              ? 'flagged as a statistical anomaly (above mean + 2.5σ). Almost certainly a CT calibration blip or a counter reset on one of the 35 main+panel feeds, since neighboring days run roughly ~5,000 kWh. Worth tagging in the BMS for service. The parsed export filters peak-kW outliers per-meter at 10× mean, but the daily summed figure still picks up these one-day spikes.'
-              : `the actual highest-load day in the window. Likely driven by colder weather + full occupancy.`}.`
+            text: `${peakDay.date} at ${peakDay.kwh.toLocaleString()} kWh — the actual highest-load day in the window. Likely driven by colder weather + full occupancy.`
           },
           {
             label: 'Lowest day',
@@ -713,13 +778,10 @@ function DailyView({ data }) {
               ? `weekday mean ${Math.round(weekdayMean).toLocaleString()} kWh vs weekend mean ${Math.round(weekendMean).toLocaleString()} kWh — that's a ${weekendDip.toFixed(1)}% weekend dip. Modest, because boarder population stays on campus and dorm HVAC + always-on equipment dominate the load curve. Academic + dining cycles drive the visible swing on top of that base.`
               : `weekend load matches weekday load — heating + always-on equipment dominate, academic schedule has minimal impact. Means efficiency wins on the always-on stack (LED, AHU schedules, base-load reduction) pay off more than schedule changes.`
           },
-          ...(data.anomalies.length > 0 ? [{
-            label: `${data.anomalies.length} anomal${data.anomalies.length === 1 ? 'y' : 'ies'} detected`,
-            text: `${data.anomalies.map((a) => a.date).join(', ')} flagged as > 2.5σ above mean. Cross-check against the weather station or BMS event log; if no real event explains it, treat as sensor noise and recalibrate the affected CT clamp.`
-          }] : [{
-            label: 'No statistical anomalies',
-            text: 'Daily totals stayed within 2.5 standard deviations of the mean — the BMS measurement chain held steady across the 30-day window.'
-          }]),
+          {
+            label: 'Note on data quality',
+            text: 'Earlier versions flagged "anomaly" days here. Almost all of those were artifacts of how cumulative-kWh diffs interact with backwards-CT meters in the campus aggregate. The parser now detects those CT issues directly (see "Meter health" section above), so the daily chart no longer flags statistical outliers — the real per-meter problems get surfaced where they belong.'
+          },
         ]}
       />
     </>

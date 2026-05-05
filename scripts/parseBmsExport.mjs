@@ -111,21 +111,50 @@ for (const [meterId, cols] of meters) {
     continue;
   }
 
-  // Diff consecutive samples → interval kWh. Negative diffs mean the
-  // counter rolled over or got reset — treat those as null (skip).
-  const intervals = [];
+  // Diff consecutive samples → interval kWh. Bidirectional metering
+  // (e.g. solar inverters) reports negative diffs when generating —
+  // the magnitude is real, just signed by direction. Detect the
+  // dominant counter direction and either keep all diffs (signed) or
+  // flip sign so the magnitude stays positive.
+  const allDiffs = [];
   for (let i = 1; i < samples.length; i++) {
     const dKwh = samples[i].cumulativeKwh - samples[i - 1].cumulativeKwh;
-    if (dKwh < 0 || dKwh > 1e6) continue;
-    const dt = (samples[i].t - samples[i - 1].t) / 3600000; // hours
-    if (dt <= 0 || dt > 6) continue; // skip gaps > 6 hours
+    const dt = (samples[i].t - samples[i - 1].t) / 3600000;
+    if (dt <= 0 || dt > 6) continue;
+    if (Math.abs(dKwh) > 1e6) continue; // wild glitch only
+    allDiffs.push({ t: samples[i].t, dKwh, dt, peakKw: samples[i].peakKw });
+  }
+
+  // Direction inference: sum the signed diffs over the whole window.
+  // Negative dominant = bidirectional meter accumulating "outbound"
+  // energy as negative (generation/export). Positive dominant = normal
+  // consumption meter. Near zero = stuck/broken meter.
+  const signedTotal = allDiffs.reduce((s, d) => s + d.dKwh, 0);
+  let direction = 'consumption';   // counter increases as energy flows in
+  let signFlip = 1;
+  if (signedTotal < -10) {
+    direction = 'generation';      // counter decreases over time = exporting
+    signFlip = -1;                 // flip so |kWh| represents magnitude generated
+  } else if (Math.abs(signedTotal) < 10) {
+    direction = 'stuck';           // no meaningful counter movement
+  }
+
+  // Build interval list using the inferred direction. Skip diffs that
+  // run AGAINST the dominant direction (genuine reversals = noise for
+  // a unidirectional meter; for bidirectional meters they're the
+  // parasitic load and we count them with sign flipped if we want
+  // to track parasitic separately).
+  const intervals = [];
+  for (const d of allDiffs) {
+    const corrected = d.dKwh * signFlip; // positive = magnitude in the dominant direction
+    if (corrected < -0.1) continue; // small reversal - skip as noise
     intervals.push({
-      t:        samples[i].t,
-      hourOfDay: samples[i].t.getHours(),
-      dateKey:   samples[i].t.toISOString().slice(0, 10),
-      kwh:       dKwh,
-      kw:        dKwh / dt,         // average kW over the interval
-      peakKw:    samples[i].peakKw, // direct from PeakDemand column when available
+      t: d.t,
+      hourOfDay: d.t.getHours(),
+      dateKey: d.t.toISOString().slice(0, 10),
+      kwh: Math.max(0, corrected),
+      kw:  Math.max(0, corrected) / d.dt,
+      peakKw: d.peakKw,
     });
   }
 
@@ -155,10 +184,12 @@ for (const [meterId, cols] of meters) {
       peakKw: +d.peakKw.toFixed(2),
     }));
 
-  // Window total kWh — prefer cumulative-counter first→last delta.
-  const totalFromCumulative = +(samples[samples.length - 1].cumulativeKwh - samples[0].cumulativeKwh).toFixed(1);
+  // Window total kWh — magnitude in the dominant direction. signFlip
+  // converts a generating meter's negative cumulative-diff to a
+  // positive magnitude representing energy GENERATED.
+  const totalFromCumulative = +Math.abs(signedTotal).toFixed(1);
   const totalFromIntegration = +daily.reduce((s, d) => s + d.kwh, 0).toFixed(1);
-  const totalKwh = totalFromCumulative >= 0 ? totalFromCumulative : totalFromIntegration;
+  const totalKwh = direction === 'stuck' ? 0 : totalFromCumulative;
 
   const allKw = intervals.map((r) => r.kw);
   const avgKw  = allKw.length ? +(allKw.reduce((s, v) => s + v, 0) / allKw.length).toFixed(2) : 0;
@@ -184,6 +215,8 @@ for (const [meterId, cols] of meters) {
     daily,
     sampleCount: intervals.length,
     droppedOutliers,
+    direction,                     // 'consumption' | 'generation' | 'stuck'
+    signedCumulative: +signedTotal.toFixed(1), // raw signed diff for audit
   });
 }
 

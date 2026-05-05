@@ -55,10 +55,21 @@ const NH_MONTHLY_SHAPE = [
 ];
 const SHAPE_SUM = NH_MONTHLY_SHAPE.reduce((s, v) => s + v, 0); // ≈ 11.7
 
-// Measured April production from the BMS export — the real anchor.
-// 30-day window ≈ April. Sum of PM_15_RoofTopSolarFeed +
-// PM_15_FieldSolarFeed + PM_19_SolarFeed = 2,912 kWh.
-export const MEASURED_APRIL_KWH = 2912;
+// Measured April production from the BMS export, after correcting
+// for parser bugs and meter-health issues (see scripts/parseBmsExport.mjs):
+//   • PM_15_RoofTopSolarFeed = 1,692 kWh real generation
+//     (cumulative-kWh counter DECREASES while exporting; we take the
+//     absolute value of the signed delta as magnitude)
+//   • PM_15_FieldSolarFeed   = STUCK at -25,226 the entire window;
+//     not reporting data, excluded.
+//   • PM_19_SolarFeed        = NET CONSUMER (357 kWh, counter
+//     increasing both day and night). Either the CT clamp is backwards
+//     or this isn't actually a solar feed. Excluded from generation
+//     totals until Facilities investigates.
+// So real measured solar generation in 30 days = 1,692 kWh, ~42%
+// lower than the 2,912 kWh figure that included parasitic load
+// double-counted as generation.
+export const MEASURED_APRIL_KWH = 1692;
 const APRIL_SHARE = NH_MONTHLY_SHAPE[3] / SHAPE_SUM; // ≈ 0.101
 
 // Annual = measured April / April's share of the year.

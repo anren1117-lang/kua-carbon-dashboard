@@ -1,4 +1,4 @@
-// Auto-generated from MeterTrends_20260504_1505616.csv by scripts/parseBmsExport.mjs
+// Auto-generated from MeterTrends_20260504_2105294.csv by scripts/parseBmsExport.mjs
 // Do not edit by hand. Re-run the parser with a fresh export to update.
 //
 // Source window: 2026-04-05T04:00:00.000Z → 2026-05-04T19:00:00.000Z
@@ -6,12 +6,12 @@
 // Per-meter shape: { id, totalKwh, peakKw, avgKw, hourly[24], daily[{date,kwh,peakKw}], sampleCount }.
 
 export const BMS_EXPORT_META = {
-  "sourceFile": "MeterTrends_20260504_1505616.csv",
+  "sourceFile": "MeterTrends_20260504_2105294.csv",
   "windowStartIso": "2026-04-05T04:00:00.000Z",
   "windowEndIso": "2026-05-04T19:00:00.000Z",
   "hoursCovered": 712,
   "meterCount": 104,
-  "generatedAt": "2026-05-04T19:56:38.538Z"
+  "generatedAt": "2026-05-05T02:14:06.831Z"
 };
 
 export const bmsExportMeters = [
@@ -201,7 +201,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 35472
   },
   {
     "id": "PM_15_MainFeed",
@@ -389,7 +391,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 28424
   },
   {
     "id": "PM_21_MainFeed",
@@ -577,7 +581,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 13770
   },
   {
     "id": "PM_11_MainFeed",
@@ -765,7 +771,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 11235
   },
   {
     "id": "PM_12_MainFeed",
@@ -953,7 +961,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 10367
   },
   {
     "id": "PM_17_MainFeed",
@@ -1141,7 +1151,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 7130
   },
   {
     "id": "PM_15_M1AFeed",
@@ -1329,7 +1341,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 6373
   },
   {
     "id": "PM_20_MKPanelFeed",
@@ -1517,7 +1531,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 5134
   },
   {
     "id": "PM_01_MainFeed",
@@ -1705,7 +1721,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 5117
   },
   {
     "id": "PM_03_MP1Feed",
@@ -1893,7 +1911,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 4716
   },
   {
     "id": "PM_28_MainFeed",
@@ -2081,7 +2101,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 4057
   },
   {
     "id": "PM_02_MainFeed",
@@ -2269,7 +2291,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 4039
   },
   {
     "id": "PM_03_MPBFeed",
@@ -2457,7 +2481,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 3701
   },
   {
     "id": "PM_17_BarnFieldhouseFeed",
@@ -2645,7 +2671,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 3640
   },
   {
     "id": "PM_15_P1A_P2AFeed",
@@ -2833,7 +2861,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 3469
   },
   {
     "id": "PM_03_PPSTFeed",
@@ -3021,7 +3051,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 3043
   },
   {
     "id": "PM_12_AHU01_SF_Feed",
@@ -3209,7 +3241,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2818
   },
   {
     "id": "PM_11_LibraryPanelFeed",
@@ -3397,7 +3431,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2756
   },
   {
     "id": "PM_03_PPB1Feed",
@@ -3585,7 +3621,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2715
   },
   {
     "id": "PM_03_PPB4Feed",
@@ -3773,7 +3811,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2651
   },
   {
     "id": "PM_11_MDPFeed",
@@ -3961,7 +4001,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2642
   },
   {
     "id": "PM_12_MPP_C_Feed",
@@ -4149,195 +4191,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
-  },
-  {
-    "id": "PM_15_FieldSolarFeed",
-    "totalKwh": 2103,
-    "totalKwhCumulative": -1,
-    "totalKwhIntegrated": 2103,
-    "peakKw": 14.37,
-    "avgKw": 2.97,
-    "hourly": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      72.52,
-      0,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 2103,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 14.37
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 0,
-        "peakKw": 1.2
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 0
-      }
-    ],
-    "sampleCount": 709,
-    "droppedOutliers": 1
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2165
   },
   {
     "id": "PM_04_MainFeed",
@@ -4525,7 +4381,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2025
   },
   {
     "id": "PM_03_PP1TFeed",
@@ -4713,7 +4571,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1883
   },
   {
     "id": "PM_15_P1B_P2BFeed",
@@ -4901,7 +4761,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 1873
   },
   {
     "id": "PM_17_HP05Feed",
@@ -5089,7 +4951,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1864
   },
   {
     "id": "PM_10_1st_2nd_FloorFeed",
@@ -5277,7 +5141,199 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1816
+  },
+  {
+    "id": "PM_15_RoofTopSolarFeed",
+    "totalKwh": 1692,
+    "totalKwhCumulative": 1692,
+    "totalKwhIntegrated": 2144,
+    "peakKw": 13,
+    "avgKw": 5.83,
+    "hourly": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.44,
+      2.93,
+      6.14,
+      7.5,
+      7.87,
+      8.9,
+      8.67,
+      8.3,
+      7.37,
+      5.34,
+      3.55,
+      2.48,
+      0.45,
+      0,
+      96,
+      0,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 9,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 60,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 5,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 100,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 99,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 81,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 81,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 74,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 33,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 60,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 58,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 56,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 82,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 99,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 5,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 139,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 100,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 38,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 105,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 99,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 96,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 102,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 96,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 95,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 104,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 18,
+        "peakKw": 1.11
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 95,
+        "peakKw": 1.08
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 44,
+        "peakKw": 1.08
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 54,
+        "peakKw": 1.09
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 57,
+        "peakKw": 1.09
+      }
+    ],
+    "sampleCount": 368,
+    "droppedOutliers": 1,
+    "direction": "generation",
+    "signedCumulative": -1692
   },
   {
     "id": "PM_15_P3AFeed",
@@ -5465,7 +5521,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1549
   },
   {
     "id": "PM_14_MainFeed",
@@ -5653,7 +5711,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1496
   },
   {
     "id": "PM_10_3rd4th_FloorFeed",
@@ -5841,7 +5901,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1491
   },
   {
     "id": "PM_12_SCP_D_Feed",
@@ -6029,7 +6091,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1461
   },
   {
     "id": "PM_16_MainFeed",
@@ -6217,7 +6281,199 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1457
+  },
+  {
+    "id": "PM_20_SBKPanelFeed",
+    "totalKwh": 1409,
+    "totalKwhCumulative": 1409,
+    "totalKwhIntegrated": 1409,
+    "peakKw": 9,
+    "avgKw": 1.98,
+    "hourly": [
+      2,
+      0.8,
+      0.9,
+      0.83,
+      0.37,
+      0.77,
+      0.77,
+      1.23,
+      3.43,
+      3.57,
+      2.1,
+      1.77,
+      1.53,
+      1.07,
+      1,
+      1.13,
+      1.66,
+      1.86,
+      2.72,
+      3.1,
+      3.14,
+      3.48,
+      4.14,
+      4.48
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 32,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 48,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 49,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 59,
+        "peakKw": 9
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 51,
+        "peakKw": 7
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 59,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 51,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 44,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 51,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 48,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 47,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 50,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 40,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 46,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 30,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 34,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 45,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 46,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 50,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 50,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 48,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 46,
+        "peakKw": 7
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 53,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 53,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 46,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 50,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 45,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 50,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 50,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 38,
+        "peakKw": 6
+      }
+    ],
+    "sampleCount": 711,
+    "droppedOutliers": 0,
+    "direction": "generation",
+    "signedCumulative": -1409
   },
   {
     "id": "PM_03_PP1AFeed",
@@ -6405,7 +6661,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1361
   },
   {
     "id": "PM_11_LP_1_Feed",
@@ -6593,7 +6851,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1336
   },
   {
     "id": "PM_20_PKPanelFeed",
@@ -6781,7 +7041,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1332
   },
   {
     "id": "PM_09_BoilerPanelFeed",
@@ -6969,7 +7231,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1282
   },
   {
     "id": "PM_12_LP_A_Feed",
@@ -7157,7 +7421,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1270
   },
   {
     "id": "PM_17_M42AFeed",
@@ -7345,7 +7611,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1208
   },
   {
     "id": "PM_20_LSKPanelFeed",
@@ -7533,7 +7801,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1205
   },
   {
     "id": "PM_03_PPHWBoosterFeed",
@@ -7721,7 +7991,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1183
   },
   {
     "id": "PM_20_FRKNFeed",
@@ -7909,7 +8181,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1127
   },
   {
     "id": "PM_13_BoilerRoomFeed",
@@ -8097,7 +8371,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1050
   },
   {
     "id": "PM_18_KurthResidenceMainFeed",
@@ -8285,7 +8561,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 550,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1048
   },
   {
     "id": "PM_05_MainFeed",
@@ -8473,7 +8751,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 965
   },
   {
     "id": "PM_10_LaundryPanelFeed",
@@ -8661,7 +8941,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 955
   },
   {
     "id": "PM_09_4thFloorPanelFeed",
@@ -8849,7 +9131,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 798
   },
   {
     "id": "PM_09_3rdFloorPanelFeed",
@@ -9037,195 +9321,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
-  },
-  {
-    "id": "PM_19_KurthDormMainFeed",
-    "totalKwh": 714,
-    "totalKwhCumulative": -432,
-    "totalKwhIntegrated": 714,
-    "peakKw": 10.04,
-    "avgKw": 1.52,
-    "hourly": [
-      1.66,
-      1.37,
-      1.23,
-      1.37,
-      1.17,
-      1.2,
-      1.37,
-      0.62,
-      0.56,
-      0.33,
-      1,
-      1,
-      0.5,
-      1,
-      2,
-      1.67,
-      0.44,
-      1.08,
-      1.36,
-      1.76,
-      2.48,
-      2.24,
-      2.76,
-      2.28
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 32,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 23,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 24,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 22,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 23,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 15,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 18,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 24,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 24,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 36,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 32,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 30,
-        "peakKw": 8.57
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 32,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 15,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 36,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 14,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 12,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 29,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 20,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 21,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 27,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 27,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 27,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 15,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 28,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 21,
-        "peakKw": 10.04
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 17,
-        "peakKw": 5.36
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 23,
-        "peakKw": 5.41
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 29,
-        "peakKw": 6.48
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 18,
-        "peakKw": 7.52
-      }
-    ],
-    "sampleCount": 470,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 741
   },
   {
     "id": "PM_09_2ndFloorPanelFeed",
@@ -9413,7 +9511,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 679
   },
   {
     "id": "PM_03_PPB3Feed",
@@ -9601,7 +9701,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 628
   },
   {
     "id": "PM_09_1stFloorPanelFeed",
@@ -9789,7 +9891,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 626
   },
   {
     "id": "PM_05_SubpanelFeed",
@@ -9977,7 +10081,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 599
   },
   {
     "id": "PM_06_Breaker8_10_12Feed",
@@ -10165,7 +10271,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 591
   },
   {
     "id": "PM_10_ChildCareMainFeed",
@@ -10353,7 +10461,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 586
   },
   {
     "id": "PM_11_LP_2_Feed",
@@ -10541,7 +10651,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 549
   },
   {
     "id": "PM_06_Breaker33Feed",
@@ -10729,7 +10841,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 528
   },
   {
     "id": "PM_15_ITFeed",
@@ -10917,7 +11031,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 497
   },
   {
     "id": "PM_15_P3BFeed",
@@ -11105,195 +11221,199 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 474
   },
   {
-    "id": "PM_15_RoofTopSolarFeed",
-    "totalKwh": 452,
-    "totalKwhCumulative": -1692,
-    "totalKwhIntegrated": 452,
-    "peakKw": 2,
-    "avgKw": 1.15,
+    "id": "PM_19_KurthDormMainFeed",
+    "totalKwh": 432,
+    "totalKwhCumulative": 432,
+    "totalKwhIntegrated": 1146,
+    "peakKw": 11,
+    "avgKw": 3.72,
     "hourly": [
-      1.03,
-      1,
-      1.03,
-      1.03,
-      1.07,
-      1.1,
-      0.97,
-      0.25,
-      0.33,
-      0.67,
-      0,
-      0,
-      0.5,
       0,
       0,
       0,
       0,
       0,
-      0.25,
-      0.45,
-      4.34,
-      1,
-      1.03,
-      1.07
+      0,
+      0,
+      0.07,
+      0.91,
+      2.55,
+      4.11,
+      4.96,
+      6.04,
+      5.96,
+      6.48,
+      5.39,
+      3.38,
+      2.3,
+      0.75,
+      0,
+      0,
+      0,
+      0,
+      0
     ],
     "daily": [
       {
         "date": "2026-04-05",
-        "kwh": 10,
-        "peakKw": 1.11
+        "kwh": 0,
+        "peakKw": 7.35
       },
       {
         "date": "2026-04-06",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 32,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-07",
-        "kwh": 15,
-        "peakKw": 1.11
+        "kwh": 7,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-08",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 75,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-09",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 74,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-10",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 52,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-11",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 54,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-12",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 40,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-13",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 9,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-14",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 25,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-15",
-        "kwh": 13,
-        "peakKw": 1.11
+        "kwh": 14,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-16",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 23,
+        "peakKw": 8.57
       },
       {
         "date": "2026-04-17",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 48,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-18",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 62,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-19",
-        "kwh": 15,
-        "peakKw": 1.11
+        "kwh": 0,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-20",
-        "kwh": 108,
-        "peakKw": 1.11
+        "kwh": 19,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-21",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 61,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-22",
-        "kwh": 13,
-        "peakKw": 1.11
+        "kwh": 15,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-23",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 72,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-24",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 67,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-25",
-        "kwh": 12,
-        "peakKw": 1.11
+        "kwh": 48,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-26",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 49,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-27",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 59,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-28",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 57,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-29",
-        "kwh": 11,
-        "peakKw": 1.11
+        "kwh": 54,
+        "peakKw": 10.04
       },
       {
         "date": "2026-04-30",
-        "kwh": 13,
-        "peakKw": 1.11
+        "kwh": 7,
+        "peakKw": 10.04
       },
       {
         "date": "2026-05-01",
-        "kwh": 11,
-        "peakKw": 1.08
+        "kwh": 61,
+        "peakKw": 4.73
       },
       {
         "date": "2026-05-02",
-        "kwh": 13,
-        "peakKw": 1.08
+        "kwh": 18,
+        "peakKw": 5.41
       },
       {
         "date": "2026-05-03",
-        "kwh": 11,
-        "peakKw": 1.09
+        "kwh": 12,
+        "peakKw": 6.48
       },
       {
         "date": "2026-05-04",
-        "kwh": 11,
-        "peakKw": 1.09
+        "kwh": 32,
+        "peakKw": 7.52
       }
     ],
-    "sampleCount": 392,
-    "droppedOutliers": 1
+    "sampleCount": 308,
+    "droppedOutliers": 0,
+    "direction": "generation",
+    "signedCumulative": -432
   },
   {
     "id": "PM_15_P3CFeed",
@@ -11481,7 +11601,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 409
   },
   {
     "id": "PM_19_SolarFeed",
@@ -11669,7 +11791,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 357
   },
   {
     "id": "PM_19_ACApartmentFeed",
@@ -11857,7 +11981,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 327
   },
   {
     "id": "PM_14_SubPanelFeed",
@@ -12045,7 +12171,199 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 324
+  },
+  {
+    "id": "PM_12_RPP_B_Feed",
+    "totalKwh": 298,
+    "totalKwhCumulative": 298,
+    "totalKwhIntegrated": 305,
+    "peakKw": 1.76,
+    "avgKw": 0.43,
+    "hourly": [
+      0.59,
+      0.27,
+      0.5,
+      0.4,
+      0.53,
+      0.47,
+      0.27,
+      0.38,
+      0.59,
+      0.34,
+      0.59,
+      0.41,
+      0.57,
+      0.3,
+      0.53,
+      0.43,
+      0.31,
+      0.45,
+      0.41,
+      0.43,
+      0.48,
+      0.28,
+      0.55,
+      0.31
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 8,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 9,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 11,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 10,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 10,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 10,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 10,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 13,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 11,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 9,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 10,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 8,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 10,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 8,
+        "peakKw": 1.27
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 10,
+        "peakKw": 1.28
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 10,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 12,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 11,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 11,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 10,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 11,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 11,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 12,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 11,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 12,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 9,
+        "peakKw": 1.29
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 11,
+        "peakKw": 0.11
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 11,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 5,
+        "peakKw": 1.76
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 11,
+        "peakKw": 1.76
+      }
+    ],
+    "sampleCount": 705,
+    "droppedOutliers": 0,
+    "direction": "generation",
+    "signedCumulative": -298
   },
   {
     "id": "PM_06_Breaker32Feed",
@@ -12233,7 +12551,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 294
   },
   {
     "id": "PM_20_EVChargerFeed",
@@ -12421,7 +12741,199 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 37
+    "droppedOutliers": 37,
+    "direction": "consumption",
+    "signedCumulative": 281
+  },
+  {
+    "id": "PM_03_PPB2Feed",
+    "totalKwh": 261,
+    "totalKwhCumulative": 261,
+    "totalKwhIntegrated": 261,
+    "peakKw": 2,
+    "avgKw": 0.37,
+    "hourly": [
+      0.28,
+      0.2,
+      0.23,
+      0.2,
+      0.2,
+      0.3,
+      0.2,
+      0.3,
+      0.3,
+      0.33,
+      0.47,
+      0.57,
+      0.57,
+      0.63,
+      0.5,
+      0.63,
+      0.52,
+      0.62,
+      0.34,
+      0.45,
+      0.28,
+      0.14,
+      0.24,
+      0.31
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 2,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 11,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 4,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 3,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 5,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 10,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 4,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 4,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 11,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 6,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 6,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 12,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 22,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 5,
+        "peakKw": 0.23
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 3,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 8,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 20,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 5,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 5,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 8,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 20,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 21,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 22,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 7,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 8,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 6,
+        "peakKw": 0.3
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 7,
+        "peakKw": 0.07
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 4,
+        "peakKw": 0.1
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 4,
+        "peakKw": 0.1
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 8,
+        "peakKw": 0.1
+      }
+    ],
+    "sampleCount": 711,
+    "droppedOutliers": 0,
+    "direction": "generation",
+    "signedCumulative": -261
   },
   {
     "id": "PM_10_Apartment410Feed",
@@ -12609,7 +13121,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 255
   },
   {
     "id": "PM_19_ApartmentDryerFeed",
@@ -12797,7 +13311,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 2
+    "droppedOutliers": 2,
+    "direction": "consumption",
+    "signedCumulative": 241
   },
   {
     "id": "PM_25_LSKPanelFeed",
@@ -12985,7 +13501,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 196
   },
   {
     "id": "PM_07_DryerFeed03",
@@ -13173,7 +13691,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 4
+    "droppedOutliers": 4,
+    "direction": "consumption",
+    "signedCumulative": 148
   },
   {
     "id": "PM_07_DryerFeed04",
@@ -13361,7 +13881,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 5
+    "droppedOutliers": 5,
+    "direction": "consumption",
+    "signedCumulative": 144
   },
   {
     "id": "PM_07_DryerFeed01",
@@ -13549,7 +14071,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 27
+    "droppedOutliers": 27,
+    "direction": "consumption",
+    "signedCumulative": 137
   },
   {
     "id": "PM_03_PP1BFeed",
@@ -13737,7 +14261,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 136
   },
   {
     "id": "PM_10_Apartment02Feed",
@@ -13925,7 +14451,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 2
+    "droppedOutliers": 2,
+    "direction": "consumption",
+    "signedCumulative": 130
   },
   {
     "id": "PM_06_Breaker30Feed",
@@ -14113,7 +14641,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 119
   },
   {
     "id": "PM_15_P2CFeed",
@@ -14301,7 +14831,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 117
   },
   {
     "id": "PM_10_WestApartmentFeed",
@@ -14489,7 +15021,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 7
+    "droppedOutliers": 7,
+    "direction": "consumption",
+    "signedCumulative": 98
   },
   {
     "id": "PM_19_AC02Feed",
@@ -14677,7 +15211,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 98
   },
   {
     "id": "PM_15_ElevatorFeed",
@@ -14865,7 +15401,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 710,
-    "droppedOutliers": 1
+    "droppedOutliers": 1,
+    "direction": "consumption",
+    "signedCumulative": 88
   },
   {
     "id": "PM_29_MDPWPanelFeed",
@@ -15053,7 +15591,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 64
+    "droppedOutliers": 64,
+    "direction": "consumption",
+    "signedCumulative": 64
   },
   {
     "id": "PM_19_AC03Feed",
@@ -15241,7 +15781,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 60
+    "droppedOutliers": 60,
+    "direction": "consumption",
+    "signedCumulative": 60
   },
   {
     "id": "PM_03_ElevatorFeed",
@@ -15429,195 +15971,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 55
-  },
-  {
-    "id": "PM_07_DryerFeed02",
-    "totalKwh": 55,
-    "totalKwhCumulative": -16,
-    "totalKwhIntegrated": 55,
-    "peakKw": 0.5,
-    "avgKw": 0.08,
-    "hourly": [
-      0.04,
-      0.03,
-      0.03,
-      0.03,
-      0.03,
-      0,
-      0,
-      0,
-      0.07,
-      0,
-      0,
-      0,
-      0.04,
-      0.1,
-      0.11,
-      0.21,
-      0.21,
-      0.08,
-      0.16,
-      0.12,
-      0.1,
-      0.26,
-      0.25,
-      0.24
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 4,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 1,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 2,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 1,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 1,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 2,
-        "peakKw": 2.03
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 5,
-        "peakKw": 2.04
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 4,
-        "peakKw": 2.04
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 2,
-        "peakKw": 2.04
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 1,
-        "peakKw": 2.04
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 2,
-        "peakKw": 2.04
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 1,
-        "peakKw": 2.04
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 7,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 1,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 3,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 1,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 2,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 2,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 1,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 1,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 2,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 2.05
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 2,
-        "peakKw": 2.02
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 2,
-        "peakKw": 2.02
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 4,
-        "peakKw": 2.02
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 1,
-        "peakKw": 2.02
-      }
-    ],
-    "sampleCount": 654,
-    "droppedOutliers": 47
+    "droppedOutliers": 55,
+    "direction": "consumption",
+    "signedCumulative": 55
   },
   {
     "id": "PM_19_2ndFloorDryerFeed",
@@ -15805,7 +16161,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 53
+    "droppedOutliers": 53,
+    "direction": "consumption",
+    "signedCumulative": 53
   },
   {
     "id": "PM_19_AC01Feed",
@@ -15993,7 +16351,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 36
+    "droppedOutliers": 36,
+    "direction": "consumption",
+    "signedCumulative": 42
   },
   {
     "id": "PM_31_MWPanelFeed",
@@ -16181,7 +16541,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 42
+    "droppedOutliers": 42,
+    "direction": "consumption",
+    "signedCumulative": 42
   },
   {
     "id": "PM_10_Apartment01Feed",
@@ -16369,7 +16731,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 708,
-    "droppedOutliers": 42
+    "droppedOutliers": 42,
+    "direction": "consumption",
+    "signedCumulative": 39
   },
   {
     "id": "PM_19_AC1stFloorFeed",
@@ -16557,7 +16921,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 27
+    "droppedOutliers": 27,
+    "direction": "consumption",
+    "signedCumulative": 27
   },
   {
     "id": "PM_12_WoodShopPanelFeed",
@@ -16745,7 +17111,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 24
+    "droppedOutliers": 24,
+    "direction": "consumption",
+    "signedCumulative": 24
   },
   {
     "id": "PM_12_TheaterPanelFeed",
@@ -16933,7 +17301,389 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 653,
-    "droppedOutliers": 4
+    "droppedOutliers": 4,
+    "direction": "consumption",
+    "signedCumulative": 23
+  },
+  {
+    "id": "PM_07_DryerFeed02",
+    "totalKwh": 16,
+    "totalKwhCumulative": 16,
+    "totalKwhIntegrated": 71,
+    "peakKw": 1,
+    "avgKw": 0.11,
+    "hourly": [
+      0.04,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.07,
+      0.1,
+      0.17,
+      0,
+      0.13,
+      0.1,
+      0.07,
+      0.07,
+      0.28,
+      0.29,
+      0.15,
+      0.27,
+      0.19,
+      0.37,
+      0.32,
+      0.04,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 4,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 4,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 2,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 0,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 7,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 2,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 0,
+        "peakKw": 2.03
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 1,
+        "peakKw": 2.04
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 5,
+        "peakKw": 2.04
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 0,
+        "peakKw": 2.04
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 0,
+        "peakKw": 2.04
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 6,
+        "peakKw": 2.04
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 1,
+        "peakKw": 2.04
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 1,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 2,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 2,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 4,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 5,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 1,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 2,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 5,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 2,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 2,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 4,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 5,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 0,
+        "peakKw": 2.05
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 0,
+        "peakKw": 2.02
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 0,
+        "peakKw": 2.02
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 2,
+        "peakKw": 2.02
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 2,
+        "peakKw": 2.02
+      }
+    ],
+    "sampleCount": 664,
+    "droppedOutliers": 13,
+    "direction": "generation",
+    "signedCumulative": -16
+  },
+  {
+    "id": "PM_17_ChargerFeed",
+    "totalKwh": 16,
+    "totalKwhCumulative": 16,
+    "totalKwhIntegrated": 16,
+    "peakKw": 0,
+    "avgKw": 0.02,
+    "hourly": [
+      0.07,
+      0,
+      0,
+      0.07,
+      0,
+      0,
+      0.03,
+      0,
+      0.03,
+      0,
+      0,
+      0.07,
+      0,
+      0.03,
+      0.03,
+      0,
+      0.07,
+      0,
+      0,
+      0.07,
+      0,
+      0.07,
+      0,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 1,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 1,
+        "peakKw": 0
+      }
+    ],
+    "sampleCount": 711,
+    "droppedOutliers": 16,
+    "direction": "generation",
+    "signedCumulative": -16
   },
   {
     "id": "PM_17_AHU02Feed",
@@ -17121,7 +17871,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 13
+    "droppedOutliers": 13,
+    "direction": "consumption",
+    "signedCumulative": 13
   },
   {
     "id": "PM_19_AC2ndFloorFeed",
@@ -17309,7 +18061,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 13
+    "droppedOutliers": 13,
+    "direction": "consumption",
+    "signedCumulative": 13
   },
   {
     "id": "PM_17_HP04Feed",
@@ -17497,7 +18251,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 12
+    "droppedOutliers": 12,
+    "direction": "consumption",
+    "signedCumulative": 12
   },
   {
     "id": "PM_17_AHU01Feed",
@@ -17685,763 +18441,13 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 12
-  },
-  {
-    "id": "PM_17_HP03Feed",
-    "totalKwh": 9,
-    "totalKwhCumulative": 9,
-    "totalKwhIntegrated": 9,
-    "peakKw": 0.01,
-    "avgKw": 0.01,
-    "hourly": [
-      0,
-      0,
-      0.03,
-      0,
-      0.03,
-      0,
-      0.03,
-      0.03,
-      0,
-      0,
-      0,
-      0.03,
-      0.03,
-      0,
-      0,
-      0,
-      0.03,
-      0,
-      0,
-      0,
-      0,
-      0.03,
-      0.03,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 1,
-        "peakKw": 0.01
-      }
-    ],
-    "sampleCount": 711,
-    "droppedOutliers": 9
-  },
-  {
-    "id": "PM_17_HP01Feed",
-    "totalKwh": 8,
-    "totalKwhCumulative": 8,
-    "totalKwhIntegrated": 8,
-    "peakKw": 0.01,
-    "avgKw": 0.01,
-    "hourly": [
-      0,
-      0,
-      0.03,
-      0,
-      0,
-      0.03,
-      0.03,
-      0,
-      0,
-      0,
-      0,
-      0.03,
-      0,
-      0.03,
-      0,
-      0,
-      0,
-      0,
-      0.03,
-      0,
-      0.03,
-      0.03,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 0.01
-      }
-    ],
-    "sampleCount": 711,
-    "droppedOutliers": 8
-  },
-  {
-    "id": "PM_12_RPP_B_Feed",
-    "totalKwh": 7,
-    "totalKwhCumulative": -298,
-    "totalKwhIntegrated": 7,
-    "peakKw": 0.17,
-    "avgKw": 0.02,
-    "hourly": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0.05,
-      0.08,
-      0.05,
-      0.15,
-      0.06,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0.06,
-      0,
-      0,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 1.27
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 1,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 1.29
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 6,
-        "peakKw": 1.76
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 1.76
-      }
-    ],
-    "sampleCount": 406,
-    "droppedOutliers": 6
-  },
-  {
-    "id": "PM_17_HP02Feed",
-    "totalKwh": 5,
-    "totalKwhCumulative": 5,
-    "totalKwhIntegrated": 5,
-    "peakKw": 0.01,
-    "avgKw": 0.01,
-    "hourly": [
-      0,
-      0,
-      0.1,
-      0.03,
-      0.03,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 0.01
-      }
-    ],
-    "sampleCount": 711,
-    "droppedOutliers": 5
+    "droppedOutliers": 12,
+    "direction": "consumption",
+    "signedCumulative": 12
   },
   {
     "id": "PM_11_RTUFeed",
-    "totalKwh": 4,
+    "totalKwh": 0,
     "totalKwhCumulative": 4,
     "totalKwhIntegrated": 4,
     "peakKw": 0.01,
@@ -18625,11 +18631,773 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 4
+    "droppedOutliers": 4,
+    "direction": "stuck",
+    "signedCumulative": 4
+  },
+  {
+    "id": "PM_15_FieldSolarFeed",
+    "totalKwh": 0,
+    "totalKwhCumulative": 1,
+    "totalKwhIntegrated": 2103,
+    "peakKw": 14.37,
+    "avgKw": 2.97,
+    "hourly": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      72.52,
+      0,
+      0,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 2103,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 0,
+        "peakKw": 14.37
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 0,
+        "peakKw": 1.2
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 0,
+        "peakKw": 0
+      }
+    ],
+    "sampleCount": 709,
+    "droppedOutliers": 1,
+    "direction": "stuck",
+    "signedCumulative": -1
+  },
+  {
+    "id": "PM_17_HP01Feed",
+    "totalKwh": 0,
+    "totalKwhCumulative": 8,
+    "totalKwhIntegrated": 8,
+    "peakKw": 0.01,
+    "avgKw": 0.01,
+    "hourly": [
+      0,
+      0,
+      0.03,
+      0,
+      0,
+      0.03,
+      0.03,
+      0,
+      0,
+      0,
+      0,
+      0.03,
+      0,
+      0.03,
+      0,
+      0,
+      0,
+      0,
+      0.03,
+      0,
+      0.03,
+      0.03,
+      0,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 0,
+        "peakKw": 0.01
+      }
+    ],
+    "sampleCount": 711,
+    "droppedOutliers": 8,
+    "direction": "stuck",
+    "signedCumulative": 8
+  },
+  {
+    "id": "PM_17_HP03Feed",
+    "totalKwh": 0,
+    "totalKwhCumulative": 9,
+    "totalKwhIntegrated": 9,
+    "peakKw": 0.01,
+    "avgKw": 0.01,
+    "hourly": [
+      0,
+      0,
+      0.03,
+      0,
+      0.03,
+      0,
+      0.03,
+      0.03,
+      0,
+      0,
+      0,
+      0.03,
+      0.03,
+      0,
+      0,
+      0,
+      0.03,
+      0,
+      0,
+      0,
+      0,
+      0.03,
+      0.03,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 1,
+        "peakKw": 0.01
+      }
+    ],
+    "sampleCount": 711,
+    "droppedOutliers": 9,
+    "direction": "stuck",
+    "signedCumulative": 9
+  },
+  {
+    "id": "PM_17_HP02Feed",
+    "totalKwh": 0,
+    "totalKwhCumulative": 5,
+    "totalKwhIntegrated": 5,
+    "peakKw": 0.01,
+    "avgKw": 0.01,
+    "hourly": [
+      0,
+      0,
+      0.1,
+      0.03,
+      0.03,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "daily": [
+      {
+        "date": "2026-04-05",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-06",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-07",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-08",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-09",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-10",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-11",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-12",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-13",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-14",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-15",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-16",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-17",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-18",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-19",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-20",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-21",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-22",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-23",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-24",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-25",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-26",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-27",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-28",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-29",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-04-30",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-01",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-02",
+        "kwh": 1,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-03",
+        "kwh": 0,
+        "peakKw": 0.01
+      },
+      {
+        "date": "2026-05-04",
+        "kwh": 0,
+        "peakKw": 0.01
+      }
+    ],
+    "sampleCount": 711,
+    "droppedOutliers": 5,
+    "direction": "stuck",
+    "signedCumulative": 5
   },
   {
     "id": "PM_17_B2BoilerFeed",
-    "totalKwh": 1,
+    "totalKwh": 0,
     "totalKwhCumulative": 1,
     "totalKwhIntegrated": 1,
     "peakKw": 1,
@@ -18813,571 +19581,9 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
-  },
-  {
-    "id": "PM_03_PPB2Feed",
-    "totalKwh": 0,
-    "totalKwhCumulative": -261,
-    "totalKwhIntegrated": 0,
-    "peakKw": 0.3,
-    "avgKw": 0,
-    "hourly": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 0.23
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 0.3
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 0,
-        "peakKw": 0.06
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0.1
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0.1
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 0.1
-      }
-    ],
-    "sampleCount": 456,
-    "droppedOutliers": 0
-  },
-  {
-    "id": "PM_17_ChargerFeed",
-    "totalKwh": 0,
-    "totalKwhCumulative": -16,
-    "totalKwhIntegrated": 0,
-    "peakKw": 0,
-    "avgKw": 0,
-    "hourly": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 0
-      }
-    ],
-    "sampleCount": 695,
-    "droppedOutliers": 0
-  },
-  {
-    "id": "PM_20_SBKPanelFeed",
-    "totalKwh": 0,
-    "totalKwhCumulative": -1409,
-    "totalKwhIntegrated": 0,
-    "peakKw": 0,
-    "avgKw": 0,
-    "hourly": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "daily": [
-      {
-        "date": "2026-04-05",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-06",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-07",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-08",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-09",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-10",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-11",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-12",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-13",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-14",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-15",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-16",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-17",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-18",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-19",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-20",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-21",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-22",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-23",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-24",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-25",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-26",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-27",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-28",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-29",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-04-30",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-01",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-02",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-03",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-05-04",
-        "kwh": 0,
-        "peakKw": 0
-      }
-    ],
-    "sampleCount": 87,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "stuck",
+    "signedCumulative": 1
   },
   {
     "id": "PM_22_PKLPanelFeed",
@@ -19565,6 +19771,8 @@ export const bmsExportMeters = [
       }
     ],
     "sampleCount": 711,
-    "droppedOutliers": 0
+    "droppedOutliers": 0,
+    "direction": "stuck",
+    "signedCumulative": 0
   }
 ];
