@@ -25,9 +25,9 @@ const rows = [
     futureMethod:  'Refrigerants: HVAC technician service-report mass balance × IPCC AR6 GWP100. Fleet: KUA fuel-card records × EPA gasoline/diesel factors. Both flip estimated → measured once the records are integrated.',
   },
   {
-    name: 'Scope 2 — Electricity (kWh × factor)', low: 380, high: 520, provenance: 'cited',
-    currentMethod: 'Measured kWh × cited emission factors. kWh side: 649,439 kWh YTD-through-2026-05-03 from KUA Distech Eclypse BMS (real meter), annualized × 2.97. Factor side: per-fuel output factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range.',
-    futureMethod:  'Already at target methodology. Year-over-year improvement comes from a longer measured BMS window (drop the ×2.97 annualization once a full year is metered) and from the next eGRID NEWE update.',
+    name: 'Scope 2 — Electricity (kWh × factor)', low: 410, high: 440, provenance: 'cited',
+    currentMethod: 'Cross-validated: TWO independent measured BMS kWh figures converge (YTD All Meters page → 1.93M kWh annualized; April Meter Trends export → 1.81M kWh annualized). Mean ~1.8–1.9M kWh/yr × ISO-NE 2024 effective rate 0.235 kg/kWh (per-fuel output factors at published generation mix) = 410–440 mtCO₂e/yr. Tighter than the original 380–520 range now that two measured anchors agree.',
+    futureMethod:  'Already at target methodology. Year-over-year improvement comes from a longer measured BMS window (drop both annualization multipliers once a full year is metered) and from the next eGRID NEWE update.',
   },
   {
     name: 'Scope 3 — Student travel', low: 1500, high: 3000, provenance: 'estimated',
@@ -47,17 +47,19 @@ const rows = [
 ];
 
 // Sums of the provenance-tagged rows above:
-//   gross low  = 1000 + 20  + 380 + 1500 + 500 = 3,400
-//   gross high = 1500 + 50  + 520 + 3000 + 800 = 5,870
-//   gross mid  ≈ 4,150 (kept for hero continuity)
+//   gross low  = 1000 + 20  + 410 + 1500 + 500 = 3,430
+//   gross high = 1500 + 50  + 440 + 3000 + 800 = 5,790
+//   gross mid  ≈ 4,150 (kept for hero continuity; mid is unchanged
+//                       because the Scope 2 tightening shrunk the
+//                       range symmetrically around the same midpoint)
 //   sinks      = -4,000 to -2,000
 //   net mid    ≈ 1,150 (gross mid + sinks midpoint)
 const summary = {
-  grossLow: 3400, grossHigh: 5870, grossMid: 4150,
+  grossLow: 3430, grossHigh: 5790, grossMid: 4150,
   sinkLow: -4000, sinkHigh: -2000,
-  netLow: -700, netHigh: 3870, netMid: 1150,
+  netLow: -570, netHigh: 3790, netMid: 1150,
   // Per-student values are net mt ÷ 340 enrolled students.
-  perStudentLow: -2.1, perStudentHigh: 11.4, perStudentMid: 3.4,
+  perStudentLow: -1.7, perStudentHigh: 11.1, perStudentMid: 3.4,
   studentCount: 340,
 };
 

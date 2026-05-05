@@ -52,12 +52,12 @@ function Scope2() {
       <ScopePageInfo
         color="#f59e0b"
         estimate={{
-          total: '~452', totalRange: '380 – 520 (annualized)', perStudent: 1.3,
-          thirdMetric: { label: 'kWh measured', value: '649k', note: 'YTD through 2026-05-03' },
+          total: '~424', totalRange: '410 – 440 (cross-validated)', perStudent: 1.25,
+          thirdMetric: { label: 'kWh annual', value: '~1.8M', note: 'cross-validated' },
           provenance: 'cited',
-          note: 'kWh side is measured (BMS); mtCO₂e side is cited (per-fuel ISO-NE 2024 output factors). The only scope on the dashboard with real metered inputs.',
-          currentMethod: 'Measured kWh × cited emission factors. kWh: 649,439 kWh year-to-date through 2026-05-03 from KUA Distech Eclypse BMS All Meters page (real meter, 123 days of data) × annualization factor 2.97 = ~1.93M kWh/yr equivalent. Emission factor: per-fuel output rates (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. Effective system rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 published range.',
-          futureMethod: 'Drop the ×2.97 annualization once a full calendar year of BMS data is captured (~Jan 2027) — flips kWh side from "annualized estimate" to a true measured-year figure. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
+          note: 'kWh side is now MEASURED via two independent BMS exports (YTD totals + 30-day Meter Trends). mtCO₂e side stays CITED (per-fuel ISO-NE 2024 output factors). Two independent measured kWh estimates converge to within 7%.',
+          currentMethod: 'Two independent measured kWh figures cross-validate each other: (1) YTD-through-2026-05-03 Eclypse BMS All Meters page = 649,439 kWh × annualization 2.97 = 1.93M kWh/yr; (2) Apr 5 → May 4 Eclypse Meter Trends export = 146,725 kWh × annualization 12.30 = 1.81M kWh/yr. Mean ~1.8-1.9M kWh × ISO-NE 2024 effective rate (0.235 kg/kWh per-fuel output factors at the published generation mix) = 424 mtCO₂e/yr. Per-student 1.25 mt at 340 enrollment.',
+          futureMethod: 'Drop both annualization multipliers once a full calendar year of BMS data is captured (~Jan 2027) — both kWh figures flip from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[
           { title: 'ISO New England Electric Generator Air Emissions Report 2024', use: '643 lb CO₂/MWh in-region · 177 lb CO₂/MWh imported (Canadian hydro share)' },

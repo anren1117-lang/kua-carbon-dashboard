@@ -123,8 +123,8 @@ export default function Executive() {
           <ExecProvRow
             provenance="cited"
             label={`On-campus solar (${SOLAR_ANNUAL_KWH.toLocaleString()} kWh/yr)`}
-            today="Whittemore array nameplate × NREL PVWatts capacity factor for KUA latitude (43.6°N)."
-            target="Already at target. Improvement comes from a SunSpec-modbus pull of actual generation once the inverter is on the BMS — flips this to measured."
+            today="Anchored on MEASURED April 2026 BMS production (2,912 kWh from 3 metered arrays: PM_15_RoofTopSolarFeed + PM_15_FieldSolarFeed + PM_19_SolarFeed) × NREL PVWatts NH seasonal-shape factor — April produces ~10% of annual generation. Result is ~33% lower than the previous pure-PVWatts model: real arrays underperform model expectations."
+            target="Capture a full 12 months of BMS production data → SOLAR_ANNUAL_KWH flips fully measured (~April 2027). The current ~33% model-vs-actual gap is itself useful information — points to inverter-health monitoring or a panel inventory mismatch."
           />
         </div>
       </ModuleSection>
