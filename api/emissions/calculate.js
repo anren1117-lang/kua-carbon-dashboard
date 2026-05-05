@@ -11,8 +11,8 @@ export default async function handler(req, res) {
   }
   try {
     const { quantity, factorId, category, subcategory } = req.body || {};
-    if (typeof quantity !== 'number') {
-      res.status(400).json({ error: 'quantity (number) is required' });
+    if (!Number.isFinite(quantity)) {
+      res.status(400).json({ error: 'quantity (finite number) is required' });
       return;
     }
     if (!factorId && !(category && subcategory)) {

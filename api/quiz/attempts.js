@@ -13,8 +13,8 @@ import { recordAttempt, listAttempts, attemptsByClass, attemptsForLesson, lesson
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { userIdHash, quizId, topic, correct, pickedIndex, classId } = req.body || {};
-    if (!userIdHash || !quizId || !topic || typeof correct !== 'boolean' || typeof pickedIndex !== 'number') {
-      res.status(400).json({ error: 'Required: userIdHash, quizId, topic, correct, pickedIndex' });
+    if (!userIdHash || !quizId || !topic || typeof correct !== 'boolean' || !Number.isInteger(pickedIndex) || pickedIndex < 0) {
+      res.status(400).json({ error: 'Required: userIdHash, quizId, topic, correct (boolean), pickedIndex (non-negative integer)' });
       return;
     }
     if (!/^[a-z]+_[0-9a-f]+$/.test(userIdHash)) {

@@ -82,15 +82,27 @@ export async function verifyGoogleIdToken(idToken, opts = {}) {
   // exp is REQUIRED for Google OIDC tokens. The earlier guard treated a
   // missing exp as "no expiry to check" — i.e., the token would be
   // accepted forever. Defensively, reject any token without exp.
-  if (typeof payload.exp !== 'number') {
+  //
+  // Use Number.isFinite, NOT typeof === 'number' — JSON.parse turns
+  // values like 9e9999999 into Infinity, and `Infinity <= Date.now()`
+  // is false, so a `typeof` check would let a forged-with-Infinity-exp
+  // token bypass the expiry check entirely. Google never issues such a
+  // token, so this is defense in depth, but a quiet "never expires"
+  // path is exactly the kind of thing not worth leaving open.
+  if (!Number.isFinite(payload.exp)) {
     return { valid: false, reason: 'Missing or invalid exp claim' };
   }
   if (payload.exp * 1000 <= Date.now()) {
     return { valid: false, reason: 'Token expired' };
   }
   // nbf (not-before) is optional but must be honored if present.
-  if (typeof payload.nbf === 'number' && payload.nbf * 1000 > Date.now()) {
-    return { valid: false, reason: 'Token not yet valid (nbf)' };
+  if (payload.nbf != null) {
+    if (!Number.isFinite(payload.nbf)) {
+      return { valid: false, reason: 'Invalid nbf claim' };
+    }
+    if (payload.nbf * 1000 > Date.now()) {
+      return { valid: false, reason: 'Token not yet valid (nbf)' };
+    }
   }
   if (opts.audience && payload.aud !== opts.audience) {
     return { valid: false, reason: 'Audience mismatch' };
