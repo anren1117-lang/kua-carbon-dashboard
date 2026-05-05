@@ -48,10 +48,18 @@ function readingToRow(r) {
 export async function insertReadings(readings) {
   if (!Array.isArray(readings) || readings.length === 0) return { inserted: 0 };
 
-  // Always mirror to memory.
+  // Mirror to memory with dedupe-by-id semantics that match the Supabase
+  // upsert path below (onConflict: 'id'). Re-running an import that
+  // overlaps a previous one used to silently duplicate every overlapping
+  // reading into memStore — read paths returning bogus 2× values.
+  const incomingById = new Map();
   for (const r of readings) {
-    memStore.push({ ...r, source: r.source || 'csv' });
+    incomingById.set(r.id, { ...r, source: r.source || 'csv' });
   }
+  for (let i = memStore.length - 1; i >= 0; i--) {
+    if (incomingById.has(memStore[i].id)) memStore.splice(i, 1);
+  }
+  for (const r of incomingById.values()) memStore.push(r);
 
   const sb = await getSupabaseServer();
   if (sb) {

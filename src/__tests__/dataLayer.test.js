@@ -419,6 +419,34 @@ describe('Reduction targets', () => {
   });
 });
 
+describe('Readings store memory dedupe', () => {
+  // Regression: in-memory mirror of insertReadings used to push every
+  // incoming reading without dedupe-by-id, while the Supabase path
+  // upserted on conflict. Re-running an overlapping import produced
+  // duplicates in memory and made read calls return inflated values.
+  it('upserts by id rather than appending duplicates', async () => {
+    const { insertReadings, readReadings, _resetReadingsStoreForTests } =
+      await import('../storage/readingsStore.js');
+    _resetReadingsStoreForTests();
+    const reading = {
+      id: 'm_test_1',
+      meterId: 'm_test',
+      buildingId: 'b_miller',
+      meterType: 'electricity',
+      timestamp: '2026-04-01T00:00:00.000Z',
+      intervalMinutes: 60,
+      value: 5,
+      unit: 'kWh',
+      source: 'csv',
+    };
+    await insertReadings([reading]);
+    await insertReadings([{ ...reading, value: 7 }]);
+    const out = await readReadings({ start: '2026-03-31T00:00:00.000Z', end: '2026-04-02T00:00:00.000Z' });
+    expect(out.length).toBe(1);
+    expect(out[0].value).toBe(7);
+  });
+});
+
 describe('Anomaly detection', () => {
   it('flags a trailing flat run that runs to the end of the readings', async () => {
     const { detectAnomalies } = await import('../utils/anomaly.js');
