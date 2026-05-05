@@ -111,8 +111,8 @@ function PortalContents() {
 
       <ModuleSection title="Quick discussion prompts" hint="Drop into a slide deck or use as a five-minute opener.">
         <ul style={styles.promptList}>
-          <li style={styles.promptItem}>5-minute opener: "If KUA emits ~4,150 mtCO₂e gross/year, and the forest sequesters ~3,000, what does net even mean?"</li>
-          <li style={styles.promptItem}>Lab discussion: Have students compute the ISO-NE 2024 weighted-average emission factor (≈0.0956 kg/kWh) from the published mix. Compare to the US average ~0.37.</li>
+          <li style={styles.promptItem}>5-minute opener: "If KUA emits ~4,350 mtCO₂e gross/year, and the forest sequesters ~2,650, what does net even mean?"</li>
+          <li style={styles.promptItem}>Lab discussion: Have students compute the ISO-NE 2024 effective emission rate (≈0.235 kg/kWh) by weighting per-fuel output factors across the published 2024 mix. Compare to the US average ~0.37.</li>
           <li style={styles.promptItem}>Project prompt: Pick one reduction action from /actions. Defend or critique it with three pieces of campus data.</li>
           <li style={styles.promptItem}>Scope quiz: Students label five campus emissions sources by Scope 1/2/3 in pairs. Compare answers in the dining hall.</li>
         </ul>
