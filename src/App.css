@@ -145,12 +145,3 @@ a[href="#main"]:focus {
   }
 }
 
-/* The original CRA scaffold rules below are kept for backward compat with any
-   component that might still reference these classes. */
-.App {
-  text-align: center;
-}
-
-.App-link {
-  color: #61dafb;
-}
