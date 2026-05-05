@@ -16,7 +16,20 @@ export function ModulePage({ title, subtitle, children }) {
   );
 }
 
-export function ModuleSection({ title, hint, children }) {
+export function ModuleSection({ title, hint, children, collapsible, defaultOpen = true }) {
+  if (collapsible) {
+    return (
+      <section style={styles.section}>
+        <details open={defaultOpen} style={{ display: 'block' }}>
+          <summary style={{ cursor: 'pointer', listStyle: 'revert', outline: 'none' }}>
+            {title && <h2 style={{ ...styles.sectionTitle, display: 'inline' }}>{title}</h2>}
+          </summary>
+          {hint && <p style={styles.hint}>{hint}</p>}
+          {children}
+        </details>
+      </section>
+    );
+  }
   return (
     <section style={styles.section}>
       {title && <h2 style={styles.sectionTitle}>{title}</h2>}

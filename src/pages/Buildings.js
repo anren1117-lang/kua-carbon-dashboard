@@ -193,6 +193,8 @@ export default function BuildingsPage() {
       </ModuleSection>
 
       <ModuleSection
+        collapsible
+        defaultOpen={false}
         title="Monthly BMS data quality"
         hint='Every captured month from the KUA Distech Eclypse All Meters page carries TWO totals: the master-meter "Totals" row at the bottom, and the sum of the per-building submeter rows. They drift apart from CT calibration, branch overlaps, and untracked load between the main meter and the submeter network. We carry both numbers rather than silently picking one.'
       >
@@ -252,14 +254,16 @@ export default function BuildingsPage() {
       </ModuleSection>
 
       <DormEnergySection rows={rows} />
-      <CategoryEnergySection rows={rows} category="Academic" denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
-      <CategoryEnergySection rows={rows} category="Athletic" denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
-      <CategoryEnergySection rows={rows} category="Dining"   denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
-      <CategoryEnergySection rows={rows} category="Other"    denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
+      <CategoryEnergySection rows={rows} category="Academic" denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" defaultOpen={false} />
+      <CategoryEnergySection rows={rows} category="Athletic" denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" defaultOpen={false} />
+      <CategoryEnergySection rows={rows} category="Dining"   denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" defaultOpen={false} />
+      <CategoryEnergySection rows={rows} category="Other"    denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" defaultOpen={false} />
 
       <ModuleSection
-        title={`${sorted.length} buildings`}
-        hint="Click a row for setpoints, occupancy, and the BMS join number."
+        collapsible
+        defaultOpen={false}
+        title={`All ${sorted.length} buildings — flat list`}
+        hint="Click a row for setpoints, occupancy, and the BMS join number. The category sections above are usually a friendlier entry point."
       >
         <div style={styles.list}>
           {sorted.map((b) => {
@@ -410,7 +414,7 @@ function DormEnergySection({ rows }) {
 // Generic per-category energy comparison. Same card layout as DormCard
 // but the denominator is configurable (kWh/sqft/yr for non-residential
 // categories, since "per student" only makes sense for dorms).
-function CategoryEnergySection({ rows, category, denominatorKey, denominatorLabel }) {
+function CategoryEnergySection({ rows, category, denominatorKey, denominatorLabel, defaultOpen = false }) {
   const buildings = rows.filter((r) => r.category === category);
   if (buildings.length === 0) return null;
 
@@ -447,8 +451,10 @@ function CategoryEnergySection({ rows, category, denominatorKey, denominatorLabe
 
   return (
     <ModuleSection
-      title={`${category} buildings — energy comparison`}
+      title={`${category} buildings — energy comparison (${sorted.length})`}
       hint={categoryHints[category] || `${category} buildings ranked by energy intensity (kWh per square foot per year).`}
+      collapsible
+      defaultOpen={defaultOpen}
     >
       <div style={styles.dormGrid}>
         {sorted.map((b) => (
@@ -505,19 +511,30 @@ function BuildingCategoryCard({ building, maxIntensity, denominatorLabel }) {
 
       {isMeasured ? (
         <>
-          <div style={styles.dormChartLabel}>Daily kWh — last 30 days (measured)</div>
+          <div style={styles.dormChartLabel}>
+            Daily kWh — {building.daily.length} days measured
+            <span style={{ color: '#64748b', fontWeight: 400, marginLeft: 8, textTransform: 'none', letterSpacing: 0, fontSize: 10 }}>
+              {building.daily[0].date.slice(5)} → {building.daily[building.daily.length - 1].date.slice(5)}
+              {' · peak '}{Math.round(dailyMax).toLocaleString()} kWh
+            </span>
+          </div>
           <div style={styles.dormChart}>
-            {building.daily.map((d) => (
-              <div
-                key={d.date}
-                style={{
-                  ...styles.dormChartBar,
-                  height: `${(d.kwh / dailyMax) * 100}%`,
-                  background: '#22c55e',
-                }}
-                title={`${d.date}: ${Math.round(d.kwh)} kWh`}
-              />
-            ))}
+            {building.daily.map((d, i) => {
+              const dt = new Date(d.date + 'T12:00:00Z');
+              const isWeekend = [0, 6].includes(dt.getUTCDay());
+              return (
+                <div
+                  key={d.date}
+                  style={{
+                    ...styles.dormChartBar,
+                    height: `${(d.kwh / dailyMax) * 100}%`,
+                    background: isWeekend ? '#0ea5e9' : '#22c55e',
+                    opacity: isWeekend ? 0.85 : 1,
+                  }}
+                  title={`${d.date}${isWeekend ? ' (weekend)' : ''}: ${Math.round(d.kwh).toLocaleString()} kWh`}
+                />
+              );
+            })}
           </div>
         </>
       ) : (
@@ -578,19 +595,30 @@ function DormCard({ dorm, maxPerStudent }) {
       {/* Daily mini chart (BMS) or single annual bar (snapshot/none) */}
       {isMeasured ? (
         <>
-          <div style={styles.dormChartLabel}>Daily kWh — last 30 days (measured)</div>
+          <div style={styles.dormChartLabel}>
+            Daily kWh — {dorm.daily.length} days measured
+            <span style={{ color: '#64748b', fontWeight: 400, marginLeft: 8, textTransform: 'none', letterSpacing: 0, fontSize: 10 }}>
+              {dorm.daily[0].date.slice(5)} → {dorm.daily[dorm.daily.length - 1].date.slice(5)}
+              {' · peak '}{Math.round(dailyMax).toLocaleString()} kWh
+            </span>
+          </div>
           <div style={styles.dormChart}>
-            {dorm.daily.map((d) => (
+            {dorm.daily.map((d) => {
+              const dt = new Date(d.date + 'T12:00:00Z');
+              const isWeekend = [0, 6].includes(dt.getUTCDay());
+              return (
               <div
                 key={d.date}
+                title={`${d.date}${isWeekend ? ' (weekend)' : ''}: ${Math.round(d.kwh).toLocaleString()} kWh`}
                 style={{
                   ...styles.dormChartBar,
                   height: `${(d.kwh / dailyMax) * 100}%`,
-                  background: '#22c55e',
+                  background: isWeekend ? '#0ea5e9' : '#22c55e',
+                  opacity: isWeekend ? 0.85 : 1,
                 }}
-                title={`${d.date}: ${Math.round(d.kwh)} kWh`}
               />
-            ))}
+              );
+            })}
           </div>
         </>
       ) : (
