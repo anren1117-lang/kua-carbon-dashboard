@@ -51,9 +51,15 @@ export default function BuildingsPage() {
   const rows = useMemo(() => {
     // Per-building energy: prefer BMS-mapped measured data when a PM
     // device is mapped to this building. Fall back to envysionSnapshot
-    // (older single-snapshot per-building YTD). When neither, surface
-    // 0 kWh with a "no data" indicator so the user knows it's unmapped
-    // rather than zero-load.
+    // (older per-building YTD-through-2026-05-03 snapshot). When neither,
+    // surface 0 kWh with a "no data" indicator so the user knows it's
+    // unmapped rather than zero-load.
+    //
+    // Both sources are normalized to the same Year 1 annualized basis
+    // before display: BMS gets × COMPOSED_ANNUALIZE_FACTOR (seasonal,
+    // ×2.59); snapshot gets the same factor since both windows cover
+    // a similarly heating-heavy slice of the year. Mixing YTD with
+    // annualized would silently give incomparable numbers across rows.
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
     const meterMap = getBmsMeterMap();
     return getEffectiveBuildings().map((b) => {
@@ -61,14 +67,14 @@ export default function BuildingsPage() {
       let kwh = 0;
       let source = 'none';
       if (mappedMeters.length > 0) {
-        // BMS-mapped: window total × annualize so column is comparable
-        // to the envysionSnapshot rows (which are also annual-equivalent).
         const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
         kwh = windowKwh * COMPOSED_ANNUALIZE_FACTOR;
         source = 'bms';
       } else if (snapshotById[b.id]) {
         const snap = snapshotById[b.id];
-        kwh = snap?.energyUsedKwh ?? 0;
+        // Annualize the snapshot YTD same as the BMS-mapped figures so
+        // the column shows Year 1 across all rows.
+        kwh = (snap?.energyUsedKwh ?? 0) * COMPOSED_ANNUALIZE_FACTOR;
         source = 'snapshot';
       }
       const snap = snapshotById[b.id];

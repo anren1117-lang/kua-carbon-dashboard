@@ -24,6 +24,8 @@ export default function Hotspots() {
   // Per-building kWh: prefer BMS-mapped measured data, fall back to
   // envysionSnapshot. Same priority ladder as /buildings — Hotspots
   // should rank from the same source of truth, not a different one.
+  // Both sources annualized the same way so values across rows are
+  // comparable (envysionSnapshot is YTD through 2026-05-03, not annual).
   const meterMap = getBmsMeterMap();
   const bmsByBuilding = {};
   for (const m of bmsExportMeters) {
@@ -32,7 +34,8 @@ export default function Hotspots() {
     if (!bId) continue;
     bmsByBuilding[bId] = (bmsByBuilding[bId] || 0) + m.totalKwh * COMPOSED_ANNUALIZE_FACTOR;
   }
-  const snapshotByBuilding = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r.energyUsedKwh]));
+  // Snapshot rows are YTD; annualize for comparability.
+  const snapshotByBuilding = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r.energyUsedKwh * COMPOSED_ANNUALIZE_FACTOR]));
   const buildingsKwh = buildings.map((b) => ({
     id: b.id,
     name: b.name,
