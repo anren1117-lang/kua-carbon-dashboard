@@ -34,7 +34,11 @@ export const buildings = [
   { id: 'b_baxter',     bmsNumber:  1, name: 'Baxter',                     category: 'Dorm',     sqft: 6800,  occupants: 14,  dormPopulation: 14,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_bryant',     bmsNumber: 14, name: 'Bryant Hall',                category: 'Dorm',     sqft: 6500,  occupants: 14,  dormPopulation: 14,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_rowe',       bmsNumber: 16, name: 'Rowe Hall',                  category: 'Dorm',     sqft: 6300,  occupants: 13,  dormPopulation: 13,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
-  { id: 'b_bishop',     bmsNumber:  3, name: 'Bishop Alumni House',        category: 'Dorm',     sqft: 5400,  occupants: 10,  dormPopulation: 10,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
+  // Bishop Alumni House sleeps visiting alumni, not students — NOT in
+  // dorms.js leaderboard registry, NOT in students.js dorm cycle.
+  // Classify as 'Other' so the Buildings page DormEnergySection
+  // doesn't list it among the 11 student dorms.
+  { id: 'b_bishop',     bmsNumber:  3, name: 'Bishop Alumni House',        category: 'Other',    sqft: 5400,  occupants: 10,  dormPopulation: 0,   hvacSchedule: 'as-occupied',           setpointHeatingF: 68, setpointCoolingF: 74 },
   { id: 'b_childcare',  bmsNumber: 25, name: 'Child Care Center',          category: 'Other',    sqft: 4200,  occupants: 30,  dormPopulation: 0,   hvacSchedule: '07:00-18:00 weekday',   setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_mikula',     bmsNumber: 23, name: 'Mikula Hall',                category: 'Dorm',     sqft: 5800,  occupants: 11,  dormPopulation: 11,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_barnfield',  bmsNumber: 10, name: 'Barn Field House',           category: 'Athletic', sqft: 14000, occupants:  50, dormPopulation: 0,   hvacSchedule: '06:00-21:00 daily',     setpointHeatingF: 65, setpointCoolingF: 76 },
