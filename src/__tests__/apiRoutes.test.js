@@ -367,6 +367,36 @@ describe('/api/teacher/lessons', () => {
     expect(patched.body.lesson.status).toBe('published');
   });
 
+  it('PATCH rejects ownership / id / timestamp rewrites silently', async () => {
+    // Earlier the whole body was spread into the saved row, so a
+    // PATCH body could rewrite createdByHash (transferring ownership
+    // to another teacher) or createdAt (forging when it was made).
+    // Now those fields are ignored — only the whitelist is honored.
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.7' },
+      body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Mine', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x', status: 'draft' },
+    });
+    const original = created.body.lesson;
+    const patched = await call(teacherLessonsHandler, {
+      method: 'PATCH',
+      body: {
+        id: original.id,
+        title: 'Renamed',
+        // Hostile fields below — must be silently dropped.
+        createdByHash: 'staff_attacker',
+        createdAt: '1970-01-01T00:00:00.000Z',
+        sourceFileHash: 'tampered',
+      },
+    });
+    expect(patched.statusCode).toBe(200);
+    expect(patched.body.lesson.title).toBe('Renamed');
+    expect(patched.body.lesson.createdByHash).toBe(original.createdByHash);
+    expect(patched.body.lesson.createdAt).toBe(original.createdAt);
+  });
+
   it('DELETE removes a lesson', async () => {
     _resetLessonStoreForTests();
     delete process.env.ANTHROPIC_API_KEY;

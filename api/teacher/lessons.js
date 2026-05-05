@@ -192,9 +192,16 @@ export default async function handler(req, res) {
         res.status(400).json({ error: 'teacherIdHash must be a hashed id (e.g. staff_a1b2c3d4)' });
         return;
       }
-      if (!title || !topic || !readingLevel || !sourceMaterial) {
-        res.status(400).json({ error: 'title, topic, readingLevel, sourceMaterial required' });
-        return;
+      // Type-check the strings explicitly. Earlier code used truthy
+      // checks, so a body like {title: 123, sourceMaterial: ['a','b']}
+      // would slip past and crash deeper in (.length on a number, or
+      // get serialized as a number into the prompt).
+      const stringFields = { title, topic, readingLevel, sourceMaterial };
+      for (const [k, v] of Object.entries(stringFields)) {
+        if (typeof v !== 'string' || v.length === 0) {
+          res.status(400).json({ error: `${k} must be a non-empty string` });
+          return;
+        }
       }
       if (!['novice', 'intermediate', 'advanced'].includes(readingLevel)) {
         res.status(400).json({ error: 'readingLevel must be novice / intermediate / advanced' });
@@ -242,10 +249,21 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const { id, ...patch } = req.body || {};
+      const { id, ...rawPatch } = req.body || {};
       if (!id) { res.status(400).json({ error: 'id required' }); return; }
       const existing = await getLesson(id);
       if (!existing) { res.status(404).json({ error: 'Not found' }); return; }
+      // Whitelist patchable fields. Earlier the entire body was spread
+      // into the saved row, which would have let a malicious request
+      // rewrite createdByHash (transferring ownership), id (rename and
+      // collide with another lesson), or createdAt (forge timestamps).
+      const ALLOWED = ['title', 'topic', 'readingLevel', 'classId', 'sourceMaterial', 'status', 'generatedReading', 'questions'];
+      const patch = {};
+      for (const k of ALLOWED) if (k in rawPatch) patch[k] = rawPatch[k];
+      if ('status' in patch && !['draft', 'published'].includes(patch.status)) {
+        res.status(400).json({ error: 'status must be draft or published' });
+        return;
+      }
       const merged = { ...existing, ...patch };
       const lesson = await saveLesson(merged);
       res.status(200).json({ lesson });
