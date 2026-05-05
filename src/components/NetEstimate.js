@@ -3,6 +3,8 @@ import { ProvenancePill, ProvenanceLegend } from './ProvenancePill.js';
 import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { COMPOSED_YTD_AS_OF, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { GROSS_MT } from '../data/scopeTotals.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -55,30 +57,33 @@ const rows = [
   },
 ];
 
-// Summary recomputed from the rows above. Mid uses Scope 2 central
-// value rather than its midpoint so a tightening Scope 2 range
-// doesn't artificially shift the gross-mid number.
+// Summary: gross/net MID values come from the centralized SCOPE_TOTALS
+// chain (GROSS_MT - ANNUAL_SEQUESTRATION_MT), so the homepage hero
+// matches Executive / Scope detail pages exactly. The LOW/HIGH range
+// values still come from the rows[] array (which tracks per-row
+// uncertainty bands), so the breakdown table conveys honest spread
+// without the hero number drifting from canonical.
 const grossPositive = rows.filter((r) => r.low >= 0);
 const grossLowSum  = grossPositive.reduce((s, r) => s + r.low, 0);
 const grossHighSum = grossPositive.reduce((s, r) => s + r.high, 0);
 const sinksRow = rows.find((r) => r.name.startsWith('Sinks')) || { low: 0, high: 0 };
-const grossMidValue = (grossLowSum + grossHighSum) / 2;
-const sinkMid = (sinksRow.low + sinksRow.high) / 2;
-const netMidValue  = grossMidValue + sinkMid;
-const studentCount = 340;
+const grossMidCanonical = GROSS_MT;
+const sinkMidCanonical  = -ANNUAL_SEQUESTRATION_MT; // signed
+const netMidCanonical   = grossMidCanonical + sinkMidCanonical;
+const studentCount = TOTAL_STUDENTS;
 
 const summary = {
   grossLow:  Math.round(grossLowSum),
   grossHigh: Math.round(grossHighSum),
-  grossMid:  Math.round(grossMidValue),
+  grossMid:  Math.round(grossMidCanonical),
   sinkLow:   sinksRow.low,
   sinkHigh:  sinksRow.high,
   netLow:    Math.round(grossLowSum + sinksRow.high),  // sinks are negative; high (less negative) gives the higher net
   netHigh:   Math.round(grossHighSum + sinksRow.low),
-  netMid:    Math.round(netMidValue),
+  netMid:    Math.round(netMidCanonical),
   perStudentLow:  +((grossLowSum + sinksRow.high) / studentCount).toFixed(1),
   perStudentHigh: +((grossHighSum + sinksRow.low) / studentCount).toFixed(1),
-  perStudentMid:  +((netMidValue) / studentCount).toFixed(1),
+  perStudentMid:  +(netMidCanonical / studentCount).toFixed(1),
   studentCount,
 };
 
