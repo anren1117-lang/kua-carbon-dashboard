@@ -58,9 +58,12 @@ export default function Goals() {
       ]} />
 
       {reductionTargets.map((target) => {
-        const actual = ACTUAL_BY_SCOPE[target.scope === 'scope3' && target.id === 'tg_dining_2028' ? 'dining' : target.scope] ?? target.baselineValue;
-        // Dining target uses a sub-slice of Scope 3, not the whole.
-        const actualForTarget = target.id === 'tg_dining_2028' ? 800 : actual;
+        // Dining target uses a sub-slice of Scope 3, not the whole, and
+        // we don't have a measured "dining-driven Scope 3" yet — pin it
+        // to the baseline (assumes no progress) so the bar reads honestly.
+        const actualForTarget = target.id === 'tg_dining_2028'
+          ? target.baselineValue
+          : (ACTUAL_BY_SCOPE[target.scope] ?? target.baselineValue);
         const status = trajectoryStatus(target, actualForTarget, CURRENT_YEAR);
         const accent = SCOPE_ACCENT[target.scope] || '#22d3ee';
 
