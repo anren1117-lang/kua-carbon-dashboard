@@ -106,9 +106,102 @@ export const ytdComponents = (() => {
 export const COMPOSED_YTD_KWH = ytdComponents.reduce((s, c) => s + c.kwh, 0);
 export const COMPOSED_YTD_DAYS_COVERED = ytdComponents.reduce((s, c) => s + c.days, 0);
 
-// Annualization: full-year ÷ days-covered.
-export const COMPOSED_ANNUALIZE_FACTOR = COMPOSED_YTD_DAYS_COVERED > 0 ? 365 / COMPOSED_YTD_DAYS_COVERED : 1;
-export const COMPOSED_ANNUAL_KWH    = Math.round(COMPOSED_YTD_KWH * COMPOSED_ANNUALIZE_FACTOR);
+// ─── Year 1 projection — seasonally-anchored ──────────────────────
+// The naive approach is linear: kWh × (365 ÷ days_covered). For an
+// NH boarding school that's wrong — Jan/Feb peak from heating, Jul
+// trough from no occupancy + no heating + AC barely on. Linear
+// annualization over Apr-anchored data (a low-heating month)
+// systematically under-counts winter.
+//
+// Better: anchor the unmeasured months on the measured months using
+// the NH seasonal shape. Each measured month implies its own
+// "annual" via measuredKwh ÷ monthFraction. Average those across
+// the measured months for a calibrated annual baseline. Project
+// unmeasured months as annual × theirMonthFraction.
+
+import { monthlyPattern } from './seasonalPatterns.js';
+
+const MULT_SUM = monthlyPattern.reduce((s, m) => s + m.multiplier, 0); // ≈ 11.55
+// Each month's share of the year-of-mean-month if the year's average
+// month equals the mean — divide by 12 (to get the average) and by
+// MULT_SUM/12 (so the multipliers sum to 12 with the average being 1).
+// Equivalently: monthShare = multiplier / MULT_SUM.
+const monthShare = monthlyPattern.map((m) => m.multiplier / MULT_SUM);
+
+const monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+// Map each ytdComponent to its month index. Apr/May partial months
+// only contribute a fractional share.
+function componentToMonthShareCovered(c) {
+  // Period like '2026-01' or '2026-05' from the components.
+  const monthIdx = parseInt(c.period.slice(5), 10) - 1;
+  if (monthIdx < 0 || monthIdx >= 12) return null;
+  // Fraction of the month covered by this component.
+  const frac = Math.min(1, c.days / monthDays[monthIdx]);
+  return { monthIdx, frac, kwh: c.kwh };
+}
+
+// Calibrate annual baseline: for each measured month / fraction,
+// implied annual = kwh ÷ (monthShare[monthIdx] × frac).
+const impliedAnnuals = ytdComponents
+  .map(componentToMonthShareCovered)
+  .filter((x) => x && x.frac > 0 && monthShare[x.monthIdx] > 0)
+  .map((x) => x.kwh / (monthShare[x.monthIdx] * x.frac));
+
+const calibratedAnnual = impliedAnnuals.length > 0
+  ? impliedAnnuals.reduce((s, v) => s + v, 0) / impliedAnnuals.length
+  : COMPOSED_YTD_KWH * (365 / COMPOSED_YTD_DAYS_COVERED);
+
+/** Year 1 projection = sum of (measured value if covered, else
+ *  calibrated_annual × monthShare for the unmeasured remainder). */
+function projectYear1() {
+  const covered = new Map(); // monthIdx → kWh covered, fracCovered
+  for (const c of ytdComponents) {
+    const x = componentToMonthShareCovered(c);
+    if (!x) continue;
+    const cur = covered.get(x.monthIdx) || { kwh: 0, frac: 0 };
+    covered.set(x.monthIdx, { kwh: cur.kwh + x.kwh, frac: cur.frac + x.frac });
+  }
+  const months = [];
+  for (let i = 0; i < 12; i++) {
+    const c = covered.get(i);
+    const monthFullKwh = calibratedAnnual * monthShare[i];
+    if (!c || c.frac >= 1) {
+      months.push({
+        monthIdx: i, label: monthlyPattern[i].month,
+        kwh: c ? c.kwh : monthFullKwh,
+        provenance: c ? 'measured' : 'projected',
+        fracMeasured: c ? c.frac : 0,
+      });
+    } else {
+      // Partial month: measured portion + projected portion of the rest.
+      const remainingFrac = 1 - c.frac;
+      months.push({
+        monthIdx: i, label: monthlyPattern[i].month,
+        kwh: c.kwh + monthFullKwh * remainingFrac,
+        provenance: 'mixed',
+        fracMeasured: c.frac,
+      });
+    }
+  }
+  return months;
+}
+
+export const year1Months = projectYear1();
+export const COMPOSED_YEAR1_KWH = Math.round(year1Months.reduce((s, m) => s + m.kwh, 0));
+export const COMPOSED_YEAR1_CALIBRATED_ANNUAL = Math.round(calibratedAnnual);
+
+// Effective annualize factor = projected year 1 ÷ YTD measured.
+// Higher than naive 365/days_covered because the measured months
+// (Jan-Apr) lean heating-heavy.
+export const COMPOSED_ANNUALIZE_FACTOR = COMPOSED_YTD_DAYS_COVERED > 0
+  ? COMPOSED_YEAR1_KWH / COMPOSED_YTD_KWH
+  : 1;
+// Naive linear factor kept for cross-reference / older callers.
+export const COMPOSED_LINEAR_ANNUALIZE_FACTOR = COMPOSED_YTD_DAYS_COVERED > 0 ? 365 / COMPOSED_YTD_DAYS_COVERED : 1;
+// COMPOSED_ANNUAL_KWH stays as the public name; consumers who imported
+// it before now get the seasonally-anchored projection automatically.
+export const COMPOSED_ANNUAL_KWH = COMPOSED_YEAR1_KWH;
 
 // COMPOSED_YTD_MTCO2E and COMPOSED_ANNUAL_MTCO2E are computed in
 // gridMix.js, NOT here — that's where the cited per-fuel emission

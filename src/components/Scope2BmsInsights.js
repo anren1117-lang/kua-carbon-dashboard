@@ -12,6 +12,9 @@ import {
   COMPOSED_YTD_DAYS_COVERED,
   COMPOSED_ANNUAL_KWH,
   COMPOSED_ANNUALIZE_FACTOR,
+  year1Months,
+  COMPOSED_YEAR1_KWH,
+  COMPOSED_LINEAR_ANNUALIZE_FACTOR,
 } from '../data/composedYtd.js';
 // COMPOSED_YTD_MTCO2E and COMPOSED_ANNUAL_MTCO2E now come from gridMix
 // (GRID_MIX_TOTAL_MTCO2E / GRID_MIX_ANNUAL_MTCO2E) — same values, but
@@ -176,6 +179,8 @@ export function Scope2BmsInsights() {
         </div>
       </section>
 
+      <Year1ProjectionSection />
+
       <TimePatternsSection />
 
       {/* Window summary cards */}
@@ -299,6 +304,115 @@ export function Scope2BmsInsights() {
       <PeakDemandTimelineSection />
       <EvChargerSection />
     </div>
+  );
+}
+
+// ─── Year 1 projection (seasonally anchored on the data you input) ───
+function Year1ProjectionSection() {
+  const max = Math.max(...year1Months.map((m) => m.kwh));
+  const measuredMonths = year1Months.filter((m) => m.provenance === 'measured');
+  const measuredKwh    = measuredMonths.reduce((s, m) => s + m.kwh, 0);
+  const projectedKwh   = COMPOSED_YEAR1_KWH - measuredKwh;
+  const measuredPct    = (measuredKwh / COMPOSED_YEAR1_KWH) * 100;
+
+  const linearAnnual = Math.round(COMPOSED_YTD_KWH * COMPOSED_LINEAR_ANNUALIZE_FACTOR);
+  const seasonalSavings = linearAnnual - COMPOSED_YEAR1_KWH;
+  const seasonalSavingsPct = (seasonalSavings / linearAnnual) * 100;
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the data you uploaded)</h3>
+      <p style={styles.cardHint}>
+        Built directly from the BMS Meter Trends CSV + the four monthly captures already in
+        the dashboard. Measured months (Jan–Apr) anchor a calibrated annual baseline that
+        the unmeasured months are projected against using NH's heating-driven seasonal
+        shape — much more honest than naive linear annualization, which over-counts summer.
+      </p>
+
+      <div style={styles.summaryGrid}>
+        <Stat label="Year 1 total"             value={COMPOSED_YEAR1_KWH.toLocaleString()}                                  unit="kWh" accent="#86efac" note={`${(measuredPct).toFixed(0)}% measured, ${(100 - measuredPct).toFixed(0)}% projected`} />
+        <Stat label="Year 1 Scope 2"           value={(COMPOSED_YEAR1_KWH * 0.235 / 1000).toFixed(0)}                       unit="mtCO₂e" accent="#fbbf24" note={`× 0.235 kg/kWh ISO-NE`} />
+        <Stat label="vs naive linear"           value={`-${seasonalSavings.toLocaleString()}`}                               unit="kWh" accent="#22d3ee" note={`${seasonalSavingsPct.toFixed(1)}% lower than ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)} extrapolation`} />
+        <Stat label="Effective annualize"       value={`×${COMPOSED_ANNUALIZE_FACTOR.toFixed(2)}`}                            unit=""    accent="#a855f7" note={`(linear would be ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)})`} />
+      </div>
+
+      {/* 12-month bar chart */}
+      <div style={styles.year1Chart}>
+        {year1Months.map((m) => {
+          const isProjected = m.provenance === 'projected';
+          const isMixed = m.provenance === 'mixed';
+          return (
+            <div key={m.label} style={styles.year1Col}>
+              <div style={styles.year1Val}>{Math.round(m.kwh / 1000)}k</div>
+              <div style={styles.year1BarTrack}>
+                {isMixed ? (
+                  <>
+                    {/* Stacked: measured portion solid, projected portion striped */}
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0, right: 0,
+                      height: `${(m.kwh / max) * 100}%`,
+                      background: '#475569',
+                      backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)',
+                    }} />
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0, right: 0,
+                      height: `${(m.kwh * m.fracMeasured / max) * 100}%`,
+                      background: '#22c55e',
+                    }} />
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      ...styles.year1Bar,
+                      height: `${(m.kwh / max) * 100}%`,
+                      background: isProjected ? '#475569' : '#22c55e',
+                      backgroundImage: isProjected
+                        ? 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)'
+                        : 'none',
+                    }}
+                    title={`${m.label}: ${Math.round(m.kwh).toLocaleString()} kWh (${m.provenance})`}
+                  />
+                )}
+              </div>
+              <div style={styles.year1Label}>{m.label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={styles.legendRow}>
+        <LegendDot color="#22c55e">Measured (BMS captures + CSV)</LegendDot>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
+          <span style={{ width: 10, height: 10, background: '#475569', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)', borderRadius: 2, display: 'inline-block' }} />
+          Projected (NH seasonal shape)
+        </span>
+      </div>
+
+      <div style={styles.todayTarget}>
+        <div>
+          <span style={styles.ttLabel}>Today:</span>
+          For each measured month (Jan–Apr full, May partial), compute "implied annual" =
+          measured_kwh ÷ that month's share of NH's seasonal shape (Jan = 1.25× mean month,
+          Jul = 0.59× mean month, etc.). Average those implied annuals to get a calibrated
+          baseline ({COMPOSED_YTD_KWH > 0 ? Math.round(COMPOSED_YEAR1_KWH * (1 / 12)).toLocaleString() : 0} kWh/mean-month).
+          Project each unmeasured month as baseline × itsMonthShare.
+        </div>
+        <div>
+          <span style={styles.ttLabel}>Why:</span>
+          Linear annualization (multiply by 365 ÷ days_covered) over Jan–Apr data
+          overcounts summer because Jan–Apr are heating-heavy. The seasonal-anchored
+          estimate is ~{seasonalSavingsPct.toFixed(0)}% lower and matches what the
+          dashboard would show in the months that haven't been measured yet.
+        </div>
+        <div>
+          <span style={styles.ttLabel}>Target:</span>
+          Each measured month from now until Apr 2027 reduces the projected slice. Once
+          all 12 months are captured, the chart is 100% green and the seasonal shape
+          becomes derived-from-measurement instead of cited NH defaults — useful for
+          year-over-year change detection in 2028+.
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1083,6 +1197,14 @@ const styles = {
   analysisRow: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 },
   analysisLabel: { color: '#fbbf24', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
   analysisText: { color: '#cbd5e1' },
+
+  // Year 1 projection chart
+  year1Chart: { display: 'flex', gap: 8, alignItems: 'flex-end', height: 160, padding: '4px 0' },
+  year1Col: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  year1Val: { fontSize: 10, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  year1BarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, position: 'relative', overflow: 'hidden' },
+  year1Bar: { position: 'absolute', bottom: 0, left: 0, right: 0, minHeight: 2, borderRadius: '2px 2px 0 0' },
+  year1Label: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginTop: 4 },
 
   // YTD composition table
   ytdTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
