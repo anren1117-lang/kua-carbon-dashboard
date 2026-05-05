@@ -15,11 +15,15 @@
 
 /** @type {EmissionFactor[]} */
 export const emissionFactors = [
-  // Electricity — ISO-NE 2024 system mix average
-  { id: 'ef_grid_isone_2024', category: 'electricity', subcategory: 'isone_grid', unit: 'kWh', kgco2e_per_unit: 0.0956, source: 'ISO New England 2024 System Mix', year: 2024 },
-  { id: 'ef_grid_natgas',      category: 'electricity', subcategory: 'natural_gas',     unit: 'kWh', kgco2e_per_unit: 0.181,  source: 'ISO-NE generation mix', year: 2024 },
-  { id: 'ef_grid_oil',         category: 'electricity', subcategory: 'oil',             unit: 'kWh', kgco2e_per_unit: 0.257,  source: 'ISO-NE generation mix', year: 2024 },
-  { id: 'ef_grid_coal',        category: 'electricity', subcategory: 'coal',            unit: 'kWh', kgco2e_per_unit: 0.329,  source: 'ISO-NE generation mix', year: 2024 },
+  // Electricity — per-fuel emission factors per kWh of electricity OUTPUT
+  // (NOT per kWh of fuel BTU input). These match src/data/gridMix.js
+  // and yield an effective system rate of ~0.235 kg/kWh weighted across
+  // ISO-NE 2024 generation mix — in eGRID NEWE 2022 published range.
+  { id: 'ef_grid_isone_2024', category: 'electricity', subcategory: 'isone_grid', unit: 'kWh', kgco2e_per_unit: 0.235, source: 'ISO-NE 2024 mix × per-fuel output factors', year: 2024 },
+  { id: 'ef_grid_natgas',      category: 'electricity', subcategory: 'natural_gas',     unit: 'kWh', kgco2e_per_unit: 0.400, source: 'ISO-NE generation mix (combined-cycle output)', year: 2024 },
+  { id: 'ef_grid_oil',         category: 'electricity', subcategory: 'oil',             unit: 'kWh', kgco2e_per_unit: 0.780, source: 'EPA eGRID NEWE oil-fired typical', year: 2024 },
+  { id: 'ef_grid_coal',        category: 'electricity', subcategory: 'coal',            unit: 'kWh', kgco2e_per_unit: 0.950, source: 'EPA eGRID NEWE coal-fired typical', year: 2024 },
+  { id: 'ef_grid_imports',     category: 'electricity', subcategory: 'imports',         unit: 'kWh', kgco2e_per_unit: 0.300, source: 'NYISO + Quebec hydro blend midpoint', year: 2024 },
 
   // Heating fuels (Scope 1)
   { id: 'ef_fuel_oil_2',  category: 'fuel', subcategory: 'heating_oil_no2', unit: 'gallon', kgco2e_per_unit: 10.16, source: 'EPA GHG Emission Factors Hub 2024', year: 2024 },

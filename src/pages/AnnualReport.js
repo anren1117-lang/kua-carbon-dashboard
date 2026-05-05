@@ -191,7 +191,7 @@ export default function AnnualReport() {
 
       <Section title="Methodology notes">
         <ul style={styles.notes}>
-          <li><strong>Source factors.</strong> Electricity uses ISO-NE 2024 system mix (~0.0956 kg CO₂/kWh). Heating fuel uses EPA Greenhouse Gas Emission Factors Hub. Food uses Poore & Nemecek (2018). Waste uses EPA WARM v15. Procurement uses US EPA EEIO v2.0 spend-based.</li>
+          <li><strong>Source factors.</strong> Electricity uses ISO-NE 2024 generation mix with per-fuel output emission factors (~0.235 kg CO₂/kWh effective system rate, in eGRID NEWE 2022 published range). Heating fuel uses EPA Greenhouse Gas Emission Factors Hub. Food uses Poore & Nemecek (2018). Waste uses EPA WARM v15. Procurement uses US EPA EEIO v2.0 spend-based.</li>
           <li><strong>Forest sequestration</strong> uses stand-specific accumulation rates from Birdsey (1992) for closed-canopy and Nowak (2013) for open-grown trees.</li>
           <li><strong>This report is preliminary.</strong> Until the data ingestion pipeline is fully populated, several Scope 3 figures (student travel, food procurement, supplier emissions) are estimates. The dashboard at <em>/data-admin</em> shows the live data quality status.</li>
           <li><strong>Audit trail.</strong> Every emission factor in the dashboard carries its citation and year. The full registry is at <em>/data-admin</em>.</li>

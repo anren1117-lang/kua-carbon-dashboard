@@ -96,13 +96,14 @@ describe('data layer integrity', () => {
 
 describe('emission math', () => {
   it('converts kWh to kgCO2e using ISO-NE factor', () => {
+    // Per-fuel output factors weighted across ISO-NE 2024 mix → 0.235 kg/kWh.
     const { kgco2e, factor } = quantityToKgCO2e({ quantity: 1000, factorId: 'ef_grid_isone_2024' });
     expect(factor.unit).toBe('kWh');
-    expect(kgco2e).toBeCloseTo(95.6, 1);
+    expect(kgco2e).toBeCloseTo(235, 1);
   });
 
   it('annualElectricityMt rolls up large kWh figures correctly', () => {
-    expect(annualElectricityMt(1_000_000)).toBeCloseTo(95.6, 1);
+    expect(annualElectricityMt(1_000_000)).toBeCloseTo(235, 1);
   });
 
   it('kg → mt conversion', () => {
@@ -144,7 +145,7 @@ describe('utilities', () => {
         { id: 'b', name: 'B', kwh: 100 },
       ],
       1100,
-      0.0956,
+      0.235, // updated to per-fuel output ISO-NE 2024 effective rate
     );
     expect(hs[0].id).toBe('a');
     expect(['low', 'medium', 'high']).toContain(hs[0].severity);

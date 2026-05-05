@@ -573,7 +573,7 @@ describe('POST /api/emissions/calculate', () => {
       body: { quantity: 1000, factorId: 'ef_grid_isone_2024' },
     });
     expect(r.statusCode).toBe(200);
-    expect(r.body.kgco2e).toBeCloseTo(95.6, 1);
+    expect(r.body.kgco2e).toBeCloseTo(235, 1); // 0.235 kg/kWh effective × 1000
     expect(r.body.factor.unit).toBe('kWh');
   });
 
