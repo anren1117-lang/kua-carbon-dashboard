@@ -22,14 +22,27 @@ function Propane() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const gallonsNum = parseFloat(form.gallons);
+    if (!Number.isFinite(gallonsNum) || gallonsNum < 0) {
+      setMsg({ ok: false, text: `Gallons must be a non-negative number (got "${form.gallons}")` });
+      return;
+    }
+    let costNum = null;
+    if (form.cost_usd !== '') {
+      costNum = parseFloat(form.cost_usd);
+      if (!Number.isFinite(costNum) || costNum < 0) {
+        setMsg({ ok: false, text: `Cost must be a non-negative number (got "${form.cost_usd}")` });
+        return;
+      }
+    }
     try {
       const payload = {
         delivery_date: form.delivery_date,
         vendor: form.vendor || null,
         invoice_number: form.invoice_number || null,
         building_or_tank: form.building_or_tank || null,
-        gallons: parseFloat(form.gallons),
-        cost_usd: form.cost_usd === '' ? null : parseFloat(form.cost_usd),
+        gallons: gallonsNum,
+        cost_usd: costNum,
         data_quality: form.data_quality,
         source: form.source || null,
         notes: form.notes || null,
