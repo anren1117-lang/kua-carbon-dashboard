@@ -82,6 +82,14 @@ export function getInventoryView(kind) {
   const edits   = loadJson(k.edits, {});
   const removed = new Set(loadJson(k.removed, []));
   const added   = loadJson(k.added, []);
+  // Counts must match the rendered rows exactly: a record that's BOTH
+  // removed and edited is shown as "decommissioned" (the removed
+  // branch wins above), so it should only be counted as decommissioned
+  // — not double-counted as "overridden". Same for seeded: only count
+  // records that are neither removed nor edited.
+  const decommissionedCount = seeds.filter((r) => removed.has(r.id)).length;
+  const overriddenCount     = seeds.filter((r) => !removed.has(r.id) && edits[r.id]).length;
+  const seededCount         = seeds.length - decommissionedCount - overriddenCount;
   return {
     rows: [
       ...seeds.map((rec) => {
@@ -93,9 +101,9 @@ export function getInventoryView(kind) {
       ...added.map((rec) => ({ ...rec, _provenance: 'user-added' })),
     ],
     counts: {
-      seeded: seeds.length - removed.size - Object.keys(edits).length,
-      overridden: Object.keys(edits).length,
-      decommissioned: removed.size,
+      seeded: seededCount,
+      overridden: overriddenCount,
+      decommissioned: decommissionedCount,
       added: added.length,
     },
   };
