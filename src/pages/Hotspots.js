@@ -18,7 +18,7 @@ import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 // magnitude rollup (per-building electricity) with a category-level summary
 // and overlays the top suggested actions from the AI advisor.
 
-const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; // ≈ 0.0956
+const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; // ≈ 0.235 (output basis)
 
 export default function Hotspots() {
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));

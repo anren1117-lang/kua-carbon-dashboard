@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
-import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 
 // Per-student mtCO2e breakdown drawn from publicly disclosed sustainability reports.
 // Cross-institutional comparison has real limits (Valls-Val & Bovea 2021): Scope 3
@@ -21,9 +20,9 @@ import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../data/composedY
 // Pull from the single-source scope totals so peer-comparison numbers
 // auto-update when measured data lands.
 import { SCOPE1_TOTAL_MT as KUA_SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT as KUA_SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
-// Annualize the YTD-through-2026-05-03 scope-2 baseline so the comparison
+// Use the canonical annualized scope-2 export so the comparison
 // against peers' annual scope-2 figures is apples-to-apples.
-const KUA_SCOPE2_ANNUAL_MT = GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR;
+const KUA_SCOPE2_ANNUAL_MT = GRID_MIX_ANNUAL_MTCO2E;
 const round1 = (n) => Math.round(n * 10) / 10;
 
 const peers = [
@@ -33,7 +32,7 @@ const peers = [
     scope3:  round1(KUA_SCOPE3_TOTAL_MT / TOTAL_STUDENTS),
     sinks:   round1(-ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS),
     offsets: 0,
-    note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${KUA_SCOPE1_TOTAL_MT.toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(KUA_SCOPE2_ANNUAL_MT).toLocaleString()} mt annualized from the YTD-through-2026-05-03 BMS-measured kWh × ISO-NE 2024 grid factors (${GRID_MIX_TOTAL_MTCO2E.toFixed(1)} mt YTD × 365/123 days). Scope 3 = ${KUA_SCOPE3_TOTAL_MT.toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at mid-estimate sequestration.` },
+    note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${KUA_SCOPE1_TOTAL_MT.toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(KUA_SCOPE2_ANNUAL_MT).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${GRID_MIX_TOTAL_MTCO2E.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${KUA_SCOPE3_TOTAL_MT.toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at mid-estimate sequestration.` },
   { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary',
     scope1: 4.0, scope2: 1.5, scope3: 4.5, sinks: 0, offsets: 0,
     note: 'Larger boarding cohort, older buildings on heating oil; sinks not quantified in their reporting.' },

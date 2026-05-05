@@ -14,6 +14,13 @@ import { TOTAL_STUDENTS } from '../data/students.js';
 const SCOPE2_RANGE_LOW  = Math.round(GRID_MIX_ANNUAL_MTCO2E * 0.95);
 const SCOPE2_RANGE_HIGH = Math.round(GRID_MIX_ANNUAL_MTCO2E * 1.05);
 
+// Helpers for the action-math blocks below — keep the educational
+// figures in sync with the canonical Year 1 kWh and grid factor.
+const KG_PER_KWH = 0.235;
+const KWH_TOTAL_LABEL = `~${(COMPOSED_ANNUAL_KWH / 1_000_000).toFixed(1)}M kWh/yr (Year 1)`;
+const fmtKwh = (n) => Math.round(n).toLocaleString();
+const fmtMt  = (kg) => (kg / 1000).toFixed(1);
+
 const styles = {
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
   subtitle: { marginTop: 10, color: '#94a3b8', maxWidth: 760, fontSize: 17, lineHeight: 1.6 },
@@ -114,19 +121,24 @@ function Scope2() {
             data: [
               { input: 'Lighting share of commercial electricity', value: '17 – 25%', source: 'EIA Commercial Buildings Energy Consumption Survey (CBECS)' },
               { input: 'LED savings vs fluorescent', value: '60 – 80% kWh', source: 'DOE LED Lighting Facts; ENERGY STAR' },
-              { input: 'Total campus electricity', value: '~1.9M kWh/yr (Year 1)', source: 'composedYtd × annualize, /scope-2' },
+              { input: 'Total campus electricity', value: KWH_TOTAL_LABEL, source: 'composedYtd × annualize, /scope-2' },
               { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
             ],
-            math: [
-              'lighting_kwh = 1,900,000 × 0.20 = 380,000 kWh',
-              '',
-              '# Realistic phased retrofit: replace 50-100% of fixtures',
-              'savings = 380,000 × replacement% × LED_reduction × 0.235',
-              '       = 380,000 × 0.50 × 0.60 × 0.235 = 27 mtCO₂e (50% retrofit, 60% LED savings)',
-              '       = 380,000 × 1.00 × 0.80 × 0.235 = 71 mtCO₂e (full retrofit, 80% savings)',
-              '',
-              '# Conservative range accounting for partial coverage + uncertainty: 10 - 30 mtCO₂e/yr',
-            ],
+            math: (() => {
+              const lightingKwh = COMPOSED_ANNUAL_KWH * 0.20;
+              const halfRetrofit = lightingKwh * 0.50 * 0.60 * KG_PER_KWH;
+              const fullRetrofit = lightingKwh * 1.00 * 0.80 * KG_PER_KWH;
+              return [
+                `lighting_kwh = ${fmtKwh(COMPOSED_ANNUAL_KWH)} × 0.20 = ${fmtKwh(lightingKwh)} kWh`,
+                '',
+                '# Realistic phased retrofit: replace 50-100% of fixtures',
+                'savings = lighting_kwh × replacement% × LED_reduction × 0.235',
+                `       = ${fmtKwh(lightingKwh)} × 0.50 × 0.60 × 0.235 = ${fmtMt(halfRetrofit)} mtCO₂e (50% retrofit, 60% LED savings)`,
+                `       = ${fmtKwh(lightingKwh)} × 1.00 × 0.80 × 0.235 = ${fmtMt(fullRetrofit)} mtCO₂e (full retrofit, 80% savings)`,
+                '',
+                '# Conservative range accounting for partial coverage + uncertainty: 10 - 30 mtCO₂e/yr',
+              ];
+            })(),
           },
           {
             action: 'Smart HVAC scheduling',
@@ -135,16 +147,21 @@ function Scope2() {
             data: [
               { input: 'HVAC share of commercial electricity', value: '40 – 50%', source: 'EIA CBECS 2018' },
               { input: 'Reduction from BAS scheduling', value: '15 – 30%', source: 'ASHRAE Journal 2019; LBNL High-Performance Building Database' },
-              { input: 'Total campus electricity', value: '~1.9M kWh/yr (Year 1)', source: 'composedYtd × annualize, /scope-2' },
+              { input: 'Total campus electricity', value: KWH_TOTAL_LABEL, source: 'composedYtd × annualize, /scope-2' },
               { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
             ],
-            math: [
-              'hvac_kwh = 1,900,000 × 0.45 = 855,000 kWh',
-              'savings_low  = 855,000 × 15% × 0.235 = 30 mtCO₂e',
-              'savings_high = 855,000 × 30% × 0.235 = 60 mtCO₂e',
-              '',
-              '# Discounted for partial implementation: 10 - 25 mtCO₂e/yr',
-            ],
+            math: (() => {
+              const hvacKwh = COMPOSED_ANNUAL_KWH * 0.45;
+              const savingsLow  = hvacKwh * 0.15 * KG_PER_KWH;
+              const savingsHigh = hvacKwh * 0.30 * KG_PER_KWH;
+              return [
+                `hvac_kwh = ${fmtKwh(COMPOSED_ANNUAL_KWH)} × 0.45 = ${fmtKwh(hvacKwh)} kWh`,
+                `savings_low  = ${fmtKwh(hvacKwh)} × 15% × 0.235 = ${fmtMt(savingsLow)} mtCO₂e`,
+                `savings_high = ${fmtKwh(hvacKwh)} × 30% × 0.235 = ${fmtMt(savingsHigh)} mtCO₂e`,
+                '',
+                '# Discounted for partial implementation: 10 - 25 mtCO₂e/yr',
+              ];
+            })(),
           },
           {
             action: 'Procure clean electricity supplier',
