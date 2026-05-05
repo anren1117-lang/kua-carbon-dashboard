@@ -732,12 +732,15 @@ function DailyView({ data }) {
   // diffs aggregated across CT-backwards meters, NOT real load events.
   // Now that the parser detects backwards CTs and stuck meters
   // explicitly, the daily chart uses straight max-of-data scaling.
+  if (data.daily.length === 0) return <div>No daily data in window.</div>;
   const max = Math.max(...data.daily.map((d) => d.kwh));
   const peakDay = data.daily.reduce((p, d) => (d.kwh > p.kwh ? d : p), data.daily[0]);
   const lowDay = data.daily.reduce((p, d) => (d.kwh < p.kwh ? d : p), data.daily[0]);
-  const weekdayMean = data.daily.filter((d) => !d.isWeekend).reduce((s, d) => s + d.kwh, 0) / data.daily.filter((d) => !d.isWeekend).length;
-  const weekendMean = data.daily.filter((d) => d.isWeekend).reduce((s, d) => s + d.kwh, 0) / Math.max(1, data.daily.filter((d) => d.isWeekend).length);
-  const weekendDip = ((weekdayMean - weekendMean) / weekdayMean) * 100;
+  const weekdays = data.daily.filter((d) => !d.isWeekend);
+  const weekendDays = data.daily.filter((d) => d.isWeekend);
+  const weekdayMean = weekdays.reduce((s, d) => s + d.kwh, 0) / Math.max(1, weekdays.length);
+  const weekendMean = weekendDays.reduce((s, d) => s + d.kwh, 0) / Math.max(1, weekendDays.length);
+  const weekendDip = weekdayMean > 0 ? ((weekdayMean - weekendMean) / weekdayMean) * 100 : 0;
 
   return (
     <>
