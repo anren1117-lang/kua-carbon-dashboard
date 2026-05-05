@@ -73,7 +73,7 @@ export const MEASURED_APRIL_KWH = 1692;
 const APRIL_SHARE = NH_MONTHLY_SHAPE[3] / SHAPE_SUM; // ≈ 0.101
 
 // Annual = measured April / April's share of the year.
-// 2,912 / 0.101 ≈ 28,800 kWh/yr.
+// 1,692 / 0.101 ≈ 16,750 kWh/yr.
 export const SOLAR_ANNUAL_KWH = Math.round(MEASURED_APRIL_KWH / APRIL_SHARE);
 
 /** @type {SolarMonth[]} */
