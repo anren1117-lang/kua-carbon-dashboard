@@ -196,6 +196,3 @@ export const BmsExportMeterAdapter = {
     };
   },
 };
-
-export const BMS_EXPORT_WINDOW_START_MS = WINDOW_START_MS;
-export const BMS_EXPORT_WINDOW_END_MS   = WINDOW_END_MS;
