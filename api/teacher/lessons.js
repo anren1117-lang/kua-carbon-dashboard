@@ -249,10 +249,21 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const { id, ...rawPatch } = req.body || {};
+      const { id, teacherIdHash, ...rawPatch } = req.body || {};
       if (!id) { res.status(400).json({ error: 'id required' }); return; }
+      if (!isHashedId(teacherIdHash)) {
+        res.status(401).json({ error: 'teacherIdHash (hashed id) required' });
+        return;
+      }
       const existing = await getLesson(id);
       if (!existing) { res.status(404).json({ error: 'Not found' }); return; }
+      // Ownership check: only the teacher who created the lesson may
+      // edit it. Without this, anyone with a lesson id could publish a
+      // draft, edit the questions, or rewrite the source material.
+      if (existing.createdByHash !== teacherIdHash) {
+        res.status(403).json({ error: 'You do not own this lesson' });
+        return;
+      }
       // Whitelist patchable fields. Earlier the entire body was spread
       // into the saved row, which would have let a malicious request
       // rewrite createdByHash (transferring ownership), id (rename and
@@ -272,7 +283,19 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const id = req.query?.id;
+      const teacherIdHash = req.query?.teacherIdHash;
       if (!id) { res.status(400).json({ error: 'id required' }); return; }
+      if (!isHashedId(teacherIdHash)) {
+        res.status(401).json({ error: 'teacherIdHash (hashed id) required' });
+        return;
+      }
+      const existing = await getLesson(id);
+      if (!existing) { res.status(404).json({ error: 'Not found' }); return; }
+      // Same ownership rule as PATCH — only the original author can delete.
+      if (existing.createdByHash !== teacherIdHash) {
+        res.status(403).json({ error: 'You do not own this lesson' });
+        return;
+      }
       await deleteLesson(id);
       res.status(200).json({ ok: true });
       return;

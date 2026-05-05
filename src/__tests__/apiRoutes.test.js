@@ -382,7 +382,7 @@ describe('/api/teacher/lessons', () => {
     const id = created.body.lesson.id;
     const patched = await call(teacherLessonsHandler, {
       method: 'PATCH',
-      body: { id, status: 'published' },
+      body: { id, teacherIdHash: 'staff_a1b2c3d4', status: 'published' },
     });
     expect(patched.statusCode).toBe(200);
     expect(patched.body.lesson.status).toBe('published');
@@ -405,6 +405,7 @@ describe('/api/teacher/lessons', () => {
       method: 'PATCH',
       body: {
         id: original.id,
+        teacherIdHash: 'staff_a1b2c3d4',
         title: 'Renamed',
         // Hostile fields below — must be silently dropped.
         createdByHash: 'staff_attacker',
@@ -418,6 +419,44 @@ describe('/api/teacher/lessons', () => {
     expect(patched.body.lesson.createdAt).toBe(original.createdAt);
   });
 
+  it('PATCH rejects edits from a different teacherIdHash', async () => {
+    // Without an ownership check, anyone with the lesson id could
+    // republish, edit questions, or rewrite the source. Lock PATCH
+    // (and DELETE) to the teacherIdHash that authored the lesson.
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.7' },
+      body: { teacherIdHash: 'staff_aaaa1111', title: 'Owned', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x', status: 'draft' },
+    });
+    const id = created.body.lesson.id;
+    const attacker = await call(teacherLessonsHandler, {
+      method: 'PATCH',
+      body: { id, teacherIdHash: 'staff_bbbb2222', title: 'Hijacked', status: 'published' },
+    });
+    expect(attacker.statusCode).toBe(403);
+    const stillThere = await call(teacherLessonsHandler, { method: 'GET', query: { id } });
+    expect(stillThere.body.lesson.title).toBe('Owned');
+    expect(stillThere.body.lesson.status).toBe('draft');
+  });
+
+  it('PATCH without teacherIdHash is rejected as 401', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.7' },
+      body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Anon', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
+    });
+    const id = created.body.lesson.id;
+    const r = await call(teacherLessonsHandler, {
+      method: 'PATCH',
+      body: { id, status: 'published' },
+    });
+    expect(r.statusCode).toBe(401);
+  });
+
   it('DELETE removes a lesson', async () => {
     _resetLessonStoreForTests();
     delete process.env.ANTHROPIC_API_KEY;
@@ -427,10 +466,28 @@ describe('/api/teacher/lessons', () => {
       body: { teacherIdHash: 'staff_a1b2c3d4', title: 'Bye', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
     });
     const id = created.body.lesson.id;
-    const del = await call(teacherLessonsHandler, { method: 'DELETE', query: { id } });
+    const del = await call(teacherLessonsHandler, { method: 'DELETE', query: { id, teacherIdHash: 'staff_a1b2c3d4' } });
     expect(del.statusCode).toBe(200);
     const after = await call(teacherLessonsHandler, { method: 'GET', query: { id } });
     expect(after.statusCode).toBe(404);
+  });
+
+  it('DELETE rejects from a different teacherIdHash', async () => {
+    _resetLessonStoreForTests();
+    delete process.env.ANTHROPIC_API_KEY;
+    const created = await call(teacherLessonsHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.7' },
+      body: { teacherIdHash: 'staff_aaaa1111', title: 'Owned', topic: 'food', readingLevel: 'novice', sourceMaterial: 'x' },
+    });
+    const id = created.body.lesson.id;
+    const r = await call(teacherLessonsHandler, {
+      method: 'DELETE',
+      query: { id, teacherIdHash: 'staff_bbbb2222' },
+    });
+    expect(r.statusCode).toBe(403);
+    const after = await call(teacherLessonsHandler, { method: 'GET', query: { id } });
+    expect(after.statusCode).toBe(200);
   });
 });
 
