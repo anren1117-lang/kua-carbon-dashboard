@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ProvenancePill } from './ProvenancePill.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 
 const styles = {
   wrap: { marginTop: 24, display: 'grid', gap: 16 },
@@ -120,7 +121,7 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
             <div style={styles.estimateValue}>
               {estimate.perStudent}<span style={styles.estimateUnit}>mtCO₂e</span>
             </div>
-            <div style={styles.estimateRange}>≈ 340 students</div>
+            <div style={styles.estimateRange}>≈ {TOTAL_STUDENTS} students</div>
           </div>
           {estimate.thirdMetric && (
             <div style={styles.estimateCell}>
