@@ -323,7 +323,7 @@ function AdminPortal() {
                         <strong>{b.fuel_type}</strong> — {b.date} — {b.gallons} gal {b.cost && `— $${b.cost}`}
                         <br /><small style={{color: '#f97316'}}>{calcFuelEmissions(b.gallons, b.fuel_type)} mtCO2e</small>
                       </div>
-                      <button onClick={() => deleteRecord('fuel_bills', b.id)} style={styles.deleteBtn}>🗑️</button>
+                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('fuel_bills', b.id)} style={styles.deleteBtn}>🗑️</button>
                     </div>
                   ))}
                 </div>
@@ -356,7 +356,7 @@ function AdminPortal() {
                   {dayStudents.map(s => (
                     <div key={s.id} style={styles.listItem}>
                       <span>Zip: {s.zip_code} | Class of {s.graduation_year}</span>
-                      <button onClick={() => deleteRecord('day_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('day_students', s.id)} style={styles.deleteBtn}>🗑️</button>
                     </div>
                   ))}
                 </div>
@@ -381,7 +381,7 @@ function AdminPortal() {
                   {usBoardingStudents.map(s => (
                     <div key={s.id} style={styles.listItem}>
                       <span>{s.state || '?'} - {s.zip_code} | Class of {s.graduation_year}</span>
-                      <button onClick={() => deleteRecord('us_boarding_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('us_boarding_students', s.id)} style={styles.deleteBtn}>🗑️</button>
                     </div>
                   ))}
                 </div>
@@ -405,7 +405,7 @@ function AdminPortal() {
                   {intlStudents.map(s => (
                     <div key={s.id} style={styles.listItem}>
                       <span>{s.country} | Class of {s.graduation_year}</span>
-                      <button onClick={() => deleteRecord('international_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('international_students', s.id)} style={styles.deleteBtn}>🗑️</button>
                     </div>
                   ))}
                 </div>
@@ -438,7 +438,7 @@ function AdminPortal() {
                   {studyAbroad.map(t => (
                     <div key={t.id} style={styles.listItem}>
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.departure_date || 'TBD'}</span>
-                      <button onClick={() => deleteRecord('study_abroad', t.id)} style={styles.deleteBtn}>🗑️</button>
+                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('study_abroad', t.id)} style={styles.deleteBtn}>🗑️</button>
                     </div>
                   ))}
                 </div>
@@ -467,7 +467,7 @@ function AdminPortal() {
                   {facultyTravel.map(t => (
                     <div key={t.id} style={styles.listItem}>
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.trip_purpose}</span>
-                      <button onClick={() => deleteRecord('faculty_travel', t.id)} style={styles.deleteBtn}>🗑️</button>
+                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('faculty_travel', t.id)} style={styles.deleteBtn}>🗑️</button>
                     </div>
                   ))}
                 </div>
@@ -520,7 +520,7 @@ function AdminPortal() {
                           <strong>{w.waste_type}</strong> — {w.date} — {w.amount} {w.unit}
                           <br /><small style={{color: em < 0 ? '#22c55e' : '#f97316'}}>{em >= 0 ? '+' : ''}{em} mtCO2e</small>
                         </div>
-                        <button onClick={() => deleteRecord('waste', w.id)} style={styles.deleteBtn}>🗑️</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('waste', w.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     );
                   })}
