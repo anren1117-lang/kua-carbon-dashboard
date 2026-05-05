@@ -4,6 +4,7 @@ import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
 import { GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 
 // Goals & Targets — KUA's reduction pathway. Each target shows a
 // linear trajectory between baseline and target year, with the current
@@ -12,15 +13,14 @@ import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 
 const CURRENT_YEAR = 2026;
 
-// "Actual" snapshot used to color-code progress. These mirror the
-// preliminary scope numbers used elsewhere; replace with live rollups
-// once measured-data ingestion is fully wired.
+// "Actual" snapshot now derived from the single-source-of-truth
+// scope totals — flows through automatically when measured data lands.
 const ACTUAL_BY_SCOPE = {
-  gross: 4150,
-  scope2: 222,
-  scope3: 2700,        // dining is part of this — Goals uses 800 for dining-only target
-  net: 4150 - ANNUAL_SEQUESTRATION_MT,
-  scope1: 1250,
+  gross: GROSS_MT,
+  scope1: SCOPE1_TOTAL_MT,
+  scope2: SCOPE2_TOTAL_MT,
+  scope3: SCOPE3_TOTAL_MT,
+  net: GROSS_MT - ANNUAL_SEQUESTRATION_MT,
   energy_kwh: 2316469,
 };
 

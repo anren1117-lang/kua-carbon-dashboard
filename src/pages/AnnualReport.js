@@ -8,6 +8,7 @@ import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/
 import { reductionActions } from '../data/reductionActions.js';
 import { rankActions } from '../utils/hotspots.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
+import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 
 // Trustee / parent-facing annual summary. Designed to print cleanly:
 // no nav, no flashy interactions, every section uses 11pt body type
@@ -16,7 +17,7 @@ import { carbonEquivalents } from '../utils/equivalents.js';
 // "Print" button uses window.print() — browser handles paper size +
 // margins. The print CSS hides the nav and footer (see App.css).
 
-const SCOPE_TOTALS = { scope1: 1250, scope2: GRID_MIX_TOTAL_MTCO2E, scope3: 2700 };
+const SCOPE_TOTALS = { scope1: SCOPE1_TOTAL_MT, scope2: GRID_MIX_TOTAL_MTCO2E, scope3: SCOPE3_TOTAL_MT };
 const GROSS = SCOPE_TOTALS.scope1 + SCOPE_TOTALS.scope2 + SCOPE_TOTALS.scope3;
 const NET = GROSS - ANNUAL_SEQUESTRATION_MT;
 

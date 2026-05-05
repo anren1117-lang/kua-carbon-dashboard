@@ -18,8 +18,9 @@ import { ANNUALIZE_FACTOR } from '../data/envysionSnapshot.js';
 // KUA's row is derived from the same canonical totals the Executive page
 // uses, so the bars can't drift from the headline numbers. Peer rows
 // stay hand-typed because they come from external reports.
-const KUA_SCOPE1_TOTAL_MT = 1250;
-const KUA_SCOPE3_TOTAL_MT = 2700;
+// Pull from the single-source scope totals so peer-comparison numbers
+// auto-update when measured data lands.
+import { SCOPE1_TOTAL_MT as KUA_SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT as KUA_SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 // Annualize the YTD-through-2026-05-03 scope-2 baseline so the comparison
 // against peers' annual scope-2 figures is apples-to-apples.
 const KUA_SCOPE2_ANNUAL_MT = GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR;

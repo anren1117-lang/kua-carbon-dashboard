@@ -21,8 +21,9 @@ const CONTEXT_KEY = 'kua_admin_plan_context';
 const PLAN_KEY    = 'kua_admin_plan';
 const HISTORY_KEY = 'kua_admin_plan_history';
 
-const SCOPE1_TOTAL_MT = 1250;
-const SCOPE3_TOTAL_MT = 2700;
+// Single source of truth — these flow through automatically when
+// fuel-delivery / Sodexo / travel-office records are integrated.
+import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
 const SCOPE2_ANNUAL_MT = GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR;
 const GROSS_MT = SCOPE1_TOTAL_MT + SCOPE2_ANNUAL_MT + SCOPE3_TOTAL_MT;
 

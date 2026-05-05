@@ -4,6 +4,7 @@ import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/Modul
 import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { SCOPE_TOTALS as SCOPE_TOTALS_CENTRAL, GROSS_MT as GROSS_MT_CENTRAL } from '../data/scopeTotals.js';
 import { reductionActionsByVisibility } from '../data/reductionActions.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
@@ -20,15 +21,12 @@ import { Sparkline } from '../components/Sparkline.js';
 
 const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
-// Rough preliminary scope totals. These match the figures used in
-// NetEstimate.js so the executive page lines up with the homepage
-// hero. Replace with live aggregations once Supabase is wired.
-const SCOPE_TOTALS = {
-  scope1Mt:  1250, // heating fuel + refrigerants + fleet
-  scope2Mt:  GRID_MIX_TOTAL_MTCO2E, // 222 mt — electricity
-  scope3Mt:  2700, // travel, food, waste, procurement, commuting, upstream fuel
-};
-const GROSS_MT = SCOPE_TOTALS.scope1Mt + SCOPE_TOTALS.scope2Mt + SCOPE_TOTALS.scope3Mt;
+// Scope totals come from the single-source-of-truth file
+// scopeTotals.js so this page automatically picks up new measured
+// values when fuel deliveries / Sodexo invoices / etc. land. Local
+// alias keeps the existing JSX call-sites unchanged.
+const SCOPE_TOTALS = SCOPE_TOTALS_CENTRAL;
+const GROSS_MT = GROSS_MT_CENTRAL;
 const NET_MT = GROSS_MT - ANNUAL_SEQUESTRATION_MT;
 
 export default function Executive() {
