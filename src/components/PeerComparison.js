@@ -166,7 +166,7 @@ function Bar({ p }) {
   ['scope1', 'scope2', 'scope3'].forEach((k) => {
     const v = p[k];
     if (v > 0) {
-      segs.push({ key: k, leftPct: valToPct(cursor), widthPct: (v / axisRange) * 100 });
+      segs.push({ key: k, value: v, leftPct: valToPct(cursor), widthPct: (v / axisRange) * 100 });
       cursor += v;
     }
   });
@@ -176,15 +176,24 @@ function Bar({ p }) {
     const v = p[k];
     if (v < 0) {
       neg += v;
-      segs.push({ key: k, leftPct: valToPct(neg), widthPct: (-v / axisRange) * 100 });
+      segs.push({ key: k, value: v, leftPct: valToPct(neg), widthPct: (-v / axisRange) * 100 });
     }
   });
   const netPct = valToPct(sumNet(p));
   return (
     <div style={styles.barTrack}>
       <div style={{ ...styles.zeroLine, left: zeroPct + '%' }} />
-      {segs.map((s) => <div key={s.key} style={styles.seg(s.leftPct, s.widthPct, segColors[s.key])} />)}
-      <div style={styles.netMarker(netPct, p.isUs)} />
+      {segs.map((s) => (
+        <div
+          key={s.key}
+          style={styles.seg(s.leftPct, s.widthPct, segColors[s.key])}
+          title={`${segLabels[s.key]}: ${s.value > 0 ? '+' : ''}${s.value.toFixed(1)} mt/student`}
+        />
+      ))}
+      <div
+        style={styles.netMarker(netPct, p.isUs)}
+        title={`Net: ${sumNet(p).toFixed(1)} mt/student`}
+      />
     </div>
   );
 }
