@@ -210,7 +210,13 @@ export default function BuildingsPage() {
           {monthlyReports.map((r) => {
             const gapPct = ((r.sumOfRows - r.displayedTotal) / r.displayedTotal) * 100;
             const ratio = Math.min(r.displayedTotal, r.sumOfRows) / Math.max(r.displayedTotal, r.sumOfRows);
-            const monthName = new Date(r.month + '-01').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+            // Parse as local date (year, month-1, day) instead of
+            // `new Date('YYYY-MM-01')` which is interpreted as UTC
+            // midnight. For any user west of UTC (KUA's audience, all
+            // ET) that's 7pm the prior day — "January 2026" rendered
+            // as "December 2025" off the Buildings page heading.
+            const [yyyy, mm] = r.month.split('-').map((s) => parseInt(s, 10));
+            const monthName = new Date(yyyy, mm - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
             return (
               <div key={r.month} style={styles.qualityRow}>
                 <div style={styles.qualityMonthCol}>
