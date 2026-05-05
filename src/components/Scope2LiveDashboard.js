@@ -210,12 +210,17 @@ export function Scope2LiveDashboard() {
     },
   };
 
+  // gridMix.mtCO2e and .kwhUsed are YTD figures. The "Energy Sources"
+  // panel below shows them under a footer that says "TOTAL ANNUAL
+  // EMISSIONS" (yearlyEmissions, ~395 mt). Annualize the per-source
+  // rows here so the breakdown adds up to the footer instead of being
+  // ~38% short.
   const emissionsData = gridMix.map((m) => ({
     source: m.source,
-    emissions: m.mtCO2e,
+    emissions: +(m.mtCO2e * ANNUALIZE_FACTOR).toFixed(1),
     percentage: m.percentOfEmissions,
     mixPercent: m.mixPercent,
-    kwhUsed: m.kwhUsed,
+    kwhUsed: Math.round(m.kwhUsed * ANNUALIZE_FACTOR),
     color: m.color,
     emissionFactor: m.emissionFactor,
     ...(sourceNarrative[m.source] || {}),
