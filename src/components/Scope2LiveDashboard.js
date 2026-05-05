@@ -64,12 +64,16 @@ export function Scope2LiveDashboard() {
   const emissionsPerMonth = yearlyEmissions / 12;
 
   // Buildings + Envysion observations joined from the data layer.
+  // envysionSnapshot.energyUsedKwh is YTD-through-2026-05-03 (123 days);
+  // multiply by ANNUALIZE_FACTOR so the displayed "Energy Used" column
+  // shows Year 1 kWh consistent with /buildings, /hotspots, and the
+  // headline Year 1 figure on this same page.
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
   const buildingsData = envysionSnapshot.map((row) => {
     const b = buildingsById[row.buildingId];
     return {
       name: b?.name ?? row.buildingId,
-      energyUsed: row.energyUsedKwh,
+      energyUsed: Math.round(row.energyUsedKwh * ANNUALIZE_FACTOR),
       power: row.powerKw,
       avgVoltage: row.avgVoltage,
       category: b?.category ?? 'Other',
