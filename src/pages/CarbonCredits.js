@@ -174,28 +174,34 @@ function CarbonCredits() {
       <section style={styles.section}>
         <h2 style={styles.h2}>If KUA monetized its forest, what would the math look like?</h2>
         <div style={styles.revenueCard}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-            <div>
-              <div style={styles.bigNumLabel}>Eligible sequestration</div>
-              <div style={styles.bigNum}>~3,000</div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>mtCO₂e/yr drawdown</div>
-            </div>
-            <div>
-              <div style={styles.bigNumLabel}>At low end ($8/ton)</div>
-              <div style={styles.bigNum}>$24,000</div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>per year gross</div>
-            </div>
-            <div>
-              <div style={styles.bigNumLabel}>At mid market ($25/ton)</div>
-              <div style={styles.bigNum}>$75,000</div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>per year gross</div>
-            </div>
-            <div>
-              <div style={styles.bigNumLabel}>At premium ($40/ton)</div>
-              <div style={styles.bigNum}>$120,000</div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>per year gross</div>
-            </div>
-          </div>
+          {(() => {
+            const seq = Math.round(ANNUAL_SEQUESTRATION_MT);
+            const fmt$ = (n) => `$${Math.round(n / 1000).toLocaleString()}K`;
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                <div>
+                  <div style={styles.bigNumLabel}>Eligible sequestration</div>
+                  <div style={styles.bigNum}>~{seq.toLocaleString()}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>mtCO₂e/yr drawdown</div>
+                </div>
+                <div>
+                  <div style={styles.bigNumLabel}>At low end ($8/ton)</div>
+                  <div style={styles.bigNum}>{fmt$(seq * 8)}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>per year gross</div>
+                </div>
+                <div>
+                  <div style={styles.bigNumLabel}>At mid market ($25/ton)</div>
+                  <div style={styles.bigNum}>{fmt$(seq * 25)}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>per year gross</div>
+                </div>
+                <div>
+                  <div style={styles.bigNumLabel}>At premium ($40/ton)</div>
+                  <div style={styles.bigNum}>{fmt$(seq * 40)}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>per year gross</div>
+                </div>
+              </div>
+            );
+          })()}
           <p style={{ fontSize: 14, color: '#cbd5e1', lineHeight: 1.7, marginTop: 16 }}>
             Net revenue is meaningfully lower. Subtract one-time setup ($20,000–$80,000 for project
             documentation and baseline establishment), annual verification ($5,000–$15,000), and
