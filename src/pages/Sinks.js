@@ -1,6 +1,13 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
+import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+
+const SEQ_TOTAL  = Math.round(ANNUAL_SEQUESTRATION_MT);
+const SEQ_PER_ST = +(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS).toFixed(1);
+const SEQ_LOW    = Math.round(SEQ_TOTAL * 0.75);
+const SEQ_HIGH   = Math.round(SEQ_TOTAL * 1.5);
 
 const styles = {
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
@@ -58,9 +65,9 @@ function Sinks() {
       <ScopePageInfo
         color="#22c55e"
         estimate={{
-          totalPrefix: '−', total: '~3,000', totalRange: '2,000 – 4,000 pulled out', perStudent: -5.0,
-          thirdMetric: { label: 'Forested area', value: '~1,000', note: 'acres of campus forest' },
-          note: 'KUA is the only school in the peer chart with a quantified physical sink. Roughly 1,000 acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.',
+          totalPrefix: '−', total: `~${SEQ_TOTAL.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out`, perStudent: -SEQ_PER_ST,
+          thirdMetric: { label: 'Forested area', value: `~${TOTAL_FOREST_ACRES.toLocaleString()}`, note: 'acres of campus forest' },
+          note: `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`,
         }}
         references={[
           { title: 'Nowak, D.J. et al. (2013)', source: 'Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage; 0.28 kg C/m²/yr sequestration (urban tree averages across 28 cities, 6 states)' },
