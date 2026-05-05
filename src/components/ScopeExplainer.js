@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+
+// Per-student values pulled from the same centralized source the rest
+// of the dashboard uses, so this homepage explainer stays in sync.
+const PER_STUDENT = (mt) => +(mt / TOTAL_STUDENTS).toFixed(2);
 
 const scopes = [
   {
     key: 'scope1', color: '#ef4444', label: 'Scope 1', title: 'Direct Emissions',
     summary: 'Greenhouse gases released directly from sources KUA owns or controls — heating fuel, refrigerants, fleet vehicles.',
-    kuaTotal: '~1,000', kuaPerStudent: 1.6, kuaRange: '800 – 1,500',
+    kuaTotal: `~${SCOPE1_TOTAL_MT.toLocaleString()}`,
+    kuaPerStudent: PER_STUDENT(SCOPE1_TOTAL_MT),
+    kuaRange: `${Math.round(SCOPE1_TOTAL_MT * 0.8).toLocaleString()} – ${Math.round(SCOPE1_TOTAL_MT * 1.2).toLocaleString()}`,
     definition: 'Greenhouse gases released directly from sources KUA owns or controls — fuel burned in our boilers, refrigerants leaking from HVAC equipment, gasoline in our vans. If KUA can choose to turn it off, it counts as Scope 1.',
     calculation: [
       'Heating fuel is the dominant source. We multiply gallons delivered (from invoices) by an EPA combustion factor:',
@@ -20,24 +30,29 @@ const scopes = [
   },
   {
     key: 'scope2', color: '#f59e0b', label: 'Scope 2', title: 'Purchased Electricity',
-    summary: 'Indirect emissions from electricity KUA buys but does not generate. The only line currently sourced from real measurement.',
-    kuaTotal: '222', kuaPerStudent: 0.4, kuaRange: 'documented · 222', isDocumented: true,
+    summary: 'Indirect emissions from electricity KUA buys but does not generate. The only line sourced from real measurement (BMS captures + Meter Trends CSV).',
+    kuaTotal: `~${Math.round(SCOPE2_TOTAL_MT).toLocaleString()}`,
+    kuaPerStudent: PER_STUDENT(SCOPE2_TOTAL_MT),
+    kuaRange: `${Math.round(SCOPE2_TOTAL_MT * 0.95)} – ${Math.round(SCOPE2_TOTAL_MT * 1.05)} (cross-validated ±5%)`,
+    isDocumented: true,
     definition: 'Indirect emissions from electricity that KUA buys but does not generate. We never burn fuel to make electricity — but the power plants on the New England grid do, on our behalf, every time someone flips a light switch.',
     calculation: [
-      'This is the only line currently sourced from real measurement. The campus real-time meter records consumption every few seconds; we sum it to an annual total:',
-      '2,316,469 kWh measured in 2024',
-      '× ISO New England 2024 emission factor (location-based)',
-      '= 221.53 mtCO₂e/year',
+      'kWh side is composed from real measured BMS captures (Jan–Apr 2026 monthly displayedTotal rows) plus the May days from the latest Meter Trends CSV.',
+      `${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh annualized (Year 1 projection)`,
+      '× ISO-NE 2024 per-fuel output factors (combined-cycle gas 0.40, oil 0.78, coal 0.95, imports 0.30) summed over the 2024 generation mix',
+      `= ${Math.round(SCOPE2_TOTAL_MT)} mtCO₂e/year`,
     ],
-    formula: 'kWh × (lb CO₂ / MWh) × 0.4536 kg/lb / 1000',
-    factorSource: 'ISO New England Electric Generator Air Emissions Report 2024 — 643 lb CO₂/MWh in-region',
+    formula: 'measured kWh × Σ (fuel mix share × per-fuel kg/kWh)',
+    factorSource: 'ISO-NE 2024 generation mix + EPA eGRID NEWE per-fuel factors. Effective system rate ≈ 0.235 kg/kWh.',
     peerRange: '0.4 – 2.0 mtCO₂e/student',
     peerComparison: 'KUA is at the LOW end. Two reasons: the New England grid is cleaner than most US regions, and per-student electricity use is moderate.',
   },
   {
     key: 'scope3', color: '#8b5cf6', label: 'Scope 3', title: 'Other Indirect Emissions',
     summary: 'Everything else — supply chain, food, travel, waste. Typically the LARGEST scope at residential institutions.',
-    kuaTotal: '~3,000', kuaPerStudent: 5.0, kuaRange: '2,000 – 3,800',
+    kuaTotal: `~${SCOPE3_TOTAL_MT.toLocaleString()}`,
+    kuaPerStudent: PER_STUDENT(SCOPE3_TOTAL_MT),
+    kuaRange: `${Math.round(SCOPE3_TOTAL_MT * 0.75).toLocaleString()} – ${Math.round(SCOPE3_TOTAL_MT * 1.25).toLocaleString()}`,
     definition: 'Everything else — the school\'s supply chain, the food in the dining hall, the flights students take home for break, the waste truck. Typically the LARGEST scope at residential institutions but the hardest to measure because the data lives outside the school.',
     calculation: [
       'Each sub-category has its own methodology:',
@@ -55,7 +70,10 @@ const scopes = [
   {
     key: 'sinks', color: '#22c55e', label: 'Sinks', title: 'On-Campus Sequestration',
     summary: 'Carbon pulled OUT of the atmosphere by the ~1,000-acre campus forest. Most peer schools don\'t even measure this.',
-    kuaTotal: '~3,000', kuaPerStudent: -5.0, kuaRange: '2,000 – 4,000 pulled out', isSink: true,
+    kuaTotal: `~${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()}`,
+    kuaPerStudent: -PER_STUDENT(ANNUAL_SEQUESTRATION_MT),
+    kuaRange: `${Math.round(ANNUAL_SEQUESTRATION_MT * 0.75).toLocaleString()} – ${Math.round(ANNUAL_SEQUESTRATION_MT * 1.5).toLocaleString()} pulled out`,
+    isSink: true,
     definition: 'Carbon that the trees and soils on KUA\'s ~1,000-acre campus pull OUT of the atmosphere each year via photosynthesis. Subtracted from gross emissions to get the net balance. Most peer institutions don\'t even measure this — it\'s the gap Valls-Val & Bovea (2021) identified.',
     calculation: [
       'For each tree we collect Diameter at Breast Height (DBH); biomass × 0.5 = stored carbon. We multiply C by 44/12 to get CO₂-equivalent.',
