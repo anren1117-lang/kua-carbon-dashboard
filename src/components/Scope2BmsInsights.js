@@ -1268,8 +1268,8 @@ const styles = {
   cardTitle: { fontSize: 17, color: '#e5e7eb', fontWeight: 700, margin: 0, marginBottom: 6 },
   cardHint: { fontSize: 13, color: '#94a3b8', margin: '0 0 14px', lineHeight: 1.6 },
 
-  hourChart: { display: 'flex', gap: 3, alignItems: 'flex-end', height: 220, padding: '8px 0' },
-  hourCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  hourChart: { display: 'flex', gap: 3, height: 220, padding: '8px 0' },
+  hourCol: { flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   hourBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, position: 'relative', display: 'flex', alignItems: 'flex-end' },
   hourBar: { width: '100%', borderRadius: '2px 2px 0 0', minHeight: 2 },
   meanLine: { position: 'absolute', left: 0, right: 0, height: 1, background: 'rgba(248,113,113,0.7)' },
@@ -1309,16 +1309,18 @@ const styles = {
   legendRow: { display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 10, fontSize: 11, color: '#94a3b8', alignItems: 'center' },
   legendNote: { color: '#64748b' },
 
-  // Daily chart
-  dailyChart: { display: 'flex', gap: 2, alignItems: 'flex-end', height: 240, padding: '4px 0', position: 'relative' },
-  dayCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  // Daily chart — alignItems left as default (stretch) so columns fill
+  // the 240 px container; the bar track inside each column handles
+  // bottom-alignment of the bar itself.
+  dailyChart: { display: 'flex', gap: 2, height: 240, padding: '4px 0', position: 'relative' },
+  dayCol: { flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   dayBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, position: 'relative', display: 'flex', alignItems: 'flex-end' },
   dayBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
   dayDateTick: { fontSize: 10, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
 
   // Weekly chart
-  weeklyChart: { display: 'flex', gap: 12, alignItems: 'flex-end', height: 220, padding: '4px 0' },
-  weekCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  weeklyChart: { display: 'flex', gap: 12, height: 220, padding: '4px 0' },
+  weekCol: { flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   weekVal: { fontSize: 12, color: '#cbd5e1', marginBottom: 4, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   weekBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
   weekBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
@@ -1326,8 +1328,8 @@ const styles = {
   weekSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
 
   // Monthly chart
-  monthlyChart: { display: 'flex', gap: 14, alignItems: 'flex-end', height: 260, padding: '4px 0' },
-  monthCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  monthlyChart: { display: 'flex', gap: 14, height: 260, padding: '4px 0' },
+  monthCol: { flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   monthVal: { fontSize: 13, color: '#cbd5e1', marginBottom: 4, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   monthBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
   monthBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
@@ -1371,8 +1373,8 @@ const styles = {
   subPeak: { fontSize: 10, color: '#94a3b8', fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
 
   // Day-of-week chart
-  dowChart: { display: 'flex', gap: 8, alignItems: 'flex-end', height: 220 },
-  dowCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  dowChart: { display: 'flex', gap: 8, height: 220 },
+  dowCol: { flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   dowVal: { fontSize: 12, color: '#cbd5e1', marginBottom: 4, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   dowBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
   dowBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
@@ -1384,8 +1386,8 @@ const styles = {
   ldcStats: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 10, fontSize: 12, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums' },
 
   // Peak-demand timeline
-  peakChart: { display: 'flex', gap: 2, alignItems: 'flex-end', height: 200, padding: '4px 0' },
-  peakCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  peakChart: { display: 'flex', gap: 2, height: 200, padding: '4px 0' },
+  peakCol: { flex: 1, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   peakBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end', position: 'relative' },
   peakBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
   peakLabel: { fontSize: 10, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
