@@ -186,6 +186,19 @@ describe('POST /api/quiz/attempts', () => {
     expect(reject.statusCode).toBe(400);
   });
 
+  it('rejects non-integer / out-of-range pickedIndex', async () => {
+    // typeof === 'number' admits NaN, Infinity, fractional — all
+    // would crash a downstream array index lookup. Number.isInteger
+    // + non-negative gate refuses them up front.
+    for (const bad of [Number.NaN, Infinity, -1, 1.5, 'two', null]) {
+      const r = await call(quizAttemptsHandler, {
+        method: 'POST',
+        body: { userIdHash: 'student_a1b2c3d4', quizId: 'q_scope2', topic: 'scopes', correct: true, pickedIndex: bad },
+      });
+      expect(r.statusCode).toBe(400);
+    }
+  });
+
   it('filters attempts by lessonId', async () => {
     _resetForTests();
     await call(quizAttemptsHandler, { method: 'POST', body: { userIdHash: 'student_a1b2c3d4', quizId: 'lesson_abc_q0', topic: 'food',   correct: true,  pickedIndex: 1, classId: 'APES-3' } });
@@ -706,6 +719,24 @@ describe('POST /api/emissions/calculate', () => {
     const r = await call(emissionsCalculate, {
       method: 'POST',
       body: { factorId: 'ef_grid_isone_2024' },
+    });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('400s on NaN quantity (typeof number admits NaN)', async () => {
+    // Number.isFinite check: protects the math layer from NaN
+    // propagating into kgco2e + mtco2e.
+    const r = await call(emissionsCalculate, {
+      method: 'POST',
+      body: { quantity: Number.NaN, factorId: 'ef_grid_isone_2024' },
+    });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('400s on Infinity quantity', async () => {
+    const r = await call(emissionsCalculate, {
+      method: 'POST',
+      body: { quantity: Infinity, factorId: 'ef_grid_isone_2024' },
     });
     expect(r.statusCode).toBe(400);
   });
