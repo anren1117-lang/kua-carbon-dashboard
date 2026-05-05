@@ -86,7 +86,7 @@ function Scope1() {
         actions={[
           {
             action: 'Heat pump retrofit on a major dorm',
-            impact: '−28 to −56 mtCO₂e/yr',
+            impact: '−30 to −51 mtCO₂e/yr',
             detail: 'Replaces a dorm\'s oil/propane boiler with an electric heat pump. New Scope 2 load is roughly 1/3 the original Scope 1 emissions because heat pumps deliver 2.5–3.5 kWh of heat per 1 kWh of electricity, and the New England grid is ~3× cleaner than oil per BTU delivered.',
             data: [
               { input: 'Annual heating oil per dorm', value: '4,000 – 8,000 gal/yr', source: 'Boarding-school facilities surveys (NEEP 2022)' },
@@ -94,7 +94,7 @@ function Scope1() {
               { input: 'Heating oil heat content (HHV)', value: '138,500 BTU/gal', source: 'EIA Energy Calculator' },
               { input: 'Boiler thermal efficiency', value: '80%', source: 'ASHRAE 90.1 typical for in-service systems' },
               { input: 'Cold-climate heat pump COP', value: '2.0 – 3.0', source: 'NEEP Cold Climate Air-Source Heat Pump Specification' },
-              { input: 'ISO-NE grid emission factor', value: '643 lb CO₂/MWh = 0.292 kg/kWh', source: 'ISO-NE Air Emissions Report 2024' },
+              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix; matches gridMix.js' },
             ],
             math: [
               '# Worked example: 6,000 gal/yr dorm at COP 2.5',
@@ -103,11 +103,11 @@ function Scope1() {
               'heat_delivered_btu = 6,000 × 138,500 × 0.80 = 665M BTU',
               'heat_delivered_kwh = 665M / 3,412 BTU/kWh = 195,000 kWh',
               'electricity_needed = 195,000 / 2.5 (COP) = 78,000 kWh',
-              'new_emissions = 78,000 × 0.292 = 22,776 kg ≈ 22.8 mtCO₂e',
+              'new_emissions = 78,000 × 0.235 = 18,330 kg ≈ 18.3 mtCO₂e',
               '',
-              'savings = 61.0 − 22.8 = 38.2 mtCO₂e/yr',
+              'savings = 61.0 − 18.3 = 42.7 mtCO₂e/yr',
               '',
-              '# Range: 4,000 gal at COP 3.0 → 28 mt; 8,000 gal at COP 2.0 → 56 mt',
+              '# Range: 4,000 gal at COP 3.0 → ~30 mt; 8,000 gal at COP 2.0 → ~51 mt',
             ],
           },
           {
@@ -165,13 +165,13 @@ function Scope1() {
               { input: 'Average van fuel economy', value: '18 mpg', source: 'EPA Fuel Economy data' },
               { input: 'Annual mileage per fleet van', value: '8,000 – 15,000 mi', source: 'School fleet operating norms' },
               { input: 'EV efficiency', value: '0.30 kWh/mi', source: 'EPA fueleconomy.gov electric vehicle data' },
-              { input: 'ISO-NE grid emission factor', value: '0.292 kg/kWh', source: 'ISO-NE 2024' },
+              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
             ],
             math: [
               '# Per van per year (12,000 mi):',
               'gasoline_emissions = 12,000 / 18 × 8.78 = 5,853 kg ≈ 5.9 mtCO₂e',
-              'ev_emissions      = 12,000 × 0.30 × 0.292 = 1,051 kg ≈ 1.1 mtCO₂e',
-              'savings_per_van   = 5.9 − 1.1 = 4.8 mtCO₂e/yr',
+              'ev_emissions      = 12,000 × 0.30 × 0.235 = 846 kg ≈ 0.85 mtCO₂e',
+              'savings_per_van   = 5.9 − 0.85 = 5.05 mtCO₂e/yr',
               '',
               '# Replacing 3-5 vans: 14 to 24 mtCO₂e/yr (rounded 10-22)',
             ],
