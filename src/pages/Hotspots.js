@@ -6,13 +6,12 @@ import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { reductionActions } from '../data/reductionActions.js';
-import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { COMPOSED_ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
-import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
 // magnitude rollup (per-building electricity) with a category-level summary
