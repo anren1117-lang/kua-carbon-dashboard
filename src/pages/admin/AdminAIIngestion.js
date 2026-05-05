@@ -40,15 +40,24 @@ function AdminAIIngestion() {
   const [draftCount, setDraftCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data, count } = await supabase
-        .from('framework_drafts')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .limit(10);
-      setDrafts(data || []);
-      setDraftCount(count ?? 0);
+      try {
+        const { data, count } = await supabase
+          .from('framework_drafts')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .limit(10);
+        if (cancelled) return;
+        setDrafts(data || []);
+        setDraftCount(count ?? 0);
+      } catch {
+        // Supabase not configured (dev) or table doesn't exist — leave
+        // drafts empty rather than logging an unhandled rejection.
+        if (!cancelled) { setDrafts([]); setDraftCount(0); }
+      }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   const onPick = (e) => {
