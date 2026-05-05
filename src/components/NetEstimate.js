@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ProvenancePill, ProvenanceLegend } from './ProvenancePill.js';
 import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { COMPOSED_YTD_AS_OF, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -143,7 +144,7 @@ export function NetEstimate() {
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Sequestration</div>
-            <div style={styles.numBig}>~{fmt(3000)}<span style={styles.numUnit}>mtCO₂e</span></div>
+            <div style={styles.numBig}>~{fmt(Math.round(ANNUAL_SEQUESTRATION_MT))}<span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
         </div>
 

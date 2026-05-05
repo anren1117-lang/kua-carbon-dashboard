@@ -418,7 +418,7 @@ function Year1ProjectionSection() {
       <Year1Chart year1Months={year1Months} totalKwh={COMPOSED_YEAR1_KWH} />
 
       <div style={styles.legendRow}>
-        <LegendDot color="#22c55e">Measured (BMS captures + CSV)</LegendDot>
+        <LegendDot color="#22c55e">Measured (master-meter monthly capture + CSV)</LegendDot>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
           <span style={{ width: 10, height: 10, background: '#475569', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)', borderRadius: 2, display: 'inline-block' }} />
           Projected (NH seasonal shape)
@@ -427,6 +427,9 @@ function Year1ProjectionSection() {
           <svg width={14} height={8}><line x1={0} y1={4} x2={14} y2={4} stroke="#fbbf24" strokeWidth={2} strokeDasharray="3 2" /></svg>
           Cumulative Year 1 total
         </span>
+      </div>
+      <div style={{ marginTop: 8, fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
+        "Measured" means the campus master-meter "Totals" row is captured for that month — it doesn't imply every submeter underneath is reporting. Several PM_17_HP* heat-pump submeters are stuck (see Meter Health), but the master-meter total includes their loads anyway.
       </div>
 
       <div style={styles.todayTarget}>

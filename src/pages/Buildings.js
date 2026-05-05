@@ -7,6 +7,7 @@ import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
 import { bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
+import { COMPOSED_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 import { Sparkline } from '../components/Sparkline.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 
@@ -48,14 +49,35 @@ export default function BuildingsPage() {
   const [expanded, setExpanded] = useState(null);
 
   const rows = useMemo(() => {
+    // Per-building energy: prefer BMS-mapped measured data when a PM
+    // device is mapped to this building. Fall back to envysionSnapshot
+    // (older single-snapshot per-building YTD). When neither, surface
+    // 0 kWh with a "no data" indicator so the user knows it's unmapped
+    // rather than zero-load.
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
+    const meterMap = getBmsMeterMap();
     return getEffectiveBuildings().map((b) => {
+      const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === b.id && m.direction !== 'stuck');
+      let kwh = 0;
+      let source = 'none';
+      if (mappedMeters.length > 0) {
+        // BMS-mapped: window total × annualize so column is comparable
+        // to the envysionSnapshot rows (which are also annual-equivalent).
+        const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
+        kwh = windowKwh * COMPOSED_ANNUALIZE_FACTOR;
+        source = 'bms';
+      } else if (snapshotById[b.id]) {
+        const snap = snapshotById[b.id];
+        kwh = snap?.energyUsedKwh ?? 0;
+        source = 'snapshot';
+      }
       const snap = snapshotById[b.id];
-      const kwh = snap?.energyUsedKwh ?? 0;
       const mt = (kwh * KG_PER_KWH) / 1000;
       return {
         ...b,
         kwh,
+        source,
+        mappedMeterIds: mappedMeters.map((m) => m.id),
         powerKw: snap?.powerKw ?? null,
         avgVoltage: snap?.avgVoltage ?? null,
         mt,
@@ -248,6 +270,11 @@ export default function BuildingsPage() {
                     </div>
                     <div style={styles.rowMeta}>
                       {Math.round(b.kwh).toLocaleString()} kWh · {b.mt.toFixed(2)} mtCO₂e · {b.kgPerSqft.toFixed(1)} kg/sqft · {b.kgPerOccupant.toFixed(1)} kg/occupant
+                      <span style={{ marginLeft: 8 }}>
+                        {b.source === 'bms' && <ProvenancePill provenance="measured" label={`Measured · ${b.mappedMeterIds.length} PM`} />}
+                        {b.source === 'snapshot' && <ProvenancePill provenance="cited" label="Snapshot YTD" />}
+                        {b.source === 'none' && <ProvenancePill provenance="estimated" label="No meter mapped" />}
+                      </span>
                     </div>
                   </div>
                   <span style={styles.arrow} aria-hidden="true">{isOpen ? '▼' : '▶'}</span>
