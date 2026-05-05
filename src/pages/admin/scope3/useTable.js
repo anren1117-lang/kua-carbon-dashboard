@@ -8,10 +8,18 @@ export function useTable(table, orderBy = 'created_at', { ascending = false } = 
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from(table).select('*').order(orderBy, { ascending });
-    if (error) setError(error.message);
-    else { setRows(data || []); setError(''); }
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from(table).select('*').order(orderBy, { ascending });
+      if (error) setError(error.message);
+      else { setRows(data || []); setError(''); }
+    } catch (err) {
+      // Network failure (vs an in-band Supabase error) — surface a
+      // message instead of leaving the page stuck in loading and
+      // logging an unhandled rejection.
+      setError(err?.message || 'Network error');
+    } finally {
+      setLoading(false);
+    }
   }, [table, orderBy, ascending]);
 
   useEffect(() => { refresh(); }, [refresh]);
