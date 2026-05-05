@@ -252,6 +252,10 @@ export default function BuildingsPage() {
       </ModuleSection>
 
       <DormEnergySection rows={rows} />
+      <CategoryEnergySection rows={rows} category="Academic" denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
+      <CategoryEnergySection rows={rows} category="Athletic" denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
+      <CategoryEnergySection rows={rows} category="Dining"   denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
+      <CategoryEnergySection rows={rows} category="Other"    denominatorKey="sqft" denominatorLabel="kWh / sqft / yr" />
 
       <ModuleSection
         title={`${sorted.length} buildings`}
@@ -400,6 +404,134 @@ function DormEnergySection({ rows }) {
         ))}
       </div>
     </ModuleSection>
+  );
+}
+
+// Generic per-category energy comparison. Same card layout as DormCard
+// but the denominator is configurable (kWh/sqft/yr for non-residential
+// categories, since "per student" only makes sense for dorms).
+function CategoryEnergySection({ rows, category, denominatorKey, denominatorLabel }) {
+  const buildings = rows.filter((r) => r.category === category);
+  if (buildings.length === 0) return null;
+
+  const meterMap = getBmsMeterMap();
+  const enriched = buildings.map((b) => {
+    const annualKwh = b.kwh;
+    const denominator = b[denominatorKey] || 0;
+    const intensity = denominator > 0 ? annualKwh / denominator : 0;
+    const mt = (annualKwh * KG_PER_KWH) / 1000;
+    let daily = [];
+    if (b.source === 'bms') {
+      const meterIds = Object.entries(meterMap).filter(([, bid]) => bid === b.id).map(([m]) => m);
+      const meters = meterIds.map((id) => bmsExportMeters.find((m) => m.id === id)).filter(Boolean);
+      const map = new Map();
+      for (const m of meters) {
+        for (const day of (m.daily || [])) {
+          map.set(day.date, (map.get(day.date) || 0) + day.kwh);
+        }
+      }
+      daily = Array.from(map.entries()).sort().map(([date, kwh]) => ({ date, kwh }));
+    }
+    return { ...b, annualKwh, intensity, mt, daily };
+  });
+
+  const sorted = [...enriched].sort((a, b) => b.intensity - a.intensity);
+  const maxIntensity = Math.max(...enriched.map((b) => b.intensity), 1);
+
+  const categoryHints = {
+    Academic: 'Classroom + lab buildings. Energy intensity (kWh per square foot per year) is the standard comparable for non-residential. Buildings above ~25 kWh/sqft/yr are running heavy — likely from older HVAC schedules or AC season starting.',
+    Athletic: 'Gyms, pools, ice rinks (if any), Whittemore. Pool/ice loads dominate when present; lighting + HVAC otherwise.',
+    Dining:   'Kitchen + service areas. Kitchen equipment + walk-in refrigeration runs continuously, pushing intensity well above academic average.',
+    Other:    'Mixed-use, support, and miscellaneous buildings.',
+  };
+
+  return (
+    <ModuleSection
+      title={`${category} buildings — energy comparison`}
+      hint={categoryHints[category] || `${category} buildings ranked by energy intensity (kWh per square foot per year).`}
+    >
+      <div style={styles.dormGrid}>
+        {sorted.map((b) => (
+          <BuildingCategoryCard
+            key={b.id}
+            building={b}
+            maxIntensity={maxIntensity}
+            denominatorLabel={denominatorLabel}
+          />
+        ))}
+      </div>
+    </ModuleSection>
+  );
+}
+
+function BuildingCategoryCard({ building, maxIntensity, denominatorLabel }) {
+  const isMeasured = building.source === 'bms' && building.daily.length > 0;
+  const isSnapshot = building.source === 'snapshot';
+  const dailyMax = isMeasured ? Math.max(...building.daily.map((d) => d.kwh)) : 0;
+  return (
+    <div style={styles.dormCard}>
+      <div style={styles.dormHead}>
+        <div style={styles.dormName}>
+          {building.name}
+          {building.bmsNumber != null && <span style={styles.dormBms}>#{building.bmsNumber}</span>}
+        </div>
+        <div style={styles.dormPop}>{building.sqft.toLocaleString()} sqft</div>
+      </div>
+
+      <div style={styles.dormStats}>
+        <div style={styles.dormStat}>
+          <div style={styles.dormStatVal}>{building.intensity.toFixed(1)}</div>
+          <div style={styles.dormStatLabel}>{denominatorLabel}</div>
+        </div>
+        <div style={styles.dormStat}>
+          <div style={styles.dormStatVal}>{Math.round(building.annualKwh / 1000)}k</div>
+          <div style={styles.dormStatLabel}>kWh / yr</div>
+        </div>
+        <div style={styles.dormStat}>
+          <div style={styles.dormStatVal}>{building.mt.toFixed(1)}</div>
+          <div style={styles.dormStatLabel}>mtCO₂e / yr</div>
+        </div>
+      </div>
+
+      <div style={styles.dormPerStudentBar}>
+        <div
+          style={{
+            ...styles.dormPerStudentFill,
+            width: `${Math.min(100, (building.intensity / maxIntensity) * 100)}%`,
+            background: isMeasured ? '#22c55e' : isSnapshot ? '#22d3ee' : '#475569',
+          }}
+        />
+      </div>
+
+      {isMeasured ? (
+        <>
+          <div style={styles.dormChartLabel}>Daily kWh — last 30 days (measured)</div>
+          <div style={styles.dormChart}>
+            {building.daily.map((d) => (
+              <div
+                key={d.date}
+                style={{
+                  ...styles.dormChartBar,
+                  height: `${(d.kwh / dailyMax) * 100}%`,
+                  background: '#22c55e',
+                }}
+                title={`${d.date}: ${Math.round(d.kwh)} kWh`}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div style={styles.dormChartLabel}>
+          {isSnapshot ? 'No BMS meter mapped — using YTD snapshot. Map a PM device on /admin/bms-export for daily detail.' : 'No data yet. Map a PM device on /admin/bms-export.'}
+        </div>
+      )}
+
+      <div style={styles.dormProvRow}>
+        {isMeasured && <ProvenancePill provenance="measured" label={`Measured · ${building.mappedMeterIds.length} PM`} />}
+        {isSnapshot && <ProvenancePill provenance="cited" label="Snapshot YTD" />}
+        {building.source === 'none' && <ProvenancePill provenance="estimated" label="No meter" />}
+      </div>
+    </div>
   );
 }
 
