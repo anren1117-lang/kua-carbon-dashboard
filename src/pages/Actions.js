@@ -78,7 +78,11 @@ export default function Actions() {
   // Equivalents — concrete units a student feels.
   const milesNotDriven = totalKg / 0.351;     // EPA passenger-vehicle factor
   const beefMealsAvoided = totalKg / 9;       // ~9 kg CO2e per 150 g beef meal
-  const flightsLondonRT = totalMt / 1.4;      // Approx. transatlantic round-trip per pax
+  // Transatlantic flight factor is ONE-WAY per passenger (~1.4 mtCO2e —
+  // ICAO carbon calc). Earlier code labeled this "round-trip" while
+  // dividing by the one-way factor — under-counted RTs by 2× from the
+  // student's perspective. Use one-way and label it as such.
+  const transatFlightsOneway = totalMt / 1.4;
 
   return (
     <ModulePage
@@ -131,7 +135,7 @@ export default function Actions() {
               <div style={styles.eqGrid}>
                 <Eq label="Miles not driven" value={milesNotDriven >= 1000 ? `${(milesNotDriven / 1000).toFixed(1)}k` : milesNotDriven.toFixed(0)} />
                 <Eq label="Beef meals avoided" value={beefMealsAvoided.toFixed(0)} />
-                <Eq label="London round-trip flights" value={flightsLondonRT >= 1 ? flightsLondonRT.toFixed(1) : flightsLondonRT.toFixed(2)} />
+                <Eq label="One-way transatlantic flights" value={transatFlightsOneway >= 1 ? transatFlightsOneway.toFixed(1) : transatFlightsOneway.toFixed(2)} />
                 <Eq label="Trees-year equivalent" value={(totalMt / 0.0605).toFixed(0)} />
               </div>
 
