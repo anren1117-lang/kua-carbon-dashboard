@@ -295,11 +295,11 @@ export function Scope2LiveDashboard() {
         </div>
       </header>
 
-      <div style={styles.navButtons}>
-        <button style={{...styles.navButton, backgroundColor: viewMode === 'overview' ? '#22c55e' : '#334155'}} onClick={() => setViewMode('overview')}>Overview</button>
-        <button style={{...styles.navButton, backgroundColor: viewMode === 'time' ? '#22c55e' : '#334155'}} onClick={() => setViewMode('time')}>Time Analysis</button>
-        <button style={{...styles.navButton, backgroundColor: viewMode === 'buildings' ? '#22c55e' : '#334155'}} onClick={() => setViewMode('buildings')}>Buildings</button>
-        <button style={{...styles.navButton, backgroundColor: viewMode === 'sources' ? '#22c55e' : '#334155'}} onClick={() => setViewMode('sources')}>Energy Sources</button>
+      <div style={styles.navButtons} role="tablist">
+        <button type="button" role="tab" aria-selected={viewMode === 'overview'}  style={{...styles.navButton, backgroundColor: viewMode === 'overview'  ? '#22c55e' : '#334155'}} onClick={() => setViewMode('overview')}>Overview</button>
+        <button type="button" role="tab" aria-selected={viewMode === 'time'}      style={{...styles.navButton, backgroundColor: viewMode === 'time'      ? '#22c55e' : '#334155'}} onClick={() => setViewMode('time')}>Time Analysis</button>
+        <button type="button" role="tab" aria-selected={viewMode === 'buildings'} style={{...styles.navButton, backgroundColor: viewMode === 'buildings' ? '#22c55e' : '#334155'}} onClick={() => setViewMode('buildings')}>Buildings</button>
+        <button type="button" role="tab" aria-selected={viewMode === 'sources'}   style={{...styles.navButton, backgroundColor: viewMode === 'sources'   ? '#22c55e' : '#334155'}} onClick={() => setViewMode('sources')}>Energy Sources</button>
       </div>
 
       {/* OVERVIEW TAB */}
@@ -309,7 +309,7 @@ export function Scope2LiveDashboard() {
             <p style={styles.counterLabel}>Year-to-Date CO2 Emissions</p>
             <p style={styles.counterValue}>{yearEmissions.toFixed(4)}</p>
             <p style={styles.counterUnit}>metric tonnes CO2e</p>
-            <button style={styles.toggleButton} onClick={() => setIsLive(!isLive)}>{isLive ? 'Pause' : 'Resume'}</button>
+            <button type="button" style={styles.toggleButton} onClick={() => setIsLive(!isLive)}>{isLive ? 'Pause' : 'Resume'}</button>
           </div>
 
           <div style={styles.timeCards}>

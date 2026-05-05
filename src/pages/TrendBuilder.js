@@ -28,7 +28,10 @@ export default function TrendBuilder() {
 
   const [buildingId, setBuildingId] = useState('b_miller');
   const [windowId, setWindowId] = useState('7d');
-  const [interval, setInterval] = useState(60);
+  // Renamed from `interval` / `setInterval` so the React setter doesn't
+  // shadow the global setInterval timer function — that shadow was a
+  // latent bug waiting for someone to add a timer in this file.
+  const [intervalMin, setIntervalMin] = useState(60);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -39,7 +42,7 @@ export default function TrendBuilder() {
     if (!win) return;
     const end = new Date();
     const start = new Date(end.getTime() - win.days * 24 * 3600 * 1000);
-    const url = `/api/meters/readings?buildingId=${encodeURIComponent(buildingId)}&start=${start.toISOString()}&end=${end.toISOString()}&interval=${interval}`;
+    const url = `/api/meters/readings?buildingId=${encodeURIComponent(buildingId)}&start=${start.toISOString()}&end=${end.toISOString()}&interval=${intervalMin}`;
     setLoading(true); setError(null);
     fetch(url, { signal: ctrl.signal })
       .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
@@ -65,7 +68,7 @@ export default function TrendBuilder() {
         setError(err.message); setLoading(false);
       });
     return () => ctrl.abort();
-  }, [buildingId, windowId, interval]);
+  }, [buildingId, windowId, intervalMin]);
 
   // Stats
   const stats = useMemo(() => {
@@ -82,7 +85,7 @@ export default function TrendBuilder() {
     if (!win) return;
     const end = new Date();
     const start = new Date(end.getTime() - win.days * 24 * 3600 * 1000);
-    const url = `/api/meters/readings/export?buildingId=${encodeURIComponent(buildingId)}&start=${start.toISOString()}&end=${end.toISOString()}&interval=${interval}`;
+    const url = `/api/meters/readings/export?buildingId=${encodeURIComponent(buildingId)}&start=${start.toISOString()}&end=${end.toISOString()}&interval=${intervalMin}`;
     window.open(url, '_blank');
   }
 
@@ -112,7 +115,7 @@ export default function TrendBuilder() {
           <Control label="Window">
             <div style={styles.chipRow}>
               {WINDOWS.map((w) => (
-                <Chip key={w.id} active={windowId === w.id} onClick={() => { setWindowId(w.id); setInterval(w.defaultInterval); }}>
+                <Chip key={w.id} active={windowId === w.id} onClick={() => { setWindowId(w.id); setIntervalMin(w.defaultInterval); }}>
                   {w.label}
                 </Chip>
               ))}
@@ -122,7 +125,7 @@ export default function TrendBuilder() {
           <Control label="Interval">
             <div style={styles.chipRow}>
               {INTERVALS.map((i) => (
-                <Chip key={i.id} active={interval === i.id} onClick={() => setInterval(i.id)}>{i.label}</Chip>
+                <Chip key={i.id} active={intervalMin === i.id} onClick={() => setIntervalMin(i.id)}>{i.label}</Chip>
               ))}
             </div>
           </Control>
@@ -146,7 +149,7 @@ export default function TrendBuilder() {
             fill="rgba(34, 211, 238, 0.12)"
             width={900}
             height={280}
-            title={`${data.count} samples · interval ${interval} min`}
+            title={`${data.count} samples · interval ${intervalMin} min`}
           />
         )}
       </ModuleSection>
