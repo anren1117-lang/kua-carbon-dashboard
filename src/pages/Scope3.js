@@ -1,6 +1,10 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
+import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+
+const SCOPE3_PER_STUDENT = +(SCOPE3_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
 const categories = [
   { num: 1, name: 'Purchased Goods & Services', desc: 'Embodied emissions of food, paper, supplies, equipment, materials.', factor: 'EPA Supply Chain GHG Emission Factors (EEIO, spend-based)', status: 'Planned' },
@@ -72,7 +76,9 @@ function Scope3() {
       <ScopePageInfo
         color="#8b5cf6"
         estimate={{
-          total: '~3,000', totalRange: '2,000 – 3,800', perStudent: 8.8,
+          total: `~${SCOPE3_TOTAL_MT.toLocaleString()}`,
+          totalRange: `${Math.round(SCOPE3_TOTAL_MT * 0.75).toLocaleString()} – ${Math.round(SCOPE3_TOTAL_MT * 1.25).toLocaleString()} (placeholder ±25%)`,
+          perStudent: SCOPE3_PER_STUDENT,
           thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
           provenance: 'estimated',
           note: 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.',

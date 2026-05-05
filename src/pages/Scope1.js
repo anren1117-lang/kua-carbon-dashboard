@@ -1,6 +1,10 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
+import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+
+const SCOPE1_PER_STUDENT = +(SCOPE1_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
 const categories = [
   { name: 'Heating Fuel', desc: 'Heating oil and propane delivered to campus boilers and water heaters.', factor: 'EPA GHG Emission Factors Hub: 10.16 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane', status: 'In dashboard (fuel_bills table)' },
@@ -64,7 +68,9 @@ function Scope1() {
       <ScopePageInfo
         color="#ef4444"
         estimate={{
-          total: '~1,000', totalRange: '800 – 1,500', perStudent: 1.6,
+          total: `~${SCOPE1_TOTAL_MT.toLocaleString()}`,
+          totalRange: `${Math.round(SCOPE1_TOTAL_MT * 0.8).toLocaleString()} – ${Math.round(SCOPE1_TOTAL_MT * 1.2).toLocaleString()} (placeholder ±20%)`,
+          perStudent: SCOPE1_PER_STUDENT,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
           provenance: 'estimated',
           note: 'Heating fuel is the overwhelming driver. Refrigerant leakage and fleet vehicles add roughly 20–50 mtCO₂e between them.',
