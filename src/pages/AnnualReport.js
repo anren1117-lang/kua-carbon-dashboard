@@ -9,6 +9,7 @@ import { reductionActions } from '../data/reductionActions.js';
 import { rankActions } from '../utils/hotspots.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 
 // Trustee / parent-facing annual summary. Designed to print cleanly:
 // no nav, no flashy interactions, every section uses 11pt body type
@@ -98,8 +99,7 @@ export default function AnnualReport() {
 
       <Section title="Electricity supply">
         <p style={styles.body}>
-          KUA's {GRID_MIX_TOTAL_KWH.toLocaleString()} kWh of annual electricity comes through the ISO New
-          England regional grid. The 2024 system mix was:
+          KUA's ~{COMPOSED_ANNUAL_KWH.toLocaleString()} kWh of Year 1 projected annual electricity ({GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured YTD through {COMPOSED_YTD_AS_OF}, seasonally projected) comes through the ISO New England regional grid. The 2024 system mix was:
         </p>
         <table style={styles.table}>
           <thead>
