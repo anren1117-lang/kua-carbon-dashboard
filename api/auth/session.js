@@ -89,12 +89,22 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Cryptographic verification against Google's published JWKs.
-  // Pass the configured audience (Google OAuth client ID for KUA); if
-  // the env var is unset we still verify signature + iss + exp + email
-  // domain, just without the aud check.
+  // Cryptographic verification against Google's published JWKs. We
+  // REQUIRE AUTH_GOOGLE_AUDIENCE — without it any token Google has
+  // issued for any other OAuth app would pass signature + issuer +
+  // expiry + (eventually) the domain allowlist. With an aud check,
+  // only tokens specifically issued for KUA's OAuth client are
+  // accepted. This used to fall through quietly when the env var was
+  // unset; refuse explicitly so a missing deploy var fails closed
+  // instead of silently widening the auth surface.
   const expectedAud = readEnv('AUTH_GOOGLE_AUDIENCE');
-  const verification = await verifyGoogleIdToken(idToken, { audience: expectedAud || undefined });
+  if (!expectedAud) {
+    res.status(503).json({
+      error: 'AUTH_GOOGLE_AUDIENCE not configured. Set the Google OAuth client ID server-side before issuing sessions.',
+    });
+    return;
+  }
+  const verification = await verifyGoogleIdToken(idToken, { audience: expectedAud });
   if (!verification.valid) {
     res.status(401).json({ error: `Token verification failed: ${verification.reason}` });
     return;
