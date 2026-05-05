@@ -48,6 +48,18 @@ describe('data layer integrity', () => {
     dorms.forEach((d) => expect(ids.has(d.buildingId)).toBe(true));
   });
 
+  it('every Dorm-categorized building is in the dorm registry', () => {
+    // Inverse of the previous check — locks in the fix to b_bishop
+    // (was classified Dorm in buildings.js but missing from dorms.js,
+    // so the Buildings DormEnergySection and StudentChallenges
+    // leaderboard disagreed on which buildings were "dorms").
+    const dormBuildingIds = new Set(dorms.map((d) => d.buildingId));
+    const dormBuildings = buildings.filter((b) => b.category === 'Dorm');
+    dormBuildings.forEach((b) => {
+      expect(dormBuildingIds.has(b.id)).toBe(true);
+    });
+  });
+
   it('every student profile points to a known dorm', () => {
     const ids = new Set(dorms.map((d) => d.id));
     students.forEach((s) => expect(ids.has(s.dormId)).toBe(true));
