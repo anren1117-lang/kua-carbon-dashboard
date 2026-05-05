@@ -227,9 +227,19 @@ function AdminPortal() {
     return (tons * (wasteFactors[type] || 0)).toFixed(3);
   };
 
-  const totalFuelEmissions = fuelBills.reduce((sum, b) => sum + (parseFloat(b.gallons) * (fuelFactors[b.fuel_type] || 0)), 0) / 1000;
+  // parseFloat(null/undefined) is NaN, and NaN propagates through the
+  // running sum so any single null gallons row turned the headline
+  // total into NaN. `Number(...) || 0` (or || on parseFloat) coerces
+  // each row's value to 0 if non-finite — bad rows drop out of the sum
+  // instead of poisoning it.
+  const totalFuelEmissions = fuelBills.reduce((sum, b) => {
+    const gallons = parseFloat(b.gallons);
+    if (!Number.isFinite(gallons)) return sum;
+    return sum + gallons * (fuelFactors[b.fuel_type] || 0);
+  }, 0) / 1000;
   const totalWasteEmissions = wasteRecords.reduce((sum, w) => {
-    let tons = parseFloat(w.amount) || 0;
+    let tons = parseFloat(w.amount);
+    if (!Number.isFinite(tons)) return sum;
     if (w.unit === 'lbs') tons = tons / 2000;
     if (w.unit === 'cubic yards') tons = tons * 0.4;
     return sum + (tons * (wasteFactors[w.waste_type] || 0));
