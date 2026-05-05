@@ -114,14 +114,21 @@ export default function AnnualReport() {
             </tr>
           </thead>
           <tbody>
-            {gridMix.map((m) => (
-              <tr key={m.source}>
-                <td style={styles.td}>{m.source}</td>
-                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{m.mixPercent}%</td>
-                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{m.kwhUsed.toLocaleString()}</td>
-                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{m.mtCO2e.toFixed(2)}</td>
-              </tr>
-            ))}
+            {gridMix.map((m) => {
+              // gridMix entries are derived from COMPOSED_YTD_KWH (YTD).
+              // The annual report is annual, so scale the per-fuel kWh
+              // and mt to Year 1 by the same factor used in
+              // GRID_MIX_ANNUAL_MTCO2E (live, no need to import again).
+              const factor = GRID_MIX_ANNUAL_MTCO2E / GRID_MIX_TOTAL_MTCO2E;
+              return (
+                <tr key={m.source}>
+                  <td style={styles.td}>{m.source}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{m.mixPercent}%</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{Math.round(m.kwhUsed * factor).toLocaleString()}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{(m.mtCO2e * factor).toFixed(2)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         <p style={{ ...styles.body, marginTop: 12, color: '#475569' }}>
