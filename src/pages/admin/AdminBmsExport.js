@@ -24,11 +24,16 @@ export default function AdminBmsExport() {
   const buildings = useMemo(() => getEffectiveBuildings(), []);
   const map = useMemo(() => getBmsMeterMap(), [tick]);
 
-  const totalCampusKwh = bmsExportMeters
-    .filter((m) => m.id.includes('MainFeed') || m.id.endsWith('PanelFeed') || m.id.endsWith('_Main'))
-    .reduce((s, m) => s + m.totalKwh, 0);
+  // Headline counts.
   const mappedCount = bmsExportMeters.filter((m) => map[m.id]).length;
-  const totalRecordedKwh = bmsExportMeters.reduce((s, m) => s + m.totalKwh, 0);
+  const stuckCount = bmsExportMeters.filter((m) => m.direction === 'stuck').length;
+  const generationCount = bmsExportMeters.filter((m) => m.direction === 'generation').length;
+  // Sum only consumption-direction meters for the headline total.
+  // Generation-direction (solar / suspect-CT) meters would either be
+  // double-counting or sign-flipped if added to the consumption sum.
+  const totalConsumptionKwh = bmsExportMeters
+    .filter((m) => m.direction === 'consumption')
+    .reduce((s, m) => s + m.totalKwh, 0);
 
   const filteredRows = bmsExportMeters
     .filter((m) => !filter || m.id.toLowerCase().includes(filter.toLowerCase()))
@@ -46,7 +51,9 @@ export default function AdminBmsExport() {
           { label: 'Hours covered',   value: BMS_EXPORT_META.hoursCovered,                                  accent: '#fbbf24' },
           { label: 'Meters',          value: BMS_EXPORT_META.meterCount,                                    accent: '#86efac' },
           { label: 'Mapped → building', value: `${mappedCount} / ${BMS_EXPORT_META.meterCount}`,            accent: mappedCount === BMS_EXPORT_META.meterCount ? '#22c55e' : '#f59e0b' },
-          { label: 'Total kWh',       value: Math.round(totalRecordedKwh).toLocaleString(),                 accent: '#a855f7', note: 'sum of all meters in window' },
+          { label: 'Total consumption kWh', value: Math.round(totalConsumptionKwh).toLocaleString(),       accent: '#a855f7', note: 'consumption-direction meters only' },
+          { label: 'Stuck / not reporting',   value: stuckCount,                                            accent: stuckCount === 0 ? '#22c55e' : '#fbbf24' },
+          { label: 'Generation / suspect-CT', value: generationCount,                                       accent: generationCount === 0 ? '#22c55e' : '#fbbf24', note: 'real solar + backwards CTs' },
         ]} />
         <div style={styles.metaRow}>
           <ProvenancePill provenance="measured" />
