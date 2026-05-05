@@ -130,20 +130,20 @@ function Scope2() {
           },
           {
             action: 'Smart HVAC scheduling',
-            impact: '−13 to −34 mtCO₂e/yr',
+            impact: '−10 to −25 mtCO₂e/yr',
             detail: 'Building automation systems with night/weekend/break setback. Many older KUA buildings run HVAC continuously when scheduling could turn it down 60+ hours per week.',
             data: [
               { input: 'HVAC share of commercial electricity', value: '40 – 50%', source: 'EIA CBECS 2018' },
               { input: 'Reduction from BAS scheduling', value: '15 – 30%', source: 'ASHRAE Journal 2019; LBNL High-Performance Building Database' },
-              { input: 'Total campus electricity', value: '2.3M kWh/yr', source: 'KUA real-time meter' },
-              { input: 'ISO-NE grid emission factor', value: '0.292 kg/kWh', source: 'ISO-NE 2024' },
+              { input: 'Total campus electricity', value: '~1.9M kWh/yr (Year 1)', source: 'composedYtd × annualize, /scope-2' },
+              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
             ],
             math: [
-              'hvac_kwh = 2,300,000 × 0.45 = 1,035,000 kWh',
-              'savings_low  = 1,035,000 × 15% × 0.292 = 45,332 kg ≈ 45 mtCO₂e',
-              'savings_high = 1,035,000 × 30% × 0.292 = 90,664 kg ≈ 91 mtCO₂e',
+              'hvac_kwh = 1,900,000 × 0.45 = 855,000 kWh',
+              'savings_low  = 855,000 × 15% × 0.235 = 30 mtCO₂e',
+              'savings_high = 855,000 × 30% × 0.235 = 60 mtCO₂e',
               '',
-              '# Discounted for partial implementation: 13 - 34 mtCO₂e/yr',
+              '# Discounted for partial implementation: 10 - 25 mtCO₂e/yr',
             ],
           },
           {
