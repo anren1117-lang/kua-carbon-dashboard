@@ -79,8 +79,18 @@ export async function verifyGoogleIdToken(idToken, opts = {}) {
   if (iss !== 'accounts.google.com' && iss !== 'https://accounts.google.com') {
     return { valid: false, reason: `Bad issuer ${iss}` };
   }
-  if (payload.exp && payload.exp * 1000 <= Date.now()) {
+  // exp is REQUIRED for Google OIDC tokens. The earlier guard treated a
+  // missing exp as "no expiry to check" — i.e., the token would be
+  // accepted forever. Defensively, reject any token without exp.
+  if (typeof payload.exp !== 'number') {
+    return { valid: false, reason: 'Missing or invalid exp claim' };
+  }
+  if (payload.exp * 1000 <= Date.now()) {
     return { valid: false, reason: 'Token expired' };
+  }
+  // nbf (not-before) is optional but must be honored if present.
+  if (typeof payload.nbf === 'number' && payload.nbf * 1000 > Date.now()) {
+    return { valid: false, reason: 'Token not yet valid (nbf)' };
   }
   if (opts.audience && payload.aud !== opts.audience) {
     return { valid: false, reason: 'Audience mismatch' };
