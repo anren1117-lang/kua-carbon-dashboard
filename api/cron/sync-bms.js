@@ -21,6 +21,7 @@
 //     }
 //   And set CRON_SECRET in Vercel project env.
 
+import crypto from 'node:crypto';
 import { getMeterAdapter } from '../../src/adapters/meter/index.js';
 import { insertReadings } from '../../src/storage/readingsStore.js';
 
@@ -31,14 +32,26 @@ function readEnv(key) {
   return undefined;
 }
 
+// Constant-time string comparison. Prevents a timing side-channel that
+// could let an attacker recover the secret one byte at a time. Network
+// jitter usually swamps the signal in practice, but it's the kind of
+// hardening that costs nothing and removes the entire class of attack.
+function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
 function isAuthorized(req) {
   const expected = readEnv('CRON_SECRET');
   if (!expected) return false; // Refuse to run unauthenticated.
   const auth = req.headers?.authorization || req.headers?.Authorization;
-  if (auth && auth === `Bearer ${expected}`) return true;
+  if (auth && safeEqual(auth, `Bearer ${expected}`)) return true;
   // Vercel built-in crons send a signed header that includes the secret.
   const vercelCron = req.headers?.['x-vercel-cron-secret'];
-  if (vercelCron && vercelCron === expected) return true;
+  if (vercelCron && safeEqual(vercelCron, expected)) return true;
   return false;
 }
 
