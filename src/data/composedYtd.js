@@ -63,39 +63,57 @@ export const COMPOSED_YTD_DAYS = dayOfYear; // 124 for May 4 in a non-leap year
  * @property {string} source         file path the kWh came from
  */
 
+// Derive label + day count from the YYYY-MM key. Leap-aware (Feb 29
+// when applicable) and works for any future year without edits.
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function labelForMonthKey(key) {
+  const [yyyy, mm] = key.split('-');
+  return `${MONTH_NAMES[parseInt(mm, 10) - 1]} ${yyyy}`;
+}
+function daysForMonthKey(key) {
+  const [yyyy, mm] = key.split('-').map((s) => parseInt(s, 10));
+  return new Date(yyyy, mm, 0).getDate();
+}
+
+// The export-window prefix used for partial-month detection. Shifts to
+// the next month automatically as the YTD-as-of date crosses month
+// boundaries — earlier code hardcoded "2026-05" here too, so the May→June
+// transition would have silently dropped the partial-month component.
+const PARTIAL_MONTH_PREFIX = COMPOSED_YTD_AS_OF.slice(0, 7);
+
 /** @type {YtdComponent[]} */
 export const ytdComponents = (() => {
   const out = [];
 
-  // Months fully covered by the monthly captures: Jan, Feb, Mar, Apr.
-  const monthLabels = { '2026-01': 'Jan 2026', '2026-02': 'Feb 2026', '2026-03': 'Mar 2026', '2026-04': 'Apr 2026' };
-  const daysInMonth = { '2026-01': 31, '2026-02': 28, '2026-03': 31, '2026-04': 30 };
+  // Months fully covered: every monthlyReports entry whose month key is
+  // strictly earlier than the partial-month prefix (so Apr 2026 ships
+  // in full, May 2026 is treated as partial via the export).
   for (const r of monthlyReports) {
-    if (monthLabels[r.month]) {
-      out.push({
-        label: monthLabels[r.month],
-        period: r.month,
-        kwh: r.displayedTotal,
-        days: daysInMonth[r.month],
-        source: 'src/data/monthlyConsumption.js (BMS All Meters page master-meter)',
-      });
-    }
+    if (r.month >= PARTIAL_MONTH_PREFIX) continue;
+    out.push({
+      label: labelForMonthKey(r.month),
+      period: r.month,
+      kwh: r.displayedTotal,
+      days: daysForMonthKey(r.month),
+      source: 'src/data/monthlyConsumption.js (BMS All Meters page master-meter)',
+    });
   }
 
-  // Partial month from the export — May 1–4 only (April is already
-  // covered above by the monthly capture, no overlap).
-  const mayDays = Array.from(exportDailyByDate.entries())
-    .filter(([date]) => date.startsWith('2026-05') && date <= COMPOSED_YTD_AS_OF)
+  // Partial month from the export — the month containing
+  // COMPOSED_YTD_AS_OF, dates up to that anchor.
+  const partialMonthDays = Array.from(exportDailyByDate.entries())
+    .filter(([date]) => date.startsWith(PARTIAL_MONTH_PREFIX) && date <= COMPOSED_YTD_AS_OF)
     .sort();
-  if (mayDays.length > 0) {
-    const mayKwh = mayDays.reduce((s, [, k]) => s + k, 0);
-    const first = mayDays[0][0].slice(8);
-    const last = mayDays[mayDays.length - 1][0].slice(8);
+  if (partialMonthDays.length > 0) {
+    const partialKwh = partialMonthDays.reduce((s, [, k]) => s + k, 0);
+    const first = partialMonthDays[0][0].slice(8);
+    const last = partialMonthDays[partialMonthDays.length - 1][0].slice(8);
+    const [yyyy, mm] = PARTIAL_MONTH_PREFIX.split('-');
     out.push({
-      label: `May ${first}–${last} 2026`,
-      period: '2026-05',
-      kwh: Math.round(mayKwh),
-      days: mayDays.length,
+      label: `${MONTH_NAMES[parseInt(mm, 10) - 1]} ${first}–${last} ${yyyy}`,
+      period: PARTIAL_MONTH_PREFIX,
+      kwh: Math.round(partialKwh),
+      days: partialMonthDays.length,
       source: 'src/data/bmsExportApr2026.js (BMS Meter Trends export, daily campus-feed sum)',
     });
   }
@@ -128,16 +146,22 @@ const MULT_SUM = monthlyPattern.reduce((s, m) => s + m.multiplier, 0); // ≈ 11
 // Equivalently: monthShare = multiplier / MULT_SUM.
 const monthShare = monthlyPattern.map((m) => m.multiplier / MULT_SUM);
 
-const monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+// Days in each month — derived from the actual year so leap-year
+// Februaries get 29. Date(year, monthIdx + 1, 0) returns the last
+// day of the requested month.
+function daysInMonthFor(year, monthIdx) {
+  return new Date(year, monthIdx + 1, 0).getDate();
+}
 
 // Map each ytdComponent to its month index. Apr/May partial months
 // only contribute a fractional share.
 function componentToMonthShareCovered(c) {
   // Period like '2026-01' or '2026-05' from the components.
+  const year = parseInt(c.period.slice(0, 4), 10);
   const monthIdx = parseInt(c.period.slice(5), 10) - 1;
   if (monthIdx < 0 || monthIdx >= 12) return null;
-  // Fraction of the month covered by this component.
-  const frac = Math.min(1, c.days / monthDays[monthIdx]);
+  // Fraction of the month covered by this component (leap-aware).
+  const frac = Math.min(1, c.days / daysInMonthFor(year, monthIdx));
   return { monthIdx, frac, kwh: c.kwh };
 }
 
