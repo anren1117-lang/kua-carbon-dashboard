@@ -42,11 +42,13 @@ function MyLessons() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     const hash = getTeacherHash();
     fetch(`/api/teacher/lessons?createdByHash=${encodeURIComponent(hash)}`)
       .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-      .then((j) => setLessons(j.lessons || []))
-      .catch((err) => setError(err.message));
+      .then((j) => { if (!cancelled) setLessons(j.lessons || []); })
+      .catch((err) => { if (!cancelled) setError(err.message); });
+    return () => { cancelled = true; };
   }, []);
 
   if (error) return <div style={{ color: '#fca5a5', fontSize: 13 }}>Error loading lessons: {error}</div>;
