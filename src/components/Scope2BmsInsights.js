@@ -182,7 +182,7 @@ export function Scope2BmsInsights() {
                 {COMPOSED_ANNUAL_KWH.toLocaleString()}
               </td>
               <td style={styles.ytdTdSrc}>
-                {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — within the 410-440 cross-validated estimate range
+                {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — central value of the 365–405 cross-validated ±5% range
               </td>
             </tr>
           </tbody>
@@ -437,7 +437,8 @@ function Year1ProjectionSection() {
           <span style={styles.ttLabel}>Today:</span>
           For each measured month (Jan–Apr full, May partial), compute "implied annual" =
           measured_kwh ÷ that month's share of NH's seasonal shape (Jan = 1.25× mean month,
-          Jul = 0.59× mean month, etc.). Average those implied annuals to get a calibrated
+          Jul = 0.59× mean month, etc.). Take a fraction-weighted mean of those implied
+          annuals — full months count more than a 4-day partial — to get a calibrated
           baseline ({COMPOSED_YTD_KWH > 0 ? Math.round(COMPOSED_YEAR1_KWH * (1 / 12)).toLocaleString() : 0} kWh/mean-month).
           Project each unmeasured month as baseline × itsMonthShare.
         </div>
