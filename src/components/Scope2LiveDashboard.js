@@ -228,19 +228,16 @@ export function Scope2LiveDashboard() {
 
   const initializeEmissions = useCallback(() => {
     const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const msInYear = now - startOfYear;
+
     const msInMonth = now - startOfMonth;
     const msInDay = now - startOfDay;
-    
-    const msPerYear = 365 * 24 * 60 * 60 * 1000;
+
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const msPerMonth = daysInMonth * 24 * 60 * 60 * 1000;
     const msPerDay = 24 * 60 * 60 * 1000;
-    
+
     // Anchor the year counter on actual measured YTD (which already
     // reflects heating-heavy Jan-Apr) rather than linear-prorating the
     // annual figure. Linear pro-rata understates by ~14% in early May.
@@ -248,7 +245,7 @@ export function Scope2LiveDashboard() {
     setMonthEmissions((msInMonth / msPerMonth) * emissionsPerMonth);
     setTodayEmissions((msInDay / msPerDay) * emissionsPerDay);
     setCurrentEmissions(GRID_MIX_TOTAL_MTCO2E);
-  }, [yearlyEmissions, emissionsPerMonth, emissionsPerDay]);
+  }, [emissionsPerMonth, emissionsPerDay]);
 
   useEffect(() => {
     if (!isLive) return;
