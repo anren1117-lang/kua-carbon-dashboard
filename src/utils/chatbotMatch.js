@@ -112,9 +112,9 @@ const QUIZ_BANK = [
     topic: 'kua_specific',
     question: 'Roughly how many mtCO₂e/yr is KUA\'s preliminary GROSS footprint estimate?',
     options: [
-      { text: '~400',   correct: false, explanation: 'Too low — Scope 2 alone is ~222 mt.' },
-      { text: '~1,150', correct: false, explanation: 'That\'s the NET figure (gross minus forest sequestration). The gross is higher.' },
-      { text: '~4,150', correct: true,  explanation: 'Right. Preliminary gross is ~4,150 mtCO₂e/yr. After ~3,000 mt of forest sequestration, net is ~1,150.' },
+      { text: '~395',   correct: false, explanation: 'Too low — that\'s Scope 2 alone (electricity).' },
+      { text: '~1,700', correct: false, explanation: 'That\'s the NET figure (gross minus forest sequestration). The gross is higher.' },
+      { text: '~4,350', correct: true,  explanation: 'Right. Preliminary gross is ~4,350 mtCO₂e/yr (Scope 1 ~1,250 + Scope 2 ~395 + Scope 3 ~2,700). After ~2,650 mt of forest sequestration, net is ~1,700.' },
       { text: '~10,000',correct: false, explanation: 'Too high — that\'s closer to a much larger university\'s footprint.' },
     ],
   },

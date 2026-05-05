@@ -150,16 +150,16 @@ function Scope2() {
           },
           {
             action: 'Procure clean electricity supplier',
-            impact: '−222 mtCO₂e/yr (market-based)',
+            impact: `−${Math.round(GRID_MIX_ANNUAL_MTCO2E)} mtCO₂e/yr (market-based)`,
             detail: 'NH has been deregulated since 1998. KUA can choose a competitive supplier sourcing from wind/hydro/solar without changing physical delivery. Reflected in the market-based view (GHG Protocol Scope 2 dual reporting) but not the location-based view, to avoid double-counting.',
             data: [
-              { input: 'Current Scope 2 emissions (location-based)', value: '222 mtCO₂e/yr', source: 'KUA dashboard documented value' },
+              { input: 'Current Scope 2 emissions (location-based)', value: `~${Math.round(GRID_MIX_ANNUAL_MTCO2E)} mtCO₂e/yr`, source: 'Composed YTD × ISO-NE 2024 effective rate (live)' },
               { input: 'Market-based factor for 100% renewable supply', value: '~0 kg CO₂e/kWh', source: 'GHG Protocol Scope 2 Guidance §6 (renewable supply contracts)' },
               { input: 'NH retail electricity competition', value: 'enabled since 1998', source: 'NH PUC Order 22,950' },
             ],
             math: [
               '# Procuring 100% renewable supply replaces grid emissions on the market-based view',
-              'market_based_savings = 222 mtCO₂e/yr (full Scope 2 elimination)',
+              `market_based_savings = ${Math.round(GRID_MIX_ANNUAL_MTCO2E)} mtCO₂e/yr (full Scope 2 elimination)`,
               '',
               '# Note: location-based view unchanged. Both must be reported.',
             ],

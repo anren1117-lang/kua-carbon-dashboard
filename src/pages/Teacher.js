@@ -39,7 +39,7 @@ const LESSON_MODULES = [
       'Argue why measurement boundaries matter for accountability',
     ],
     keyArticles: ['ka_scopes', 'ka_kua_emissions'],
-    activity: 'Give students KUA\'s rough scope splits (1: ~1,000 mt, 2: ~222 mt, 3: ~3,000 mt) and ask: which scope is most reducible without the school giving anything up? Defend in 3 sentences.',
+    activity: 'Give students KUA\'s rough scope splits (1: ~1,250 mt, 2: ~395 mt, 3: ~2,700 mt) and ask: which scope is most reducible without the school giving anything up? Defend in 3 sentences.',
   },
   {
     id: 'lm_food',
