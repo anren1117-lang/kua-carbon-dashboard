@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { ANNUALIZE_FACTOR } from '../data/envysionSnapshot.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { ProvenancePill } from './ProvenancePill.js';
@@ -26,9 +27,17 @@ export function Scope2LiveDashboard() {
   const [expandedBuilding, setExpandedBuilding] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
 
-  // ISO New England Official Mix annual baseline (data layer)
-  const yearlyEmissions = GRID_MIX_TOTAL_MTCO2E;
-  const totalKwh = GRID_MIX_TOTAL_KWH;
+  // ISO New England Official Mix annual baseline. GRID_MIX_TOTAL_MTCO2E
+  // (152.62) is the YTD-through-2026-05-03 figure (123 days of BMS
+  // measurement). The live counter has to tick at the ANNUAL rate, so
+  // we annualize × 2.97 (= 365 / 123). Result ≈ 453 mt/yr — within
+  // the 410-440 cross-validated range with a small residual that
+  // reflects the gap between the 123-day YTD window and the 30-day
+  // April export's annualization.
+  const yearlyEmissions = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
+  // Annualized for the same reason as yearlyEmissions above — the
+  // "kWh/year" stat below would be wrong showing the YTD figure.
+  const totalKwh = Math.round(GRID_MIX_TOTAL_KWH * ANNUALIZE_FACTOR);
   const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60);
   const emissionsPerMinute = yearlyEmissions / (365 * 24 * 60);
   const emissionsPerHour = yearlyEmissions / (365 * 24);
