@@ -251,6 +251,8 @@ export default function BuildingsPage() {
         </div>
       </ModuleSection>
 
+      <DormEnergySection rows={rows} />
+
       <ModuleSection
         title={`${sorted.length} buildings`}
         hint="Click a row for setpoints, occupancy, and the BMS join number."
@@ -338,6 +340,138 @@ function Field({ label, value }) {
     <div style={styles.field}>
       <span style={styles.fieldLabel}>{label}</span>
       <span style={styles.fieldValue}>{value}</span>
+    </div>
+  );
+}
+
+// Per-dorm comparative section. Card per dorm with: name, occupancy,
+// annual kWh, kWh-per-student-per-day, mt CO2e, daily 30-day mini bar
+// chart (when BMS-mapped) or seasonal-projection bar (when not).
+function DormEnergySection({ rows }) {
+  const [sortBy, setSortBy] = useState('perStudent');
+  const dorms = rows.filter((r) => r.category === 'Dorm' && r.dormPopulation > 0);
+  if (dorms.length === 0) return null;
+
+  // Compute per-student kWh per day for each dorm (annual ÷ 365 ÷ pop)
+  const meterMap = getBmsMeterMap();
+  const enriched = dorms.map((d) => {
+    const annualKwh = d.kwh;
+    const kwhPerStudentPerDay = (annualKwh / 365) / d.dormPopulation;
+    const mt = (annualKwh * KG_PER_KWH) / 1000;
+    // Daily series for mini chart — only if BMS-mapped.
+    let daily = [];
+    if (d.source === 'bms') {
+      const meterIds = Object.entries(meterMap).filter(([, b]) => b === d.id).map(([m]) => m);
+      const meters = meterIds.map((id) => bmsExportMeters.find((m) => m.id === id)).filter(Boolean);
+      const map = new Map();
+      for (const m of meters) {
+        for (const day of (m.daily || [])) {
+          map.set(day.date, (map.get(day.date) || 0) + day.kwh);
+        }
+      }
+      daily = Array.from(map.entries()).sort().map(([date, kwh]) => ({ date, kwh }));
+    }
+    return { ...d, annualKwh, kwhPerStudentPerDay, mt, daily };
+  });
+
+  const sorted = [...enriched].sort((a, b) => {
+    if (sortBy === 'perStudent') return b.kwhPerStudentPerDay - a.kwhPerStudentPerDay;
+    if (sortBy === 'kwh')        return b.annualKwh - a.annualKwh;
+    if (sortBy === 'pop')        return b.dormPopulation - a.dormPopulation;
+    return 0;
+  });
+
+  const maxPerStudent = Math.max(...enriched.map((d) => d.kwhPerStudentPerDay));
+
+  return (
+    <ModuleSection
+      title="Dorm energy comparison"
+      hint="Each dorm's electricity use, ranked. kWh-per-student-per-day flags the heaviest residential users — useful for dorm-cup competitions and targeted setpoint outreach. BMS-mapped dorms show their actual daily kWh trend; the rest show their annual figure as a single bar (no per-day data yet)."
+    >
+      <div style={styles.dormControls}>
+        <span style={styles.dormControlLabel}>Sort by:</span>
+        <Chip active={sortBy === 'perStudent'} onClick={() => setSortBy('perStudent')}>kWh / student / day</Chip>
+        <Chip active={sortBy === 'kwh'}        onClick={() => setSortBy('kwh')}>Total kWh</Chip>
+        <Chip active={sortBy === 'pop'}        onClick={() => setSortBy('pop')}>Population</Chip>
+      </div>
+      <div style={styles.dormGrid}>
+        {sorted.map((d) => (
+          <DormCard key={d.id} dorm={d} maxPerStudent={maxPerStudent} />
+        ))}
+      </div>
+    </ModuleSection>
+  );
+}
+
+function DormCard({ dorm, maxPerStudent }) {
+  const isMeasured = dorm.source === 'bms' && dorm.daily.length > 0;
+  const isSnapshot = dorm.source === 'snapshot';
+  const dailyMax = isMeasured ? Math.max(...dorm.daily.map((d) => d.kwh)) : 0;
+  return (
+    <div style={styles.dormCard}>
+      <div style={styles.dormHead}>
+        <div style={styles.dormName}>
+          {dorm.name}
+          {dorm.bmsNumber != null && <span style={styles.dormBms}>#{dorm.bmsNumber}</span>}
+        </div>
+        <div style={styles.dormPop}>{dorm.dormPopulation} student{dorm.dormPopulation === 1 ? '' : 's'}</div>
+      </div>
+
+      <div style={styles.dormStats}>
+        <div style={styles.dormStat}>
+          <div style={styles.dormStatVal}>{Math.round(dorm.kwhPerStudentPerDay)}</div>
+          <div style={styles.dormStatLabel}>kWh / student / day</div>
+        </div>
+        <div style={styles.dormStat}>
+          <div style={styles.dormStatVal}>{Math.round(dorm.annualKwh / 1000)}k</div>
+          <div style={styles.dormStatLabel}>kWh / yr</div>
+        </div>
+        <div style={styles.dormStat}>
+          <div style={styles.dormStatVal}>{dorm.mt.toFixed(1)}</div>
+          <div style={styles.dormStatLabel}>mtCO₂e / yr</div>
+        </div>
+      </div>
+
+      {/* Bar showing per-student-per-day relative to peer-dorm max */}
+      <div style={styles.dormPerStudentBar}>
+        <div
+          style={{
+            ...styles.dormPerStudentFill,
+            width: `${Math.min(100, (dorm.kwhPerStudentPerDay / maxPerStudent) * 100)}%`,
+            background: isMeasured ? '#22c55e' : isSnapshot ? '#22d3ee' : '#475569',
+          }}
+        />
+      </div>
+
+      {/* Daily mini chart (BMS) or single annual bar (snapshot/none) */}
+      {isMeasured ? (
+        <>
+          <div style={styles.dormChartLabel}>Daily kWh — last 30 days (measured)</div>
+          <div style={styles.dormChart}>
+            {dorm.daily.map((d) => (
+              <div
+                key={d.date}
+                style={{
+                  ...styles.dormChartBar,
+                  height: `${(d.kwh / dailyMax) * 100}%`,
+                  background: '#22c55e',
+                }}
+                title={`${d.date}: ${Math.round(d.kwh)} kWh`}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div style={styles.dormChartLabel}>
+          {isSnapshot ? 'No BMS meter mapped — using YTD snapshot. Map a PM device on /admin/bms-export for daily detail.' : 'No data yet. Map a PM device on /admin/bms-export.'}
+        </div>
+      )}
+
+      <div style={styles.dormProvRow}>
+        {isMeasured && <ProvenancePill provenance="measured" label={`Measured · ${dorm.mappedMeterIds.length} PM`} />}
+        {isSnapshot && <ProvenancePill provenance="cited" label="Snapshot YTD" />}
+        {dorm.source === 'none' && <ProvenancePill provenance="estimated" label="No meter" />}
+      </div>
     </div>
   );
 }
@@ -449,6 +583,26 @@ const styles = {
   qualityFooter: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6 },
   qualityMethodLine: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
   qualityMethodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
+  // Dorm energy section
+  dormControls: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' },
+  dormControlLabel: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginRight: 4 },
+  dormGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 },
+  dormCard: { padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  dormHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, marginBottom: 10, flexWrap: 'wrap' },
+  dormName: { fontSize: 15, color: '#e5e7eb', fontWeight: 700 },
+  dormBms: { fontSize: 11, color: '#64748b', marginLeft: 6, fontWeight: 600 },
+  dormPop: { fontSize: 12, color: '#94a3b8' },
+  dormStats: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 },
+  dormStat: { padding: '8px 10px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6, textAlign: 'center' },
+  dormStatVal: { fontSize: 18, color: '#e5e7eb', fontWeight: 800, fontVariantNumeric: 'tabular-nums' },
+  dormStatLabel: { fontSize: 9, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 4 },
+  dormPerStudentBar: { height: 6, background: '#0f172a', borderRadius: 3, overflow: 'hidden', marginBottom: 10 },
+  dormPerStudentFill: { height: '100%', borderRadius: 3 },
+  dormChartLabel: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 },
+  dormChart: { display: 'flex', alignItems: 'flex-end', gap: 1, height: 50, marginBottom: 10 },
+  dormChartBar: { flex: 1, minHeight: 2, borderRadius: '1px 1px 0 0' },
+  dormProvRow: { marginTop: 8 },
 
   bmsPanel: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #22c55e', borderRadius: 6 },
   bmsHeader: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' },
