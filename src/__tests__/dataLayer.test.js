@@ -409,3 +409,44 @@ describe('Reduction targets', () => {
     expect(summary.dailyKwh.length).toBe(7);
   });
 });
+
+describe('Asset inventory counts', () => {
+  // Regression: when a record was both edited and decommissioned via the
+  // admin inventory page, the rendered row showed it once as
+  // "decommissioned" but the count totals double-counted it as both
+  // "decommissioned" and "overridden", and "seeded" was double-subtracted.
+  // Locks in the fix in src/data/assetInventory.js.
+  it('counts match rendered rows when removed/edited overlap', async () => {
+    // Use a fresh localStorage stub for this test only — node env doesn't
+    // have one by default, so simulate.
+    const store = {};
+    const fakeStorage = {
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: (k, v) => { store[k] = v; },
+      removeItem: (k) => { delete store[k]; },
+    };
+    globalThis.localStorage = fakeStorage;
+
+    // Pick the buildings inventory; pre-write edits + removed that overlap.
+    const seedId = buildings[0].id;
+    fakeStorage.setItem('kua_inv_buildings_edits',   JSON.stringify({ [seedId]: { name: 'patched' } }));
+    fakeStorage.setItem('kua_inv_buildings_removed', JSON.stringify([seedId]));
+
+    const { getInventoryView } = await import('../data/assetInventory.js');
+    const view = getInventoryView('buildings');
+    const total = buildings.length;
+
+    // The overlapping record should appear ONCE (as decommissioned), not twice.
+    const decommissionedRows = view.rows.filter((r) => r._provenance === 'decommissioned');
+    const overriddenRows     = view.rows.filter((r) => r._provenance === 'overridden');
+    expect(decommissionedRows.find((r) => r.id === seedId)).toBeTruthy();
+    expect(overriddenRows.find((r) => r.id === seedId)).toBeFalsy();
+
+    // Counts must agree with the row totals.
+    expect(view.counts.decommissioned).toBe(decommissionedRows.length);
+    expect(view.counts.overridden).toBe(overriddenRows.length);
+    expect(view.counts.seeded).toBe(total - decommissionedRows.length - overriddenRows.length);
+
+    delete globalThis.localStorage;
+  });
+});
