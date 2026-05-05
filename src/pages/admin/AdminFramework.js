@@ -51,12 +51,20 @@ function AdminFramework() {
 
   const submit = async (e) => {
     e.preventDefault();
+    let valueNum = null;
+    if (form.value !== '') {
+      valueNum = parseFloat(form.value);
+      if (!Number.isFinite(valueNum)) {
+        setMsg({ ok: false, text: `Value must be a finite number (got "${form.value}")` });
+        return;
+      }
+    }
     try {
       await insert({
         scope: form.scope,
         category: form.category || null,
         label: form.label,
-        value: form.value === '' ? null : parseFloat(form.value),
+        value: valueNum,
         unit: form.unit || null,
         date: form.date || null,
         source: form.source || null,

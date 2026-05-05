@@ -24,14 +24,29 @@ function Wind() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const coerce = (val, name) => {
+      if (val === '') return null;
+      const n = parseFloat(val);
+      if (!Number.isFinite(n) || n < 0) {
+        setMsg({ ok: false, text: `${name} must be a non-negative number (got "${val}")` });
+        return false;
+      }
+      return n;
+    };
+    const ratedNum   = coerce(form.rated_kw, 'rated_kw');
+    if (ratedNum === false) return;
+    const hubNum     = coerce(form.hub_height_m, 'hub_height_m');
+    if (hubNum === false) return;
+    const histNum    = coerce(form.historical_kwh, 'historical_kwh');
+    if (histNum === false) return;
     try {
       const payload = {
         status: form.status,
         as_of_date: form.as_of_date,
         last_operational_date: form.last_operational_date || null,
-        rated_kw: form.rated_kw === '' ? null : parseFloat(form.rated_kw),
-        hub_height_m: form.hub_height_m === '' ? null : parseFloat(form.hub_height_m),
-        historical_kwh: form.historical_kwh === '' ? null : parseFloat(form.historical_kwh),
+        rated_kw: ratedNum,
+        hub_height_m: hubNum,
+        historical_kwh: histNum,
         data_quality: form.data_quality,
         source: form.source || null,
         notes: form.notes || null,
