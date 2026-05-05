@@ -45,7 +45,11 @@ export function parseMeterCsv(csv) {
     return { readings: [], errors: ['empty input'] };
   }
 
-  const lines = csv.replace(/\r\n?/g, '\n').split('\n').filter((l) => l.trim().length > 0);
+  // Strip a leading UTF-8 BOM (Excel and many Windows tools write it).
+  // Without this the first header column reads as "﻿meter_id" and
+  // the required-columns check fails with a confusing error.
+  const cleaned = csv.charCodeAt(0) === 0xFEFF ? csv.slice(1) : csv;
+  const lines = cleaned.replace(/\r\n?/g, '\n').split('\n').filter((l) => l.trim().length > 0);
   if (lines.length < 2) {
     return { readings: [], errors: ['CSV must have a header plus at least one data row'] };
   }

@@ -258,6 +258,15 @@ describe('CSV meter parser', () => {
     const r = parseMeterCsv(csv);
     expect(r.errors.some((e) => e.includes('missing required column'))).toBe(true);
   });
+
+  it('strips a leading UTF-8 BOM (Excel exports write one)', () => {
+    // ﻿ is the BOM. Without stripping, the first header reads as
+    // "﻿meter_id" and the required-columns check would fail.
+    const csv = '﻿meter_id,timestamp,value,unit,interval_minutes\nm_elec_b_miller,2026-04-01T00:00:00Z,5.2,kWh,60';
+    const r = parseMeterCsv(csv);
+    expect(r.errors).toEqual([]);
+    expect(r.readings.length).toBe(1);
+  });
 });
 
 describe('CsvMeterAdapter', () => {
