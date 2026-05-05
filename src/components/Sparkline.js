@@ -36,13 +36,21 @@ export function Sparkline({
   const hasFlags = flags.some((f) => f !== null);
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const range = max - min || 1;
+  const range = max - min;
 
   // Build the polyline path. Pad 1px so the stroke doesn't clip.
   const xStep = (width - 2) / Math.max(1, values.length - 1);
+  // When every value is equal, drawing at "(v - min) / range" would
+  // divide by zero. Earlier code used `range || 1` which made the
+  // numerator 0 too, pinning the flat line to the BOTTOM of the
+  // chart. Center it instead so a constant series reads as flat
+  // rather than zero-y.
+  const yMid = height - 1 - 0.5 * (height - 2);
   const points = values.map((v, i) => {
     const x = 1 + i * xStep;
-    const y = height - 1 - ((v - min) / range) * (height - 2);
+    const y = range > 0
+      ? height - 1 - ((v - min) / range) * (height - 2)
+      : yMid;
     return [x, y];
   });
 
