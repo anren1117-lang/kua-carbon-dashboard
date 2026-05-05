@@ -101,6 +101,14 @@ export default async function handler(req, res) {
   }
   const payload = verification.payload;
 
+  // Google sets email_verified=true when the address has been verified
+  // (most consumer/Workspace accounts). An unverified email shouldn't
+  // be treated as authoritative for authorization decisions — someone
+  // could enroll a Workspace account without verifying ownership.
+  if (payload.email && payload.email_verified === false) {
+    res.status(403).json({ error: 'Email not verified by Google' });
+    return;
+  }
   const allowed = parseAllowedDomains();
   const domain = emailDomain(payload.email || '');
   if (allowed.length > 0 && !allowed.includes(domain)) {
