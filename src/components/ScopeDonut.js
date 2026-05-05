@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+
+// Track viewport width with a resize listener so the donut + legend can
+// reflow in real time. The previous implementation read window.innerWidth
+// once at mount, so resizing the window left the layout stuck.
+function useIsNarrow(breakpoint = 720) {
+  const get = () => typeof window !== 'undefined' && window.innerWidth < breakpoint;
+  const [narrow, setNarrow] = useState(get);
+  useEffect(() => {
+    const onResize = () => setNarrow(get());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return narrow;
+}
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut
@@ -44,6 +59,9 @@ const styles = {
 };
 
 export function ScopeDonut() {
+  const narrow = useIsNarrow();
+  const [hover, setHover] = useState(null);
+
   // Build arc segments
   const cx = 130, cy = 130, rO = 110, rI = 70;
   let acc = -Math.PI / 2;
@@ -55,6 +73,11 @@ export function ScopeDonut() {
     return { ...s, d: arcPath(cx, cy, rO, rI, start, end), pct: (s.value / grossTotal) * 100 };
   });
 
+  const hoveredArc = hover ? arcs.find((a) => a.key === hover) : null;
+  const centerLabel = hoveredArc ? hoveredArc.label.toUpperCase() : 'GROSS / YR';
+  const centerValue = hoveredArc ? hoveredArc.value : grossTotal;
+  const centerSub   = hoveredArc ? `${hoveredArc.pct.toFixed(0)}% of gross` : 'mtCO₂e';
+
   return (
     <div style={styles.wrap}>
       <section style={styles.card}>
@@ -62,27 +85,53 @@ export function ScopeDonut() {
         <p style={styles.blurb}>
           Where the ~{grossTotal.toLocaleString()} mtCO₂e of gross annual emissions actually come
           from. The forest pulls roughly {sinkValue.toLocaleString()} mtCO₂e back out, so the net is
-          ~{netTotal.toLocaleString()}. Numbers are the preliminary estimate above.
+          ~{netTotal.toLocaleString()}. Hover any arc to focus on a single scope.
         </p>
 
-        <div style={typeof window !== 'undefined' && window.innerWidth < 720 ? styles.bodyMobile : styles.body}>
+        <div style={narrow ? styles.bodyMobile : styles.body}>
           <svg viewBox="0 0 260 260" style={{ width: '100%', maxWidth: 260, height: 'auto' }}>
-            {arcs.map((a) => (
-              <path key={a.key} d={a.d} fill={a.color} />
-            ))}
-            <text x={cx} y={cy - 14} textAnchor="middle" style={styles.centerText}>GROSS / YR</text>
-            <text x={cx} y={cy + 12} textAnchor="middle" style={styles.centerBig}>{grossTotal.toLocaleString()}</text>
-            <text x={cx} y={cy + 30} textAnchor="middle" style={styles.centerUnit}>mtCO₂e</text>
+            {arcs.map((a) => {
+              const dim = hover && hover !== a.key;
+              return (
+                <path
+                  key={a.key}
+                  d={a.d}
+                  fill={a.color}
+                  opacity={dim ? 0.28 : 1}
+                  style={{ cursor: 'pointer', transition: 'opacity 120ms' }}
+                  onMouseEnter={() => setHover(a.key)}
+                  onMouseLeave={() => setHover(null)}
+                  onFocus={() => setHover(a.key)}
+                  onBlur={() => setHover(null)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${a.label}: ${a.value.toLocaleString()} mtCO₂e (${a.pct.toFixed(0)}%)`}
+                />
+              );
+            })}
+            <text x={cx} y={cy - 14} textAnchor="middle" style={styles.centerText}>{centerLabel}</text>
+            <text x={cx} y={cy + 12} textAnchor="middle" style={{ ...styles.centerBig, fill: hoveredArc ? hoveredArc.color : '#e5e7eb' }}>
+              {centerValue.toLocaleString()}
+            </text>
+            <text x={cx} y={cy + 30} textAnchor="middle" style={styles.centerUnit}>{centerSub}</text>
           </svg>
 
           <div style={styles.legendList}>
-            {arcs.map((a) => (
-              <div key={a.key} style={styles.legendRow}>
-                <div style={styles.swatch(a.color)} />
-                <div>{a.label} <span style={{ color: '#64748b' }}>· {a.pct.toFixed(0)}%</span></div>
-                <div style={styles.value}>{a.value.toLocaleString()}</div>
-              </div>
-            ))}
+            {arcs.map((a) => {
+              const isHover = hover === a.key;
+              return (
+                <div
+                  key={a.key}
+                  style={{ ...styles.legendRow, opacity: hover && !isHover ? 0.45 : 1, transition: 'opacity 120ms' }}
+                  onMouseEnter={() => setHover(a.key)}
+                  onMouseLeave={() => setHover(null)}
+                >
+                  <div style={styles.swatch(a.color)} />
+                  <div>{a.label} <span style={{ color: '#64748b' }}>· {a.pct.toFixed(0)}%</span></div>
+                  <div style={styles.value}>{a.value.toLocaleString()}</div>
+                </div>
+              );
+            })}
             <div style={styles.sinkRow}>
               <div style={styles.swatch('#22c55e')} />
               <div>On-campus sequestration</div>
