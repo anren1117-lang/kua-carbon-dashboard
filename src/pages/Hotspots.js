@@ -154,19 +154,11 @@ export default function Hotspots() {
         const PM_KEY = 'PM_03_MainFeed';
         const meter = bmsExportMeters.find((m) => m.id === PM_KEY);
         if (!meter || !meter.daily?.length) return null;
-        const dailySeries = meter.daily.map((d) => {
-          // Parse "YYYY-MM-DD" as a local-midnight Date so the chart's
-          // tooltip renders the same calendar day across timezones.
-          // Passing the raw string would let TimeSeriesChart's
-          // new Date(string) treat it as UTC midnight, which back-rolls
-          // a day in any negative-offset zone (Apr 15 → Apr 14 in ET).
-          const [yyyy, mm, dd] = d.date.split('-').map((s) => parseInt(s, 10));
-          return {
-            t: new Date(yyyy, mm - 1, dd),
-            v: +(d.kwh * KG_PER_KWH_ISO_NE / 1000).toFixed(3), // mtCO₂e
-            measured: true,
-          };
-        });
+        const dailySeries = meter.daily.map((d) => ({
+          t: d.date, // YYYY-MM-DD; TimeSeriesChart parses as local midnight
+          v: +(d.kwh * KG_PER_KWH_ISO_NE / 1000).toFixed(3), // mtCO₂e
+          measured: true,
+        }));
         const totalKwh = meter.daily.reduce((s, d) => s + d.kwh, 0);
         const totalMt  = totalKwh * KG_PER_KWH_ISO_NE / 1000;
         return (

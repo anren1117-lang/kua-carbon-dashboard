@@ -5,6 +5,21 @@ import React, { useState, useMemo } from 'react';
 // this one for the Trend Builder page where the user wants to read
 // values off the chart.
 
+// Convert any of (Date | number | string) into a millisecond timestamp.
+// Date-only strings ("YYYY-MM-DD") get parsed as LOCAL midnight rather
+// than UTC, so the chart's tooltip renders the same calendar day across
+// timezones. Earlier callers had to pre-construct local Date objects to
+// work around this — now they can pass the raw string.
+function timeToMs(t) {
+  if (t instanceof Date) return t.getTime();
+  if (typeof t === 'number') return t;
+  if (typeof t === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t)) {
+    const [yyyy, mm, dd] = t.split('-').map((s) => parseInt(s, 10));
+    return new Date(yyyy, mm - 1, dd).getTime();
+  }
+  return new Date(t).getTime();
+}
+
 /**
  * @param {object} props
  * @param {Array<{ t: string|number|Date, v: number }>} props.data
@@ -35,7 +50,7 @@ export function TimeSeriesChart({
       return { values: [], times: [], min: 0, max: 1, points: [], xStep: 0, plotWidth: 0, plotHeight: 0 };
     }
     const values = data.map((d) => d.v);
-    const times = data.map((d) => (d.t instanceof Date ? d.t.getTime() : new Date(d.t).getTime()));
+    const times = data.map((d) => timeToMs(d.t));
     const min = Math.min(...values, 0);
     const max = Math.max(...values, min + 1);
     const plotWidth = width - padding.left - padding.right;
