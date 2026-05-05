@@ -5,6 +5,9 @@ import { students } from '../data/students.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { getBmsMeterMap } from '../data/bmsExportMapping.js';
+import { COMPOSED_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 
 const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
@@ -18,13 +21,24 @@ export default function StudentChallenges() {
   const totalOptedIn = students.filter((s) => s.optInLeaderboard).length;
 
   const dormRows = useMemo(() => {
+    // Same priority ladder as /buildings: BMS-mapped first (annualized
+    // window total), envysionSnapshot fallback (annualized YTD), then
+    // 0. All on the same Year 1 basis so dorm rankings are comparable.
     const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
     const snapshotById  = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
+    const meterMap = getBmsMeterMap();
     return dorms.map((d) => {
       const dormStudents = students.filter((s) => s.dormId === d.id);
       const points = dormStudents.reduce((s, st) => s + st.carbonPoints, 0);
-      const snap = snapshotById[d.buildingId];
-      const kwh = snap?.energyUsedKwh ?? 0;
+      const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === d.buildingId && m.direction !== 'stuck');
+      let kwh = 0;
+      if (mappedMeters.length > 0) {
+        const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
+        kwh = windowKwh * COMPOSED_ANNUALIZE_FACTOR;
+      } else {
+        const snap = snapshotById[d.buildingId];
+        kwh = (snap?.energyUsedKwh ?? 0) * COMPOSED_ANNUALIZE_FACTOR;
+      }
       const mt = (kwh * KG_PER_KWH) / 1000;
       const kgPerStudent = d.population ? (mt * 1000) / d.population : 0;
       return {
