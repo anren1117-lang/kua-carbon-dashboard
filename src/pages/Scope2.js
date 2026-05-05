@@ -74,7 +74,7 @@ function Scope2() {
       <ScopePageInfo
         color="#f59e0b"
         estimate={{
-          total: `~${GRID_MIX_ANNUAL_MTCO2E}`,
+          total: `~${Math.round(GRID_MIX_ANNUAL_MTCO2E).toLocaleString()}`,
           totalRange: `${SCOPE2_RANGE_LOW} – ${SCOPE2_RANGE_HIGH} (composed YTD ± 5%)`,
           perStudent: +(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2),
           thirdMetric: {
