@@ -2,7 +2,7 @@ import React from 'react';
 
 const sources = [
   { domain: 'Framework', source: 'GHG Protocol — Scope 1 / 2 / 3', use: 'Inventory boundaries and dual-reporting (location- vs market-based)' },
-  { domain: 'Electricity', source: 'ISO New England Electric Generator Air Emissions Report (2024 data)', use: '643 lb CO₂/MWh regional; 177 lb CO₂/MWh imported' },
+  { domain: 'Electricity', source: 'ISO New England Electric Generator Air Emissions Report (2024 data) + EPA eGRID NEWE per-fuel rates', use: 'Per-fuel output-basis kg/kWh (combined-cycle gas 0.40, oil 0.78, coal 0.95, imports 0.30) summed across the 2024 generation mix → effective ~0.235 kg/kWh. ISO-NE also publishes 643 lb CO₂/MWh on an input-energy basis; we report against the output-basis number to align with how building-level kWh maps to emissions.' },
   { domain: 'Fuel', source: 'EPA GHG Emission Factors Hub', use: '10.16 kg CO₂/gal heating oil; 5.72 kg CO₂/gal propane' },
   { domain: 'Refrigerants', source: 'IPCC AR6 Global Warming Potentials', use: 'GWP100 conversions for fugitive HVAC leakage' },
   { domain: 'Waste', source: 'EPA Waste Reduction Model (WARM)', use: 'Landfill / recycling / composting net factors' },
