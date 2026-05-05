@@ -72,17 +72,26 @@ const sinkMidCanonical  = -ANNUAL_SEQUESTRATION_MT; // signed
 const netMidCanonical   = grossMidCanonical + sinkMidCanonical;
 const studentCount = TOTAL_STUDENTS;
 
+// Net-balance bounds under independent uncertainty:
+//   smallest plausible net  = smallest gross + LARGEST drawdown (most negative sinks value, sinksRow.low)
+//   largest plausible net   = largest gross  + SMALLEST drawdown (least negative sinks value, sinksRow.high)
+// Earlier code paired grossLow with sinksRow.high and grossHigh with sinksRow.low — an anti-correlated
+// pairing that produced a NARROWER interior range and contradicted the "low end is net-negative" caption
+// below the headline. Independent treatment is honest about the actual uncertainty span.
+const netLowSum  = grossLowSum  + sinksRow.low;
+const netHighSum = grossHighSum + sinksRow.high;
+
 const summary = {
   grossLow:  Math.round(grossLowSum),
   grossHigh: Math.round(grossHighSum),
   grossMid:  Math.round(grossMidCanonical),
   sinkLow:   sinksRow.low,
   sinkHigh:  sinksRow.high,
-  netLow:    Math.round(grossLowSum + sinksRow.high),  // sinks are negative; high (less negative) gives the higher net
-  netHigh:   Math.round(grossHighSum + sinksRow.low),
+  netLow:    Math.round(netLowSum),
+  netHigh:   Math.round(netHighSum),
   netMid:    Math.round(netMidCanonical),
-  perStudentLow:  +((grossLowSum + sinksRow.high) / studentCount).toFixed(1),
-  perStudentHigh: +((grossHighSum + sinksRow.low) / studentCount).toFixed(1),
+  perStudentLow:  +(netLowSum  / studentCount).toFixed(1),
+  perStudentHigh: +(netHighSum / studentCount).toFixed(1),
   perStudentMid:  +(netMidCanonical / studentCount).toFixed(1),
   studentCount,
 };
