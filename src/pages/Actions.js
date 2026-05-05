@@ -6,6 +6,7 @@ import { reductionActions, reductionActionsByVisibility } from '../data/reductio
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { dorms } from '../data/dorms.js';
 import { rankActions } from '../utils/hotspots.js';
+import { GROSS_MT } from '../data/scopeTotals.js';
 
 // Public Actions page — interactive: students pick which actions
 // they'll commit to and the page shows in real time how that moves
@@ -26,7 +27,7 @@ const CATEGORY_META = {
 };
 
 const STORAGE_KEY = 'kua_committed_actions';
-const KUA_GROSS_MT = 4150;          // Preliminary KUA gross emissions (mt/yr).
+const KUA_GROSS_MT = GROSS_MT;      // Reactive — composed from scopeTotals.
 const TYPICAL_DORM = 22;            // Approx. KUA dorm population for "my dorm" scope.
 
 function loadCommitted() {

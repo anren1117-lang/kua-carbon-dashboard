@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 
 // Generates a plain-language summary of the dashboard state. Currently rule-based;
 // the same I/O shape (database values in, grounded sentences out) can be swapped
@@ -9,13 +11,17 @@ import { supabase } from '../supabaseClient';
 //   2. A "Show calculation" control exposes the math behind every claim.
 //   3. The output is visually distinct from measured values via the AI badge.
 
+const STUDENTS = 340;
 const PRELIM = {
-  scope1: 1000, scope2: 222, scope3: 3000,
-  sinks: 3000, students: 340,
+  scope1: Math.round(SCOPE1_TOTAL_MT),
+  scope2: Math.round(SCOPE2_TOTAL_MT),
+  scope3: Math.round(SCOPE3_TOTAL_MT),
+  sinks:  Math.round(ANNUAL_SEQUESTRATION_MT),
+  students: STUDENTS,
 };
 
 function compose(records) {
-  const gross = PRELIM.scope1 + PRELIM.scope2 + PRELIM.scope3;
+  const gross = Math.round(GROSS_MT);
   const net = gross - PRELIM.sinks;
   const perStudent = (net / PRELIM.students).toFixed(1);
   const recordCount = records.totalRecords ?? 0;
@@ -90,7 +96,7 @@ export function AISummary() {
   }, []);
 
   const sentences = compose(records);
-  const gross = PRELIM.scope1 + PRELIM.scope2 + PRELIM.scope3;
+  const gross = Math.round(GROSS_MT);
   const net = gross - PRELIM.sinks;
 
   const [showFull, setShowFull] = useState(false);

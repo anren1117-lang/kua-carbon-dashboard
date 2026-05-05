@@ -67,7 +67,7 @@ const LESSON_MODULES = [
       'Compare against US and global averages',
     ],
     keyArticles: ['ka_grid_clean'],
-    activity: 'Have students recompute the ISO-NE average factor (~0.0956 kg CO₂/kWh) using the gridMix percentages and per-fuel factors. Discuss why it\'s 4× cleaner than the US average.',
+    activity: 'Have students recompute the ISO-NE effective output-basis factor (~0.235 kg CO₂/kWh) using the gridMix percentages and per-fuel factors. Discuss why it\'s ~1.5× cleaner than the US average (~0.37 kg/kWh).',
   },
 ];
 

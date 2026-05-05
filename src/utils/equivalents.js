@@ -2,6 +2,8 @@
 // card and the Executive Dashboard hero. Sources documented inline so the
 // numbers can be audited without leaving the file.
 
+import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+
 // Tesla Model 3 Long Range — full charge ≈ 82 kWh usable battery
 // (Tesla spec sheet, 2024 model year)
 const KWH_PER_TESLA_CHARGE = 82;
@@ -33,7 +35,9 @@ const MT_PER_TREE_YEAR   = 0.0605;    // EPA: avg US tree sequesters ~60.5 kg CO
 const MT_PER_HOME_YEAR   = 8.81;      // EPA: avg US home electricity = ~8.81 mtCO2e/yr
 const MT_PER_TRANSAT_FLT = 1.4;       // ICAO: avg one-way transatlantic flight per pax
 const MT_PER_GAL_GAS     = 0.00878;   // EPA: 8.78 kg CO2/gallon gasoline
-const KWH_AT_ISONE_PER_MT = 1 / 0.0000956; // ISO-NE 2024 factor inverted
+// ISO-NE effective output-basis factor (≈0.000235 mtCO2e/kWh — see gridMix.js).
+// Derive reactively from the per-fuel composition so this stays in sync if the mix changes.
+const KWH_AT_ISONE_PER_MT = GRID_MIX_TOTAL_KWH / GRID_MIX_TOTAL_MTCO2E;
 
 /** @param {number} mt */
 export function carbonEquivalents(mt) {

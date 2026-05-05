@@ -84,7 +84,7 @@ const scopes = [
     formula: 'Σ(tree biomass × 0.5 × 44/12) + Σ(land area × forest-type rate)',
     factorSource: 'Nowak et al. (2013); Birdsey (1992); USDA Urban Tree Database',
     peerRange: '0 measured at most peer schools',
-    peerComparison: 'KUA is the only school in the peer chart with a quantified physical sink. Middlebury reaches "net zero" by purchasing offsets — a financial drawdown, not physical. Our forest pulling 3,000 mtCO₂e is REAL sequestration.',
+    peerComparison: `KUA is the only school in the peer chart with a quantified physical sink. Middlebury reaches "net zero" by purchasing offsets — a financial drawdown, not physical. Our forest pulling ~${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e is REAL sequestration.`,
   },
 ];
 

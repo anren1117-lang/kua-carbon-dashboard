@@ -1,6 +1,20 @@
 // Knowledge articles for the Carbon Learning Chatbot. Mock content cards
 // keyed by topic, with explicit reading levels. The chatbot answer engine
 // (rule-based v1) selects an article by intent + reading level.
+//
+// Headline figures are composed from the same canonical sources the rest
+// of the dashboard imports, so the chatbot cannot quote a stale gross or
+// net once the underlying data wiring updates.
+
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from './scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
+import { TOTAL_STUDENTS } from './students.js';
+
+const grossMt   = Math.round(GROSS_MT);
+const sinksMt   = Math.round(ANNUAL_SEQUESTRATION_MT);
+const netMt     = grossMt - sinksMt;
+const perStud   = (netMt / TOTAL_STUDENTS).toFixed(1);
+const fmt       = (n) => Math.round(n).toLocaleString();
 
 /**
  * @typedef {Object} KnowledgeArticle
@@ -56,7 +70,7 @@ export const knowledgeArticles = [
     topic: 'kua_specific',
     readingLevel: 'intermediate',
     keywords: ['kua', 'kimball union', 'school', 'footprint'],
-    body: 'KUA\'s preliminary estimate is about 4,150 mtCO2e gross emissions per year — roughly 1,000 from heating fuel (Scope 1), 222 from purchased electricity (Scope 2), and 3,000 from indirect sources like student travel and food (Scope 3). The campus forest sequesters around 3,000 mtCO2e/year, leaving a net footprint near 1,150 mtCO2e/year. Per student that\'s about 1.9 mtCO2e/year — lower than peer boarding schools largely because we measure our forest.',
+    body: `KUA's preliminary estimate is about ${fmt(grossMt)} mtCO2e gross emissions per year — roughly ${fmt(SCOPE1_TOTAL_MT)} from heating fuel (Scope 1), ${fmt(SCOPE2_TOTAL_MT)} from purchased electricity (Scope 2), and ${fmt(SCOPE3_TOTAL_MT)} from indirect sources like student travel and food (Scope 3). The campus forest sequesters around ${fmt(sinksMt)} mtCO2e/year, leaving a net footprint near ${fmt(netMt)} mtCO2e/year. Per student that's about ${perStud} mtCO2e/year — lower than peer boarding schools largely because we measure our forest.`,
   },
   {
     id: 'ka_carpool_math',
@@ -73,7 +87,7 @@ export const knowledgeArticles = [
     topic: 'energy',
     readingLevel: 'advanced',
     keywords: ['grid', 'electricity', 'iso-ne', 'new england'],
-    body: 'ISO-NE\'s 2024 mix is roughly 51% natural gas, 23% nuclear, 12% renewables, 6% hydro, 7% imports (mostly Quebec hydro), and ~1% oil/coal. Nuclear plus hydro plus renewables plus clean imports = ~48% zero-emission. The remaining gas-dominated half makes the grid average around 96 g CO2/kWh — cleaner than the US average (~370 g/kWh) but not yet decarbonized.',
+    body: 'ISO-NE\'s 2024 mix is roughly 51% natural gas, 23% nuclear, 12% renewables, 6% hydro, 7% imports (mostly Quebec hydro), and ~1% oil/coal. Nuclear plus hydro plus renewables plus clean imports = ~48% zero-emission. The remaining gas-dominated half makes the system-effective rate about 235 g CO2/kWh on an output basis — cleaner than the US average (~370 g/kWh) but not yet decarbonized.',
     sourceDoc: 'ISO New England 2024 System Mix',
   },
   {
