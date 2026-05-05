@@ -1,5 +1,6 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
+import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 
 // All ranges drawn from publicly available carbon-market data (Ecosystem
 // Marketplace, Trove Research, Verra registries, Climate Action Reserve)
@@ -12,8 +13,8 @@ const categories = [
     relevanceColor: '#22c55e',
     desc: 'KUA\'s ~1,000-acre forest is the most directly applicable category. An IFM protocol pays a landowner for managing the forest in a way that increases carbon stock above a baseline (e.g., longer rotation, selective rather than clear-cut harvest). Verra (VCS) and Climate Action Reserve are the two main registries.',
     pricePerTon: '$8 – $40',
-    annualRevenuePotential: '$24,000 – $120,000',
-    annualRevenueCalc: '~3,000 mtCO₂e/yr × $8–$40/ton',
+    annualRevenuePotential: `$${Math.round(ANNUAL_SEQUESTRATION_MT * 8 / 1000).toLocaleString()},000 – $${Math.round(ANNUAL_SEQUESTRATION_MT * 40 / 1000).toLocaleString()},000`,
+    annualRevenueCalc: `~${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e/yr × $8–$40/ton`,
     caveat: 'Subject to additionality and permanence rules — the forest must be at risk of being managed differently without the credit revenue. School lands are sometimes hard to qualify because the forest would likely be conserved anyway.',
   },
   {
@@ -99,7 +100,7 @@ function CarbonCredits() {
       <h1 style={styles.title}>Carbon Credits & Monetization</h1>
       <p style={styles.subtitle}>
         How can sequestered carbon become revenue? KUA's ~1,000 acres of forest pulls roughly
-        3,000 mtCO₂e out of the atmosphere each year. In carbon-market terms, that drawdown is
+        {' '}{Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e out of the atmosphere each year. In carbon-market terms, that drawdown is
         a tradable commodity — but turning it into money has rules, costs, and trade-offs.
       </p>
 
