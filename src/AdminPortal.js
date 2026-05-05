@@ -87,12 +87,25 @@ function AdminPortal() {
   // Submit handlers
   const submitFuel = async (e) => {
     e.preventDefault();
+    const gallonsNum = parseFloat(fuelForm.gallons);
+    if (!Number.isFinite(gallonsNum) || gallonsNum < 0) {
+      showMessage(`Error: gallons must be a non-negative number (got "${fuelForm.gallons}")`);
+      return;
+    }
+    let costNum = null;
+    if (fuelForm.cost) {
+      costNum = parseFloat(fuelForm.cost);
+      if (!Number.isFinite(costNum) || costNum < 0) {
+        showMessage(`Error: cost must be a non-negative number (got "${fuelForm.cost}")`);
+        return;
+      }
+    }
     try {
       const { error } = await supabase.from('fuel_bills').insert([{
         date: fuelForm.date,
         fuel_type: fuelForm.fuel_type,
-        gallons: parseFloat(fuelForm.gallons),
-        cost: fuelForm.cost ? parseFloat(fuelForm.cost) : null,
+        gallons: gallonsNum,
+        cost: costNum,
         notes: fuelForm.notes || null
       }]);
       if (error) throw error;
@@ -171,11 +184,16 @@ function AdminPortal() {
 
   const submitWaste = async (e) => {
     e.preventDefault();
+    const amountNum = parseFloat(wasteForm.amount);
+    if (!Number.isFinite(amountNum) || amountNum < 0) {
+      showMessage(`Error: amount must be a non-negative number (got "${wasteForm.amount}")`);
+      return;
+    }
     try {
       const { error } = await supabase.from('waste').insert([{
         date: wasteForm.date,
         waste_type: wasteForm.waste_type,
-        amount: parseFloat(wasteForm.amount),
+        amount: amountNum,
         unit: wasteForm.unit,
         notes: wasteForm.notes || null,
         school_year: wasteForm.school_year
