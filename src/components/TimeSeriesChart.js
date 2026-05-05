@@ -140,53 +140,68 @@ export function TimeSeriesChart({
           );
         })}
 
-        {/* Hover marker */}
-        {hover && (
-          <g>
-            <line x1={hover.x} y1={padding.top} x2={hover.x} y2={padding.top + plotHeight} stroke="#334155" strokeDasharray="2 3" />
-            <circle cx={hover.x} cy={hover.y} r={4} fill={color} stroke="#0b1220" strokeWidth={2} />
+        {/* "Now" marker on the most recent point — gives a stable anchor
+            for "where are we today?" reading. Hidden when hovering so the
+            two markers don't visually fight. */}
+        {!hover && points.length > 1 && (() => {
+          const [lx, ly] = points[points.length - 1];
+          return (
             <g>
-              <rect
-                x={Math.min(hover.x + 8, width - 160)}
-                y={Math.max(padding.top, hover.y - 48)}
-                width={150}
-                height={data[hover.idx].measured !== undefined ? 46 : 32}
-                rx={4}
-                fill="#0b1220"
-                stroke="#1f2937"
-              />
+              <circle cx={lx} cy={ly} r={4} fill={color} stroke="#0b1220" strokeWidth={2} />
               <text
-                x={Math.min(hover.x + 14, width - 154)}
-                y={Math.max(padding.top + 12, hover.y - 34)}
-                fill="#cbd5e1"
-                fontSize="11"
-              >
-                {formatTime(times[hover.idx], true)}
-              </text>
-              <text
-                x={Math.min(hover.x + 14, width - 154)}
-                y={Math.max(padding.top + 26, hover.y - 20)}
+                x={Math.min(lx + 6, width - 30)}
+                y={Math.max(padding.top + 10, ly - 8)}
                 fill={color}
-                fontSize="12"
+                fontSize="9"
                 fontWeight="700"
+                letterSpacing="0.5"
+                textAnchor={lx > width - 40 ? 'end' : 'start'}
               >
-                {formatNum(values[hover.idx])} {unit}
+                NOW
               </text>
-              {data[hover.idx].measured !== undefined && (
+            </g>
+          );
+        })()}
+
+        {/* Hover marker */}
+        {hover && (() => {
+          const lines = [
+            formatTime(times[hover.idx], true),
+            `${formatNum(values[hover.idx])} ${unit}`.trim(),
+          ];
+          if (data[hover.idx].measured !== undefined) {
+            lines.push(data[hover.idx].measured ? '● MEASURED (BMS)' : '○ PROJECTED');
+          }
+          // Autosize the tooltip from the longest line so long labels fit.
+          const maxLineChars = lines.reduce((m, l) => Math.max(m, l.length), 0);
+          const tipW = Math.min(width - 8, Math.max(120, maxLineChars * 6.5 + 16));
+          const tipH = lines.length * 14 + 10;
+          let tipX = hover.x + 8;
+          if (tipX + tipW > width - 4) tipX = hover.x - tipW - 8;
+          let tipY = hover.y - tipH - 6;
+          if (tipY < padding.top) tipY = hover.y + 8;
+          return (
+            <g>
+              <line x1={hover.x} y1={padding.top} x2={hover.x} y2={padding.top + plotHeight} stroke="#334155" strokeDasharray="2 3" />
+              <circle cx={hover.x} cy={hover.y} r={4} fill={color} stroke="#0b1220" strokeWidth={2} />
+              <rect x={tipX} y={tipY} width={tipW} height={tipH} rx={4} fill="#0b1220" stroke="#1f2937" />
+              <text x={tipX + 8} y={tipY + 16} fill="#cbd5e1" fontSize="11">{lines[0]}</text>
+              <text x={tipX + 8} y={tipY + 30} fill={color} fontSize="12" fontWeight="700">{lines[1]}</text>
+              {lines[2] && (
                 <text
-                  x={Math.min(hover.x + 14, width - 154)}
-                  y={Math.max(padding.top + 38, hover.y - 6)}
+                  x={tipX + 8}
+                  y={tipY + 44}
                   fill={data[hover.idx].measured ? '#86efac' : '#fbbf24'}
                   fontSize="10"
                   fontWeight="700"
                   letterSpacing="0.5"
                 >
-                  {data[hover.idx].measured ? '● MEASURED (BMS)' : '○ PROJECTED'}
+                  {lines[2]}
                 </text>
               )}
             </g>
-          </g>
-        )}
+          );
+        })()}
       </svg>
     </div>
   );

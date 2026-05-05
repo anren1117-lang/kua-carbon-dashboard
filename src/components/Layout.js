@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -62,7 +62,18 @@ const styles = {
     fontWeight: isActive ? 600 : 400,
     whiteSpace: 'nowrap',
   }),
-  catBtn: { padding: '6px 10px', borderRadius: 6, fontSize: 14, color: '#cbd5e1', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 400, whiteSpace: 'nowrap' },
+  catBtn: (active) => ({
+    padding: '6px 10px',
+    borderRadius: 6,
+    fontSize: 14,
+    color: active ? '#0b1220' : '#cbd5e1',
+    background: active ? '#22d3ee' : 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontWeight: active ? 600 : 400,
+    whiteSpace: 'nowrap',
+  }),
   catMenu: { position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 8, padding: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.35)', minWidth: 240, zIndex: 100 },
   catItem: ({ isActive }) => ({
     display: 'block',
@@ -93,15 +104,37 @@ const styles = {
 
 function CategoriesMenu() {
   const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const { pathname } = useLocation();
+  // Highlight the parent button when the user is on one of the inner routes.
+  const insideCategories = categoryItems.some(({ to }) => pathname === to || pathname.startsWith(to + '/'));
+
+  // Close on outside click + Escape so click-to-toggle is touch-friendly
+  // without trapping the menu open if the user navigates elsewhere.
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  // Auto-close on route change.
+  useEffect(() => { setOpen(false); }, [pathname]);
+
   return (
-    <div
-      style={{ position: 'relative' }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div ref={wrapRef} style={{ position: 'relative' }}>
       <button
         type="button"
-        style={styles.catBtn}
+        style={styles.catBtn(insideCategories)}
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="true"
         aria-expanded={open}
@@ -115,7 +148,6 @@ function CategoriesMenu() {
               key={to}
               to={to}
               style={styles.catItem}
-              onClick={() => setOpen(false)}
               role="menuitem"
             >
               {label}
