@@ -46,13 +46,18 @@ const exportDailyByDate = (() => {
 // export ships — usually matches the latest day in bmsExportApr2026.js.
 export const COMPOSED_YTD_AS_OF = '2026-05-04';
 
-// Days-into-year for Jan 1 → COMPOSED_YTD_AS_OF.
+// Days-into-year for Jan 1 → COMPOSED_YTD_AS_OF. Derive the year from
+// the anchor itself so this stays correct after a year rollover (the
+// earlier code hardcoded '2026-01-01' and would have started counting
+// from the wrong year-boundary the moment the anchor crossed into
+// 2027).
 const dayOfYear = (() => {
-  const start = new Date('2026-01-01T00:00:00Z');
+  const yyyy = COMPOSED_YTD_AS_OF.slice(0, 4);
+  const start = new Date(`${yyyy}-01-01T00:00:00Z`);
   const end = new Date(COMPOSED_YTD_AS_OF + 'T00:00:00Z');
   return Math.round((end - start) / 86400000) + 1; // +1 inclusive
 })();
-export const COMPOSED_YTD_DAYS = dayOfYear; // 124 for May 4 in a non-leap year
+export const COMPOSED_YTD_DAYS = dayOfYear;
 
 /**
  * @typedef {Object} YtdComponent
