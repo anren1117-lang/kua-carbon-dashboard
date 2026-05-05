@@ -48,12 +48,25 @@ function Cat1PurchasedGoods() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const spendNum = parseFloat(form.spend_usd);
+    if (!Number.isFinite(spendNum) || spendNum < 0) {
+      setMsg({ ok: false, text: `Spend must be a non-negative number (got "${form.spend_usd}")` });
+      return;
+    }
+    let factorNum = null;
+    if (form.eeio_factor_override !== '') {
+      factorNum = parseFloat(form.eeio_factor_override);
+      if (!Number.isFinite(factorNum) || factorNum < 0) {
+        setMsg({ ok: false, text: `EEIO factor override must be a non-negative number (got "${form.eeio_factor_override}")` });
+        return;
+      }
+    }
     try {
       const payload = {
         fiscal_year: form.fiscal_year,
         purchasing_category: form.purchasing_category,
-        spend_usd: parseFloat(form.spend_usd),
-        eeio_factor_override: form.eeio_factor_override === '' ? null : parseFloat(form.eeio_factor_override),
+        spend_usd: spendNum,
+        eeio_factor_override: factorNum,
         data_quality: form.data_quality,
         source: form.source || null,
         notes: form.notes || null,
