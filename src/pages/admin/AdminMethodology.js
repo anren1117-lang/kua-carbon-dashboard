@@ -45,8 +45,12 @@ function AdminMethodology() {
           <tbody>
             <tr><td style={styles.td}>Heating oil</td><td style={styles.td}>10.16 kg CO₂/gal</td><td style={styles.td}>EPA GHG Hub</td></tr>
             <tr><td style={styles.td}>Propane</td><td style={styles.td}>5.72 kg CO₂/gal</td><td style={styles.td}>EPA GHG Hub</td></tr>
-            <tr><td style={styles.td}>Grid electricity (ISO-NE)</td><td style={styles.td}>643 lb CO₂/MWh</td><td style={styles.td}>ISO-NE 2024 report</td></tr>
-            <tr><td style={styles.td}>Imported electricity</td><td style={styles.td}>177 lb CO₂/MWh</td><td style={styles.td}>ISO-NE 2024 report</td></tr>
+            <tr><td style={styles.td}>Grid electricity (ISO-NE, effective)</td><td style={styles.td}>0.235 kg CO₂/kWh</td><td style={styles.td}>Per-fuel output factors × ISO-NE 2024 mix (gridMix.js)</td></tr>
+            <tr><td style={styles.td}>— Combined-cycle natural gas</td><td style={styles.td}>0.40 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
+            <tr><td style={styles.td}>— Oil generation</td><td style={styles.td}>0.78 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
+            <tr><td style={styles.td}>— Coal generation</td><td style={styles.td}>0.95 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
+            <tr><td style={styles.td}>— Net imports (NY + Quebec hydro)</td><td style={styles.td}>0.30 kg CO₂/kWh</td><td style={styles.td}>NYISO + Quebec hydro blend</td></tr>
+            <tr><td style={styles.td}>ISO-NE input-energy basis (cross-ref only)</td><td style={styles.td}>643 lb CO₂/MWh</td><td style={styles.td}>ISO-NE 2024 Emissions Report</td></tr>
             <tr><td style={styles.td}>Tree storage</td><td style={styles.td}>7.69 kg C/m²</td><td style={styles.td}>Nowak et al. (2013)</td></tr>
             <tr><td style={styles.td}>Tree sequestration</td><td style={styles.td}>0.28 kg C/m²/yr</td><td style={styles.td}>Nowak et al. (2013)</td></tr>
           </tbody>
