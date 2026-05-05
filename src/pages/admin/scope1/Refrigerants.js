@@ -43,13 +43,30 @@ function Refrigerants() {
 
   const submit = async (e) => {
     e.preventDefault();
+    // recharge/reclaim are optional — empty stays 0. Non-empty values
+    // must coerce to a finite non-negative number, otherwise the
+    // mass-balance preview shows the right answer but the saved row
+    // gets NaN-as-null and is silently skipped from emissions totals.
+    const coerce = (val, name) => {
+      if (val === '') return 0;
+      const n = parseFloat(val);
+      if (!Number.isFinite(n) || n < 0) {
+        setMsg({ ok: false, text: `${name} must be a non-negative number (got "${val}")` });
+        return null;
+      }
+      return n;
+    };
+    const rechargeNum = coerce(form.recharge_lb, 'recharge_lb');
+    if (rechargeNum === null) return;
+    const reclaimNum  = coerce(form.reclaim_lb,  'reclaim_lb');
+    if (reclaimNum === null) return;
     try {
       const payload = {
         service_date: form.service_date,
         equipment_id: form.equipment_id || null,
         refrigerant_type: form.refrigerant_type,
-        recharge_lb: form.recharge_lb === '' ? 0 : parseFloat(form.recharge_lb),
-        reclaim_lb: form.reclaim_lb === '' ? 0 : parseFloat(form.reclaim_lb),
+        recharge_lb: rechargeNum,
+        reclaim_lb: reclaimNum,
         service_company: form.service_company || null,
         service_report_number: form.service_report_number || null,
         data_quality: form.data_quality,

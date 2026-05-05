@@ -44,16 +44,36 @@ function TreeInventory() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const dbhNum = parseFloat(form.dbh_cm);
+    if (!Number.isFinite(dbhNum) || dbhNum <= 0 || dbhNum > 500) {
+      setMsg({ ok: false, text: `DBH must be a positive number ≤ 500 cm (got "${form.dbh_cm}")` });
+      return;
+    }
+    const coerceOpt = (val, name, lo, hi) => {
+      if (val === '') return null;
+      const n = parseFloat(val);
+      if (!Number.isFinite(n) || n < lo || n > hi) {
+        setMsg({ ok: false, text: `${name} must be a number between ${lo} and ${hi} (got "${val}")` });
+        return false;
+      }
+      return n;
+    };
+    const latNum = coerceOpt(form.latitude, 'latitude', -90, 90);
+    if (latNum === false) return;
+    const lonNum = coerceOpt(form.longitude, 'longitude', -180, 180);
+    if (lonNum === false) return;
+    const heightNum = coerceOpt(form.height_m, 'height_m', 0, 100);
+    if (heightNum === false) return;
     try {
       const payload = {
         survey_date: form.survey_date,
         tree_id: form.tree_id || null,
-        latitude: form.latitude === '' ? null : parseFloat(form.latitude),
-        longitude: form.longitude === '' ? null : parseFloat(form.longitude),
+        latitude: latNum,
+        longitude: lonNum,
         species_common: form.species_common || null,
         species_scientific: form.species_scientific || null,
-        dbh_cm: parseFloat(form.dbh_cm),
-        height_m: form.height_m === '' ? null : parseFloat(form.height_m),
+        dbh_cm: dbhNum,
+        height_m: heightNum,
         health_condition: form.health_condition,
         land_class: form.land_class,
         data_quality: form.data_quality,

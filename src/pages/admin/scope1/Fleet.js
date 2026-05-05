@@ -32,15 +32,32 @@ function Fleet() {
   const submit = async (e) => {
     e.preventDefault();
     if (!form.gallons && !form.miles) { setMsg({ ok: false, text: 'Need either gallons or miles.' }); return; }
+    // Each numeric field can be empty (kept as null) but if filled in
+    // must coerce to a finite non-negative value.
+    const coerce = (val, name) => {
+      if (val === '') return null;
+      const n = parseFloat(val);
+      if (!Number.isFinite(n) || n < 0) {
+        setMsg({ ok: false, text: `${name} must be a non-negative number (got "${val}")` });
+        return false;
+      }
+      return n;
+    };
+    const gallonsNum = coerce(form.gallons, 'gallons');
+    if (gallonsNum === false) return;
+    const milesNum   = coerce(form.miles,   'miles');
+    if (milesNum === false) return;
+    const costNum    = coerce(form.cost_usd, 'cost_usd');
+    if (costNum === false) return;
     try {
       const payload = {
         period_start: form.period_start,
         period_end: form.period_end,
         vehicle_id: form.vehicle_id || null,
         fuel_type: form.fuel_type,
-        gallons: form.gallons === '' ? null : parseFloat(form.gallons),
-        miles: form.miles === '' ? null : parseFloat(form.miles),
-        cost_usd: form.cost_usd === '' ? null : parseFloat(form.cost_usd),
+        gallons: gallonsNum,
+        miles: milesNum,
+        cost_usd: costNum,
         data_quality: form.data_quality,
         source: form.source || null,
         notes: form.notes || null,

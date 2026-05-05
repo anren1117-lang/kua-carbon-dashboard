@@ -37,13 +37,27 @@ function Geothermal() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const kwhNum = parseFloat(form.kwh_input);
+    if (!Number.isFinite(kwhNum) || kwhNum < 0) {
+      setMsg({ ok: false, text: `kWh input must be a non-negative number (got "${form.kwh_input}")` });
+      return;
+    }
+    let copNum = null;
+    if (form.cop !== '') {
+      copNum = parseFloat(form.cop);
+      // Real heat-pump COPs are 1.5–6; reject anything wildly outside.
+      if (!Number.isFinite(copNum) || copNum < 0 || copNum > 20) {
+        setMsg({ ok: false, text: `COP must be a non-negative number under 20 (got "${form.cop}")` });
+        return;
+      }
+    }
     try {
       const payload = {
         period_start: form.period_start,
         period_end: form.period_end,
         system_id: form.system_id || null,
-        kwh_input: parseFloat(form.kwh_input),
-        cop: form.cop === '' ? null : parseFloat(form.cop),
+        kwh_input: kwhNum,
+        cop: copNum,
         avoided_fuel_type: form.avoided_fuel_type,
         data_quality: form.data_quality,
         source: form.source || null,

@@ -36,14 +36,32 @@ function Solar() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const grossNum = parseFloat(form.gross_kwh);
+    if (!Number.isFinite(grossNum) || grossNum < 0) {
+      setMsg({ ok: false, text: `Gross kWh must be a non-negative number (got "${form.gross_kwh}")` });
+      return;
+    }
+    const coerceOpt = (val, name) => {
+      if (val === '') return null;
+      const n = parseFloat(val);
+      if (!Number.isFinite(n) || n < 0) {
+        setMsg({ ok: false, text: `${name} must be a non-negative number (got "${val}")` });
+        return false;
+      }
+      return n;
+    };
+    const selfNum = coerceOpt(form.self_consumed_kwh, 'self_consumed_kwh');
+    if (selfNum === false) return;
+    const expNum  = coerceOpt(form.exported_kwh, 'exported_kwh');
+    if (expNum === false) return;
     try {
       const payload = {
         period_start: form.period_start,
         period_end: form.period_end,
         inverter_id: form.inverter_id || null,
-        gross_kwh: parseFloat(form.gross_kwh),
-        self_consumed_kwh: form.self_consumed_kwh === '' ? null : parseFloat(form.self_consumed_kwh),
-        exported_kwh: form.exported_kwh === '' ? null : parseFloat(form.exported_kwh),
+        gross_kwh: grossNum,
+        self_consumed_kwh: selfNum,
+        exported_kwh: expNum,
         data_quality: form.data_quality,
         source: form.source || null,
         notes: form.notes || null,
