@@ -98,12 +98,18 @@ export default function CarbonChat() {
 
   async function ask(q) {
     if (!q || !q.trim()) return;
-    const userMsg = { role: 'user', text: q.trim(), id: Date.now() };
+    // Date.now() granularity is 1 ms. Two clicks within that window
+    // (e.g. mashing two starter buttons) would mint colliding ids and
+    // setMessages.find(...id===placeholderId) would resolve the WRONG
+    // bubble. Append a random suffix so concurrent asks each get a
+    // unique key + placeholder id.
+    const seq = Math.random().toString(36).slice(2, 8);
+    const userMsg = { role: 'user', text: q.trim(), id: `u_${Date.now()}_${seq}` };
     setMessages((m) => [...m, userMsg]);
     setInput('');
 
     // Optimistic placeholder so the user sees the bot is "working".
-    const placeholderId = Date.now() + 1;
+    const placeholderId = `b_${Date.now()}_${seq}`;
     setMessages((m) => [...m, { role: 'bot', id: placeholderId, text: 'Thinking…', confidence: 'medium', loading: true }]);
 
     try {

@@ -10,7 +10,7 @@
  * @property {'boys'|'girls'|'co-ed'} type
  */
 
-// Populations sum to ~238 (about 70% of the 340-student enrollment per
+// Populations sum to ~228 (about 67% of the 340-student enrollment per
 // KUA's public boarding/day mix). Per-dorm headcounts approximate KUA's
 // actual house assignments — replace with the residential-life roster
 // once an SIS export is available.
