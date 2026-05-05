@@ -152,9 +152,11 @@ export default function BuildingsPage() {
         {(() => {
           const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
           const measuredCount = measuredKeys.size;
+          const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           const sparkData = monthlyPattern.map((m, i) => ({
             value: m.emissions,
             measured: measuredKeys.has(`2026-${String(i + 1).padStart(2, '0')}`),
+            month: monthLabels[i],
           }));
           return (
             <>
@@ -167,6 +169,8 @@ export default function BuildingsPage() {
                   height={64}
                   strokeWidth={2}
                   showLast
+                  formatValue={(v) => `${v.toFixed(1)} mtCO₂e`}
+                  formatLabel={(d) => d?.month ?? ''}
                 />
                 <div style={{ fontSize: 12, color: '#94a3b8' }}>
                   Jan → Dec, mtCO₂e per month
@@ -664,7 +668,17 @@ function BmsExportPanel({ buildingId }) {
         <span style={styles.bmsMeta}>{meterIds.length} mapped meter{meterIds.length === 1 ? '' : 's'}</span>
       </div>
       <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-        <Sparkline data={daily} color="#22c55e" fill="rgba(34, 197, 94, 0.18)" width={260} height={48} strokeWidth={2} showLast />
+        <Sparkline
+          data={daily}
+          color="#22c55e"
+          fill="rgba(34, 197, 94, 0.18)"
+          width={260}
+          height={48}
+          strokeWidth={2}
+          showLast
+          formatValue={(v) => `${Math.round(v).toLocaleString()} kWh`}
+          formatLabel={(d) => d?.date ? new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
+        />
         <div style={{ fontSize: 12, color: '#cbd5e1' }}>
           <div><strong>{Math.round(totalKwh).toLocaleString()}</strong> kWh in window</div>
           <div>peak <strong>{peakKw}</strong> kW</div>

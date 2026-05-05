@@ -41,6 +41,7 @@ const Plan = lazy(() => import('./pages/Plan'));
 const Drawdown = lazy(() => import('./pages/Drawdown'));
 const Waste = lazy(() => import('./pages/Waste'));
 const Procurement = lazy(() => import('./pages/Procurement'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin tree — also lazy. Most users never hit /admin.
 const AdminPortal = lazy(() => import('./AdminPortal'));
@@ -127,6 +128,7 @@ root.render(
             <Route path="/drawdown" element={<Drawdown />} />
             <Route path="/waste" element={<Waste />} />
             <Route path="/procurement" element={<Procurement />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminHome />} />
@@ -168,6 +170,7 @@ root.render(
             <Route path="facilities" element={<AdminFacilities />} />
             <Route path="bms-export" element={<AdminBmsExport />} />
             <Route path="legacy" element={<AdminPortal />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </Suspense>

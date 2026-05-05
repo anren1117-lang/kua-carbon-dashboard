@@ -373,11 +373,17 @@ function ScopeRow({ to, label, mt, share, color, sinks, scopeKey }) {
               no per-scope BMS measurement exists yet. Pass measured:false
               on every point so the Sparkline renders dashed. */}
           <Sparkline
-            data={series.map((v) => ({ value: v, measured: false }))}
+            data={series.map((v, i) => ({
+              value: v,
+              measured: false,
+              month: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
+            }))}
             color={color}
             fill={`${color}26`}
             width={120}
             height={32}
+            formatValue={(v) => `${v.toFixed(1)} mt`}
+            formatLabel={(d) => d?.month ?? ''}
           />
           <div style={styles.scopeSparkLabel}>monthly · projected</div>
         </div>
