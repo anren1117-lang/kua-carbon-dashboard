@@ -222,9 +222,16 @@ export function Scope2LiveDashboard() {
   }));
 
   // Seasonal patterns from data layer. Day-of-week is reordered to start
-  // Monday for display.
+  // Monday for display. The monthlyPattern.emissions field is calibrated
+  // to a legacy ~213 mt annual baseline; rescale here so the displayed
+  // monthly mtCO2e values sum to the canonical annual Scope 2 figure
+  // (~395 mt today via per-fuel output factors).
   const dayOfWeekData = [...dayOfWeekPattern.slice(1), dayOfWeekPattern[0]];
-  const monthlyData = monthlyPattern;
+  const _monthlyMultSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
+  const monthlyData = monthlyPattern.map((m) => ({
+    ...m,
+    emissions: +((m.multiplier / _monthlyMultSum) * yearlyEmissions).toFixed(1),
+  }));
 
   const initializeEmissions = useCallback(() => {
     const now = new Date();

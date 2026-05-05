@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
-import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
 import { bmsExportMeters } from '../data/bmsExportApr2026.js';
@@ -153,8 +153,12 @@ export default function BuildingsPage() {
           const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
           const measuredCount = measuredKeys.size;
           const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          // monthlyPattern.emissions is calibrated to a legacy ~213 mt
+          // annual baseline; rescale so the per-month tooltips match
+          // the canonical annual Scope 2 figure.
+          const multSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
           const sparkData = monthlyPattern.map((m, i) => ({
-            value: m.emissions,
+            value: +((m.multiplier / multSum) * GRID_MIX_ANNUAL_MTCO2E).toFixed(1),
             measured: measuredKeys.has(`2026-${String(i + 1).padStart(2, '0')}`),
             month: monthLabels[i],
           }));
