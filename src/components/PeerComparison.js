@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
-import { ANNUALIZE_FACTOR } from '../data/envysionSnapshot.js';
+import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 
 // Per-student mtCO2e breakdown drawn from publicly disclosed sustainability reports.
 // Cross-institutional comparison has real limits (Valls-Val & Bovea 2021): Scope 3

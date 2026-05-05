@@ -4,7 +4,7 @@ import { ProvenancePill, ProvenanceLegend } from '../../components/ProvenancePil
 import { GRID_MIX_TOTAL_MTCO2E } from '../../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
-import { ANNUALIZE_FACTOR } from '../../data/envysionSnapshot.js';
+import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../../data/composedYtd.js';
 
 // Admin-only AI-driven institutional plan. Three-step flow stored in
 // localStorage:
@@ -235,10 +235,10 @@ export default function AdminPlanAgent() {
               today='KUA "By the Numbers" page + Wikipedia.'
               target="No upgrade needed. Will refresh annually from the KUA registrar feed when integrated."
               sourcePath="src/data/students.js TOTAL_STUDENTS" />
-            <CtxRow provenance="cited" label={`Annualization factor (×${(365/123).toFixed(2)})`}
-              today="365 days ÷ 123 days-into-year as of BMS snapshot 2026-05-03."
-              target="Drops to ×1.0 (i.e. removed) once a full calendar year of BMS data is captured (~Jan 2027)."
-              sourcePath="src/data/envysionSnapshot.js ANNUALIZE_FACTOR" />
+            <CtxRow provenance="cited" label={`Year 1 annualize factor (×${ANNUALIZE_FACTOR.toFixed(2)})`}
+              today="Seasonally anchored: each measured month implies its own annual via NH's heating-driven shape; their average gives a calibrated baseline. Unmeasured months projected from that baseline. Lower than naive linear (×2.94) because Jan–Apr is heating-heavy and would overstate summer."
+              target="Drops to ×1.0 (i.e. no projection needed) once a full calendar year of BMS data is captured (~Apr 2027)."
+              sourcePath="src/data/composedYtd.js COMPOSED_ANNUALIZE_FACTOR" />
           </div>
           <div style={styles.sourceCaveat}>
             Plan items below each carry their own provenance pill (measured / cited / estimated) plus a <em>Data source</em> line citing the methodology category behind their mt and $ benchmarks. Almost every rule-library item is currently <em>estimated</em> because KUA-specific inputs (Miller Hall boiler load, T8 fixture count, faculty commute distances, international student travel mileage) haven't been inventoried — the methodology is sound, the input quantities are best-effort. The AI agent is instructed to default to <em>estimated</em> when in doubt, and never to inflate confidence.

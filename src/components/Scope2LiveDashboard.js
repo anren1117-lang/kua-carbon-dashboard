@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
-import { ANNUALIZE_FACTOR } from '../data/envysionSnapshot.js';
+import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { ProvenancePill } from './ProvenancePill.js';
@@ -27,13 +27,10 @@ export function Scope2LiveDashboard() {
   const [expandedBuilding, setExpandedBuilding] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
 
-  // ISO New England Official Mix annual baseline. GRID_MIX_TOTAL_MTCO2E
-  // (152.62) is the YTD-through-2026-05-03 figure (123 days of BMS
-  // measurement). The live counter has to tick at the ANNUAL rate, so
-  // we annualize × 2.97 (= 365 / 123). Result ≈ 453 mt/yr — within
-  // the 410-440 cross-validated range with a small residual that
-  // reflects the gap between the 123-day YTD window and the 30-day
-  // April export's annualization.
+  // Annual baseline derived from the seasonally-anchored Year 1
+  // projection (composedYtd.js). The factor (~×2.59) accounts for
+  // the fact that the YTD measured months are heating-heavy — naive
+  // linear annualization would over-count summer.
   const yearlyEmissions = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
   // Annualized for the same reason as yearlyEmissions above — the
   // "kWh/year" stat below would be wrong showing the YTD figure.
