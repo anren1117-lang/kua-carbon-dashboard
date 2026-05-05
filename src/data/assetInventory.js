@@ -113,8 +113,17 @@ export function getInventoryView(kind) {
 
 export function addRecord(kind, record) {
   const k = KEYS[kind];
+  // Reject ids that collide with a seeded record. Earlier code allowed
+  // an admin to add e.g. id='b_miller' alongside the seeded 'b_miller'
+  // and getEffectiveBuildings would return both — same React key, two
+  // rows with conflicting content. Throw so the caller surfaces an
+  // error instead of silently corrupting the inventory.
+  const seeds = ({ buildings: seedBuildings, meters: seedMeters, forestStands: seedForestStands, soilSamples: seedSoilSamples, solarSites: seedSolarSites })[kind];
+  if (seeds && seeds.some((r) => r.id === record.id)) {
+    throw new Error(`Record id "${record.id}" already exists as a seeded ${kind} record. Edit it instead, or pick a different id.`);
+  }
   const added = loadJson(k.added, []);
-  // Dedupe by id; replace if same id submitted twice.
+  // Dedupe within the added list (replace if same id submitted twice).
   const filtered = added.filter((r) => r.id !== record.id);
   filtered.push({ ...record, _addedAt: new Date().toISOString() });
   saveJson(k.added, filtered);

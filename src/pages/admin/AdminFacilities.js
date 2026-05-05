@@ -92,9 +92,16 @@ export default function AdminFacilities() {
             initial={{}}
             onCancel={() => setShowAdd(false)}
             onSubmit={(rec) => {
-              addRecord(activeKind, rec);
-              setShowAdd(false);
-              refresh();
+              try {
+                addRecord(activeKind, rec);
+                setShowAdd(false);
+                refresh();
+              } catch (err) {
+                // addRecord throws if the id collides with a seeded
+                // record. Re-throw as a string so RecordForm's error
+                // banner picks it up.
+                throw err;
+              }
             }}
             mode="add"
           />
@@ -246,7 +253,13 @@ function RecordForm({ schema, initial, onCancel, onSubmit, mode }) {
       // Don't allow id changes on edit; strip it.
       delete out.id;
     }
-    onSubmit(out);
+    try {
+      onSubmit(out);
+    } catch (err) {
+      // addRecord throws on id collision with a seed record. Surface
+      // it in the form's error banner instead of letting it bubble.
+      setError(err?.message || String(err));
+    }
   };
 
   return (
