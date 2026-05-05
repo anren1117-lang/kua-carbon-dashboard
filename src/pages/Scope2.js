@@ -2,6 +2,7 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
+import { Scope2BmsInsights } from '../components/Scope2BmsInsights';
 
 const styles = {
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
@@ -45,6 +46,8 @@ function Scope2() {
         </div>
       </div>
       <Scope2LiveDashboard />
+
+      <Scope2BmsInsights />
 
       <ScopePageInfo
         color="#f59e0b"
