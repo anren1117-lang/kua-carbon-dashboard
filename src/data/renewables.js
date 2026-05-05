@@ -1,18 +1,20 @@
 // On-campus renewable generation.
 //
 // As of the 2026-04-05 → 2026-05-04 BMS export, KUA has THREE solar
-// arrays metered live (PM_15_RoofTopSolarFeed, PM_15_FieldSolarFeed,
-// PM_19_SolarFeed) — total 2,912 kWh measured in 30 days.
+// feeds named in the BMS export, but only ONE reports valid generation
+// data (PM_15_RoofTopSolarFeed, 1,692 kWh in 30 days). PM_15_FieldSolarFeed
+// is stuck at a negative cumulative value and PM_19_SolarFeed is a net
+// consumer (likely backwards-CT install). See the long block comment
+// further down for the full meter-health breakdown.
 //
 // SOLAR_ANNUAL_KWH below is derived by combining that real measured
 // April production with NH's PVWatts seasonal-shape factor (April
 // produces 1.18× the mean-month). Provenance is therefore mixed:
 //   measured: April production (real BMS counter)
 //   cited:    seasonal-shape factor (NREL PVWatts NH)
-// The result (≈ 29,600 kWh annual) is ~33% lower than the previous
-// pure-PVWatts estimate (44,000 kWh) — the difference is the gap
-// between modeled and actual array performance, useful for
-// inverter-health monitoring.
+// The result (≈ 16,750 kWh annual) is well below the prior pure-PVWatts
+// estimate (44,000 kWh) — most of the gap is the two non-reporting feeds
+// excluded; the rest is the modeled-vs-actual gap on the working array.
 //
 // Geothermal + small-wind remain feasibility-stage and aren't metered.
 
