@@ -17,6 +17,9 @@
 import { MockMeterAdapter } from './MockMeterAdapter.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../../data/bmsExportMapping.js';
+import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../../data/gridMix.js';
+
+const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
 const WINDOW_START_MS = new Date(BMS_EXPORT_META.windowStartIso).getTime();
 const WINDOW_END_MS   = new Date(BMS_EXPORT_META.windowEndIso).getTime();
@@ -179,13 +182,14 @@ export const BmsExportMeterAdapter = {
       // Mapped but the requested window doesn't overlap the export.
       return MockMeterAdapter.getBuildingEnergy({ buildingId, start, end });
     }
+    const mtCO2e = +(totalKwh * KG_PER_KWH / 1000).toFixed(3);
     return {
       buildingId,
       buildingName: buildingId,
       start, end,
       totalKwh: +totalKwh.toFixed(1),
       peakKw,
-      mtCO2e: 0, // upstream caller multiplies by grid factor
+      mtCO2e,
       mtCO2ePerSqft: 0,
       mtCO2ePerOccupant: 0,
       dailyKwh: Array.from(dailyMap.entries()).sort().map(([date, kwh]) => ({ date, kwh: +kwh.toFixed(1) })),
