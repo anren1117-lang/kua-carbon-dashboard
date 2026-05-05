@@ -5,6 +5,7 @@ import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/
 import { GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
+import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
 
 // Goals & Targets — KUA's reduction pathway. Each target shows a
 // linear trajectory between baseline and target year, with the current
@@ -21,7 +22,7 @@ const ACTUAL_BY_SCOPE = {
   scope2: SCOPE2_TOTAL_MT,
   scope3: SCOPE3_TOTAL_MT,
   net: GROSS_MT - ANNUAL_SEQUESTRATION_MT,
-  energy_kwh: 2316469,
+  energy_kwh: COMPOSED_ANNUAL_KWH,
 };
 
 const SCOPE_ACCENT = {

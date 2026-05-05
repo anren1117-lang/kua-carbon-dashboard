@@ -4,7 +4,7 @@ import { ProvenancePill, ProvenanceLegend } from '../../components/ProvenancePil
 import { GRID_MIX_TOTAL_MTCO2E } from '../../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
-import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../../data/composedYtd.js';
+import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
 
 // Admin-only AI-driven institutional plan. Three-step flow stored in
 // localStorage:
@@ -212,7 +212,7 @@ export default function AdminPlanAgent() {
               today="Hand-set placeholder for heating fuel + refrigerants + fleet, sized to typical NH boarding-school footprints. KUA fuel deliveries and refrigerant logs have not been integrated."
               target="Annual fuel-delivery invoices (heating oil + propane) per building × EPA Stationary Combustion factors. HVAC technician service-report mass balance × IPCC AR6 GWP100 for refrigerants. Fleet fuel-card records × EPA gasoline/diesel factors. Flips estimated → measured."
               sourcePath="src/pages/Executive.js SCOPE_TOTALS.scope1Mt" />
-            <CtxRow provenance="measured" label={`Scope 2 kWh (${(649439).toLocaleString()} kWh YTD)`}
+            <CtxRow provenance="measured" label={`Scope 2 kWh (${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh Year 1 / ${COMPOSED_YTD_KWH.toLocaleString()} kWh YTD)`}
               today="KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03 (123 days into 2026)."
               target="Already measured. Improvement: drop the ×2.97 annualization once a full year of BMS data is captured."
               sourcePath="src/data/envysionSnapshot.js" />
