@@ -271,11 +271,11 @@ export function Scope2LiveDashboard() {
     return () => clearInterval(interval);
   }, [isLive, initializeEmissions, emissionsPerSecond]);
 
-  const emissionFactorPerKwh = yearlyEmissions / totalKwh;
+  const emissionFactorPerKwh = totalKwh > 0 ? yearlyEmissions / totalKwh : 0;
   const buildingsWithEmissions = buildingsData.map(b => ({
     ...b,
     emissions: (b.energyUsed * emissionFactorPerKwh).toFixed(2),
-    percentOfTotal: ((b.energyUsed / totalEnergyKwh) * 100).toFixed(1)
+    percentOfTotal: totalEnergyKwh > 0 ? ((b.energyUsed / totalEnergyKwh) * 100).toFixed(1) : '0.0',
   }));
 
   const currentDayOfWeek = new Date().getDay();
