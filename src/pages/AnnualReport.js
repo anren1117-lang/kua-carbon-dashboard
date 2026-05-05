@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, gridMix } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E, gridMix } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -18,7 +18,10 @@ import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js'
 // "Print" button uses window.print() — browser handles paper size +
 // margins. The print CSS hides the nav and footer (see App.css).
 
-const SCOPE_TOTALS = { scope1: SCOPE1_TOTAL_MT, scope2: GRID_MIX_TOTAL_MTCO2E, scope3: SCOPE3_TOTAL_MT };
+// Use ANNUAL Scope 2 (Year 1 projection), not YTD. Older code path
+// imported GRID_MIX_TOTAL_MTCO2E here which is the YTD figure — that
+// silently understated the annual report's gross by ~240 mt.
+const SCOPE_TOTALS = { scope1: SCOPE1_TOTAL_MT, scope2: GRID_MIX_ANNUAL_MTCO2E, scope3: SCOPE3_TOTAL_MT };
 const GROSS = SCOPE_TOTALS.scope1 + SCOPE_TOTALS.scope2 + SCOPE_TOTALS.scope3;
 const NET = GROSS - ANNUAL_SEQUESTRATION_MT;
 
