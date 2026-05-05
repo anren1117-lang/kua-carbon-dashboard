@@ -17,11 +17,33 @@ import { EnergyEquivalents } from './EnergyEquivalents.js';
 // envysionSnapshot) rather than hardcoded inline. The narrative copy for
 // each grid source still lives in this file because it's UI explanation,
 // not data.
+// Lazy-initialize the counters to current YTD-equivalent so the page
+// doesn't show "0.0000 mtCO₂e" for a frame on every load before the
+// useEffect runs.
+function initialEmissions(annualMt) {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msPerYear = 365 * 24 * 3600 * 1000;
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return {
+    year:  ((now - startOfYear) / msPerYear) * annualMt,
+    month: ((now - startOfMonth) / (daysInMonth * 24 * 3600 * 1000)) * (annualMt / 12),
+    day:   ((now - startOfDay) / (24 * 3600 * 1000)) * (annualMt / 365),
+    cur:   ((now - startOfYear) / msPerYear) * annualMt,
+  };
+}
+
 export function Scope2LiveDashboard() {
-  const [currentEmissions, setCurrentEmissions] = useState(0);
-  const [todayEmissions, setTodayEmissions] = useState(0);
-  const [monthEmissions, setMonthEmissions] = useState(0);
-  const [yearEmissions, setYearEmissions] = useState(0);
+  // Annual baseline (Year 1 projection) — referenced before useState
+  // so we can seed the counters with current YTD instead of 0.
+  const seedAnnualMt = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
+  const seed = initialEmissions(seedAnnualMt);
+  const [currentEmissions, setCurrentEmissions] = useState(seed.cur);
+  const [todayEmissions, setTodayEmissions] = useState(seed.day);
+  const [monthEmissions, setMonthEmissions] = useState(seed.month);
+  const [yearEmissions, setYearEmissions] = useState(seed.year);
   const [isLive, setIsLive] = useState(true);
   const [expandedSource, setExpandedSource] = useState(null);
   const [expandedBuilding, setExpandedBuilding] = useState(null);
