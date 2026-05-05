@@ -4,6 +4,7 @@ import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { monthlyReports } from '../data/monthlyConsumption.js';
 import {
   ytdComponents,
   COMPOSED_YTD_KWH,
@@ -172,6 +173,8 @@ export function Scope2BmsInsights() {
         </div>
       </section>
 
+      <TimePatternsSection />
+
       {/* Window summary cards */}
       <div style={styles.summaryGrid}>
         <Stat label="Total kWh consumed"  value={Math.round(insights.totalConsumptionKwh).toLocaleString()} unit="kWh" accent="#fbbf24" />
@@ -292,6 +295,301 @@ export function Scope2BmsInsights() {
       <LoadDurationCurveSection />
       <PeakDemandTimelineSection />
       <EvChargerSection />
+    </div>
+  );
+}
+
+// ─── Pattern across time scales ─────────────────────────────────
+// Three coordinated views — daily / weekly / monthly — each with its
+// own chart and a contextual interpretation that explains why the
+// pattern looks the way it does. The analysis paragraphs are
+// data-driven (peak day computed from the data, anomaly detected
+// statistically, etc.) rather than canned text.
+function TimePatternsSection() {
+  const [view, setView] = useState('day');
+  const data = useMemo(() => buildTimePatterns(), []);
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>Pattern across time scales</h3>
+      <p style={styles.cardHint}>
+        Same campus electricity, three resolutions. Switch tabs to see daily samples (from the CSV),
+        weekly totals (rolled up from those days), and monthly totals (full-month BMS captures Jan–Apr
+        + partial May from the CSV). Each view comes with a what-and-why analysis built from the data
+        itself.
+      </p>
+      <div style={styles.tabRow}>
+        <button type="button" onClick={() => setView('day')}   style={{ ...styles.tab,   ...(view === 'day'   ? styles.tabActive : {}) }}>Daily</button>
+        <button type="button" onClick={() => setView('week')}  style={{ ...styles.tab,   ...(view === 'week'  ? styles.tabActive : {}) }}>Weekly</button>
+        <button type="button" onClick={() => setView('month')} style={{ ...styles.tab,   ...(view === 'month' ? styles.tabActive : {}) }}>Monthly</button>
+      </div>
+
+      {view === 'day'   && <DailyView   data={data} />}
+      {view === 'week'  && <WeeklyView  data={data} />}
+      {view === 'month' && <MonthlyView data={data} />}
+    </section>
+  );
+}
+
+function buildTimePatterns() {
+  // Daily campus totals from the CSV — sum across consumption feeds
+  // by date.
+  const dailyKwhByDate = new Map();
+  for (const m of bmsExportMeters) {
+    if (!isConsumptionFeed(m.id)) continue;
+    for (const d of (m.daily || [])) {
+      dailyKwhByDate.set(d.date, (dailyKwhByDate.get(d.date) || 0) + d.kwh);
+    }
+  }
+  const daily = Array.from(dailyKwhByDate.entries())
+    .sort()
+    .map(([date, kwh]) => {
+      const dt = new Date(date + 'T00:00:00Z');
+      const dow = dt.getUTCDay();
+      return { date, kwh: Math.round(kwh), isWeekend: dow === 0 || dow === 6, dow };
+    });
+
+  // Statistical anomaly: any day above mean + 2.5σ flagged.
+  const meanDaily = daily.reduce((s, d) => s + d.kwh, 0) / daily.length;
+  const stdev = Math.sqrt(daily.reduce((s, d) => s + (d.kwh - meanDaily) ** 2, 0) / daily.length);
+  const anomalies = daily.filter((d) => d.kwh > meanDaily + 2.5 * stdev);
+
+  // Weekly: bucket daily by ISO week.
+  const weekMap = new Map();
+  for (const d of daily) {
+    const dt = new Date(d.date + 'T00:00:00Z');
+    const monday = new Date(dt);
+    monday.setUTCDate(dt.getUTCDate() - ((dt.getUTCDay() + 6) % 7));
+    const wkKey = monday.toISOString().slice(0, 10);
+    if (!weekMap.has(wkKey)) weekMap.set(wkKey, { weekStart: wkKey, days: 0, kwh: 0, dayLabels: [] });
+    const w = weekMap.get(wkKey);
+    w.days += 1;
+    w.kwh += d.kwh;
+    w.dayLabels.push(d.date.slice(8));
+  }
+  const weekly = Array.from(weekMap.values())
+    .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+    .map((w) => ({ ...w, kwh: Math.round(w.kwh), avgPerDay: Math.round(w.kwh / w.days) }));
+
+  // Monthly: full-month captures from monthlyConsumption.js + partial
+  // May from CSV.
+  const monthly = monthlyReports.map((r) => ({
+    month: r.month,
+    label: ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][parseInt(r.month.slice(5), 10)],
+    kwh: r.displayedTotal,
+    days: ({ '2026-01': 31, '2026-02': 28, '2026-03': 31, '2026-04': 30 })[r.month] || 30,
+    partial: false,
+    source: 'monthly capture',
+  }));
+  const mayDays = daily.filter((d) => d.date.startsWith('2026-05'));
+  if (mayDays.length > 0) {
+    monthly.push({
+      month: '2026-05',
+      label: 'May',
+      kwh: mayDays.reduce((s, d) => s + d.kwh, 0),
+      days: mayDays.length,
+      partial: true,
+      source: 'CSV (partial month)',
+    });
+  }
+
+  return { daily, meanDaily, stdev, anomalies, weekly, monthly };
+}
+
+function DailyView({ data }) {
+  const max = Math.max(...data.daily.map((d) => d.kwh));
+  const peakDay = data.daily.reduce((p, d) => (d.kwh > p.kwh ? d : p), data.daily[0]);
+  const lowDay = data.daily.reduce((p, d) => (d.kwh < p.kwh ? d : p), data.daily[0]);
+  const weekdayMean = data.daily.filter((d) => !d.isWeekend).reduce((s, d) => s + d.kwh, 0) / data.daily.filter((d) => !d.isWeekend).length;
+  const weekendMean = data.daily.filter((d) => d.isWeekend).reduce((s, d) => s + d.kwh, 0) / Math.max(1, data.daily.filter((d) => d.isWeekend).length);
+  const weekendDip = ((weekdayMean - weekendMean) / weekdayMean) * 100;
+
+  return (
+    <>
+      <div style={styles.dailyChart}>
+        {data.daily.map((d) => {
+          const isAnomaly = data.anomalies.includes(d);
+          return (
+            <div key={d.date} style={styles.dayCol}>
+              <div style={styles.dayBarTrack}>
+                <div
+                  style={{
+                    ...styles.dayBar,
+                    height: `${(d.kwh / max) * 100}%`,
+                    background: isAnomaly ? '#ef4444' : d.isWeekend ? '#22d3ee' : '#fbbf24',
+                  }}
+                  title={`${d.date}: ${d.kwh.toLocaleString()} kWh${isAnomaly ? ' (anomaly)' : ''}`}
+                />
+                <div style={{ ...styles.meanLine, bottom: `${(data.meanDaily / max) * 100}%` }} />
+              </div>
+              <div style={styles.dayDateTick}>{d.date.slice(8)}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={styles.legendRow}>
+        <LegendDot color="#fbbf24">Weekday</LegendDot>
+        <LegendDot color="#22d3ee">Weekend</LegendDot>
+        <LegendDot color="#ef4444">Anomaly</LegendDot>
+        <span style={styles.legendNote}>red dashed line = mean</span>
+      </div>
+      <AnalysisBox
+        title="What this means"
+        bullets={[
+          {
+            label: 'Peak day',
+            text: `${peakDay.date} at ${peakDay.kwh.toLocaleString()} kWh — ${data.anomalies.includes(peakDay)
+              ? 'flagged as a statistical anomaly (above mean + 2.5σ). Almost certainly a CT calibration blip or a counter reset on one of the 35 main+panel feeds, since neighboring days run roughly ~5,000 kWh. Worth tagging in the BMS for service. The parsed export filters peak-kW outliers per-meter at 10× mean, but the daily summed figure still picks up these one-day spikes.'
+              : `the actual highest-load day in the window. Likely driven by colder weather + full occupancy.`}.`
+          },
+          {
+            label: 'Lowest day',
+            text: `${lowDay.date} at ${lowDay.kwh.toLocaleString()} kWh — ${lowDay.isWeekend ? 'a Sunday' : 'a weekday'}, ${(((data.meanDaily - lowDay.kwh) / data.meanDaily) * 100).toFixed(0)}% below mean.`
+          },
+          {
+            label: 'Weekend dip',
+            text: weekendDip > 1
+              ? `weekday mean ${Math.round(weekdayMean).toLocaleString()} kWh vs weekend mean ${Math.round(weekendMean).toLocaleString()} kWh — that's a ${weekendDip.toFixed(1)}% weekend dip. Modest, because boarder population stays on campus and dorm HVAC + always-on equipment dominate the load curve. Academic + dining cycles drive the visible swing on top of that base.`
+              : `weekend load matches weekday load — heating + always-on equipment dominate, academic schedule has minimal impact. Means efficiency wins on the always-on stack (LED, AHU schedules, base-load reduction) pay off more than schedule changes.`
+          },
+          ...(data.anomalies.length > 0 ? [{
+            label: `${data.anomalies.length} anomal${data.anomalies.length === 1 ? 'y' : 'ies'} detected`,
+            text: `${data.anomalies.map((a) => a.date).join(', ')} flagged as > 2.5σ above mean. Cross-check against the weather station or BMS event log; if no real event explains it, treat as sensor noise and recalibrate the affected CT clamp.`
+          }] : [{
+            label: 'No statistical anomalies',
+            text: 'Daily totals stayed within 2.5 standard deviations of the mean — the BMS measurement chain held steady across the 30-day window.'
+          }]),
+        ]}
+      />
+    </>
+  );
+}
+
+function WeeklyView({ data }) {
+  if (data.weekly.length === 0) return <div>No weekly data.</div>;
+  const max = Math.max(...data.weekly.map((w) => w.kwh));
+  const peakWeek = data.weekly.reduce((p, w) => (w.kwh > p.kwh ? w : p), data.weekly[0]);
+  const lowWeek = data.weekly.reduce((p, w) => (w.kwh < p.kwh ? w : p), data.weekly[0]);
+  const fullWeeks = data.weekly.filter((w) => w.days === 7);
+  const trend = fullWeeks.length >= 2
+    ? ((fullWeeks[fullWeeks.length - 1].kwh - fullWeeks[0].kwh) / fullWeeks[0].kwh) * 100
+    : 0;
+
+  return (
+    <>
+      <div style={styles.weeklyChart}>
+        {data.weekly.map((w) => (
+          <div key={w.weekStart} style={styles.weekCol}>
+            <div style={styles.weekVal}>{Math.round(w.kwh).toLocaleString()}</div>
+            <div style={styles.weekBarTrack}>
+              <div style={{ ...styles.weekBar, height: `${(w.kwh / max) * 100}%`, background: w.days === 7 ? '#fbbf24' : '#475569' }} title={`Week of ${w.weekStart}: ${w.kwh.toLocaleString()} kWh over ${w.days} day${w.days === 1 ? '' : 's'}`} />
+            </div>
+            <div style={styles.weekLabel}>{w.weekStart.slice(5)}</div>
+            <div style={styles.weekSub}>{w.days} day{w.days === 1 ? '' : 's'}</div>
+          </div>
+        ))}
+      </div>
+      <div style={styles.legendRow}>
+        <LegendDot color="#fbbf24">Full week</LegendDot>
+        <LegendDot color="#475569">Partial week</LegendDot>
+      </div>
+      <AnalysisBox
+        title="What this means"
+        bullets={[
+          {
+            label: 'Peak week',
+            text: `Week of ${peakWeek.weekStart} at ${peakWeek.kwh.toLocaleString()} kWh${peakWeek.days < 7 ? ` over ${peakWeek.days} days` : ''}. Average ${peakWeek.avgPerDay.toLocaleString()} kWh/day.`
+          },
+          {
+            label: 'Quiet week',
+            text: `Week of ${lowWeek.weekStart} at ${lowWeek.kwh.toLocaleString()} kWh${lowWeek.days < 7 ? ` over ${lowWeek.days} days` : ''}. Could correlate with academic-calendar events (exam week, sports tournament, term break) — a 12-month export window would let us tag each week against the calendar.`
+          },
+          {
+            label: 'Trend across full weeks',
+            text: fullWeeks.length >= 2
+              ? trend > 5
+                ? `Rising ${trend.toFixed(1)}% from the first to last full week — likely warmer weather pushing some early-AC load, or term-end events. Worth checking against weather data once integrated.`
+                : trend < -5
+                  ? `Falling ${Math.abs(trend).toFixed(1)}% from the first to last full week — heating-season tail-off as April warms up. Expected pattern in NH.`
+                  : `Roughly flat (${trend > 0 ? '+' : ''}${trend.toFixed(1)}%) — campus load held stable across the export window.`
+              : `Need more full weeks to read a trend. Re-run the parser with a wider window.`
+          },
+          {
+            label: 'How weeks roll up',
+            text: `Each week sums the daily totals for ISO weeks (Mon-Sun). Partial weeks are flagged grey — Apr 5 falls on a Sunday, so the first ISO week (Mar 30 – Apr 5) only has the Sunday in this export. Same for the last week.`
+          },
+        ]}
+      />
+    </>
+  );
+}
+
+function MonthlyView({ data }) {
+  const max = Math.max(...data.monthly.map((m) => m.kwh));
+  const fullMonths = data.monthly.filter((m) => !m.partial);
+  if (fullMonths.length === 0) return <div>No full months yet.</div>;
+  const peakMonth = fullMonths.reduce((p, m) => (m.kwh > p.kwh ? m : p), fullMonths[0]);
+  const lowMonth  = fullMonths.reduce((p, m) => (m.kwh < p.kwh ? m : p), fullMonths[0]);
+  const peakDailyAvg = peakMonth.kwh / peakMonth.days;
+  const lowDailyAvg  = lowMonth.kwh / lowMonth.days;
+
+  return (
+    <>
+      <div style={styles.monthlyChart}>
+        {data.monthly.map((m) => (
+          <div key={m.month} style={styles.monthCol}>
+            <div style={styles.monthVal}>{Math.round(m.kwh).toLocaleString()}</div>
+            <div style={styles.monthBarTrack}>
+              <div style={{ ...styles.monthBar, height: `${(m.kwh / max) * 100}%`, background: m.partial ? '#475569' : '#fbbf24' }} title={`${m.label}: ${m.kwh.toLocaleString()} kWh over ${m.days} day${m.days === 1 ? '' : 's'}`} />
+            </div>
+            <div style={styles.monthLabel}>{m.label}</div>
+            <div style={styles.monthSub}>{m.days} day{m.days === 1 ? '' : 's'}{m.partial ? ', partial' : ''}</div>
+          </div>
+        ))}
+      </div>
+      <div style={styles.legendRow}>
+        <LegendDot color="#fbbf24">Full month (BMS capture)</LegendDot>
+        <LegendDot color="#475569">Partial month (CSV)</LegendDot>
+      </div>
+      <AnalysisBox
+        title="What this means"
+        bullets={[
+          {
+            label: `Peak: ${peakMonth.label}`,
+            text: `${peakMonth.kwh.toLocaleString()} kWh over ${peakMonth.days} days = ${Math.round(peakDailyAvg).toLocaleString()} kWh/day. ${peakMonth.label === 'Feb' ? 'Coldest month + every dorm fully heated → highest electric heating ancillary load (boiler pumps, electric resistance backup, well pumps not freezing). Also full academic occupancy.' : peakMonth.label === 'Jan' ? 'January peak — same heating-driven story as Feb. Holiday break ends mid-month so partial-occupancy effect is small.' : `Driven by combination of heating, occupancy, and time-of-year load patterns.`}`
+          },
+          {
+            label: `Lowest: ${lowMonth.label}`,
+            text: `${lowMonth.kwh.toLocaleString()} kWh over ${lowMonth.days} days = ${Math.round(lowDailyAvg).toLocaleString()} kWh/day. ${lowMonth.label === 'Apr' ? 'April is the shoulder month between heating-on and AC-on — heating demand drops as outdoor temperature rises through 50-60°F, AC hasn\'t kicked in yet. Plus spring break falls in March or April, removing some occupancy.' : lowMonth.label === 'Mar' ? 'Spring break compresses occupancy + heating ramp-down → typical academic-calendar low.' : `Likely driven by school break or seasonal heating tail-off.`}`
+          },
+          {
+            label: 'Why Feb beats Jan despite fewer days',
+            text: data.monthly.find((m) => m.label === 'Feb') && data.monthly.find((m) => m.label === 'Jan') && data.monthly.find((m) => m.label === 'Feb').kwh > data.monthly.find((m) => m.label === 'Jan').kwh
+              ? `Feb 2026 (${data.monthly.find((m) => m.label === 'Feb').kwh.toLocaleString()} kWh in 28 days) actually beats Jan (${data.monthly.find((m) => m.label === 'Jan').kwh.toLocaleString()} kWh in 31 days) per-day — Jan ran ${Math.round(data.monthly.find((m) => m.label === 'Jan').kwh / 31).toLocaleString()} kWh/day, Feb ran ${Math.round(data.monthly.find((m) => m.label === 'Feb').kwh / 28).toLocaleString()} kWh/day. NH February is colder + has fewer break days than Jan.`
+              : `Year-over-year heating intensity comparison would need a 2025 export to confirm. The 4-month window here doesn't have a year-prior baseline.`
+          },
+          {
+            label: 'May is partial',
+            text: `May currently shows ${data.monthly.find((m) => m.label === 'May')?.kwh.toLocaleString() || '0'} kWh over only ${data.monthly.find((m) => m.label === 'May')?.days || 0} days — the CSV cuts off May 4. The May full-month BMS capture (around June 1) replaces this row with a real master-meter total. The grey-bar treatment makes the partial state visible so it isn't compared like-for-like with the full months.`
+          },
+        ]}
+      />
+    </>
+  );
+}
+
+function AnalysisBox({ title, bullets }) {
+  return (
+    <div style={styles.analysisBox}>
+      <div style={styles.analysisTitle}>{title}</div>
+      <div style={styles.analysisList}>
+        {bullets.map((b, i) => (
+          <div key={i} style={styles.analysisRow}>
+            <div style={styles.analysisLabel}>{b.label}</div>
+            <div style={styles.analysisText}>{b.text}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -742,6 +1040,46 @@ const styles = {
 
   todayTarget: { marginTop: 14, padding: '10px 12px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, display: 'grid', gap: 4 },
   ttLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
+  // Time-pattern tabs
+  tabRow: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 },
+  tab: { padding: '8px 14px', background: '#0b1220', color: '#cbd5e1', border: '1px solid #334155', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
+  tabActive: { background: '#22d3ee', color: '#0b1220', borderColor: '#22d3ee', fontWeight: 700 },
+  legendRow: { display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 10, fontSize: 11, color: '#94a3b8', alignItems: 'center' },
+  legendNote: { color: '#64748b' },
+
+  // Daily chart
+  dailyChart: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 160, padding: '4px 0', position: 'relative' },
+  dayCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  dayBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, position: 'relative', display: 'flex', alignItems: 'flex-end' },
+  dayBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
+  dayDateTick: { fontSize: 9, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+
+  // Weekly chart
+  weeklyChart: { display: 'flex', gap: 8, alignItems: 'flex-end', height: 160, padding: '4px 0' },
+  weekCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  weekVal: { fontSize: 11, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  weekBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
+  weekBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
+  weekLabel: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+  weekSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
+
+  // Monthly chart
+  monthlyChart: { display: 'flex', gap: 12, alignItems: 'flex-end', height: 180, padding: '4px 0' },
+  monthCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  monthVal: { fontSize: 12, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  monthBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
+  monthBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
+  monthLabel: { fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginTop: 4 },
+  monthSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
+
+  // Analysis box (the WHY)
+  analysisBox: { marginTop: 14, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #22d3ee', borderRadius: 6 },
+  analysisTitle: { fontSize: 12, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 10 },
+  analysisList: { display: 'grid', gap: 8 },
+  analysisRow: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 },
+  analysisLabel: { color: '#fbbf24', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  analysisText: { color: '#cbd5e1' },
 
   // YTD composition table
   ytdTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
