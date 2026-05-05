@@ -12,7 +12,7 @@ import App from './App.js';
 describe('App (homepage)', () => {
   test('renders the KUA brand and the headline section', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App />
       </MemoryRouter>,
     );
