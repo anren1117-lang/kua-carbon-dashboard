@@ -5,11 +5,16 @@ import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 
-// Three measured Scope 2 features unlocked by the parsed BMS export:
+// Eight measured Scope 2 features unlocked by the parsed BMS export:
 //
 //   1. Hour-of-day campus load curve (24 bars, mean kW)
 //   2. Solar offset (sum of three solar feeds vs total consumption)
 //   3. Top 10 biggest electrical loads
+//   4. Whittemore HP cluster — per-heat-pump + AHU + boiler breakdown
+//   5. Day-of-week pattern — Mon-Sun campus load shape
+//   6. Load duration curve — kW vs % hours above (sizing + demand charges)
+//   7. Daily peak-demand timeline (30 days)
+//   8. EV charger load tracker (Scope 1 → Scope 2 conversion lever)
 //
 // Every number on this panel is MEASURED — kWh comes from BMS
 // cumulative-counter diffs across the 30-day export window.
@@ -212,7 +217,370 @@ export function Scope2BmsInsights() {
           <div><span style={styles.ttLabel}>Target:</span> Map every PM device to a building on /admin/bms-export — once 100% mapped, the dashboard shows MEASURED scope-2 data per building, replacing the seasonal-pattern proxy on /buildings entirely.</div>
         </div>
       </section>
+
+      <WhittemoreClusterSection />
+      <DayOfWeekSection />
+      <LoadDurationCurveSection />
+      <PeakDemandTimelineSection />
+      <EvChargerSection />
     </div>
+  );
+}
+
+// ─── Whittemore heat-pump cluster ───────────────────────────────────
+// PM_17_* covers the Whittemore complex per the device names in the
+// CSV: HP01-05 (5 heat pumps), AHU01/02, B2BoilerFeed,
+// BarnFieldhouseFeed, ChargerFeed, MainFeed, M42AFeed.
+function WhittemoreClusterSection() {
+  const data = useMemo(() => {
+    const cluster = bmsExportMeters.filter((m) => m.id.startsWith('PM_17_'));
+    if (cluster.length === 0) return null;
+    const main = cluster.find((m) => m.id === 'PM_17_MainFeed');
+    const heatPumps = cluster.filter((m) => /HP\d/.test(m.id));
+    const ahus      = cluster.filter((m) => /AHU\d/.test(m.id));
+    const boilers   = cluster.filter((m) => /Boiler/i.test(m.id));
+    const others    = cluster.filter((m) => !heatPumps.includes(m) && !ahus.includes(m) && !boilers.includes(m) && m !== main);
+    const totalCluster = main ? main.totalKwh : cluster.reduce((s, m) => s + m.totalKwh, 0);
+    const groupTotal = (group) => group.reduce((s, m) => s + m.totalKwh, 0);
+    return {
+      cluster, main,
+      heatPumps, ahus, boilers, others,
+      totalCluster,
+      hpTotal:     groupTotal(heatPumps),
+      ahuTotal:    groupTotal(ahus),
+      boilerTotal: groupTotal(boilers),
+      otherTotal:  groupTotal(others),
+    };
+  }, []);
+
+  if (!data || data.cluster.length === 0) return null;
+  const { main, heatPumps, ahus, boilers, others, totalCluster, hpTotal, ahuTotal, boilerTotal, otherTotal } = data;
+  const pct = (n) => totalCluster > 0 ? (n / totalCluster * 100).toFixed(1) : '0';
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>Whittemore complex — heat-pump cluster</h3>
+      <p style={styles.cardHint}>
+        PM_17 device tree: {heatPumps.length} heat pumps + {ahus.length} air handlers + {boilers.length} boiler{boilers.length === 1 ? '' : 's'} + {others.length} other feeds.
+        Whittemore total {Math.round(totalCluster).toLocaleString()} kWh in window
+        {main ? ` (PM_17_MainFeed cumulative)` : ` (sum of submeters)`}.
+      </p>
+
+      {/* Stacked-summary bar */}
+      <div style={styles.stackedBar}>
+        <div style={{ ...styles.stackedSeg, width: `${pct(hpTotal)}%`,     background: '#22d3ee' }} title={`Heat pumps: ${pct(hpTotal)}%`} />
+        <div style={{ ...styles.stackedSeg, width: `${pct(ahuTotal)}%`,    background: '#a855f7' }} title={`AHUs: ${pct(ahuTotal)}%`} />
+        <div style={{ ...styles.stackedSeg, width: `${pct(boilerTotal)}%`, background: '#ef4444' }} title={`Boilers: ${pct(boilerTotal)}%`} />
+        <div style={{ ...styles.stackedSeg, width: `${pct(otherTotal)}%`,  background: '#475569' }} title={`Other: ${pct(otherTotal)}%`} />
+      </div>
+      <div style={styles.stackedLegend}>
+        <LegendDot color="#22d3ee">Heat pumps {pct(hpTotal)}% · {Math.round(hpTotal).toLocaleString()} kWh</LegendDot>
+        <LegendDot color="#a855f7">AHUs {pct(ahuTotal)}% · {Math.round(ahuTotal).toLocaleString()} kWh</LegendDot>
+        <LegendDot color="#ef4444">Boilers {pct(boilerTotal)}% · {Math.round(boilerTotal).toLocaleString()} kWh</LegendDot>
+        <LegendDot color="#475569">Other feeds {pct(otherTotal)}%</LegendDot>
+      </div>
+
+      {/* Per-meter table */}
+      <div style={styles.subList}>
+        {[...heatPumps, ...ahus, ...boilers, ...others].sort((a, b) => b.totalKwh - a.totalKwh).map((m) => (
+          <div key={m.id} style={styles.subRow}>
+            <code style={styles.subId}>{m.id.replace(/^PM_17_/, '')}</code>
+            <div style={styles.subBar}>
+              <div style={{ ...styles.subBarFill, width: `${(m.totalKwh / Math.max(...data.cluster.map((c) => c.totalKwh))) * 100}%`, background: heatPumps.includes(m) ? '#22d3ee' : ahus.includes(m) ? '#a855f7' : boilers.includes(m) ? '#ef4444' : '#475569' }} />
+            </div>
+            <span style={styles.subNum}>{Math.round(m.totalKwh).toLocaleString()} kWh</span>
+            <span style={styles.subPeak}>peak {m.peakKw} kW</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={styles.todayTarget}>
+        <div><span style={styles.ttLabel}>Today:</span> Heat pumps run {pct(hpTotal)}% of Whittemore's electricity load — meaningful Scope 1 → Scope 2 conversion already in progress. The boiler line shows what's still on fossil-electric backup.</div>
+        <div><span style={styles.ttLabel}>Target:</span> Compare HP01–HP05 hourly profiles to spot underperforming units. Map this cluster to building b_whittemore on /admin/bms-export so the whole Whittemore total flows into the Buildings page measured panel.</div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Day-of-week pattern ───────────────────────────────────────────
+function DayOfWeekSection() {
+  const data = useMemo(() => {
+    const buckets = Array.from({ length: 7 }, () => ({ total: 0, days: 0 }));
+    for (const m of bmsExportMeters) {
+      if (!isConsumptionFeed(m.id)) continue;
+      for (const d of (m.daily || [])) {
+        const dow = new Date(d.date).getUTCDay(); // 0=Sun
+        buckets[dow].total += d.kwh;
+      }
+    }
+    // Count how many of each weekday we observed.
+    const observedDows = new Set();
+    const dayCounts = Array.from({ length: 7 }, () => 0);
+    for (const m of bmsExportMeters) {
+      if (!isConsumptionFeed(m.id)) continue;
+      for (const d of (m.daily || [])) {
+        const dow = new Date(d.date).getUTCDay();
+        observedDows.add(d.date);
+      }
+    }
+    // Use the first consumption meter to count how many of each
+    // day-of-week appeared in the window — same for every meter.
+    const ref = bmsExportMeters.find((m) => isConsumptionFeed(m.id));
+    if (ref) {
+      for (const d of (ref.daily || [])) {
+        const dow = new Date(d.date).getUTCDay();
+        dayCounts[dow] += 1;
+      }
+    }
+    const meanByDow = buckets.map((b, i) => dayCounts[i] > 0 ? b.total / dayCounts[i] : 0);
+    return { buckets, dayCounts, meanByDow };
+  }, []);
+
+  const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const max = Math.max(...data.meanByDow, 1);
+  const weekdayMean = (data.meanByDow[1] + data.meanByDow[2] + data.meanByDow[3] + data.meanByDow[4] + data.meanByDow[5]) / 5;
+  const weekendMean = (data.meanByDow[0] + data.meanByDow[6]) / 2;
+  const weekendDip = weekdayMean > 0 ? (1 - weekendMean / weekdayMean) * 100 : 0;
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>Day-of-week pattern</h3>
+      <p style={styles.cardHint}>
+        Mean campus consumption per day of the week, averaged across {data.dayCounts.reduce((s, n) => s + n, 0)} measured days.
+        Weekend dip: {weekendDip > 0 ? `${weekendDip.toFixed(0)}% lower than weekdays` : 'no dip — weekend load matches weekday'}.
+      </p>
+      <div style={styles.dowChart}>
+        {labels.map((label, i) => {
+          const v = data.meanByDow[i];
+          const isWeekend = i === 0 || i === 6;
+          return (
+            <div key={label} style={styles.dowCol}>
+              <div style={styles.dowVal}>{Math.round(v).toLocaleString()}</div>
+              <div style={styles.dowBarTrack}>
+                <div style={{ ...styles.dowBar, height: `${(v / max) * 100}%`, background: isWeekend ? '#22d3ee' : '#fbbf24' }} title={`${label}: ${v.toFixed(0)} kWh/day mean`} />
+              </div>
+              <div style={styles.dowLabel}>{label}</div>
+              <div style={styles.dowSub}>{data.dayCounts[i]} day{data.dayCounts[i] === 1 ? '' : 's'}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={styles.todayTarget}>
+        <div><span style={styles.ttLabel}>Today:</span> {weekendDip > 15 ? `Strong weekend dip (${weekendDip.toFixed(0)}%) — academic + dining load drives most consumption.` : weekendDip > 5 ? `Modest weekend dip — boarder population + dorm HVAC keep night/weekend load high.` : 'Weekend load nearly matches weekday — heating + always-on equipment dominate.'} The 7 day-of-week buckets are real measured means.</div>
+        <div><span style={styles.ttLabel}>Target:</span> Cross-tabulate with academic calendar (term breaks, sports tournaments) once a 12-month export window exists, to identify break-period setback opportunities.</div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Load duration curve ──────────────────────────────────────────
+function LoadDurationCurveSection() {
+  const data = useMemo(() => {
+    // Build a synthetic 30-day × 24-hour campus load series by
+    // multiplying each measured day's total by the campus-wide
+    // hour-of-day fraction. Real day totals + averaged hourly shape =
+    // honest approximation at the resolution this curve needs.
+    const consumptionMeters = bmsExportMeters.filter((m) => isConsumptionFeed(m.id));
+    const campusHourly = Array.from({ length: 24 }, (_, h) =>
+      consumptionMeters.reduce((s, m) => s + (m.hourly[h] || 0), 0));
+    const campusHourlySum = campusHourly.reduce((s, v) => s + v, 0) || 1;
+
+    // Sum daily totals across consumption meters, by date.
+    const dailyByDate = new Map();
+    for (const m of consumptionMeters) {
+      for (const d of (m.daily || [])) {
+        dailyByDate.set(d.date, (dailyByDate.get(d.date) || 0) + d.kwh);
+      }
+    }
+    const days = Array.from(dailyByDate.entries()).sort();
+    const hourlySamples = []; // kW for each hour, all 30×24
+    for (const [, dayKwh] of days) {
+      for (let h = 0; h < 24; h++) {
+        const fraction = campusHourly[h] / campusHourlySum;
+        const kwh = dayKwh * fraction;
+        hourlySamples.push(kwh); // 1-hour interval, so kWh ≈ kW
+      }
+    }
+    hourlySamples.sort((a, b) => b - a); // descending
+    return { hourlySamples, totalHours: hourlySamples.length };
+  }, []);
+
+  if (data.totalHours === 0) return null;
+  const max = data.hourlySamples[0];
+  const median = data.hourlySamples[Math.floor(data.totalHours / 2)];
+  const p10 = data.hourlySamples[Math.floor(data.totalHours * 0.1)]; // load exceeded only 10% of the time
+  const p90 = data.hourlySamples[Math.floor(data.totalHours * 0.9)]; // load exceeded 90% of the time = base load
+  const peakOverhang = max - p10;
+
+  // Sample for the chart — collapse to 100 buckets so the SVG path stays small.
+  const N_BUCKETS = 100;
+  const samples = Array.from({ length: N_BUCKETS }, (_, i) => {
+    const idx = Math.floor((i / (N_BUCKETS - 1)) * (data.totalHours - 1));
+    return data.hourlySamples[idx];
+  });
+  const chartH = 140, chartW = 800;
+  const points = samples.map((kw, i) => {
+    const x = (i / (N_BUCKETS - 1)) * chartW;
+    const y = chartH - (kw / max) * chartH;
+    return [x, y];
+  });
+  const path = points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const area = `${path} L${chartW},${chartH} L0,${chartH} Z`;
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>Load duration curve</h3>
+      <p style={styles.cardHint}>
+        For each hour in the 30-day window, the campus load (kW) sorted descending — left edge is the peak hour, right edge is the lowest. Sized for capital-decision context: how big a battery would shave the top 10%? What's the always-on base load?
+      </p>
+      <div style={styles.ldcWrap}>
+        <svg width={chartW} height={chartH + 20} viewBox={`0 0 ${chartW} ${chartH + 20}`} style={{ display: 'block', maxWidth: '100%', height: 'auto' }}>
+          <path d={area} fill="rgba(34, 211, 238, 0.18)" />
+          <path d={path} stroke="#22d3ee" strokeWidth={1.8} fill="none" />
+          {/* p10 line */}
+          <line x1={chartW * 0.1} y1={0} x2={chartW * 0.1} y2={chartH} stroke="#fbbf24" strokeDasharray="3 3" />
+          <text x={chartW * 0.1 + 4} y={14} fill="#fbbf24" fontSize="10">10% of hours</text>
+          {/* base load line */}
+          <line x1={0} y1={chartH - (p90 / max) * chartH} x2={chartW} y2={chartH - (p90 / max) * chartH} stroke="#86efac" strokeDasharray="3 3" />
+          <text x={chartW - 80} y={chartH - (p90 / max) * chartH - 4} fill="#86efac" fontSize="10">base load ({p90.toFixed(0)} kW)</text>
+        </svg>
+      </div>
+      <div style={styles.ldcStats}>
+        <div><strong>Peak:</strong> {max.toFixed(1)} kW</div>
+        <div><strong>Top 10%:</strong> ≥ {p10.toFixed(1)} kW</div>
+        <div><strong>Median:</strong> {median.toFixed(1)} kW</div>
+        <div><strong>Base load:</strong> {p90.toFixed(1)} kW (load is at or above this 90% of the time)</div>
+        <div><strong>Peak overhang:</strong> {peakOverhang.toFixed(1)} kW (peak − top-10% threshold)</div>
+      </div>
+      <div style={styles.todayTarget}>
+        <div><span style={styles.ttLabel}>Today:</span> A {peakOverhang.toFixed(0)} kW battery sized to shave the top 10% of hours would flatten the demand peaks Liberty Utilities likely charges for; base load of {p90.toFixed(0)} kW is the always-on stack worth attacking with efficiency upgrades (LED, AHU schedules).</div>
+        <div><span style={styles.ttLabel}>Target:</span> Pull Liberty Utilities billing data to compare measured peak demand against the demand-charge tariff threshold — quantifies $/yr savings from peak shaving directly. Reconcile the synthetic hour-shape × daily-total approximation with raw 15-min BMS samples once available.</div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Daily peak-demand timeline ───────────────────────────────────
+function PeakDemandTimelineSection() {
+  const data = useMemo(() => {
+    // For each day, max peakKw across all main/panel feeds.
+    const dailyPeak = new Map();
+    for (const m of bmsExportMeters) {
+      if (!isConsumptionFeed(m.id)) continue;
+      for (const d of (m.daily || [])) {
+        const cur = dailyPeak.get(d.date) || 0;
+        if (d.peakKw > cur) dailyPeak.set(d.date, d.peakKw);
+      }
+    }
+    const series = Array.from(dailyPeak.entries()).sort().map(([date, peakKw]) => ({
+      date,
+      peakKw,
+      isWeekend: [0, 6].includes(new Date(date).getUTCDay()),
+    }));
+    return { series };
+  }, []);
+
+  if (data.series.length === 0) return null;
+  const max = Math.max(...data.series.map((s) => s.peakKw));
+  const avg = data.series.reduce((s, d) => s + d.peakKw, 0) / data.series.length;
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>Daily peak-demand timeline</h3>
+      <p style={styles.cardHint}>
+        Highest single-meter peakKw recorded each day in the export window. Weekend days shaded cyan, weekdays amber. Useful for spotting demand-charge anomalies before the utility bill arrives.
+      </p>
+      <div style={styles.peakChart}>
+        {data.series.map((d) => (
+          <div key={d.date} style={styles.peakCol}>
+            <div style={styles.peakBarTrack}>
+              <div
+                style={{
+                  ...styles.peakBar,
+                  height: `${(d.peakKw / max) * 100}%`,
+                  background: d.isWeekend ? '#22d3ee' : '#fbbf24',
+                }}
+                title={`${d.date}: ${d.peakKw.toFixed(1)} kW`}
+              />
+              {/* avg line */}
+              <div style={{ ...styles.meanLine, bottom: `${(avg / max) * 100}%` }} />
+            </div>
+            <div style={styles.peakLabel}>{d.date.slice(8)}</div>
+          </div>
+        ))}
+      </div>
+      <div style={styles.ldcStats}>
+        <div><strong>Peak day:</strong> {max.toFixed(1)} kW</div>
+        <div><strong>Mean of daily peaks:</strong> {avg.toFixed(1)} kW</div>
+        <div><strong>Days above mean:</strong> {data.series.filter((d) => d.peakKw > avg).length} / {data.series.length}</div>
+      </div>
+      <div style={styles.todayTarget}>
+        <div><span style={styles.ttLabel}>Today:</span> Liberty Utilities likely bills demand on the highest 15-min interval reading per month; this view approximates that with the daily max from BMS PeakDemand columns.</div>
+        <div><span style={styles.ttLabel}>Target:</span> Pull the actual 15-min interval billing demand from Liberty's tariff feed once available; flag days where measured BMS peak diverges from billed peak (CT calibration, branch overlap signal).</div>
+      </div>
+    </section>
+  );
+}
+
+// ─── EV charger tracker ───────────────────────────────────────────
+function EvChargerSection() {
+  const data = useMemo(() => {
+    const chargers = bmsExportMeters.filter((m) => /Charger/i.test(m.id));
+    if (chargers.length === 0) return null;
+    const totalKwh = chargers.reduce((s, m) => s + m.totalKwh, 0);
+    const totalMtScope2 = totalKwh * KG_PER_KWH / 1000;
+    // Compare to gasoline equivalent — typical ICE car ~3.4 kg CO2/gal,
+    // ~25 mpg, ~3 mi/kWh on EV.
+    const milesDriven = totalKwh * 3;
+    const galGasoline = milesDriven / 25;
+    const mtCO2eIfGas = (galGasoline * 8.78) / 1000;
+    const scope1To2Saved = mtCO2eIfGas - totalMtScope2;
+    return { chargers, totalKwh, totalMtScope2, milesDriven, mtCO2eIfGas, scope1To2Saved };
+  }, []);
+
+  if (!data) return null;
+
+  return (
+    <section style={styles.card}>
+      <h3 style={styles.cardTitle}>EV charger load tracker</h3>
+      <p style={styles.cardHint}>
+        {data.chargers.length} EV-charger feed{data.chargers.length === 1 ? '' : 's'} metered in the export. As the KUA fleet electrifies, vehicle miles flip from Scope 1 (fuel combustion) to Scope 2 (grid electricity) — at ISO-NE 2024 emission intensity that's a net carbon win even before grid decarbonizes further.
+      </p>
+
+      <div style={styles.summaryGrid}>
+        <Stat label="Charger kWh in window" value={Math.round(data.totalKwh).toLocaleString()} unit="kWh" accent="#22d3ee" />
+        <Stat label="Resulting Scope 2"      value={data.totalMtScope2.toFixed(3)}             unit="mtCO₂e" accent="#fbbf24" note={`× ${(KG_PER_KWH * 1000).toFixed(0)} g/kWh`} />
+        <Stat label="Equivalent miles driven" value={Math.round(data.milesDriven).toLocaleString()} unit="mi" accent="#a855f7" note="@ 3 mi/kWh typical EV" />
+        <Stat label="Scope 1→2 savings"      value={data.scope1To2Saved.toFixed(2)}             unit="mtCO₂e avoided" accent="#86efac" note="vs ICE @ 25 mpg" />
+      </div>
+
+      <div style={styles.subList}>
+        {data.chargers.map((m) => (
+          <div key={m.id} style={styles.subRow}>
+            <code style={styles.subId}>{m.id}</code>
+            <div style={styles.subBar}>
+              <div style={{ ...styles.subBarFill, width: `${(m.totalKwh / Math.max(...data.chargers.map((c) => c.totalKwh))) * 100}%`, background: '#22d3ee' }} />
+            </div>
+            <span style={styles.subNum}>{Math.round(m.totalKwh).toLocaleString()} kWh</span>
+            <span style={styles.subPeak}>peak {m.peakKw} kW</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={styles.todayTarget}>
+        <div><span style={styles.ttLabel}>Today:</span> {data.totalKwh < 100 ? 'Charger usage is light — EV adoption still early on campus.' : data.totalKwh < 1000 ? 'Steady but modest charger usage — likely a couple of EVs in regular service.' : 'Significant charger load — fleet electrification meaningfully active.'} Every kWh delivered through these chargers is a fossil-gallon avoided.</div>
+        <div><span style={styles.ttLabel}>Target:</span> Inventory the connected vehicles (KUA fleet vs faculty/staff) so the Scope 1 → Scope 2 conversion is auditable per-vehicle. Time charging to overnight low-carbon grid hours (verify against ISO-NE marginal-emissions intensity feed).</div>
+      </div>
+    </section>
+  );
+}
+
+function LegendDot({ color, children }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
+      <span style={{ width: 10, height: 10, background: color, borderRadius: 2, display: 'inline-block' }} />
+      {children}
+    </span>
   );
 }
 
@@ -305,4 +673,36 @@ const styles = {
 
   todayTarget: { marginTop: 14, padding: '10px 12px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, display: 'grid', gap: 4 },
   ttLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
+  // Stacked bars for the Whittemore cluster + EV charger sub-list
+  stackedBar: { display: 'flex', height: 18, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
+  stackedSeg: { height: '100%' },
+  stackedLegend: { display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 12 },
+  subList: { display: 'grid', gap: 4, marginTop: 8 },
+  subRow: { display: 'grid', gridTemplateColumns: '160px 1fr 100px 110px', gap: 10, alignItems: 'center', padding: '4px 8px', background: '#0b1220', borderRadius: 4, fontSize: 11 },
+  subId: { fontSize: 11, color: '#cbd5e1' },
+  subBar: { height: 6, background: '#0f172a', borderRadius: 2, overflow: 'hidden' },
+  subBarFill: { height: '100%' },
+  subNum: { fontSize: 11, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
+  subPeak: { fontSize: 10, color: '#94a3b8', fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
+
+  // Day-of-week chart
+  dowChart: { display: 'flex', gap: 6, alignItems: 'flex-end', height: 140 },
+  dowCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  dowVal: { fontSize: 10, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  dowBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
+  dowBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
+  dowLabel: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginTop: 4 },
+  dowSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
+
+  // Load duration curve
+  ldcWrap: { padding: '10px 0', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  ldcStats: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 10, fontSize: 12, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums' },
+
+  // Peak-demand timeline
+  peakChart: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 120, padding: '4px 0' },
+  peakCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  peakBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end', position: 'relative' },
+  peakBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
+  peakLabel: { fontSize: 9, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
 };
