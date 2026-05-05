@@ -14,11 +14,16 @@ function Cat5Waste() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const amountNum = parseFloat(form.amount);
+    if (!Number.isFinite(amountNum) || amountNum < 0) {
+      setMsg({ ok: false, text: `Amount must be a non-negative number (got "${form.amount}")` });
+      return;
+    }
     try {
       await insert({
         date: form.date,
         waste_type: form.waste_type,
-        amount: parseFloat(form.amount),
+        amount: amountNum,
         unit: form.unit,
         notes: form.notes || null,
         school_year: form.school_year,

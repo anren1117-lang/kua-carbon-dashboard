@@ -53,15 +53,29 @@ function Cat7Commuting() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const milesNum = parseFloat(form.one_way_miles);
+    const daysNum  = parseFloat(form.days_per_week);
+    const weeksNum = parseFloat(form.weeks_per_year);
+    const numericChecks = [
+      ['one_way_miles', milesNum, 0, 200],
+      ['days_per_week', daysNum, 0, 7],
+      ['weeks_per_year', weeksNum, 0, 52],
+    ];
+    for (const [name, n, lo, hi] of numericChecks) {
+      if (!Number.isFinite(n) || n < lo || n > hi) {
+        setMsg({ ok: false, text: `${name} must be a number between ${lo} and ${hi} (got "${n}")` });
+        return;
+      }
+    }
     try {
       const payload = {
         school_year: form.school_year,
         employee_role: form.employee_role,
         home_zip: form.home_zip || null,
-        one_way_miles: parseFloat(form.one_way_miles),
+        one_way_miles: milesNum,
         mode: form.mode,
-        days_per_week: parseFloat(form.days_per_week),
-        weeks_per_year: parseFloat(form.weeks_per_year),
+        days_per_week: daysNum,
+        weeks_per_year: weeksNum,
         survey_date: form.survey_date || null,
         data_quality: form.data_quality,
         source: form.source || null,

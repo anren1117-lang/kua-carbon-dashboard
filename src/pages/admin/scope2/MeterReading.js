@@ -30,13 +30,18 @@ function MeterReading() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const kwhNum = parseFloat(form.kwh);
+    if (!Number.isFinite(kwhNum) || kwhNum < 0) {
+      setMsg({ ok: false, text: `kWh must be a non-negative number (got "${form.kwh}")` });
+      return;
+    }
     try {
       const payload = {
         period_start: form.period_start,
         period_end: form.period_end,
         meter_id: form.meter_id || null,
         building: form.building || null,
-        kwh: parseFloat(form.kwh),
+        kwh: kwhNum,
         data_quality: form.data_quality,
         source: form.source || 'campus_meter',
         notes: form.notes || null,

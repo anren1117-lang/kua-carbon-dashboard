@@ -44,6 +44,24 @@ function SoilSample() {
 
   const submit = async (e) => {
     e.preventDefault();
+    // Validate the required-numeric fields. The HTML inputs are
+    // type=number + required, but those checks can be bypassed (paste,
+    // programmatic submit) and would otherwise let NaN slip into the
+    // soil-carbon-stock calculation downstream.
+    const bottomNum  = parseFloat(form.depth_cm_bottom);
+    const densityNum = parseFloat(form.bulk_density_g_cm3);
+    const ocNum      = parseFloat(form.oc_percent);
+    const numericChecks = [
+      ['depth_cm_bottom',     bottomNum,  0,   500],
+      ['bulk_density_g_cm3',  densityNum, 0.1, 3.0],
+      ['oc_percent',          ocNum,      0,   100],
+    ];
+    for (const [name, n, lo, hi] of numericChecks) {
+      if (!Number.isFinite(n) || n < lo || n > hi) {
+        setMsg({ ok: false, text: `${name} must be a number between ${lo} and ${hi} (got "${n}")` });
+        return;
+      }
+    }
     try {
       const payload = {
         sample_date: form.sample_date,
@@ -52,9 +70,9 @@ function SoilSample() {
         longitude: form.longitude === '' ? null : parseFloat(form.longitude),
         land_use_class: form.land_use_class,
         depth_cm_top: parseFloat(form.depth_cm_top) || 0,
-        depth_cm_bottom: parseFloat(form.depth_cm_bottom),
-        bulk_density_g_cm3: parseFloat(form.bulk_density_g_cm3),
-        oc_percent: parseFloat(form.oc_percent),
+        depth_cm_bottom: bottomNum,
+        bulk_density_g_cm3: densityNum,
+        oc_percent: ocNum,
         lab_method: form.lab_method,
         data_quality: form.data_quality,
         source: form.source || null,
