@@ -132,10 +132,10 @@ export default function AnnualReport() {
           </tbody>
         </table>
         <p style={{ ...styles.body, marginTop: 12, color: '#475569' }}>
-          The Whittemore rooftop array (40 kW DC, going operational this year) is projected to
-          generate ~{SOLAR_ANNUAL_KWH.toLocaleString()} kWh — about
-          {' '}{Math.round((SOLAR_ANNUAL_KWH / GRID_MIX_TOTAL_KWH) * 100)}% of campus demand at peak
-          summer output, displacing the equivalent grid-driven emissions.
+          On-campus solar (the operational rooftop array, anchored on measured April BMS production)
+          generates ~{SOLAR_ANNUAL_KWH.toLocaleString()} kWh annually — about
+          {' '}{((SOLAR_ANNUAL_KWH / COMPOSED_ANNUAL_KWH) * 100).toFixed(1)}% of campus annual demand,
+          displacing the equivalent grid-driven emissions.
         </p>
       </Section>
 
