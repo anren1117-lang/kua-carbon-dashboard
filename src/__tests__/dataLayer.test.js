@@ -410,6 +410,29 @@ describe('Reduction targets', () => {
   });
 });
 
+describe('Anomaly detection', () => {
+  it('flags a trailing flat run that runs to the end of the readings', async () => {
+    const { detectAnomalies } = await import('../utils/anomaly.js');
+    // 8 readings, last 7 identical — earlier code only emitted flat
+    // issues when a "breaking" different value was seen, so a stuck
+    // meter that stays stuck past the query window slipped through.
+    const readings = [
+      { meterId: 'm1', value: 100, timestamp: '2026-04-01T00:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T01:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T02:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T03:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T04:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T05:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T06:00:00Z', intervalMinutes: 60 },
+      { meterId: 'm1', value: 50,  timestamp: '2026-04-01T07:00:00Z', intervalMinutes: 60 },
+    ];
+    const issues = detectAnomalies(readings);
+    const flatIssues = issues.filter((i) => i.kind === 'flat');
+    expect(flatIssues.length).toBe(1);
+    expect(flatIssues[0].endedAt).toBe('2026-04-01T07:00:00Z');
+  });
+});
+
 describe('Asset inventory counts', () => {
   // Regression: when a record was both edited and decommissioned via the
   // admin inventory page, the rendered row showed it once as

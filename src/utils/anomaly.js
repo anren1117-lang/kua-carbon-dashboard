@@ -56,26 +56,35 @@ export function detectAnomalies(readings, opts = {}) {
       }
     }
 
-    // Flat: 6 consecutive identical values
+    // Flat: 6 consecutive identical values. Track a run of equal values;
+    // close it out when the run ends OR when we hit the end of the list
+    // (otherwise a trailing flat run never gets flagged).
     let runStart = null;
     let runLen = 0;
+    let runEndIdx = 0;
+    function emitFlat() {
+      if (runLen >= 6) {
+        issues.push({
+          meterId,
+          kind: 'flat',
+          startedAt: runStart,
+          endedAt: list[runEndIdx].timestamp,
+          description: `${runLen + 1} consecutive identical readings — meter may be stuck.`,
+        });
+      }
+    }
     for (let i = 1; i < list.length; i++) {
       if (list[i].value === list[i - 1].value) {
         if (runLen === 0) runStart = list[i - 1].timestamp;
         runLen++;
+        runEndIdx = i;
       } else {
-        if (runLen >= 6) {
-          issues.push({
-            meterId,
-            kind: 'flat',
-            startedAt: runStart,
-            endedAt: list[i - 1].timestamp,
-            description: `${runLen + 1} consecutive identical readings — meter may be stuck.`,
-          });
-        }
+        emitFlat();
         runLen = 0;
       }
     }
+    // Close any trailing flat run that ran to the end of the readings.
+    emitFlat();
 
     // Gap: time between successive readings > 4× interval
     for (let i = 1; i < list.length; i++) {
