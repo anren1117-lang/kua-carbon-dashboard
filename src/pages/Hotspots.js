@@ -1,6 +1,6 @@
 import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
-import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
+import { ProvenancePill } from '../components/ProvenancePill.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { buildings } from '../data/buildings.js';

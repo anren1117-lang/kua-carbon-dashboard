@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { PasswordGate } from '../components/PasswordGate.js';
 import { hashUserId } from '../utils/hash.js';
 

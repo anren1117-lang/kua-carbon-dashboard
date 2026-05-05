@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ModulePage, ModuleSection, MetricGrid } from '../components/ModuleShell.js';
 import { PasswordGate } from '../components/PasswordGate.js';
 
 // Per-lesson results dashboard for teachers. Shows:

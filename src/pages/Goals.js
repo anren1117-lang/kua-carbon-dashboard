@@ -2,7 +2,6 @@ import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
-import { GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';

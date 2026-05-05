@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 import { reductionActions, reductionActionsByVisibility } from '../data/reductionActions.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
-import { dorms } from '../data/dorms.js';
 import { rankActions } from '../utils/hotspots.js';
 import { GROSS_MT } from '../data/scopeTotals.js';
 
