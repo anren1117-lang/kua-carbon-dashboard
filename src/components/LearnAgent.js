@@ -772,7 +772,7 @@ const paths = [
         given: [
           { label: 'Gross', value: '4,150 mtCO₂e/yr' },
           { label: 'Sequestration', value: '3,000 mtCO₂e/yr' },
-          { label: 'Students', value: '600' },
+          { label: 'Students', value: '340' },
         ],
         question: 'Net per student:',
         options: [
