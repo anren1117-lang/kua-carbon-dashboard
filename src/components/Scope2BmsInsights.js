@@ -3,18 +3,21 @@ import { ProvenancePill } from './ProvenancePill.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
-import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyReports } from '../data/monthlyConsumption.js';
 import {
   ytdComponents,
   COMPOSED_YTD_KWH,
-  COMPOSED_YTD_MTCO2E,
   COMPOSED_YTD_AS_OF,
   COMPOSED_YTD_DAYS_COVERED,
   COMPOSED_ANNUAL_KWH,
-  COMPOSED_ANNUAL_MTCO2E,
   COMPOSED_ANNUALIZE_FACTOR,
 } from '../data/composedYtd.js';
+// COMPOSED_YTD_MTCO2E and COMPOSED_ANNUAL_MTCO2E now come from gridMix
+// (GRID_MIX_TOTAL_MTCO2E / GRID_MIX_ANNUAL_MTCO2E) — same values, but
+// the cited per-fuel emission factors live there.
+const COMPOSED_YTD_MTCO2E    = GRID_MIX_TOTAL_MTCO2E;
+const COMPOSED_ANNUAL_MTCO2E = GRID_MIX_ANNUAL_MTCO2E;
 
 // Eight measured Scope 2 features unlocked by the parsed BMS export:
 //

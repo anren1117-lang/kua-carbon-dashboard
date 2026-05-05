@@ -106,12 +106,12 @@ export const ytdComponents = (() => {
 export const COMPOSED_YTD_KWH = ytdComponents.reduce((s, c) => s + c.kwh, 0);
 export const COMPOSED_YTD_DAYS_COVERED = ytdComponents.reduce((s, c) => s + c.days, 0);
 
-/** Apply ISO-NE 2024 effective rate to convert kWh → mtCO₂e. */
-import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from './gridMix.js';
-const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
-export const COMPOSED_YTD_MTCO2E = +(COMPOSED_YTD_KWH * KG_PER_KWH / 1000).toFixed(2);
-
 // Annualization: full-year ÷ days-covered.
 export const COMPOSED_ANNUALIZE_FACTOR = COMPOSED_YTD_DAYS_COVERED > 0 ? 365 / COMPOSED_YTD_DAYS_COVERED : 1;
 export const COMPOSED_ANNUAL_KWH    = Math.round(COMPOSED_YTD_KWH * COMPOSED_ANNUALIZE_FACTOR);
-export const COMPOSED_ANNUAL_MTCO2E = +(COMPOSED_YTD_MTCO2E * COMPOSED_ANNUALIZE_FACTOR).toFixed(1);
+
+// COMPOSED_YTD_MTCO2E and COMPOSED_ANNUAL_MTCO2E are computed in
+// gridMix.js, NOT here — that's where the cited per-fuel emission
+// factors live. Importing them back into this file would create a
+// circular dependency. To get those values:
+//   import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from './gridMix.js'

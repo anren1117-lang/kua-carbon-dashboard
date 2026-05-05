@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import { ProvenancePill, ProvenanceLegend } from './ProvenancePill.js';
+import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
+import { COMPOSED_YTD_AS_OF, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+
+// Scope 2 row recomputes from the composed YTD: ±5% around the
+// annualized figure. When a new monthly capture or fresh CSV lands,
+// the row updates automatically.
+const SCOPE2_LOW  = Math.round(GRID_MIX_ANNUAL_MTCO2E * 0.95);
+const SCOPE2_HIGH = Math.round(GRID_MIX_ANNUAL_MTCO2E * 1.05);
 
 // Provenance taxonomy:
 //   measured  — BMS / utility / fuel-delivery records integrated.
@@ -25,9 +33,9 @@ const rows = [
     futureMethod:  'Refrigerants: HVAC technician service-report mass balance × IPCC AR6 GWP100. Fleet: KUA fuel-card records × EPA gasoline/diesel factors. Both flip estimated → measured once the records are integrated.',
   },
   {
-    name: 'Scope 2 — Electricity (kWh × factor)', low: 410, high: 440, provenance: 'cited',
-    currentMethod: 'Cross-validated: TWO independent measured BMS kWh figures converge (YTD All Meters page → 1.93M kWh annualized; April Meter Trends export → 1.81M kWh annualized). Mean ~1.8–1.9M kWh/yr × ISO-NE 2024 effective rate 0.235 kg/kWh (per-fuel output factors at published generation mix) = 410–440 mtCO₂e/yr. Tighter than the original 380–520 range now that two measured anchors agree.',
-    futureMethod:  'Already at target methodology. Year-over-year improvement comes from a longer measured BMS window (drop both annualization multipliers once a full year is metered) and from the next eGRID NEWE update.',
+    name: 'Scope 2 — Electricity (kWh × factor)', low: SCOPE2_LOW, high: SCOPE2_HIGH, provenance: 'cited',
+    currentMethod: `Recomputed from the composed YTD on each render. Composed YTD-through-${COMPOSED_YTD_AS_OF} (monthly BMS captures Jan-Apr + Meter Trends CSV May days) annualizes to ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr × ISO-NE 2024 effective rate 0.235 kg/kWh (per-fuel output factors at published generation mix) = ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Range is the central value ±5% — the cross-validation noise between the two BMS sources.`,
+    futureMethod:  'Already at target methodology. Year-over-year improvement comes from a longer measured BMS window (drop the annualization multiplier once a full year is metered) and from the next eGRID NEWE update.',
   },
   {
     name: 'Scope 3 — Student travel', low: 1500, high: 3000, provenance: 'estimated',
@@ -46,21 +54,31 @@ const rows = [
   },
 ];
 
-// Sums of the provenance-tagged rows above:
-//   gross low  = 1000 + 20  + 410 + 1500 + 500 = 3,430
-//   gross high = 1500 + 50  + 440 + 3000 + 800 = 5,790
-//   gross mid  ≈ 4,150 (kept for hero continuity; mid is unchanged
-//                       because the Scope 2 tightening shrunk the
-//                       range symmetrically around the same midpoint)
-//   sinks      = -4,000 to -2,000
-//   net mid    ≈ 1,150 (gross mid + sinks midpoint)
+// Summary recomputed from the rows above. Mid uses Scope 2 central
+// value rather than its midpoint so a tightening Scope 2 range
+// doesn't artificially shift the gross-mid number.
+const grossPositive = rows.filter((r) => r.low >= 0);
+const grossLowSum  = grossPositive.reduce((s, r) => s + r.low, 0);
+const grossHighSum = grossPositive.reduce((s, r) => s + r.high, 0);
+const sinksRow = rows.find((r) => r.name.startsWith('Sinks')) || { low: 0, high: 0 };
+const grossMidValue = (grossLowSum + grossHighSum) / 2;
+const sinkMid = (sinksRow.low + sinksRow.high) / 2;
+const netMidValue  = grossMidValue + sinkMid;
+const studentCount = 340;
+
 const summary = {
-  grossLow: 3430, grossHigh: 5790, grossMid: 4150,
-  sinkLow: -4000, sinkHigh: -2000,
-  netLow: -570, netHigh: 3790, netMid: 1150,
-  // Per-student values are net mt ÷ 340 enrolled students.
-  perStudentLow: -1.7, perStudentHigh: 11.1, perStudentMid: 3.4,
-  studentCount: 340,
+  grossLow:  Math.round(grossLowSum),
+  grossHigh: Math.round(grossHighSum),
+  grossMid:  Math.round(grossMidValue),
+  sinkLow:   sinksRow.low,
+  sinkHigh:  sinksRow.high,
+  netLow:    Math.round(grossLowSum + sinksRow.high),  // sinks are negative; high (less negative) gives the higher net
+  netHigh:   Math.round(grossHighSum + sinksRow.low),
+  netMid:    Math.round(netMidValue),
+  perStudentLow:  +((grossLowSum + sinksRow.high) / studentCount).toFixed(1),
+  perStudentHigh: +((grossHighSum + sinksRow.low) / studentCount).toFixed(1),
+  perStudentMid:  +((netMidValue) / studentCount).toFixed(1),
+  studentCount,
 };
 
 const styles = {

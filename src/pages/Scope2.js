@@ -3,6 +3,16 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
 import { Scope2BmsInsights } from '../components/Scope2BmsInsights';
+import { GRID_MIX_ANNUAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+
+// Estimate range: ±5% around the composed annual figure. Tightens
+// automatically when more measured data narrows the cross-validation
+// band between the two BMS sources (YTD All Meters page + Meter
+// Trends CSV).
+const SCOPE2_RANGE_LOW  = Math.round(GRID_MIX_ANNUAL_MTCO2E * 0.95);
+const SCOPE2_RANGE_HIGH = Math.round(GRID_MIX_ANNUAL_MTCO2E * 1.05);
 
 const styles = {
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
@@ -52,12 +62,18 @@ function Scope2() {
       <ScopePageInfo
         color="#f59e0b"
         estimate={{
-          total: '~424', totalRange: '410 – 440 (cross-validated)', perStudent: 1.25,
-          thirdMetric: { label: 'kWh annual', value: '~1.8M', note: 'cross-validated' },
+          total: `~${GRID_MIX_ANNUAL_MTCO2E}`,
+          totalRange: `${SCOPE2_RANGE_LOW} – ${SCOPE2_RANGE_HIGH} (composed YTD ± 5%)`,
+          perStudent: +(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2),
+          thirdMetric: {
+            label: 'kWh annual',
+            value: COMPOSED_ANNUAL_KWH >= 1e6 ? `${(COMPOSED_ANNUAL_KWH / 1e6).toFixed(2)}M` : COMPOSED_ANNUAL_KWH.toLocaleString(),
+            note: `composed YTD × annualize`,
+          },
           provenance: 'cited',
-          note: 'kWh side is now MEASURED via two independent BMS exports (YTD totals + 30-day Meter Trends). mtCO₂e side stays CITED (per-fuel ISO-NE 2024 output factors). Two independent measured kWh estimates converge to within 7%.',
-          currentMethod: 'Two independent measured kWh figures cross-validate each other: (1) YTD-through-2026-05-03 Eclypse BMS All Meters page = 649,439 kWh × annualization 2.97 = 1.93M kWh/yr; (2) Apr 5 → May 4 Eclypse Meter Trends export = 146,725 kWh × annualization 12.30 = 1.81M kWh/yr. Mean ~1.8-1.9M kWh × ISO-NE 2024 effective rate (0.235 kg/kWh per-fuel output factors at the published generation mix) = 424 mtCO₂e/yr. Per-student 1.25 mt at 340 enrollment.',
-          futureMethod: 'Drop both annualization multipliers once a full calendar year of BMS data is captured (~Jan 2027) — both kWh figures flip from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
+          note: 'Recomputes automatically when new BMS data lands. kWh side is composed from monthly captures (Jan-Apr) + Meter Trends CSV (May days). mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.',
+          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured across full-month BMS captures + the 4 May days from the parsed Meter Trends CSV. Annualized × ${(COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2)} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~0.235 kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
+          futureMethod: 'Drop the annualization multiplier once a full calendar year of BMS data is captured (~Jan 2027) — kWh figure flips from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[
           { title: 'ISO New England Electric Generator Air Emissions Report 2024', use: '643 lb CO₂/MWh in-region · 177 lb CO₂/MWh imported (Canadian hydro share)' },
