@@ -170,15 +170,28 @@ function componentToMonthShareCovered(c) {
   return { monthIdx, frac, kwh: c.kwh };
 }
 
-// Calibrate annual baseline: for each measured month / fraction,
-// implied annual = kwh ÷ (monthShare[monthIdx] × frac).
-const impliedAnnuals = ytdComponents
+// Calibrate annual baseline: each measured month implies its own
+// "annual" via kwh ÷ (monthShare × frac). Full months (frac = 1)
+// give a stable estimate; partial months are noisier because a
+// 4-day window is more sensitive to weather/occupancy than a 30-day
+// window. Weight each implied annual by its frac so a partial month
+// counts proportionally less.
+//
+// Earlier code took an unweighted mean — which gave a partial 4-day
+// May the same vote as a full 31-day January, biasing the
+// calibrated annual ~5% high in this dataset.
+const measuredMonthCoverages = ytdComponents
   .map(componentToMonthShareCovered)
-  .filter((x) => x && x.frac > 0 && monthShare[x.monthIdx] > 0)
-  .map((x) => x.kwh / (monthShare[x.monthIdx] * x.frac));
+  .filter((x) => x && x.frac > 0 && monthShare[x.monthIdx] > 0);
 
-const calibratedAnnual = impliedAnnuals.length > 0
-  ? impliedAnnuals.reduce((s, v) => s + v, 0) / impliedAnnuals.length
+const impliedAnnuals = measuredMonthCoverages.map((x) => ({
+  implied: x.kwh / (monthShare[x.monthIdx] * x.frac),
+  weight:  x.frac,
+}));
+
+const fracWeightSum = impliedAnnuals.reduce((s, v) => s + v.weight, 0);
+const calibratedAnnual = fracWeightSum > 0
+  ? impliedAnnuals.reduce((s, v) => s + v.implied * v.weight, 0) / fracWeightSum
   : COMPOSED_YTD_KWH * (365 / COMPOSED_YTD_DAYS_COVERED);
 
 /** Year 1 projection = sum of (measured value if covered, else
