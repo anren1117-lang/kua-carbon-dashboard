@@ -959,7 +959,7 @@ const paths = [
         question: 'Annual sequestration:',
         options: [
           { text: '~570 mtCO₂e/yr', correct: false, explanation: 'Stopped at C mass — multiply by 44/12 to convert carbon to CO₂.' },
-          { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey conservative end). Dashboard mid-estimate of ~3,000 blends with the higher Nowak rate for open-grown trees.' },
+          { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey conservative end). Dashboard mid-estimate of ~2,650 blends with the higher Nowak rate for open-grown trees.' },
           { text: '~10,000 mtCO₂e/yr', correct: false, explanation: 'Recheck lb → kg conversion (×0.4536, not ×4.5).' },
           { text: '~1,252 mtCO₂e/yr', correct: false, explanation: 'You used the rate directly without scaling acreage and converting units. The given rate is per acre and in lb of CARBON.' },
         ],
@@ -1049,7 +1049,7 @@ const paths = [
         question: 'Annual avoided emissions:',
         options: [
           { text: '~7 mtCO₂e/yr', correct: false, explanation: 'Off by 10× (probably an extra unit conversion).' },
-          { text: '~71 mtCO₂e/yr', correct: true, explanation: 'Right. 245 MWh × 643 lb/MWh = 157,535 lb × 0.4536 = 71,458 kg ≈ 71.5 mtCO₂e. About a third of KUA\'s entire Scope 2.' },
+          { text: '~71 mtCO₂e/yr', correct: true, explanation: 'Right. 245 MWh × 643 lb/MWh = 157,535 lb × 0.4536 = 71,458 kg ≈ 71.5 mtCO₂e. About a fifth of KUA\'s entire Scope 2 (~395 mt).' },
           { text: '~700 mtCO₂e/yr', correct: false, explanation: 'Way too high — probably forgot kg → mt.' },
           { text: '~157 mtCO₂e/yr', correct: false, explanation: 'You may have stopped at lb without converting to kg (×0.4536) or mt.' },
         ],
@@ -1165,7 +1165,7 @@ const paths = [
         given: [
           { label: 'Gross (both)', value: '4,150 mtCO₂e' },
           { label: 'Sequestration (real)', value: '3,000 mtCO₂e' },
-          { label: 'Students (both)', value: '600' },
+          { label: 'Students (both)', value: '340' },
         ],
         question: 'Difference in published per-student footprint:',
         options: [
@@ -1314,7 +1314,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'The biggest individual lever: travel',
-        body: 'A long-haul economy round-trip from East Asia produces ~3 mtCO₂e per passenger. If 50 international students replace one trip with extended on-campus stay, that\'s 146 mtCO₂e/yr — about 12% of KUA\'s entire net balance.',
+        body: 'A long-haul economy round-trip from East Asia produces ~3 mtCO₂e per passenger. If 50 international students replace one trip with extended on-campus stay, that\'s 146 mtCO₂e/yr — about 9% of KUA\'s entire net balance.',
       },
       {
         type: 'concept',
