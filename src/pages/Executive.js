@@ -109,7 +109,7 @@ export default function Executive() {
           <ExecProvRow
             provenance="estimated"
             label={`Gross emissions (${Math.round(GROSS_MT).toLocaleString()} mt)`}
-            today="Scope 1 (1,250 mt placeholder) + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 factors × 2.97 annualization) + Scope 3 (2,700 mt placeholder). Two of three are placeholders."
+            today="Scope 1 (1,250 mt placeholder) + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.59 seasonally-anchored annualization) + Scope 3 (2,700 mt placeholder). Two of three are placeholders."
             target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
           />
           <ExecProvRow
@@ -121,8 +121,8 @@ export default function Executive() {
           <ExecProvRow
             provenance="cited"
             label={`On-campus solar (${SOLAR_ANNUAL_KWH.toLocaleString()} kWh/yr)`}
-            today="Anchored on MEASURED April 2026 BMS production (2,912 kWh from 3 metered arrays: PM_15_RoofTopSolarFeed + PM_15_FieldSolarFeed + PM_19_SolarFeed) × NREL PVWatts NH seasonal-shape factor — April produces ~10% of annual generation. Result is ~33% lower than the previous pure-PVWatts model: real arrays underperform model expectations."
-            target="Capture a full 12 months of BMS production data → SOLAR_ANNUAL_KWH flips fully measured (~April 2027). The current ~33% model-vs-actual gap is itself useful information — points to inverter-health monitoring or a panel inventory mismatch."
+            today="Anchored on MEASURED April 2026 BMS production (1,692 kWh from 2 metered arrays — PM_15_RoofTopSolarFeed + PM_15_FieldSolarFeed; PM_19_SolarFeed is a NET-CONSUMER feed and excluded) × NREL PVWatts NH seasonal-shape factor — April produces ~10% of annual generation. Result is well below the prior PVWatts-only model because the parser now sign-flips backwards-CT readings instead of double-counting parasitic load as generation."
+            target="Capture a full 12 months of BMS production data → SOLAR_ANNUAL_KWH flips fully measured (~April 2027). The PM_19 feed needs Facilities to investigate whether it's a backwards-CT install or genuinely consuming energy."
           />
         </div>
       </ModuleSection>
