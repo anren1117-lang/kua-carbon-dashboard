@@ -645,7 +645,15 @@ function buildTimePatterns() {
 }
 
 function DailyView({ data }) {
-  const max = Math.max(...data.daily.map((d) => d.kwh));
+  // Cap the y-axis at the 95th percentile × 1.15 so a single anomaly
+  // (e.g. Apr 20's 17,251 kWh CT-calibration spike) doesn't crush the
+  // scale and make every other bar look tiny. Anomaly bars get rendered
+  // pegged at the cap with a "↑" indicator so the chart stays readable
+  // while still flagging the outlier.
+  const sortedKwh = [...data.daily.map((d) => d.kwh)].sort((a, b) => a - b);
+  const p95 = sortedKwh[Math.floor(sortedKwh.length * 0.95)];
+  const trueMax = Math.max(...data.daily.map((d) => d.kwh));
+  const max = Math.max(p95 * 1.15, trueMax * 0.6); // soft cap
   const peakDay = data.daily.reduce((p, d) => (d.kwh > p.kwh ? d : p), data.daily[0]);
   const lowDay = data.daily.reduce((p, d) => (d.kwh < p.kwh ? d : p), data.daily[0]);
   const weekdayMean = data.daily.filter((d) => !d.isWeekend).reduce((s, d) => s + d.kwh, 0) / data.daily.filter((d) => !d.isWeekend).length;
@@ -657,17 +665,22 @@ function DailyView({ data }) {
       <div style={styles.dailyChart}>
         {data.daily.map((d) => {
           const isAnomaly = data.anomalies.includes(d);
+          const capped = d.kwh > max; // anomaly pegged at cap
+          const heightPct = Math.min(100, (d.kwh / max) * 100);
           return (
             <div key={d.date} style={styles.dayCol}>
               <div style={styles.dayBarTrack}>
                 <div
                   style={{
                     ...styles.dayBar,
-                    height: `${(d.kwh / max) * 100}%`,
+                    height: `${heightPct}%`,
                     background: isAnomaly ? '#ef4444' : d.isWeekend ? '#22d3ee' : '#fbbf24',
                   }}
-                  title={`${d.date}: ${d.kwh.toLocaleString()} kWh${isAnomaly ? ' (anomaly)' : ''}`}
+                  title={`${d.date}: ${d.kwh.toLocaleString()} kWh${isAnomaly ? ' (anomaly)' : ''}${capped ? ` — capped at ${Math.round(max).toLocaleString()} for chart scale` : ''}`}
                 />
+                {capped && (
+                  <div style={{ position: 'absolute', top: 2, left: 0, right: 0, textAlign: 'center', fontSize: 10, color: '#fca5a5', fontWeight: 700, pointerEvents: 'none' }}>↑</div>
+                )}
                 <div style={{ ...styles.meanLine, bottom: `${(data.meanDaily / max) * 100}%` }} />
               </div>
               <div style={styles.dayDateTick}>{d.date.slice(8)}</div>
@@ -1255,11 +1268,11 @@ const styles = {
   cardTitle: { fontSize: 17, color: '#e5e7eb', fontWeight: 700, margin: 0, marginBottom: 6 },
   cardHint: { fontSize: 13, color: '#94a3b8', margin: '0 0 14px', lineHeight: 1.6 },
 
-  hourChart: { display: 'flex', gap: 2, alignItems: 'flex-end', height: 140, padding: '8px 0' },
+  hourChart: { display: 'flex', gap: 3, alignItems: 'flex-end', height: 220, padding: '8px 0' },
   hourCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
   hourBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, position: 'relative', display: 'flex', alignItems: 'flex-end' },
   hourBar: { width: '100%', borderRadius: '2px 2px 0 0', minHeight: 2 },
-  meanLine: { position: 'absolute', left: 0, right: 0, height: 1, background: 'rgba(248,113,113,0.6)' },
+  meanLine: { position: 'absolute', left: 0, right: 0, height: 1, background: 'rgba(248,113,113,0.7)' },
   hourLabel: { fontSize: 10, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
 
   solarGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 },
@@ -1283,7 +1296,7 @@ const styles = {
   topMeta: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontVariantNumeric: 'tabular-nums' },
   topNum: { fontSize: 14, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
   topNumUnit: { fontSize: 10, color: '#94a3b8', marginLeft: 3 },
-  topBar: { gridColumn: '1 / -1', height: 3, background: '#0f172a', borderRadius: 2, marginTop: 6, overflow: 'hidden' },
+  topBar: { gridColumn: '1 / -1', height: 8, background: '#0f172a', borderRadius: 4, marginTop: 8, overflow: 'hidden' },
   topBarFill: { height: '100%', background: '#fbbf24' },
 
   todayTarget: { marginTop: 14, padding: '10px 12px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, display: 'grid', gap: 4 },
@@ -1297,28 +1310,28 @@ const styles = {
   legendNote: { color: '#64748b' },
 
   // Daily chart
-  dailyChart: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 160, padding: '4px 0', position: 'relative' },
+  dailyChart: { display: 'flex', gap: 2, alignItems: 'flex-end', height: 240, padding: '4px 0', position: 'relative' },
   dayCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
   dayBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, position: 'relative', display: 'flex', alignItems: 'flex-end' },
   dayBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
-  dayDateTick: { fontSize: 9, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+  dayDateTick: { fontSize: 10, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
 
   // Weekly chart
-  weeklyChart: { display: 'flex', gap: 8, alignItems: 'flex-end', height: 160, padding: '4px 0' },
+  weeklyChart: { display: 'flex', gap: 12, alignItems: 'flex-end', height: 220, padding: '4px 0' },
   weekCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  weekVal: { fontSize: 11, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  weekVal: { fontSize: 12, color: '#cbd5e1', marginBottom: 4, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   weekBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
   weekBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
   weekLabel: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginTop: 4, fontVariantNumeric: 'tabular-nums' },
   weekSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
 
   // Monthly chart
-  monthlyChart: { display: 'flex', gap: 12, alignItems: 'flex-end', height: 180, padding: '4px 0' },
+  monthlyChart: { display: 'flex', gap: 14, alignItems: 'flex-end', height: 260, padding: '4px 0' },
   monthCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  monthVal: { fontSize: 12, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  monthVal: { fontSize: 13, color: '#cbd5e1', marginBottom: 4, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   monthBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
   monthBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
-  monthLabel: { fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginTop: 4 },
+  monthLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 700, marginTop: 6 },
   monthSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
 
   // Analysis box (the WHY)
@@ -1350,20 +1363,20 @@ const styles = {
   stackedSeg: { height: '100%' },
   stackedLegend: { display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 12 },
   subList: { display: 'grid', gap: 4, marginTop: 8 },
-  subRow: { display: 'grid', gridTemplateColumns: '160px 1fr 100px 110px', gap: 10, alignItems: 'center', padding: '4px 8px', background: '#0b1220', borderRadius: 4, fontSize: 11 },
+  subRow: { display: 'grid', gridTemplateColumns: '160px 1fr 100px 110px', gap: 10, alignItems: 'center', padding: '6px 8px', background: '#0b1220', borderRadius: 4, fontSize: 11 },
   subId: { fontSize: 11, color: '#cbd5e1' },
-  subBar: { height: 6, background: '#0f172a', borderRadius: 2, overflow: 'hidden' },
+  subBar: { height: 14, background: '#0f172a', borderRadius: 3, overflow: 'hidden' },
   subBarFill: { height: '100%' },
   subNum: { fontSize: 11, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
   subPeak: { fontSize: 10, color: '#94a3b8', fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
 
   // Day-of-week chart
-  dowChart: { display: 'flex', gap: 6, alignItems: 'flex-end', height: 140 },
+  dowChart: { display: 'flex', gap: 8, alignItems: 'flex-end', height: 220 },
   dowCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  dowVal: { fontSize: 10, color: '#94a3b8', marginBottom: 4, fontVariantNumeric: 'tabular-nums' },
+  dowVal: { fontSize: 12, color: '#cbd5e1', marginBottom: 4, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   dowBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end' },
   dowBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
-  dowLabel: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginTop: 4 },
+  dowLabel: { fontSize: 12, color: '#cbd5e1', fontWeight: 700, marginTop: 6 },
   dowSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
 
   // Load duration curve
@@ -1371,9 +1384,12 @@ const styles = {
   ldcStats: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 10, fontSize: 12, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums' },
 
   // Peak-demand timeline
-  peakChart: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 120, padding: '4px 0' },
+  peakChart: { display: 'flex', gap: 2, alignItems: 'flex-end', height: 200, padding: '4px 0' },
   peakCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' },
   peakBarTrack: { width: '100%', flex: 1, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 2, display: 'flex', alignItems: 'flex-end', position: 'relative' },
   peakBar: { width: '100%', minHeight: 2, borderRadius: '2px 2px 0 0' },
-  peakLabel: { fontSize: 9, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+  peakLabel: { fontSize: 10, color: '#64748b', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+
+  // Sub-row mini bars (Whittemore HP cluster, EV chargers, Top loads)
+  // were 6px tall — too thin to read. Bumped to 14.
 };
