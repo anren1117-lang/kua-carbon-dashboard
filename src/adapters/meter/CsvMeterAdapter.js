@@ -42,7 +42,9 @@ export const CsvMeterAdapter = {
   },
 
   async importReadings(readings) {
-    const valid = (readings || []).filter((r) => r && r.meterId && r.timestamp && typeof r.value === 'number');
+    // typeof NaN === 'number', so the bare typeof check used to admit
+    // NaN values. Use Number.isFinite to keep NaN out of the store.
+    const valid = (readings || []).filter((r) => r && r.meterId && r.timestamp && Number.isFinite(r.value));
     return insertReadings(valid.map((r) => ({ ...r, source: 'csv', dataQuality: r.dataQuality || 'actual' })));
   },
 
