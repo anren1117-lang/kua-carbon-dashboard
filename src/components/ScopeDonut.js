@@ -1,13 +1,17 @@
 import React from 'react';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
+// Values flow through the centralized scopeTotals chain so the donut
+// stays in sync with every other place on the dashboard.
 const segments = [
-  { key: 'scope1',  label: 'Scope 1 — direct',         value: 960,  color: '#ef4444' },
-  { key: 'scope2',  label: 'Scope 2 — electricity',    value: 240,  color: '#f59e0b' },
-  { key: 'scope3',  label: 'Scope 3 — indirect',       value: 3000, color: '#8b5cf6' },
+  { key: 'scope1',  label: 'Scope 1 — direct',         value: Math.round(SCOPE1_TOTAL_MT),       color: '#ef4444' },
+  { key: 'scope2',  label: 'Scope 2 — electricity',    value: Math.round(SCOPE2_TOTAL_MT),       color: '#f59e0b' },
+  { key: 'scope3',  label: 'Scope 3 — indirect',       value: Math.round(SCOPE3_TOTAL_MT),       color: '#8b5cf6' },
 ];
-const sinkValue = 3000; // pulled out by the ~1,000-acre forest, mid estimate
-const grossTotal = segments.reduce((a, s) => a + s.value, 0);
+const sinkValue = Math.round(ANNUAL_SEQUESTRATION_MT); // pulled out by the campus forest
+const grossTotal = Math.round(GROSS_MT);
 const netTotal = grossTotal - sinkValue;
 
 // SVG arc helper for a donut segment.
