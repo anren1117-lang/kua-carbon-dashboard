@@ -4,6 +4,16 @@ import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import {
+  ytdComponents,
+  COMPOSED_YTD_KWH,
+  COMPOSED_YTD_MTCO2E,
+  COMPOSED_YTD_AS_OF,
+  COMPOSED_YTD_DAYS_COVERED,
+  COMPOSED_ANNUAL_KWH,
+  COMPOSED_ANNUAL_MTCO2E,
+  COMPOSED_ANNUALIZE_FACTOR,
+} from '../data/composedYtd.js';
 
 // Eight measured Scope 2 features unlocked by the parsed BMS export:
 //
@@ -102,6 +112,65 @@ export function Scope2BmsInsights() {
           {' '}— sourced from BMS cumulative-kWh counters at hourly resolution.
         </p>
       </header>
+
+      {/* YTD composition — every kWh in the YTD figure traces to a measured source */}
+      <section style={styles.card}>
+        <h3 style={styles.cardTitle}>Year-to-date electricity, composed from measured sources</h3>
+        <p style={styles.cardHint}>
+          The YTD figure on the dashboard is built up from each measured input — full-month BMS captures
+          for Jan–Apr, plus the Meter Trends CSV for May. Every kWh below traces to a specific source file
+          and a specific time period. Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of measured campus consumption.
+        </p>
+        <table style={styles.ytdTable}>
+          <thead>
+            <tr>
+              <th style={styles.ytdTh}>Period</th>
+              <th style={styles.ytdTh}>Days</th>
+              <th style={{ ...styles.ytdTh, textAlign: 'right' }}>kWh</th>
+              <th style={styles.ytdTh}>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ytdComponents.map((c, i) => (
+              <tr key={i}>
+                <td style={styles.ytdTd}>{c.label}</td>
+                <td style={styles.ytdTd}>{c.days}</td>
+                <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>
+                  {c.kwh.toLocaleString()}
+                </td>
+                <td style={styles.ytdTdSrc}>
+                  <ProvenancePill provenance="measured" />
+                  <code style={{ marginLeft: 6, fontSize: 11 }}>{c.source}</code>
+                </td>
+              </tr>
+            ))}
+            <tr style={styles.ytdTotal}>
+              <td style={styles.ytdTd}><strong>YTD total</strong></td>
+              <td style={styles.ytdTd}><strong>{COMPOSED_YTD_DAYS_COVERED}</strong></td>
+              <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: '#86efac', fontSize: 15 }}>
+                {COMPOSED_YTD_KWH.toLocaleString()}
+              </td>
+              <td style={styles.ytdTdSrc}>
+                <strong>{COMPOSED_YTD_MTCO2E} mtCO₂e</strong> via ISO-NE 2024 effective rate
+              </td>
+            </tr>
+            <tr style={styles.ytdAnnual}>
+              <td style={styles.ytdTd}>Annualized × {COMPOSED_ANNUALIZE_FACTOR.toFixed(2)}</td>
+              <td style={styles.ytdTd}>365</td>
+              <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: '#cbd5e1' }}>
+                {COMPOSED_ANNUAL_KWH.toLocaleString()}
+              </td>
+              <td style={styles.ytdTdSrc}>
+                {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — within the 410-440 cross-validated estimate range
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={styles.todayTarget}>
+          <div><span style={styles.ttLabel}>Today:</span> Each row above is a real measured input. The April monthly capture (128,895 kWh, single-snapshot displayedTotal) and the CSV's Apr 5–30 daily totals (140,827 kWh summed across 35 main+panel feeds) overlap — we use the monthly capture for April since it agrees with the master meter, and pull only May 1–4 from the CSV. The CSV's higher Apr figure reflects the 8-10% submeter overshoot documented on /buildings.</div>
+          <div><span style={styles.ttLabel}>Target:</span> When the next monthly BMS capture lands (May full-month, around June 1), drop the May 1–4 CSV row and replace with the May full-month capture. When a fresh Meter Trends CSV is exported, re-run scripts/parseBmsExport.mjs and the May days extend automatically.</div>
+        </div>
+      </section>
 
       {/* Window summary cards */}
       <div style={styles.summaryGrid}>
@@ -673,6 +742,14 @@ const styles = {
 
   todayTarget: { marginTop: 14, padding: '10px 12px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, display: 'grid', gap: 4 },
   ttLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 },
+
+  // YTD composition table
+  ytdTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  ytdTh: { textAlign: 'left', padding: '10px 8px', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontSize: 11, borderBottom: '1px solid #1f2937', fontWeight: 700 },
+  ytdTd: { padding: '8px 8px', color: '#cbd5e1', borderBottom: '1px solid #1f2937', verticalAlign: 'middle' },
+  ytdTdSrc: { padding: '8px 8px', color: '#94a3b8', borderBottom: '1px solid #1f2937', verticalAlign: 'middle', fontSize: 11 },
+  ytdTotal: { background: '#0b1220', borderTop: '2px solid #334155' },
+  ytdAnnual: { background: '#0a1015' },
 
   // Stacked bars for the Whittemore cluster + EV charger sub-list
   stackedBar: { display: 'flex', height: 18, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },

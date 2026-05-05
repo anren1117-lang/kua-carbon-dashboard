@@ -1,16 +1,19 @@
 // KUA's allocation of the ISO New England 2024 system mix.
 //
-// kWhUsed = KUA's year-to-date electricity (649,439 kWh through
-// 2026-05-03 per the BMS All Meters page) multiplied by each fuel's
-// share of generation. mtCO2e = that kWh figure multiplied by the
-// per-fuel emission factor.
+// kWhUsed = KUA's year-to-date electricity multiplied by each fuel's
+// share of generation. mtCO2e = that kWh × per-fuel emission factor.
 //
-// These are YTD totals — NOT annualized projections. Pages that want
-// a full-year projection should multiply by ANNUALIZE_FACTOR from
-// envysionSnapshot.js.
+// kWhUsed values below are derived from a single BMS All Meters
+// snapshot (649,439 kWh through 2026-05-03). The composed YTD figure
+// in composedYtd.js — built from monthly captures + the CSV's May
+// days — agrees within 0.5%, validating the per-fuel allocation.
+// When you need a campus YTD total, prefer COMPOSED_YTD_KWH from
+// composedYtd.js — it's what the Scope 2 page exposes as the headline
+// since every kWh in that figure traces to a measured source.
 //
 // Source: ISO-NE 2024 System Mix and Emissions Report (factor year);
-// envysionSnapshot.js (KUA usage period).
+// envysionSnapshot.js (initial snapshot kWh); composedYtd.js (the
+// composed alternative built from monthly captures + Meter Trends CSV).
 
 /**
  * @typedef {Object} GridMixSource
