@@ -60,7 +60,7 @@ export function Scope2LiveDashboard() {
   const [viewMode, setViewMode] = useState('overview');
 
   // Annual baseline derived from the seasonally-anchored Year 1
-  // projection (composedYtd.js). The factor (~×2.59) accounts for
+  // projection (composedYtd.js). The factor (~×2.5) accounts for
   // the fact that the YTD measured months are heating-heavy — naive
   // linear annualization would over-count summer.
   const yearlyEmissions = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
@@ -212,7 +212,7 @@ export function Scope2LiveDashboard() {
 
   // gridMix.mtCO2e and .kwhUsed are YTD figures. The "Energy Sources"
   // panel below shows them under a footer that says "TOTAL ANNUAL
-  // EMISSIONS" (yearlyEmissions, ~395 mt). Annualize the per-source
+  // EMISSIONS" (yearlyEmissions, ~385 mt). Annualize the per-source
   // rows here so the breakdown adds up to the footer instead of being
   // ~38% short.
   const emissionsData = gridMix.map((m) => ({
@@ -230,7 +230,7 @@ export function Scope2LiveDashboard() {
   // Monday for display. The monthlyPattern.emissions field is calibrated
   // to a legacy ~213 mt annual baseline; rescale here so the displayed
   // monthly mtCO2e values sum to the canonical annual Scope 2 figure
-  // (~395 mt today via per-fuel output factors).
+  // (~385 mt today via per-fuel output factors).
   const dayOfWeekData = [...dayOfWeekPattern.slice(1), dayOfWeekPattern[0]];
   const _monthlyMultSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
   const monthlyData = monthlyPattern.map((m) => ({

@@ -57,7 +57,7 @@ export default function BuildingsPage() {
     //
     // Both sources are normalized to the same Year 1 annualized basis
     // before display: BMS gets × COMPOSED_ANNUALIZE_FACTOR (seasonal,
-    // ×2.59); snapshot gets the same factor since both windows cover
+    // ×2.5); snapshot gets the same factor since both windows cover
     // a similarly heating-heavy slice of the year. Mixing YTD with
     // annualized would silently give incomparable numbers across rows.
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));

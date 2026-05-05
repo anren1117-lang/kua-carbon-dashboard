@@ -109,7 +109,7 @@ export default function Executive() {
           <ExecProvRow
             provenance="estimated"
             label={`Gross emissions (${Math.round(GROSS_MT).toLocaleString()} mt)`}
-            today="Scope 1 (1,250 mt placeholder) + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.59 seasonally-anchored annualization) + Scope 3 (2,700 mt placeholder). Two of three are placeholders."
+            today="Scope 1 (1,250 mt placeholder) + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization) + Scope 3 (2,700 mt placeholder). Two of three are placeholders."
             target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
           />
           <ExecProvRow

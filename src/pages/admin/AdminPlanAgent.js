@@ -228,7 +228,7 @@ export default function AdminPlanAgent() {
               sourcePath="src/pages/Executive.js SCOPE_TOTALS.scope1Mt" />
             <CtxRow provenance="measured" label={`Scope 2 kWh (${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh Year 1 / ${COMPOSED_YTD_KWH.toLocaleString()} kWh YTD)`}
               today="KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03 (123 days into 2026)."
-              target="Already measured. Improvement: drop the ×2.97 annualization once a full year of BMS data is captured."
+              target="Already measured. Improvement: drop the seasonally-anchored ×2.5 annualization once a full year of BMS data is captured."
               sourcePath="src/data/envysionSnapshot.js" />
             <CtxRow provenance="cited" label={`Scope 2 mtCO₂e (${Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized)`}
               today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range."

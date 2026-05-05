@@ -63,7 +63,7 @@ export const reductionTargets = [
     title: 'Net-zero net carbon by 2050',
     scope: 'net',
     baselineYear: 2024,
-    baselineValue: 1695, // updated (was 1150 pre-fix; gross 4,345 − sinks 2,650)
+    baselineValue: 1685, // updated (was 1150 pre-fix; gross 4,335 − sinks 2,650)
     targetYear: 2050,
     percentReduction: 100,
     description: 'After all other reductions, close the remaining gap with verified removal credits or expanded forest stewardship. KUA\'s net is already low because of the campus forest; full net-zero is a 25-year horizon project.',
