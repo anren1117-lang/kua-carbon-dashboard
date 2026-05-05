@@ -687,7 +687,14 @@ function BmsExportPanel({ buildingId }) {
           strokeWidth={2}
           showLast
           formatValue={(v) => `${Math.round(v).toLocaleString()} kWh`}
-          formatLabel={(d) => d?.date ? new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
+          formatLabel={(d) => {
+            if (!d?.date) return '';
+            // Parse YYYY-MM-DD as a local date; new Date(string) reads
+            // it as UTC midnight which back-rolls a day for users west
+            // of UTC (Apr 15 → Apr 14 in ET).
+            const [yyyy, mm, dd] = d.date.split('-').map((s) => parseInt(s, 10));
+            return new Date(yyyy, mm - 1, dd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          }}
         />
         <div style={{ fontSize: 12, color: '#cbd5e1' }}>
           <div><strong>{Math.round(totalKwh).toLocaleString()}</strong> kWh in window</div>
