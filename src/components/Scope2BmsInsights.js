@@ -336,55 +336,17 @@ function Year1ProjectionSection() {
         <Stat label="Effective annualize"       value={`×${COMPOSED_ANNUALIZE_FACTOR.toFixed(2)}`}                            unit=""    accent="#a855f7" note={`(linear would be ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)})`} />
       </div>
 
-      {/* 12-month bar chart */}
-      <div style={styles.year1Chart}>
-        {year1Months.map((m) => {
-          const isProjected = m.provenance === 'projected';
-          const isMixed = m.provenance === 'mixed';
-          return (
-            <div key={m.label} style={styles.year1Col}>
-              <div style={styles.year1Val}>{Math.round(m.kwh / 1000)}k</div>
-              <div style={styles.year1BarTrack}>
-                {isMixed ? (
-                  <>
-                    {/* Stacked: measured portion solid, projected portion striped */}
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, right: 0,
-                      height: `${(m.kwh / max) * 100}%`,
-                      background: '#475569',
-                      backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)',
-                    }} />
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, right: 0,
-                      height: `${(m.kwh * m.fracMeasured / max) * 100}%`,
-                      background: '#22c55e',
-                    }} />
-                  </>
-                ) : (
-                  <div
-                    style={{
-                      ...styles.year1Bar,
-                      height: `${(m.kwh / max) * 100}%`,
-                      background: isProjected ? '#475569' : '#22c55e',
-                      backgroundImage: isProjected
-                        ? 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)'
-                        : 'none',
-                    }}
-                    title={`${m.label}: ${Math.round(m.kwh).toLocaleString()} kWh (${m.provenance})`}
-                  />
-                )}
-              </div>
-              <div style={styles.year1Label}>{m.label}</div>
-            </div>
-          );
-        })}
-      </div>
+      <Year1Chart year1Months={year1Months} totalKwh={COMPOSED_YEAR1_KWH} />
 
       <div style={styles.legendRow}>
         <LegendDot color="#22c55e">Measured (BMS captures + CSV)</LegendDot>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
           <span style={{ width: 10, height: 10, background: '#475569', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)', borderRadius: 2, display: 'inline-block' }} />
           Projected (NH seasonal shape)
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
+          <svg width={14} height={8}><line x1={0} y1={4} x2={14} y2={4} stroke="#fbbf24" strokeWidth={2} strokeDasharray="3 2" /></svg>
+          Cumulative Year 1 total
         </span>
       </div>
 
@@ -413,6 +375,175 @@ function Year1ProjectionSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+// SVG bar chart for Year 1 — proper y-axis, cumulative overlay,
+// hover tooltip per month, vertical divider at the measured/projected
+// boundary. Replaces the styled-div version that had no scale.
+function Year1Chart({ year1Months, totalKwh }) {
+  const [hover, setHover] = useState(null);
+
+  const W = 920;
+  const H = 280;
+  const PAD = { top: 18, right: 64, bottom: 36, left: 56 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
+  const max = Math.max(...year1Months.map((m) => m.kwh));
+  // Round y-axis cap up to the next 50k for clean tick labels.
+  const yMax = Math.ceil(max / 50000) * 50000;
+  const yTicks = [0, yMax * 0.25, yMax * 0.5, yMax * 0.75, yMax];
+
+  // Cumulative running total — right-axis line. Scaled so the final
+  // point lands at the top of the chart.
+  let cum = 0;
+  const cumPoints = year1Months.map((m, i) => {
+    cum += m.kwh;
+    const x = PAD.left + (i + 0.5) * (plotW / 12);
+    const y = PAD.top + plotH - (cum / totalKwh) * plotH;
+    return [x, y, cum];
+  });
+  const cumPath = cumPoints.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+
+  // Boundary x where measured ends and pure-projected begins.
+  // Find the first index whose provenance is 'projected' (after May which
+  // is mixed). For our data that's June (index 5).
+  const firstProjectedIdx = year1Months.findIndex((m) => m.provenance === 'projected');
+  const boundaryX = firstProjectedIdx > 0 ? PAD.left + firstProjectedIdx * (plotW / 12) : null;
+
+  return (
+    <div style={{ overflowX: 'auto', marginTop: 4 }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
+        onMouseLeave={() => setHover(null)}
+      >
+        {/* Y-axis ticks + gridlines */}
+        {yTicks.map((t, i) => {
+          const y = PAD.top + plotH - (t / yMax) * plotH;
+          return (
+            <g key={i}>
+              <line x1={PAD.left} y1={y} x2={PAD.left + plotW} y2={y} stroke="#1f2937" strokeDasharray="2 4" />
+              <text x={PAD.left - 8} y={y} fill="#64748b" fontSize="10" textAnchor="end" dominantBaseline="middle">
+                {t === 0 ? '0' : `${Math.round(t / 1000)}k`}
+              </text>
+            </g>
+          );
+        })}
+        {/* Right axis label for cumulative line */}
+        {[0, 0.5, 1].map((f, i) => {
+          const y = PAD.top + plotH - f * plotH;
+          const cumVal = totalKwh * f;
+          return (
+            <text key={`r${i}`} x={PAD.left + plotW + 8} y={y} fill="#fbbf24" fontSize="10" textAnchor="start" dominantBaseline="middle">
+              {Math.round(cumVal / 1000)}k
+            </text>
+          );
+        })}
+        <text x={W - 4} y={12} fill="#fbbf24" fontSize="9" textAnchor="end" fontWeight={700}>cum kWh</text>
+        <text x={4} y={12} fill="#64748b" fontSize="9" textAnchor="start" fontWeight={700}>kWh / mo</text>
+
+        {/* Bars */}
+        {year1Months.map((m, i) => {
+          const colW = plotW / 12;
+          const barW = colW * 0.72;
+          const xLeft = PAD.left + i * colW + (colW - barW) / 2;
+          const barH = (m.kwh / yMax) * plotH;
+          const yTop = PAD.top + plotH - barH;
+          const isProjected = m.provenance === 'projected';
+          const isMixed = m.provenance === 'mixed';
+          const isMeasured = m.provenance === 'measured';
+          const measuredH = isMixed ? barH * (m.fracMeasured || 0) : (isMeasured ? barH : 0);
+          const projectedH = barH - measuredH;
+          const isHover = hover === i;
+          return (
+            <g key={i} onMouseEnter={() => setHover(i)}>
+              {/* Hover hit area covering the column */}
+              <rect x={PAD.left + i * colW} y={PAD.top} width={colW} height={plotH} fill="transparent" />
+              {projectedH > 0 && (
+                <rect
+                  x={xLeft} y={yTop} width={barW} height={projectedH}
+                  fill="url(#hatch-grey)"
+                  stroke={isHover ? '#94a3b8' : 'none'} strokeWidth={1}
+                  rx={2}
+                />
+              )}
+              {measuredH > 0 && (
+                <rect
+                  x={xLeft} y={yTop + projectedH} width={barW} height={measuredH}
+                  fill="#22c55e"
+                  stroke={isHover ? '#86efac' : 'none'} strokeWidth={1}
+                  rx={2}
+                />
+              )}
+              {/* Top kWh label */}
+              <text x={xLeft + barW / 2} y={yTop - 4} fill="#94a3b8" fontSize="10" textAnchor="middle" fontVariantNumeric="tabular-nums">
+                {Math.round(m.kwh / 1000)}k
+              </text>
+              {/* X-axis label */}
+              <text x={PAD.left + i * colW + colW / 2} y={H - 18} fill="#cbd5e1" fontSize="11" textAnchor="middle" fontWeight={isMeasured ? 700 : 400}>
+                {m.label}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Boundary marker — vertical dashed line where measured ends */}
+        {boundaryX !== null && (
+          <g>
+            <line x1={boundaryX} y1={PAD.top} x2={boundaryX} y2={PAD.top + plotH} stroke="#86efac" strokeDasharray="3 3" strokeOpacity="0.5" />
+            <text x={boundaryX + 4} y={PAD.top + 12} fill="#86efac" fontSize="9" fontWeight={700}>
+              measured ←
+            </text>
+            <text x={boundaryX - 4} y={PAD.top + 12} fill="#94a3b8" fontSize="9" fontWeight={700} textAnchor="end">
+              → projected
+            </text>
+          </g>
+        )}
+
+        {/* Cumulative line + endpoint dot */}
+        <path d={cumPath} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="3 2" />
+        {cumPoints.map(([x, y], i) => (
+          <circle key={`cdot-${i}`} cx={x} cy={y} r={2.5} fill="#fbbf24" />
+        ))}
+
+        {/* Hover tooltip */}
+        {hover !== null && (() => {
+          const m = year1Months[hover];
+          const cumVal = cumPoints[hover][2];
+          const tipW = 188, tipH = 92;
+          let tx = PAD.left + hover * (plotW / 12) + (plotW / 12) + 8;
+          if (tx + tipW > W) tx = PAD.left + hover * (plotW / 12) - tipW - 8;
+          const ty = PAD.top + 4;
+          return (
+            <g>
+              <rect x={tx} y={ty} width={tipW} height={tipH} fill="#0b1220" stroke="#1f2937" rx={4} />
+              <text x={tx + 10} y={ty + 16} fill="#e5e7eb" fontSize="12" fontWeight={700}>{m.label} 2026</text>
+              <text x={tx + 10} y={ty + 32} fill={m.provenance === 'measured' ? '#86efac' : m.provenance === 'mixed' ? '#fbbf24' : '#94a3b8'} fontSize="10" fontWeight={700} letterSpacing="0.5">
+                {m.provenance === 'measured' ? '● MEASURED' : m.provenance === 'mixed' ? `~ ${Math.round((m.fracMeasured || 0) * 100)}% MEASURED` : '○ PROJECTED'}
+              </text>
+              <text x={tx + 10} y={ty + 48} fill="#cbd5e1" fontSize="11" fontVariantNumeric="tabular-nums">
+                {Math.round(m.kwh).toLocaleString()} kWh
+              </text>
+              <text x={tx + 10} y={ty + 62} fill="#cbd5e1" fontSize="11" fontVariantNumeric="tabular-nums">
+                {(m.kwh * KG_PER_KWH / 1000).toFixed(1)} mtCO₂e
+              </text>
+              <text x={tx + 10} y={ty + 80} fill="#fbbf24" fontSize="10" fontVariantNumeric="tabular-nums">
+                cum: {Math.round(cumVal).toLocaleString()} kWh
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* Pattern definitions */}
+        <defs>
+          <pattern id="hatch-grey" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+            <rect width="6" height="6" fill="#475569" />
+            <line x1="0" y1="0" x2="0" y2="6" stroke="#1f2937" strokeWidth="2" />
+          </pattern>
+        </defs>
+      </svg>
+    </div>
   );
 }
 
