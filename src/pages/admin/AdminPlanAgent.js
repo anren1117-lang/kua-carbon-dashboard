@@ -88,7 +88,21 @@ function contextIsComplete(c) {
 }
 
 export default function AdminPlanAgent() {
-  const [context, setContext] = useState(() => ({ ...emptyContext(), ...loadJson(CONTEXT_KEY, {}) }));
+  // Persist only the user-editable fields. Canonical KUA totals
+  // (grossMt, sinksMt, enrollment) come fresh from the data layer
+  // every time so a stale localStorage snapshot can't override an
+  // updated GROSS_MT after a new BMS capture lands.
+  const [context, setContext] = useState(() => {
+    const saved = loadJson(CONTEXT_KEY, {});
+    const fresh = emptyContext();
+    return {
+      ...fresh,
+      ...saved,
+      grossMt:    fresh.grossMt,
+      sinksMt:    fresh.sinksMt,
+      enrollment: fresh.enrollment,
+    };
+  });
   const [plan, setPlan] = useState(() => loadJson(PLAN_KEY, null));
   const [history, setHistory] = useState(() => loadJson(HISTORY_KEY, { completed: [], declined: [] }));
   const [loading, setLoading] = useState(false);
