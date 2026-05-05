@@ -1,4 +1,27 @@
 import React, { useState } from 'react';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+
+// Reactive headline figures — composed from the same canonical sources the
+// rest of the dashboard imports, so the lesson narrative cannot drift from
+// the homepage hero. Quiz scenarios further down still use round legacy
+// inputs so each scenario's math lines up with its answer choices; those
+// blocks are flagged in-line where they appear.
+const KUA = (() => {
+  const gross = Math.round(GROSS_MT);
+  const sinks = Math.round(ANNUAL_SEQUESTRATION_MT);
+  const net   = gross - sinks;
+  return {
+    scope1: Math.round(SCOPE1_TOTAL_MT).toLocaleString(),
+    scope2: Math.round(SCOPE2_TOTAL_MT).toLocaleString(),
+    scope3: Math.round(SCOPE3_TOTAL_MT).toLocaleString(),
+    gross:  gross.toLocaleString(),
+    sinks:  sinks.toLocaleString(),
+    net:    net.toLocaleString(),
+    perStudent: (net / TOTAL_STUDENTS).toFixed(1),
+  };
+})();
 
 // Inline formatter — handles **bold** markers and \n\n paragraph breaks without
 // pulling in a markdown dependency.
@@ -181,7 +204,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'KUA\'s situation',
-        body: 'Here are the **headline numbers** for KUA\'s footprint, in plain language:\n\n**Gross emissions: ~4,150 tons CO₂e per year.** That\'s the total released by KUA\'s operations and indirect activities. About 1,000 tons from heating fuel (Scope 1), 222 tons from purchased electricity (Scope 2), and 3,000 tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~3,000 tons CO₂e per year drawdown.** KUA owns roughly **1,000 acres of forest** in New Hampshire. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools **don\'t even measure this** — KUA does, which is unusual.\n\n**Net carbon balance: ~1,150 tons CO₂e per year.** That\'s gross minus sequestration. Per student: about **3.4 mtCO₂e/year**. For comparison, peer boarding schools are typically **6–10 mtCO₂e/student/year** — KUA looks lower largely because we count our forest, but also because the New England grid is fairly clean.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. The range of plausible values is wide right now (−760 to +3,572 mtCO₂e net). As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.',
+        body: `Here are the **headline numbers** for KUA's footprint, in plain language:\n\n**Gross emissions: ~${KUA.gross} tons CO₂e per year.** That's the total released by KUA's operations and indirect activities. About ${KUA.scope1} tons from heating fuel (Scope 1), ${KUA.scope2} tons from purchased electricity (Scope 2), and ${KUA.scope3} tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~${KUA.sinks} tons CO₂e per year drawdown.** KUA owns roughly **1,000 acres of forest** in New Hampshire. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools **don't even measure this** — KUA does, which is unusual.\n\n**Net carbon balance: ~${KUA.net} tons CO₂e per year.** That's gross minus sequestration. Per student: about **${KUA.perStudent} mtCO₂e/year**. For comparison, peer boarding schools are typically **6–10 mtCO₂e/student/year** — KUA looks lower largely because we count our forest, but also because the New England grid is fairly clean.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.\n\n*(The worked-math quiz scenarios that follow use rounded baseline inputs so each scenario's arithmetic lines up cleanly with its answer choices — small differences from the headline above are expected.)*`,
       },
       {
         type: 'quiz',
@@ -243,7 +266,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'You can read the dashboard now',
-        body: 'A carbon footprint is the annual gas emissions a person or institution is responsible for. KUA\'s is about 1,150 tons net, after counting the campus forest as a sink. The whole point of measuring is to give the community something concrete to act on. Pick another path to dig deeper.',
+        body: `A carbon footprint is the annual gas emissions a person or institution is responsible for. KUA's is about ${KUA.net} tons net, after counting the campus forest as a sink. The whole point of measuring is to give the community something concrete to act on. Pick another path to dig deeper.`,
       },
     ],
   },
