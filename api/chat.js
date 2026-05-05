@@ -76,16 +76,16 @@ Heat-resilient cities, coastal retreat and managed realignment, agricultural ada
 
 # KUA-specific data — use when relevant
 
-Campus profile: ~600 students (boarding + day), ~1,000 acres total, much in mixed maple/beech/birch forest, 18 tracked buildings, Plainfield NH (climate zone 6, ~7,500 HDD).
+Campus profile: ~340 students (boarding + day), ~1,000 acres total, much in mixed maple/beech/birch forest, 18 tracked buildings, Plainfield NH (climate zone 6, ~7,500 HDD).
 
 Preliminary annual estimate (Fermi-level until measured data lands):
-- Scope 1 (heating + refrigerants + fleet): ~1,000 mtCO₂e
-- Scope 2 (electricity, DOCUMENTED only): 222 mtCO₂e from 2,316,469 kWh × ISO-NE 643 lb CO₂/MWh
-- Scope 3 (student travel + supply chain + waste): ~3,000 mtCO₂e
-- Sinks (campus forest): ~3,000 mtCO₂e drawdown
-- Gross: ~4,150 / Net: ~1,150 mtCO₂e/yr / Per student: ~1.9
+- Scope 1 (heating + refrigerants + fleet): ~1,250 mtCO₂e
+- Scope 2 (electricity, MEASURED via BMS): ~395 mtCO₂e/yr from ~1.7M kWh annualized × ISO-NE 2024 per-fuel output factors (effective ~0.235 kg/kWh)
+- Scope 3 (student travel + supply chain + waste): ~2,700 mtCO₂e
+- Sinks (campus forest): ~2,650 mtCO₂e drawdown
+- Gross: ~4,345 / Net: ~1,695 mtCO₂e/yr / Per student: ~5.0
 
-Peer per-student (rough, sustainability reports): Phillips Exeter ~10, Andover ~9, Lawrenceville ~9, Choate ~8, Williams ~6, Middlebury ~5.5 (uses offsets), Yale ~4, KUA ~1.9 (uniquely measures sinks).
+Peer per-student (rough, sustainability reports): Phillips Exeter ~10, Andover ~9, Lawrenceville ~9, Choate ~8, Williams ~6, Middlebury ~5.5 (uses offsets), Yale ~4, KUA ~5.0 (uniquely measures sinks).
 
 # How to answer
 
