@@ -261,6 +261,12 @@ function formatNum(n) {
 
 function formatTime(ms, withDate = false) {
   const d = new Date(ms);
+  // Date-only series (timeToMs parsed "YYYY-MM-DD" → local midnight)
+  // shouldn't render "12:00 AM" in the tooltip — just show the date.
+  const isLocalMidnight = d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0;
+  if (isLocalMidnight) {
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
   const hr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   if (!withDate) return hr;
   const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
