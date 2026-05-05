@@ -74,19 +74,23 @@ export default function Hotspots() {
   // Annual emissions trend.
   // - Months we have measured BMS data for: use displayedTotal × ISO-NE factor.
   // - Months we don't: fall back to the synthetic seasonal-pattern shape,
-  //   scaled to the campus YTD baseline so the y-axis stays consistent.
+  //   apportioned across the canonical Year 1 Scope 2 budget so the y-axis
+  //   sits at the right magnitude (monthlyPattern.emissions itself is
+  //   calibrated to a legacy ~213 mt baseline — we'd undercount otherwise).
   // The two are merged into a single series; the chart hint flags which
   // months are real vs projected.
   const measuredMonths = Object.fromEntries(
     campusMonthlyTotals().map((r) => [r.month, r.displayedTotal]),
   );
+  const _multSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
   const trendSeries = monthlyPattern.map((m, i) => {
     const monthKey = `2026-${String(i + 1).padStart(2, '0')}`;
     const measuredKwh = measuredMonths[monthKey];
     const measured = measuredKwh != null;
+    const projectedMt = (m.multiplier / _multSum) * GRID_MIX_ANNUAL_MTCO2E;
     const mt = measured
       ? (measuredKwh * KG_PER_KWH_ISO_NE) / 1000
-      : m.emissions; // seasonal-pattern proxy, already in mtCO2e
+      : projectedMt;
     return {
       t: new Date(2026, i, 15).toISOString(),
       v: mt,
