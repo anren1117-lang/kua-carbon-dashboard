@@ -9,16 +9,23 @@ export function useFactor(factorKey) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from('emission_factors')
-        .select('value, unit, source_citation, valid_from')
-        .eq('factor_key', factorKey)
-        .lte('valid_from', today)
-        .order('valid_from', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!cancelled) setFactor(data || null);
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const { data } = await supabase
+          .from('emission_factors')
+          .select('value, unit, source_citation, valid_from')
+          .eq('factor_key', factorKey)
+          .lte('valid_from', today)
+          .order('valid_from', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled) setFactor(data || null);
+      } catch {
+        // Network down or table missing — keep factor null so the
+        // caller can fall back to a hardcoded default rather than
+        // crashing with an unhandled rejection.
+        if (!cancelled) setFactor(null);
+      }
     })();
     return () => { cancelled = true; };
   }, [factorKey]);
