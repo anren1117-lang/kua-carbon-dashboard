@@ -6,6 +6,15 @@
 // training cutoff. This is the "self-learning" — Claude itself isn't being
 // retrained, but it can pull in fresh information per query as needed.
 
+import { createRateLimit, getClientKey } from '../src/utils/rateLimit.js';
+
+// Per-IP token bucket. Each request also pays $0.01 per web_search the
+// model decides to run (max 5/turn) plus the LLM tokens, so an unrate-
+// limited public endpoint is a serious wallet risk if anyone discovers
+// it. 10/min sustained, 20-burst is generous for a real student session
+// and a hard wall against scripted abuse.
+const limiter = createRateLimit({ capacity: 20, refillPerSec: 10 / 60 });
+
 const SYSTEM_PROMPT = `You are an environmental assistant for the KUA Carbon Dashboard at Kimball Union Academy. Your scope is **all of environmental science and sustainability** — climate, biodiversity, pollution, energy, agriculture, water, oceans, urban planning, environmental policy, environmental justice, and how these connect to KUA's specific data when relevant.
 
 # Strict topic boundary — this is the most important rule
@@ -125,6 +134,14 @@ export default async function handler(req, res) {
   const { messages } = body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages_required' });
+  }
+
+  const limit = limiter.consume(getClientKey(req));
+  if (!limit.allowed) {
+    if (typeof res.setHeader === 'function') {
+      res.setHeader('Retry-After', String(Math.ceil(limit.retryAfterMs / 1000)));
+    }
+    return res.status(429).json({ error: 'rate_limited', retryAfterMs: limit.retryAfterMs });
   }
 
   // Cap conversation history to keep cost bounded and stay within model context.
