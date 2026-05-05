@@ -225,12 +225,22 @@ function RecordForm({ schema, initial, onCancel, onSubmit, mode }) {
         return;
       }
     }
-    // Coerce numeric fields.
+    // Coerce numeric fields. Reject NaN explicitly — earlier code would
+    // happily save Number('abc') = NaN into localStorage, which then
+    // poisoned the inventory totals on every subsequent read.
     const out = {};
     for (const f of schema) {
       if (form[f.key] === '' || form[f.key] === undefined) continue;
-      if (f.type === 'number') out[f.key] = Number(form[f.key]);
-      else out[f.key] = form[f.key];
+      if (f.type === 'number') {
+        const n = Number(form[f.key]);
+        if (!Number.isFinite(n)) {
+          setError(`${f.label} must be a number (got "${form[f.key]}")`);
+          return;
+        }
+        out[f.key] = n;
+      } else {
+        out[f.key] = form[f.key];
+      }
     }
     if (mode === 'edit') {
       // Don't allow id changes on edit; strip it.
