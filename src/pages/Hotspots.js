@@ -10,6 +10,8 @@ import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
+import { getBmsMeterMap } from '../data/bmsExportMapping.js';
+import { COMPOSED_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
 // magnitude rollup (per-building electricity) with a category-level summary
@@ -19,19 +21,32 @@ const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; /
 
 export default function Hotspots() {
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
-  const buildingsKwh = envysionSnapshot.map((row) => ({
-    id: row.buildingId,
-    name: buildingsById[row.buildingId]?.name ?? row.buildingId,
-    kwh: row.energyUsedKwh,
-  }));
+  // Per-building kWh: prefer BMS-mapped measured data, fall back to
+  // envysionSnapshot. Same priority ladder as /buildings — Hotspots
+  // should rank from the same source of truth, not a different one.
+  const meterMap = getBmsMeterMap();
+  const bmsByBuilding = {};
+  for (const m of bmsExportMeters) {
+    if (m.direction === 'stuck') continue;
+    const bId = meterMap[m.id];
+    if (!bId) continue;
+    bmsByBuilding[bId] = (bmsByBuilding[bId] || 0) + m.totalKwh * COMPOSED_ANNUALIZE_FACTOR;
+  }
+  const snapshotByBuilding = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r.energyUsedKwh]));
+  const buildingsKwh = buildings.map((b) => ({
+    id: b.id,
+    name: b.name,
+    kwh: bmsByBuilding[b.id] ?? snapshotByBuilding[b.id] ?? 0,
+    source: bmsByBuilding[b.id] !== undefined ? 'bms' : (snapshotByBuilding[b.id] !== undefined ? 'snapshot' : 'none'),
+  })).filter((b) => b.kwh > 0);
   const totalKwh = buildingsKwh.reduce((s, b) => s + b.kwh, 0);
   const ranked = buildingHotspots(buildingsKwh, totalKwh, KG_PER_KWH_ISO_NE);
 
-  // Categories (rolled up from buildings + Envysion)
+  // Categories rolled up from the same kWh source the rank uses.
   const byCategory = {};
-  for (const row of envysionSnapshot) {
-    const cat = buildingsById[row.buildingId]?.category ?? 'Other';
-    byCategory[cat] = (byCategory[cat] || 0) + row.energyUsedKwh;
+  for (const b of buildingsKwh) {
+    const cat = buildingsById[b.id]?.category ?? 'Other';
+    byCategory[cat] = (byCategory[cat] || 0) + b.kwh;
   }
   const categoryRows = Object.entries(byCategory)
     .map(([category, kwh]) => ({
