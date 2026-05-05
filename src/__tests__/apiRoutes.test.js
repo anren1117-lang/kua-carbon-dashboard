@@ -99,7 +99,7 @@ describe('POST /api/meters/readings/import', () => {
   it('accepts a readings array', async () => {
     const r = await call(readingsImportHandler, {
       method: 'POST',
-      body: { readings: [{ id: 'x', meterId: 'm_elec_b_miller', value: 1 }] },
+      body: { readings: [{ id: 'x', meterId: 'm_elec_b_miller', timestamp: '2026-04-01T00:00:00.000Z', value: 1 }] },
     });
     expect(r.statusCode).toBe(200);
     expect(r.body.inserted).toBe(1);
@@ -108,6 +108,27 @@ describe('POST /api/meters/readings/import', () => {
   it('rejects bad bodies', async () => {
     const r = await call(readingsImportHandler, { method: 'POST', body: { foo: 'bar' } });
     expect(r.statusCode).toBe(400);
+  });
+
+  it('rejects readings missing required fields', async () => {
+    // Regression: earlier this endpoint passed the body straight through
+    // to the adapter without a shape check, so malformed rows could land
+    // in the readings store as a row of nulls.
+    const r = await call(readingsImportHandler, {
+      method: 'POST',
+      body: { readings: [{ id: 'x', meterId: 'm_elec_b_miller' }] },
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.body.error).toMatch(/missing timestamp|missing/);
+  });
+
+  it('rejects payloads larger than the cap', async () => {
+    const big = Array.from({ length: 10_001 }, (_, i) => ({
+      id: `r${i}`, meterId: 'm_elec_b_miller',
+      timestamp: '2026-04-01T00:00:00.000Z', value: 1,
+    }));
+    const r = await call(readingsImportHandler, { method: 'POST', body: { readings: big } });
+    expect(r.statusCode).toBe(413);
   });
 });
 
