@@ -5,11 +5,12 @@ import { energyEquivalents } from '../utils/equivalents.js';
 // Mirrors the pattern from the campus BMS dashboard so faculty/staff have
 // a familiar mental anchor when reading our number.
 export function EnergyEquivalents({ kwh, label = 'Equivalent to' }) {
-  const eq = energyEquivalents(kwh || 0);
+  const safeKwh = Number.isFinite(kwh) ? kwh : 0;
+  const eq = energyEquivalents(safeKwh);
 
   return (
     <div style={styles.wrap}>
-      <div style={styles.label}>{label}: <strong style={{ color: '#fbbf24' }}>{Math.round(kwh).toLocaleString()} kWh</strong></div>
+      <div style={styles.label}>{label}: <strong style={{ color: '#fbbf24' }}>{Math.round(safeKwh).toLocaleString()} kWh</strong></div>
       <div style={styles.grid}>
         <div style={styles.cell}>
           <div style={styles.icon}>🔋</div>
