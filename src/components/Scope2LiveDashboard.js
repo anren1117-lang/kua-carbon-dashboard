@@ -20,26 +20,36 @@ import { EnergyEquivalents } from './EnergyEquivalents.js';
 // Lazy-initialize the counters to current YTD-equivalent so the page
 // doesn't show "0.0000 mtCO₂e" for a frame on every load before the
 // useEffect runs.
-function initialEmissions(annualMt) {
+//
+// Year-counter prefers the ACTUAL composed YTD figure (which already
+// reflects heating-heavy Jan-Apr months) over linear-prorating the
+// annual baseline — those differ by ~14% in early May because the
+// year isn't uniform.
+function initialEmissions(annualMt, measuredYtdMt) {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const msPerYear = 365 * 24 * 3600 * 1000;
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  // Use measured YTD as the year-counter anchor when available;
+  // top up with linear pro-rata for the time elapsed between the
+  // YTD snapshot and now.
+  const yearAnchor = measuredYtdMt > 0 ? measuredYtdMt : ((now - startOfYear) / msPerYear) * annualMt;
   return {
-    year:  ((now - startOfYear) / msPerYear) * annualMt,
+    year:  yearAnchor,
     month: ((now - startOfMonth) / (daysInMonth * 24 * 3600 * 1000)) * (annualMt / 12),
     day:   ((now - startOfDay) / (24 * 3600 * 1000)) * (annualMt / 365),
-    cur:   ((now - startOfYear) / msPerYear) * annualMt,
+    cur:   yearAnchor,
   };
 }
 
 export function Scope2LiveDashboard() {
   // Annual baseline (Year 1 projection) — referenced before useState
-  // so we can seed the counters with current YTD instead of 0.
+  // so we can seed the counters with actual measured YTD + current
+  // elapsed time instead of 0.
   const seedAnnualMt = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
-  const seed = initialEmissions(seedAnnualMt);
+  const seed = initialEmissions(seedAnnualMt, GRID_MIX_TOTAL_MTCO2E);
   const [currentEmissions, setCurrentEmissions] = useState(seed.cur);
   const [todayEmissions, setTodayEmissions] = useState(seed.day);
   const [monthEmissions, setMonthEmissions] = useState(seed.month);
@@ -231,10 +241,13 @@ export function Scope2LiveDashboard() {
     const msPerMonth = daysInMonth * 24 * 60 * 60 * 1000;
     const msPerDay = 24 * 60 * 60 * 1000;
     
-    setYearEmissions((msInYear / msPerYear) * yearlyEmissions);
+    // Anchor the year counter on actual measured YTD (which already
+    // reflects heating-heavy Jan-Apr) rather than linear-prorating the
+    // annual figure. Linear pro-rata understates by ~14% in early May.
+    setYearEmissions(GRID_MIX_TOTAL_MTCO2E);
     setMonthEmissions((msInMonth / msPerMonth) * emissionsPerMonth);
     setTodayEmissions((msInDay / msPerDay) * emissionsPerDay);
-    setCurrentEmissions((msInYear / msPerYear) * yearlyEmissions);
+    setCurrentEmissions(GRID_MIX_TOTAL_MTCO2E);
   }, [yearlyEmissions, emissionsPerMonth, emissionsPerDay]);
 
   useEffect(() => {
