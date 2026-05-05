@@ -29,9 +29,10 @@ function Scope2() {
     <div>
       <h1 style={styles.title}>Scope 2 — Purchased Electricity</h1>
       <p style={styles.subtitle}>
-        Indirect emissions from electricity delivered by Liberty Utilities (Granite State
-        Electric). Quantity comes from the campus real-time meter; emission intensity uses the
-        ISO New England regional factor with hourly grid-mix as a future refinement.
+        Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
+        composed from real measured BMS captures (Jan–Apr 2026) plus the May days from the
+        latest Meter Trends CSV. Emissions intensity is per-fuel output factors weighted by
+        ISO-NE 2024 generation mix (~0.235 kg/kWh effective).
       </p>
       <div style={styles.card}>
         <div style={styles.row}>
@@ -39,20 +40,24 @@ function Scope2() {
           <span style={styles.value}>Liberty Utilities (Granite State Electric)</span>
         </div>
         <div style={styles.row}>
-          <span style={styles.label}>Grid emission factor (location-based)</span>
-          <span style={styles.value}>643 lb CO₂/MWh (ISO-NE 2024)</span>
+          <span style={styles.label}>Grid emission factor (effective)</span>
+          <span style={styles.value}>~0.235 kg CO₂/kWh (per-fuel ISO-NE 2024 mix)</span>
         </div>
         <div style={styles.row}>
-          <span style={styles.label}>Imported power factor</span>
-          <span style={styles.value}>177 lb CO₂/MWh</span>
+          <span style={styles.label}>YTD electricity (composed)</span>
+          <span style={styles.value}>{GRID_MIX_TOTAL_KWH.toLocaleString()} kWh through {COMPOSED_YTD_AS_OF}</span>
+        </div>
+        <div style={styles.row}>
+          <span style={styles.label}>Year 1 projection</span>
+          <span style={styles.value}>~{COMPOSED_ANNUAL_KWH.toLocaleString()} kWh / ~{GRID_MIX_ANNUAL_MTCO2E} mtCO₂e</span>
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Quantity source</span>
-          <span style={styles.value}>Campus real-time meter (subhourly)</span>
+          <span style={styles.value}>BMS captures (Jan–Apr) + Meter Trends CSV (May days)</span>
         </div>
         <div style={{ ...styles.row, borderBottom: 'none' }}>
           <span style={styles.label}>Reconciliation</span>
-          <span style={styles.value}>Liberty monthly bill</span>
+          <span style={styles.value}>Liberty monthly bill (TBD)</span>
         </div>
       </div>
       <Scope2LiveDashboard />

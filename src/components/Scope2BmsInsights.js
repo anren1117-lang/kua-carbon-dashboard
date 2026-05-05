@@ -932,6 +932,8 @@ function WhittemoreClusterSection() {
     const others    = cluster.filter((m) => !heatPumps.includes(m) && !ahus.includes(m) && !boilers.includes(m) && m !== main);
     const totalCluster = main ? main.totalKwh : cluster.reduce((s, m) => s + m.totalKwh, 0);
     const groupTotal = (group) => group.reduce((s, m) => s + m.totalKwh, 0);
+    // Health audit: count which group members are stuck/working.
+    const stuckCount = (group) => group.filter((m) => m.direction === 'stuck').length;
     return {
       cluster, main,
       heatPumps, ahus, boilers, others,
@@ -940,12 +942,17 @@ function WhittemoreClusterSection() {
       ahuTotal:    groupTotal(ahus),
       boilerTotal: groupTotal(boilers),
       otherTotal:  groupTotal(others),
+      hpStuck:     stuckCount(heatPumps),
+      ahuStuck:    stuckCount(ahus),
+      boilerStuck: stuckCount(boilers),
+      mainStuck:   main && main.direction === 'stuck',
     };
   }, []);
 
   if (!data || data.cluster.length === 0) return null;
-  const { main, heatPumps, ahus, boilers, others, totalCluster, hpTotal, ahuTotal, boilerTotal, otherTotal } = data;
+  const { main, heatPumps, ahus, boilers, others, totalCluster, hpTotal, ahuTotal, boilerTotal, otherTotal, hpStuck, ahuStuck, boilerStuck, mainStuck } = data;
   const pct = (n) => totalCluster > 0 ? (n / totalCluster * 100).toFixed(1) : '0';
+  const totalStuck = hpStuck + ahuStuck + boilerStuck + (mainStuck ? 1 : 0);
 
   return (
     <section style={styles.card}>
@@ -955,6 +962,17 @@ function WhittemoreClusterSection() {
         Whittemore total {Math.round(totalCluster).toLocaleString()} kWh in window
         {main ? ` (PM_17_MainFeed cumulative)` : ` (sum of submeters)`}.
       </p>
+
+      {totalStuck > 0 && (
+        <div style={{ padding: '10px 12px', background: '#3a0d12', border: '1px solid #7f1d1d', borderRadius: 6, marginBottom: 14, fontSize: 12, color: '#fca5a5', lineHeight: 1.6 }}>
+          <strong style={{ color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 }}>Partial data</strong>
+          {' — '}
+          {hpStuck > 0 && <><strong>{hpStuck} of {heatPumps.length}</strong> heat pumps not reporting ({heatPumps.filter((m) => m.direction === 'stuck').map((m) => m.id.replace('PM_17_', '')).join(', ')}). </>}
+          {ahuStuck > 0 && <><strong>{ahuStuck} of {ahus.length}</strong> AHUs not reporting. </>}
+          {boilerStuck > 0 && <><strong>{boilerStuck} of {boilers.length}</strong> boiler feed{boilerStuck === 1 ? '' : 's'} not reporting ({boilers.filter((m) => m.direction === 'stuck').map((m) => m.id.replace('PM_17_', '')).join(', ')}). </>}
+          The cluster total below is INCOMPLETE. Real Whittemore consumption is higher than what's shown here. Resolve before treating these splits as authoritative.
+        </div>
+      )}
 
       {/* Stacked-summary bar */}
       <div style={styles.stackedBar}>
