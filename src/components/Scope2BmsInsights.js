@@ -995,18 +995,25 @@ function WhittemoreClusterSection() {
       </div>
 
       {/* Per-meter table */}
-      <div style={styles.subList}>
-        {[...heatPumps, ...ahus, ...boilers, ...others].sort((a, b) => b.totalKwh - a.totalKwh).map((m) => (
-          <div key={m.id} style={styles.subRow}>
-            <code style={styles.subId}>{m.id.replace(/^PM_17_/, '')}</code>
-            <div style={styles.subBar}>
-              <div style={{ ...styles.subBarFill, width: `${(m.totalKwh / Math.max(...data.cluster.map((c) => c.totalKwh))) * 100}%`, background: heatPumps.includes(m) ? '#22d3ee' : ahus.includes(m) ? '#a855f7' : boilers.includes(m) ? '#ef4444' : '#475569' }} />
-            </div>
-            <span style={styles.subNum}>{Math.round(m.totalKwh).toLocaleString()} kWh</span>
-            <span style={styles.subPeak}>peak {m.peakKw} kW</span>
+      {(() => {
+        // Compute the max once instead of inside each row's width calc
+        // (was O(n²) — Math.max over the full cluster for every meter).
+        const clusterMax = Math.max(1, ...data.cluster.map((c) => c.totalKwh));
+        return (
+          <div style={styles.subList}>
+            {[...heatPumps, ...ahus, ...boilers, ...others].sort((a, b) => b.totalKwh - a.totalKwh).map((m) => (
+              <div key={m.id} style={styles.subRow}>
+                <code style={styles.subId}>{m.id.replace(/^PM_17_/, '')}</code>
+                <div style={styles.subBar}>
+                  <div style={{ ...styles.subBarFill, width: `${(m.totalKwh / clusterMax) * 100}%`, background: heatPumps.includes(m) ? '#22d3ee' : ahus.includes(m) ? '#a855f7' : boilers.includes(m) ? '#ef4444' : '#475569' }} />
+                </div>
+                <span style={styles.subNum}>{Math.round(m.totalKwh).toLocaleString()} kWh</span>
+                <span style={styles.subPeak}>peak {m.peakKw} kW</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       <div style={styles.todayTarget}>
         <div><span style={styles.ttLabel}>Today:</span> Heat pumps run {pct(hpTotal)}% of Whittemore's electricity load — meaningful Scope 1 → Scope 2 conversion already in progress. The boiler line shows what's still on fossil-electric backup.</div>
@@ -1268,18 +1275,24 @@ function EvChargerSection() {
         <Stat label="Scope 1→2 savings"      value={data.scope1To2Saved.toFixed(2)}             unit="mtCO₂e avoided" accent="#86efac" note="vs ICE @ 25 mpg" />
       </div>
 
-      <div style={styles.subList}>
-        {data.chargers.map((m) => (
-          <div key={m.id} style={styles.subRow}>
-            <code style={styles.subId}>{m.id}</code>
-            <div style={styles.subBar}>
-              <div style={{ ...styles.subBarFill, width: `${(m.totalKwh / Math.max(...data.chargers.map((c) => c.totalKwh))) * 100}%`, background: '#22d3ee' }} />
-            </div>
-            <span style={styles.subNum}>{Math.round(m.totalKwh).toLocaleString()} kWh</span>
-            <span style={styles.subPeak}>peak {m.peakKw} kW</span>
+      {(() => {
+        // Same hoist as the cluster section — Math.max once, not per row.
+        const chargerMax = Math.max(1, ...data.chargers.map((c) => c.totalKwh));
+        return (
+          <div style={styles.subList}>
+            {data.chargers.map((m) => (
+              <div key={m.id} style={styles.subRow}>
+                <code style={styles.subId}>{m.id}</code>
+                <div style={styles.subBar}>
+                  <div style={{ ...styles.subBarFill, width: `${(m.totalKwh / chargerMax) * 100}%`, background: '#22d3ee' }} />
+                </div>
+                <span style={styles.subNum}>{Math.round(m.totalKwh).toLocaleString()} kWh</span>
+                <span style={styles.subPeak}>peak {m.peakKw} kW</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       <div style={styles.todayTarget}>
         <div><span style={styles.ttLabel}>Today:</span> {data.totalKwh < 100 ? 'Charger usage is light — EV adoption still early on campus.' : data.totalKwh < 1000 ? 'Steady but modest charger usage — likely a couple of EVs in regular service.' : 'Significant charger load — fleet electrification meaningfully active.'} Every kWh delivered through these chargers is a fossil-gallon avoided.</div>
