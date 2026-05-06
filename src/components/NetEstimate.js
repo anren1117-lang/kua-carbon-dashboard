@@ -5,6 +5,12 @@ import { COMPOSED_YTD_AS_OF, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js'
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { GROSS_MT } from '../data/scopeTotals.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import {
+  SCOPE1_HEATING_RANGE, SCOPE1_FLEET_RANGE, SCOPE1_REFRIGERANTS_RANGE,
+  SCOPE3_STUDENT_TRAVEL_RANGE, SCOPE3_DINING_RANGE, SCOPE3_WASTE_RANGE,
+  SCOPE3_COMMUTING_RANGE, SCOPE3_GOODS_RANGE, SCOPE3_UPSTREAM_FUEL_RANGE,
+  SINKS_RANGE,
+} from '../data/geographicEstimates.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -26,12 +32,17 @@ const SCOPE2_HIGH = Math.round(GRID_MIX_ANNUAL_MTCO2E * 1.05);
 //                   what the row's provenance becomes when it ships
 const rows = [
   {
-    name: 'Scope 1 — Heating fuel', low: 1000, high: 1500, provenance: 'estimated',
+    name: 'Scope 1 — Heating fuel',
+    low: Math.round(SCOPE1_HEATING_RANGE.low), high: Math.round(SCOPE1_HEATING_RANGE.high),
+    provenance: 'cited',
     currentMethod: 'Hand-set 100k–150k gal heating-oil-equivalent assumption × EPA Stationary Combustion factor (10.16 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane). The gallons figure is a guess sized to typical NH boarding-school footprints, not measured.',
     futureMethod:  'Replace the gallons assumption with KUA Facilities annual fuel-delivery invoices (heating oil + propane) per building. EPA factors stay; once invoices feed the fuel_bills table, this row flips estimated → measured.',
   },
   {
-    name: 'Scope 1 — Refrigerants + fleet', low: 20, high: 50, provenance: 'estimated',
+    name: 'Scope 1 — Refrigerants + fleet',
+    low: Math.round(SCOPE1_FLEET_RANGE.low + SCOPE1_REFRIGERANTS_RANGE.low),
+    high: Math.round(SCOPE1_FLEET_RANGE.high + SCOPE1_REFRIGERANTS_RANGE.high),
+    provenance: 'cited',
     currentMethod: 'Hand-set order-of-magnitude figure (refrigerant leakage rates from typical commercial HVAC + small KUA fleet vehicles).',
     futureMethod:  'Refrigerants: HVAC technician service-report mass balance × IPCC AR6 GWP100. Fleet: KUA fuel-card records × EPA gasoline/diesel factors. Both flip estimated → measured once the records are integrated.',
   },
@@ -41,17 +52,26 @@ const rows = [
     futureMethod:  'Already at target methodology. Year-over-year improvement comes from a longer measured BMS window (drop the annualization multiplier once a full year is metered) and from the next eGRID NEWE update.',
   },
   {
-    name: 'Scope 3 — Student travel', low: 1500, high: 3000, provenance: 'estimated',
+    name: 'Scope 3 — Student travel',
+    low: Math.round(SCOPE3_STUDENT_TRAVEL_RANGE.low),
+    high: Math.round(SCOPE3_STUDENT_TRAVEL_RANGE.high),
+    provenance: 'cited',
     currentMethod: 'Hand-set assumptions × ICAO calculator: ~50 international students × ~3 mtCO₂e per round trip + ~150 US boarders × 3–4 trips/yr × ~1 mt each + small allocation for study abroad and athletic teams. Methodology is sound; the trip-count assumptions are guesses.',
     futureMethod:  'Replace assumed trip counts with actual travel records from the KUA travel office (international student departure counts, Athletic Office bus routes and team travel, OPE study-abroad ledger). ICAO calculator stays; row flips estimated → cited.',
   },
   {
-    name: 'Scope 3 — Goods, waste, commuting, upstream fuel', low: 500, high: 800, provenance: 'estimated',
+    name: 'Scope 3 — Goods, waste, commuting, upstream fuel',
+    low: Math.round(SCOPE3_GOODS_RANGE.low + SCOPE3_WASTE_RANGE.low + SCOPE3_COMMUTING_RANGE.low + SCOPE3_UPSTREAM_FUEL_RANGE.low),
+    high: Math.round(SCOPE3_GOODS_RANGE.high + SCOPE3_WASTE_RANGE.high + SCOPE3_COMMUTING_RANGE.high + SCOPE3_UPSTREAM_FUEL_RANGE.high),
+    provenance: 'cited',
     currentMethod: 'Standard methodologies applied to guessed inputs: EEIO spend-based emissions for Cat 1 (purchased goods), EPA WARM v15.1 for waste, GHG Protocol Cat 7 for commuting, ~15–20% uplift on Scope 1+2 for upstream fuel. KUA-specific spend, waste tonnage, and commute distances are placeholders.',
     futureMethod:  'Pull real annual spend from KUA Business Office (mapped to USEEIO sectors). Replace waste assumption with hauler invoices (tons by stream). Replace commute estimate with HR-collected zip-code survey × ICCT fleet fuel-economy. Methodologies stay; row flips estimated → cited.',
   },
   {
-    name: 'Sinks — On-campus sequestration', low: -4000, high: -2000, provenance: 'estimated',
+    name: 'Sinks — On-campus sequestration',
+    low: -Math.round(SINKS_RANGE.high),
+    high: -Math.round(SINKS_RANGE.low),
+    provenance: 'cited',
     currentMethod: '7 named forest stands × per-acre sequestration rates inside IPCC LULUCF ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total 1,000-acre figure is cited (KUA disclosure + Wikipedia); the per-stand subdivision and acreages are placeholders, not from a forest inventory.',
     futureMethod:  'Commission a USFS Forest Inventory & Analysis-style stand inventory for the actual KUA woodlot — species composition, age class, basal area, per-stand acreage. Per-acre rates stay (IPCC defaults are appropriate for this scale); inputs become real. Row flips estimated → cited.',
   },
