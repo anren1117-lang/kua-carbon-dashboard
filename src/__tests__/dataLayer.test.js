@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
+import { composeFleetMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, FLEET_FACTORS_KG_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -589,6 +589,106 @@ describe('composeScope1FromBills (live Supabase fuel_bills → measured Scope 1)
     const refrig = r.breakdown.find((b) => b.source.toLowerCase().includes('refrigerant'));
     expect(fleet.mt).toBe(200);
     expect(refrig.mt).toBe(25);
+  });
+
+  it('flips fleet to MEASURED when scope1_fleet_records rows present', () => {
+    // 100 gal gasoline × 8.89 kg/gal = 889 kg = 0.889 mt → round 1
+    const r = composeScope1FromBills([], {
+      fleetRecords: [{ fuel_type: 'Gasoline', gallons: 100 }],
+    });
+    const fleet = r.breakdown.find((b) => b.source.toLowerCase().includes('fleet'));
+    expect(fleet.provenance).toBe('measured');
+    expect(fleet.mt).toBe(1);
+    expect(r.provenance).toBe('measured');
+  });
+
+  it('flips refrigerants to MEASURED when scope1_refrigerant_logs rows present', () => {
+    // 5 lb R-410A net leakage × 0.4536 kg/lb × 2256 GWP = 5,117 kg = 5 mt
+    const r = composeScope1FromBills([], {
+      refrigerantLogs: [{ refrigerant_type: 'R-410A', lbs_recharged: 5, lbs_reclaimed: 0 }],
+    });
+    const refrig = r.breakdown.find((b) => b.source.toLowerCase().includes('refrigerant'));
+    expect(refrig.provenance).toBe('measured');
+    expect(refrig.mt).toBe(5);
+  });
+
+  it('refrigerant net leakage clamps at zero (reclaim > recharge)', () => {
+    // If somehow more is reclaimed than recharged, treat as zero
+    // emissions, not negative.
+    const r = composeScope1FromBills([], {
+      refrigerantLogs: [{ refrigerant_type: 'R-410A', lbs_recharged: 1, lbs_reclaimed: 10 }],
+    });
+    const refrig = r.breakdown.find((b) => b.source.toLowerCase().includes('refrigerant'));
+    expect(refrig.mt).toBe(0);
+  });
+
+  it('all three components measured: heating + fleet + refrigerants', () => {
+    const r = composeScope1FromBills(
+      [{ fuel_type: 'Heating Oil', gallons: 100 }],
+      {
+        fleetRecords: [{ fuel_type: 'Diesel', gallons: 200 }],
+        refrigerantLogs: [{ refrigerant_type: 'R-22', lbs_recharged: 2, lbs_reclaimed: 0 }],
+      },
+    );
+    expect(r.provenance).toBe('measured');
+    for (const row of r.breakdown) {
+      expect(row.provenance).toBe('measured');
+    }
+    expect(r.note).toMatch(/heating from .+ fuel_bills/);
+    expect(r.note).toMatch(/fleet from .+ fuel-card/);
+    expect(r.note).toMatch(/refrigerants from .+ service logs/);
+  });
+});
+
+describe('composeFleetMt + composeRefrigerantMt (component helpers)', () => {
+  it('composeFleetMt: empty input → 0 mt', () => {
+    expect(composeFleetMt([])).toBe(0);
+    expect(composeFleetMt(null)).toBe(0);
+    expect(composeFleetMt(undefined)).toBe(0);
+  });
+
+  it('composeFleetMt: applies EPA Mobile Combustion factors per fuel', () => {
+    // 1000 gal diesel × 10.21 = 10,210 kg = 10.21 mt
+    expect(composeFleetMt([{ fuel_type: 'Diesel', gallons: 1000 }])).toBeCloseTo(10.21, 2);
+    // 1000 gal gasoline × 8.89 = 8.89 mt
+    expect(composeFleetMt([{ fuel_type: 'Gasoline', gallons: 1000 }])).toBeCloseTo(8.89, 2);
+  });
+
+  it('composeFleetMt: skips unknown fuel_type and invalid gallons', () => {
+    const mt = composeFleetMt([
+      { fuel_type: 'Gasoline', gallons: 100 },     // 0.889 mt
+      { fuel_type: 'NotARealFuel', gallons: 999 }, // skipped
+      { fuel_type: 'Diesel', gallons: 'banana' },  // skipped
+      { fuel_type: 'Diesel', gallons: -50 },       // skipped (negative)
+    ]);
+    expect(mt).toBeCloseTo(0.889, 2);
+  });
+
+  it('composeRefrigerantMt: empty input → 0 mt', () => {
+    expect(composeRefrigerantMt([])).toBe(0);
+  });
+
+  it('composeRefrigerantMt: net leakage × kg/lb × GWP100', () => {
+    // 10 lb net R-410A leak × 0.45359 kg/lb × 2256 GWP = 10,233 kg = 10.23 mt
+    const mt = composeRefrigerantMt([
+      { refrigerant_type: 'R-410A', lbs_recharged: 10, lbs_reclaimed: 0 },
+    ]);
+    expect(mt).toBeCloseTo(10.23, 1);
+  });
+
+  it('composeRefrigerantMt: unknown refrigerant uses generic GWP fallback', () => {
+    const mt = composeRefrigerantMt([
+      { refrigerant_type: 'CompletelyMadeUpBlend', lbs_recharged: 1, lbs_reclaimed: 0 },
+    ]);
+    // 1 lb × 0.45359 kg × 2000 GWP fallback = 907 kg = 0.91 mt
+    expect(mt).toBeCloseTo(0.91, 1);
+  });
+
+  it('exposes FLEET_FACTORS_KG_PER_GAL + REFRIGERANT_GWP100 for callers', () => {
+    expect(FLEET_FACTORS_KG_PER_GAL.Gasoline).toBe(8.89);
+    expect(FLEET_FACTORS_KG_PER_GAL.Diesel).toBe(10.21);
+    expect(REFRIGERANT_GWP100['R-410A']).toBe(2256);
+    expect(REFRIGERANT_GWP100['R-1234yf']).toBe(4);
   });
 });
 

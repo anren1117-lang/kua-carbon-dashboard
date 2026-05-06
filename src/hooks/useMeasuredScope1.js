@@ -1,14 +1,15 @@
-// Hydrate Scope 1 from Supabase fuel_bills.
+// Hydrate Scope 1 from Supabase: fuel_bills (heating) +
+// scope1_fleet_records (fleet vehicles) + scope1_refrigerant_logs
+// (HVAC refrigerant leakage).
 //
-// Returns the same shape composeScope1() would return, but flips the
-// heating row's provenance from 'estimated' → 'measured' the moment
-// any fuel_bills rows exist. Fleet + refrigerants stay 'estimated'
-// until those tables ship — see composeScope1FromBills() in
-// src/data/scopeTotals.js.
+// Each component flips estimated → measured independently as its
+// table fills in — see composeScope1FromBills() in
+// src/data/scopeTotals.js. The page-level provenance flag is
+// 'measured' as soon as ANY of the three has rows; consumers that
+// want per-component provenance read state.breakdown[i].provenance.
 //
-// Pattern is reusable: one hook per scope component, each fetching its
-// own Supabase table and returning a measured-or-fallback result. Same
-// shape lets the consuming page wire to either without branching.
+// Pattern is reusable: one hook per scope component, each fetching
+// its own Supabase table and returning a measured-or-fallback result.
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
@@ -41,15 +42,38 @@ export function useMeasuredScope1() {
 
     async function load() {
       try {
-        const { data, error } = await supabase
-          .from('fuel_bills')
-          .select('fuel_type, gallons');
+        // Three tables in parallel. Errors on one don't block the
+        // others — composeScope1FromBills falls back to placeholder
+        // for any component whose array is empty.
+        const [bills, fleet, refrig] = await Promise.all([
+          supabase.from('fuel_bills').select('fuel_type, gallons'),
+          supabase.from('scope1_fleet_records').select('fuel_type, gallons').then(
+            (r) => r,
+            // The migration may not have run yet on this Supabase
+            // project; tolerate "table does not exist" by returning
+            // an empty data set rather than 500-ing the whole page.
+            () => ({ data: [], error: null })
+          ),
+          supabase.from('scope1_refrigerant_logs').select('refrigerant_type, lbs_recharged, lbs_reclaimed').then(
+            (r) => r,
+            () => ({ data: [], error: null })
+          ),
+        ]);
         if (cancelled) return;
-        if (error) {
-          setState((prev) => ({ ...prev, loading: false, error: error.message || 'Supabase error' }));
+
+        // Surface the FIRST hard error so the caller can show a
+        // banner. fuel_bills is the table the dashboard has shipped
+        // for the longest, so a real error there is most likely a
+        // genuine connectivity issue.
+        if (bills?.error) {
+          setState((prev) => ({ ...prev, loading: false, error: bills.error.message || 'Supabase error' }));
           return;
         }
-        const composed = composeScope1FromBills(data || []);
+
+        const composed = composeScope1FromBills(bills?.data || [], {
+          fleetRecords: fleet?.data || [],
+          refrigerantLogs: refrig?.data || [],
+        });
         setState({
           ...composed,
           loading: false,

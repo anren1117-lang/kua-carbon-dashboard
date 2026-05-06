@@ -49,73 +49,173 @@ export const FUEL_FACTORS_KG_PER_GAL = {
   'Gasoline':     8.89,
 };
 
+// EPA Mobile Combustion factors (kg CO2e per gallon, including
+// combustion + N2O + CH4 from incomplete combustion). Used by
+// composeFleetMt(). Same numeric values as FUEL_FACTORS_KG_PER_GAL
+// for diesel/gasoline/propane — kept as a separate map so future
+// refinements (e.g. light-duty vs heavy-duty diesel) can diverge.
+export const FLEET_FACTORS_KG_PER_GAL = {
+  'Gasoline':  8.89,
+  'Diesel':   10.21,
+  'Propane':   5.72,
+  'CNG':       5.85, // EPA Hub: ~5.85 kg CO2e per gallon-equivalent
+};
+
+// IPCC AR6 Working Group I Chapter 7 GWP100 values for the
+// refrigerants listed in scope1_refrigerant_logs. Used by
+// composeRefrigerantMt() to convert net leakage in pounds to mtCO2e.
+// Order of magnitude varies by chemical; R-22 is ~5x worse per kg
+// than R-410A which is ~5x worse than R-1234yf.
+export const REFRIGERANT_GWP100 = {
+  'R-410A':   2256,
+  'R-134a':   1530,
+  'R-22':     1960,
+  'R-404A':   4728,
+  'R-407C':   1908,
+  'R-32':      771,
+  'R-1234yf':    4,
+  'other':    2000, // generic mid-band fallback for unknown blends
+};
+
+const KG_PER_LB = 0.45359237;
+
 /**
- * Compose a Scope 1 result from real Supabase fuel_bills rows. Returns
- * the same shape as composeScope1() but with provenance='measured' if
- * any fuel rows are present, falling back to the bottom-up placeholder
- * for fleet + refrigerants until those tables ship too.
+ * Sum a fleet table to mtCO2e using EPA Mobile Combustion factors.
+ * Skips rows with unknown fuel_type or non-numeric/negative gallons.
+ */
+export function composeFleetMt(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return 0;
+  let kg = 0;
+  for (const row of rows) {
+    const factor = FLEET_FACTORS_KG_PER_GAL[row.fuel_type];
+    const gal = Number(row.gallons);
+    if (!factor || !Number.isFinite(gal) || gal < 0) continue;
+    kg += gal * factor;
+  }
+  return kg / 1000;
+}
+
+/**
+ * Sum a refrigerant log to mtCO2e. Net leakage = recharged - reclaimed
+ * (clamped at zero — a negative net would imply more was reclaimed
+ * than ever leaked, which is conservation, not emission). Multiplied
+ * by IPCC AR6 GWP100 for the listed chemical.
+ */
+export function composeRefrigerantMt(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return 0;
+  let kgCO2e = 0;
+  for (const row of rows) {
+    const recharged = Number(row.lbs_recharged) || 0;
+    const reclaimed = Number(row.lbs_reclaimed) || 0;
+    const netLbs = Math.max(0, recharged - reclaimed);
+    if (netLbs <= 0) continue;
+    const gwp = REFRIGERANT_GWP100[row.refrigerant_type] ?? REFRIGERANT_GWP100.other;
+    kgCO2e += netLbs * KG_PER_LB * gwp;
+  }
+  return kgCO2e / 1000;
+}
+
+/**
+ * Compose a Scope 1 result from real Supabase records. Heating, fleet,
+ * and refrigerants each flip estimated → measured independently as
+ * their respective tables fill in.
  *
  * Pure function: no I/O, no global state. The Supabase fetch is the
  * caller's responsibility (see src/hooks/useMeasuredScope1.js).
  *
  * @param {Array<{ fuel_type: string, gallons: number|string }>} bills
- * @param {{ fleetMt?: number, refrigerantsMt?: number }} [opts]
+ * @param {{
+ *   fleetRecords?: Array<{ fuel_type: string, gallons: number|string }>,
+ *   refrigerantLogs?: Array<{ refrigerant_type: string, lbs_recharged?: number|string, lbs_reclaimed?: number|string }>,
+ *   fleetMt?: number,
+ *   refrigerantsMt?: number,
+ * }} [opts]
  * @returns {{ totalMt: number, breakdown: object[], provenance: string, note: string }}
  */
 export function composeScope1FromBills(bills, opts = {}) {
-  const fleetMt = typeof opts.fleetMt === 'number' ? opts.fleetMt
-    : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('fleet'))?.mt || 0);
-  const refrigMt = typeof opts.refrigerantsMt === 'number' ? opts.refrigerantsMt
-    : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('refrigerant'))?.mt || 0);
+  const billsArr = Array.isArray(bills) ? bills : [];
+  const fleetRows = Array.isArray(opts.fleetRecords) ? opts.fleetRecords : [];
+  const refrigRows = Array.isArray(opts.refrigerantLogs) ? opts.refrigerantLogs : [];
 
-  if (!Array.isArray(bills) || bills.length === 0) {
-    // Nothing measured yet — return the placeholder unchanged so the
-    // dashboard is honest about what's not yet sourced.
-    return composeScope1();
-  }
-
-  // Sum kg by fuel type. Skip rows with unknown fuel types or
-  // non-numeric gallons rather than silently bucketing them.
+  // Heating: same logic as before. Skip rows with unknown fuel_type
+  // or invalid gallons rather than silently bucketing.
   let heatingKg = 0;
   let unknownTypeRows = 0;
-  for (const row of bills) {
+  for (const row of billsArr) {
     const factor = FUEL_FACTORS_KG_PER_GAL[row.fuel_type];
     const gal = Number(row.gallons);
     if (!factor || !Number.isFinite(gal) || gal < 0) { unknownTypeRows++; continue; }
     heatingKg += gal * factor;
   }
-  const heatingMt = heatingKg / 1000;
-  const totalMt = heatingMt + fleetMt + refrigMt;
+  const heatingMeasured = billsArr.length > 0;
+  const heatingMt = heatingMeasured
+    ? heatingKg / 1000
+    : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('heating'))?.mt || 0);
 
+  // Fleet: prefer live records when provided, then explicit override,
+  // then placeholder. Same precedence for refrigerants below.
+  const fleetMeasured = fleetRows.length > 0;
+  const fleetMt = fleetMeasured
+    ? composeFleetMt(fleetRows)
+    : (typeof opts.fleetMt === 'number' ? opts.fleetMt
+      : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('fleet'))?.mt || 0));
+
+  const refrigMeasured = refrigRows.length > 0;
+  const refrigMt = refrigMeasured
+    ? composeRefrigerantMt(refrigRows)
+    : (typeof opts.refrigerantsMt === 'number' ? opts.refrigerantsMt
+      : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('refrigerant'))?.mt || 0));
+
+  const anyMeasured = heatingMeasured || fleetMeasured || refrigMeasured;
+  if (!anyMeasured) {
+    // Nothing measured yet — return placeholder unchanged so the
+    // dashboard is honest about what's not yet sourced.
+    return composeScope1();
+  }
+
+  const totalMt = heatingMt + fleetMt + refrigMt;
   const breakdown = [
     {
       source: 'Heating oil + propane',
       mt: Math.round(heatingMt),
-      provenance: 'measured',
-      method: `${bills.length} fuel_bills row${bills.length === 1 ? '' : 's'} × EPA Stationary Combustion factors${unknownTypeRows > 0 ? ` (${unknownTypeRows} row${unknownTypeRows === 1 ? '' : 's'} skipped — unknown fuel_type or invalid gallons)` : ''}.`,
+      provenance: heatingMeasured ? 'measured' : 'estimated',
+      method: heatingMeasured
+        ? `${billsArr.length} fuel_bills row${billsArr.length === 1 ? '' : 's'} × EPA Stationary Combustion factors${unknownTypeRows > 0 ? ` (${unknownTypeRows} row${unknownTypeRows === 1 ? '' : 's'} skipped — unknown fuel_type or invalid gallons)` : ''}.`
+        : 'Bottom-up placeholder — no fuel_bills rows yet.',
     },
     {
       source: 'Fleet vehicles',
       mt: Math.round(fleetMt),
-      provenance: 'estimated',
-      method: 'Bottom-up registry placeholder (fuel-card records not yet integrated).',
+      provenance: fleetMeasured ? 'measured' : 'estimated',
+      method: fleetMeasured
+        ? `${fleetRows.length} scope1_fleet_records row${fleetRows.length === 1 ? '' : 's'} × EPA Mobile Combustion factors (gasoline 8.89 / diesel 10.21 / propane 5.72 / CNG 5.85 kg CO₂e per gal).`
+        : 'Bottom-up registry placeholder (fuel-card records not yet integrated).',
     },
     {
       source: 'Refrigerant leakage',
       mt: Math.round(refrigMt),
-      provenance: 'estimated',
-      method: 'Bottom-up placeholder (refrigerant service-report mass balance not yet integrated).',
+      provenance: refrigMeasured ? 'measured' : 'estimated',
+      method: refrigMeasured
+        ? `${refrigRows.length} scope1_refrigerant_logs row${refrigRows.length === 1 ? '' : 's'} × IPCC AR6 GWP100 (R-410A 2,256 / R-134a 1,530 / R-22 1,960 / etc.). Net leakage = recharged − reclaimed × kg/lb × GWP100.`
+        : 'Bottom-up placeholder (refrigerant service-report mass balance not yet integrated).',
     },
   ];
+
+  // Build a human-readable summary of what's measured.
+  const measuredParts = [];
+  if (heatingMeasured) measuredParts.push(`heating from ${billsArr.length} fuel_bills`);
+  if (fleetMeasured)   measuredParts.push(`fleet from ${fleetRows.length} fuel-card records`);
+  if (refrigMeasured)  measuredParts.push(`refrigerants from ${refrigRows.length} service logs`);
+  const remainingPlaceholderParts = [];
+  if (!heatingMeasured) remainingPlaceholderParts.push('heating');
+  if (!fleetMeasured)   remainingPlaceholderParts.push('fleet');
+  if (!refrigMeasured)  remainingPlaceholderParts.push('refrigerants');
 
   return {
     totalMt: Math.round(totalMt),
     breakdown,
-    // 'measured' for the heating row; the page should still show the
-    // estimated pill for fleet + refrigerants. Consumers that want
-    // mixed provenance read breakdown[i].provenance directly.
     provenance: 'measured',
-    note: `Heating composed from ${bills.length} fuel_bills row${bills.length === 1 ? '' : 's'}. Fleet + refrigerants still bottom-up.`,
+    note: `Composed live: ${measuredParts.join(' + ')}.${remainingPlaceholderParts.length > 0 ? ` Still bottom-up: ${remainingPlaceholderParts.join(' + ')}.` : ''}`,
   };
 }
 
