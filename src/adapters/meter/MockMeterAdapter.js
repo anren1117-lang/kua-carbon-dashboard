@@ -102,7 +102,17 @@ export const MockMeterAdapter = {
   async getBuildingEnergy({ buildingId, start, end }) {
     const readings = await this.getReadings({ buildingId, start, end });
     const totalKwh = readings.reduce((s, r) => s + r.value, 0);
-    const peakKw = readings.reduce((p, r) => Math.max(p, r.demandKw ?? 0), 0);
+    // Derive demand-kW from the interval kWh when the reading didn't
+    // already carry a demandKw field. The mock only populates demandKw
+    // on hourly readings (where kWh and avg kW are numerically equal),
+    // so 15-/30-minute intervals had falsy demandKw and the peak
+    // collapsed to 0 kW. Convert to avg kW for the interval instead.
+    const peakKw = readings.reduce((p, r) => {
+      if (Number.isFinite(r.demandKw)) return Math.max(p, r.demandKw);
+      const intervalHours = (r.intervalMinutes || 60) / 60;
+      const avgKw = intervalHours > 0 ? r.value / intervalHours : 0;
+      return Math.max(p, avgKw);
+    }, 0);
     const { kgco2e } = quantityToKgCO2e({ quantity: totalKwh, factorId: 'ef_grid_isone_2024' });
     const b = getBuilding(buildingId);
     const sqft = b?.sqft ?? 1;
