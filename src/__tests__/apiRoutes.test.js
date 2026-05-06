@@ -23,6 +23,7 @@ import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
 import adminPlanHandler      from '../../api/admin/plan.js';
 import adminEstimateAction   from '../../api/admin/estimate-action.js';
 import adminLoginHandler     from '../../api/admin/login.js';
+import adminAuditLogHandler  from '../../api/admin/audit-log.js';
 import { signAdminToken, verifyAdminToken } from '../utils/adminToken.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
@@ -801,6 +802,80 @@ describe('verifyAdminToken', () => {
     const r = verifyAdminToken(token);
     expect(r.valid).toBe(true);
     expect(r.payload.role).toBe('admin');
+  });
+});
+
+describe('/api/admin/audit-log auth + validation', () => {
+  // We don't test the Supabase round-trip here (no live DB in unit
+  // tests) — only the auth gate + input validation. The endpoint
+  // 503s when Supabase env is unset, which is exactly what we want
+  // in this test environment.
+
+  it('401s GET without admin auth', async () => {
+    const r = await call(adminAuditLogHandler, { method: 'GET', query: {}, headers: {} });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('401s POST without admin auth', async () => {
+    const r = await call(adminAuditLogHandler, { method: 'POST', body: { action: 'insert', table: 'fuel_bills' }, headers: {} });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('405s on unknown verb', async () => {
+    const r = await call(adminAuditLogHandler, { method: 'PATCH', body: {}, headers: adminAuthHeaders() });
+    // PATCH passes auth + supabase config check, then hits the verb
+    // dispatcher. With no SUPABASE_URL set in tests, we 503 BEFORE
+    // the verb check — so accept either 503 (env missing) or 405.
+    expect([405, 503]).toContain(r.statusCode);
+  });
+
+  it('503s when Supabase env not configured', async () => {
+    const saved = { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_ANON_KEY };
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_ANON_KEY;
+    delete process.env.VITE_SUPABASE_URL;
+    delete process.env.VITE_SUPABASE_ANON_KEY;
+    const r = await call(adminAuditLogHandler, { method: 'GET', query: {}, headers: adminAuthHeaders() });
+    expect(r.statusCode).toBe(503);
+    expect(r.body.error).toMatch(/supabase/i);
+    if (saved.url) process.env.SUPABASE_URL = saved.url;
+    if (saved.key) process.env.SUPABASE_ANON_KEY = saved.key;
+  });
+
+  it('400s POST with bad action', async () => {
+    process.env.SUPABASE_URL = 'https://fake.supabase.co';
+    process.env.SUPABASE_ANON_KEY = 'fake_key';
+    const r = await call(adminAuditLogHandler, {
+      method: 'POST',
+      body: { action: 'wat', table: 'fuel_bills' },
+      headers: adminAuthHeaders(),
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.body.error).toMatch(/action must be/i);
+  });
+
+  it('400s POST with missing table', async () => {
+    process.env.SUPABASE_URL = 'https://fake.supabase.co';
+    process.env.SUPABASE_ANON_KEY = 'fake_key';
+    const r = await call(adminAuditLogHandler, {
+      method: 'POST',
+      body: { action: 'insert' },
+      headers: adminAuthHeaders(),
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.body.error).toMatch(/table is required/i);
+  });
+
+  it('400s POST with overlong note', async () => {
+    process.env.SUPABASE_URL = 'https://fake.supabase.co';
+    process.env.SUPABASE_ANON_KEY = 'fake_key';
+    const r = await call(adminAuditLogHandler, {
+      method: 'POST',
+      body: { action: 'insert', table: 'fuel_bills', note: 'x'.repeat(501) },
+      headers: adminAuthHeaders(),
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.body.error).toMatch(/note/i);
   });
 });
 

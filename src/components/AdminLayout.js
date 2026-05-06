@@ -63,6 +63,7 @@ export const NAV_GROUPS = [
     blurb: 'Methodology + legacy tools.',
     items: [
       { to: '/admin/methodology', label: 'Methodology', desc: 'Every emission factor + framework choice + citation used by the dashboard.' },
+      { to: '/admin/audit-log',   label: 'Audit Log',     desc: 'Every admin write recorded for AASHE STARS reporting and "who-changed-this" debugging.' },
       { to: '/admin/legacy',      label: 'Legacy Portal', desc: 'Original Supabase CRUD UI for fuel bills, students, travel, waste. Still functional during the transition.' },
     ],
   },

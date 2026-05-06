@@ -52,6 +52,7 @@ const AdminScope3 = lazy(() => import('./pages/admin/AdminScope3'));
 const AdminRenewables = lazy(() => import('./pages/admin/AdminRenewables'));
 const AdminSinks = lazy(() => import('./pages/admin/AdminSinks'));
 const AdminMethodology = lazy(() => import('./pages/admin/AdminMethodology'));
+const AdminAuditLog = lazy(() => import('./pages/admin/AdminAuditLog'));
 const AdminFramework = lazy(() => import('./pages/admin/AdminFramework'));
 const AdminActions = lazy(() => import('./pages/admin/AdminActions'));
 const AdminPlanAgent = lazy(() => import('./pages/admin/AdminPlanAgent'));
@@ -166,6 +167,7 @@ root.render(
             <Route path="sinks/soil" element={<SoilSample />} />
 
             <Route path="methodology" element={<AdminMethodology />} />
+            <Route path="audit-log" element={<AdminAuditLog />} />
             <Route path="actions" element={<AdminActions />} />
             <Route path="plan-agent" element={<AdminPlanAgent />} />
             <Route path="stage-planner" element={<AdminStagePlanner />} />

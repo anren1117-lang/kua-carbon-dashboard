@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { logAdminWrite } from './utils/adminAudit.js';
 
 // Read the server-issued admin session blob saved by handleLogin.
 function readStoredAdminSession() {
@@ -139,15 +140,17 @@ function AdminPortal() {
         return;
       }
     }
+    const fuelRow = {
+      date: fuelForm.date,
+      fuel_type: fuelForm.fuel_type,
+      gallons: gallonsNum,
+      cost: costNum,
+      notes: fuelForm.notes || null
+    };
     try {
-      const { error } = await supabase.from('fuel_bills').insert([{
-        date: fuelForm.date,
-        fuel_type: fuelForm.fuel_type,
-        gallons: gallonsNum,
-        cost: costNum,
-        notes: fuelForm.notes || null
-      }]);
+      const { error } = await supabase.from('fuel_bills').insert([fuelRow]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'fuel_bills', payload: fuelRow });
       showMessage('✓ Fuel bill added!');
       setFuelForm({ date: '', fuel_type: 'Propane', gallons: '', cost: '', notes: '' });
       fetchAllData();
@@ -161,6 +164,7 @@ function AdminPortal() {
     try {
       const { error } = await supabase.from('day_students').insert([dayForm]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'day_students', payload: dayForm });
       showMessage('✓ Day student added!');
       setDayForm({ zip_code: '', graduation_year: '2026', school_year: '2025-2026' });
       fetchAllData();
@@ -174,6 +178,7 @@ function AdminPortal() {
     try {
       const { error } = await supabase.from('us_boarding_students').insert([usForm]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'us_boarding_students', payload: usForm });
       showMessage('✓ US boarding student added!');
       setUsForm({ zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' });
       fetchAllData();
@@ -187,6 +192,7 @@ function AdminPortal() {
     try {
       const { error } = await supabase.from('international_students').insert([intlForm]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'international_students', payload: intlForm });
       showMessage('✓ International student added!');
       setIntlForm({ country: '', graduation_year: '2026', school_year: '2025-2026' });
       fetchAllData();
@@ -200,6 +206,7 @@ function AdminPortal() {
     try {
       const { error } = await supabase.from('study_abroad').insert([saForm]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'study_abroad', payload: saForm });
       showMessage('✓ Study abroad trip added!');
       setSaForm({ destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' });
       fetchAllData();
@@ -213,6 +220,7 @@ function AdminPortal() {
     try {
       const { error } = await supabase.from('faculty_travel').insert([ftForm]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'faculty_travel', payload: ftForm });
       showMessage('✓ Faculty travel added!');
       setFtForm({ destination_country: '', destination_city: '', trip_purpose: 'Conference', departure_date: '', return_date: '' });
       fetchAllData();
@@ -228,16 +236,18 @@ function AdminPortal() {
       showMessage(`Error: amount must be a non-negative number (got "${wasteForm.amount}")`);
       return;
     }
+    const wasteRow = {
+      date: wasteForm.date,
+      waste_type: wasteForm.waste_type,
+      amount: amountNum,
+      unit: wasteForm.unit,
+      notes: wasteForm.notes || null,
+      school_year: wasteForm.school_year
+    };
     try {
-      const { error } = await supabase.from('waste').insert([{
-        date: wasteForm.date,
-        waste_type: wasteForm.waste_type,
-        amount: amountNum,
-        unit: wasteForm.unit,
-        notes: wasteForm.notes || null,
-        school_year: wasteForm.school_year
-      }]);
+      const { error } = await supabase.from('waste').insert([wasteRow]);
       if (error) throw error;
+      logAdminWrite({ action: 'insert', table: 'waste', payload: wasteRow });
       showMessage('✓ Waste record added!');
       setWasteForm({ date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: '2025-2026' });
       fetchAllData();
@@ -251,6 +261,7 @@ function AdminPortal() {
     try {
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;
+      logAdminWrite({ action: 'delete', table, payload: { id } });
       fetchAllData();
     } catch (err) {
       showMessage('Error: ' + err.message);
