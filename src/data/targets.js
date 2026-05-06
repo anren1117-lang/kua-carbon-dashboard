@@ -51,10 +51,10 @@ export const reductionTargets = [
     title: 'Dining-related emissions down 25% by 2028',
     scope: 'scope3',
     baselineYear: 2024,
-    baselineValue: 800, // dining is ~30% of Scope 3 — figure stays close to original
+    baselineValue: 450, // matches scopeTotals.js Scope 3 dining placeholder row
     targetYear: 2028,
     percentReduction: 25,
-    description: 'Reduce dining-driven Scope 3 by ~200 mtCO₂e via beef-frequency reductions, increased local sourcing, and food-waste diversion.',
+    description: 'Reduce dining-driven Scope 3 by ~110 mtCO₂e via beef-frequency reductions, increased local sourcing, and food-waste diversion.',
     owner: 'Dining Services Director',
     approved: false,
   },
