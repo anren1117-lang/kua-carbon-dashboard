@@ -84,11 +84,20 @@ export async function saveLesson(lesson) {
 }
 
 export async function getLesson(id) {
-  const sb = await getSupabaseServer();
+  // Same defensive ladder as listLessons — getSupabaseServer reject,
+  // a Supabase query throw, or a rowToLesson throw on a malformed
+  // timestamp all need to fall through to the memStore lookup
+  // instead of propagating as a 500.
+  let sb = null;
+  try { sb = await getSupabaseServer(); }
+  catch (err) { console.warn('Supabase init threw, falling back to memory:', err.message); }
   if (sb) {
     try {
       const { data, error } = await sb.from(TABLE).select('*').eq('id', id).maybeSingle();
-      if (!error && data) return rowToLesson(data);
+      if (!error && data) {
+        try { return rowToLesson(data); }
+        catch (err) { console.warn('teacher_lessons row mapping failed, falling back to memory:', err.message); }
+      }
     } catch (err) {
       console.warn('teacher_lessons read failed, falling back to memory:', err.message);
     }
