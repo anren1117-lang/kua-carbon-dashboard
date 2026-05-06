@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeFleetMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, FLEET_FACTORS_KG_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
+import { composeFleetMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, FLEET_FACTORS_KG_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -689,6 +689,44 @@ describe('composeFleetMt + composeRefrigerantMt (component helpers)', () => {
     expect(FLEET_FACTORS_KG_PER_GAL.Diesel).toBe(10.21);
     expect(REFRIGERANT_GWP100['R-410A']).toBe(2256);
     expect(REFRIGERANT_GWP100['R-1234yf']).toBe(4);
+  });
+});
+
+describe('composeSinksFromActuals (live forest_stand_actuals → measured sinks)', () => {
+  it('empty / null input → 0 mt, no stands', () => {
+    expect(composeSinksFromActuals([])).toEqual({ totalMt: 0, standCount: 0, perStand: [] });
+    expect(composeSinksFromActuals(null)).toEqual({ totalMt: 0, standCount: 0, perStand: [] });
+  });
+
+  it('sums acres × per-acre rate across stands', () => {
+    const r = composeSinksFromActuals([
+      { stand_id: 'a', name: 'North',  acres: 100, mtco2e_acre_yr: 2.5 }, // 250
+      { stand_id: 'b', name: 'South',  acres: 200, mtco2e_acre_yr: 3.0 }, // 600
+    ]);
+    expect(r.totalMt).toBe(850);
+    expect(r.standCount).toBe(2);
+    expect(r.perStand.length).toBe(2);
+    expect(r.perStand[0]).toMatchObject({ stand_id: 'a', name: 'North', acres: 100, mt: 250 });
+  });
+
+  it('skips rows with non-numeric or negative inputs', () => {
+    const r = composeSinksFromActuals([
+      { stand_id: 'a', acres: 50, mtco2e_acre_yr: 2 },           // counted: 100
+      { stand_id: 'b', acres: 'banana', mtco2e_acre_yr: 2 },     // skipped
+      { stand_id: 'c', acres: 50, mtco2e_acre_yr: -1 },          // skipped
+      { stand_id: 'd', acres: -10, mtco2e_acre_yr: 2 },          // skipped
+    ]);
+    expect(r.totalMt).toBe(100);
+    expect(r.standCount).toBe(1);
+  });
+
+  it('coerces string-numeric inputs (Supabase numeric → JS string)', () => {
+    // Supabase numeric columns serialize as strings in JS; the helper
+    // should accept both.
+    const r = composeSinksFromActuals([
+      { stand_id: 'a', acres: '120.5', mtco2e_acre_yr: '2.4' },
+    ]);
+    expect(r.totalMt).toBe(289); // 120.5 × 2.4 = 289.2 → round 289
   });
 });
 

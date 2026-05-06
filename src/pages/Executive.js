@@ -129,9 +129,11 @@ export default function Executive() {
             target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
           />
           <ExecProvRow
-            provenance="estimated"
-            label={`Forest sequestration (${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt)`}
-            today="7 named forest stands × per-acre rates inside IPCC LULUCF ranges. Total acreage (~1,000) is cited but the per-stand subdivision and individual acreages are invented."
+            provenance={live.sinksMeasured ? 'measured' : 'estimated'}
+            label={`Forest sequestration (${Math.round(live.sinkMt || ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt)`}
+            today={live.sinksMeasured
+              ? `Composed live from forest_stand_actuals (${live.sinkMt} mt across the entered stands). Per-acre rates stay anchored on Birdsey 1992 / Nowak 2013; only the inputs (per-stand acreage + dominant species) flipped to measured.`
+              : '7 named forest stands × per-acre rates inside IPCC LULUCF ranges. Total acreage (~1,000) is cited but the per-stand subdivision and individual acreages are invented.'}
             target="Commission a USFS Forest Inventory & Analysis-style stand inventory: real species composition, age class, basal area, per-stand acreage. Per-acre rates stay; inputs become real."
           />
           <ExecProvRow

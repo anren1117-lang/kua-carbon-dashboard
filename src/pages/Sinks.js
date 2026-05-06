@@ -4,6 +4,7 @@ import { ScopePageInfo } from '../components/ScopePageInfo';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SINKS_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 
 // Use the multi-method range from geographicEstimates.js (Birdsey 1992
 // US-forest avg / USDA NH FIA Morin 2020 / Nowak 2013 stand-specific)
@@ -26,6 +27,21 @@ const styles = {
 };
 
 function Sinks() {
+  // Live upgrade: any rows in forest_stand_actuals flip the headline
+  // from "estimated" (the hardcoded src/data/sinks.js inventory) to
+  // "measured" (whatever the admin entered). Stand list below renders
+  // the live data when measured, falling back to the placeholder
+  // inventory otherwise.
+  const live = useMeasuredSinks();
+  const isMeasured = live.measured && !live.loading && !live.error;
+  const headlineTotal = isMeasured ? live.totalMt : SEQ_TOTAL;
+  const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(1);
+  const headlineAcres = isMeasured ? live.acres : TOTAL_FOREST_ACRES;
+  const headlineProvenance = isMeasured ? 'measured' : 'estimated';
+  const headlineNote = isMeasured
+    ? `Composed live from ${live.standCount} forest_stand_actuals row${live.standCount === 1 ? '' : 's'} × per-acre sequestration rates. Roughly ${headlineAcres.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`
+    : `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`;
+
   return (
     <div>
       <h1 style={styles.title}>Carbon Sinks — Trees & Soils</h1>
@@ -70,9 +86,10 @@ function Sinks() {
       <ScopePageInfo
         color="#22c55e"
         estimate={{
-          totalPrefix: '−', total: `~${SEQ_TOTAL.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across 3 methods (Birdsey 1992 / USDA NH FIA / Nowak 2013 stand-specific)`, perStudent: -SEQ_PER_ST,
-          thirdMetric: { label: 'Forested area', value: `~${TOTAL_FOREST_ACRES.toLocaleString()}`, note: 'acres of campus forest' },
-          note: `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`,
+          totalPrefix: '−', total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across 3 methods (Birdsey 1992 / USDA NH FIA / Nowak 2013 stand-specific)`, perStudent: -headlinePerStudent,
+          thirdMetric: { label: 'Forested area', value: `${isMeasured ? '' : '~'}${headlineAcres.toLocaleString()}`, note: 'acres of campus forest' },
+          provenance: headlineProvenance,
+          note: headlineNote,
         }}
         references={[
           { title: 'Nowak, D.J. et al. (2013)', source: 'Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage; 0.28 kg C/m²/yr sequestration (urban tree averages across 28 cities, 6 states)' },

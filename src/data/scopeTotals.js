@@ -80,6 +80,40 @@ export const REFRIGERANT_GWP100 = {
 const KG_PER_LB = 0.45359237;
 
 /**
+ * Sum a forest_stand_actuals table to mtCO2e: acres × per-acre rate.
+ * Used by useMeasuredSinks(). Skips rows with missing/invalid acreage
+ * or rate. Returns 0 for empty / null input so the caller can fall
+ * back to the hardcoded inventory.
+ *
+ * @param {Array<{ acres: number|string, mtco2e_acre_yr: number|string }>} rows
+ * @returns {{ totalMt: number, standCount: number, perStand: Array<{ stand_id?: string, name?: string, acres: number, mt: number }> }}
+ */
+export function composeSinksFromActuals(rows) {
+  const valid = (Array.isArray(rows) ? rows : []).filter((r) => {
+    const acres = Number(r?.acres);
+    const rate = Number(r?.mtco2e_acre_yr);
+    return Number.isFinite(acres) && acres >= 0 && Number.isFinite(rate) && rate >= 0;
+  });
+  if (valid.length === 0) return { totalMt: 0, standCount: 0, perStand: [] };
+  let totalMt = 0;
+  const perStand = [];
+  for (const r of valid) {
+    const acres = Number(r.acres);
+    const rate = Number(r.mtco2e_acre_yr);
+    const mt = acres * rate;
+    totalMt += mt;
+    perStand.push({
+      stand_id: r.stand_id || null,
+      name: r.name || null,
+      acres,
+      mtco2eAcreYr: rate,
+      mt: Math.round(mt),
+    });
+  }
+  return { totalMt: Math.round(totalMt), standCount: valid.length, perStand };
+}
+
+/**
  * Sum a fleet table to mtCO2e using EPA Mobile Combustion factors.
  * Skips rows with unknown fuel_type or non-numeric/negative gallons.
  */
