@@ -45,7 +45,12 @@ export default function Waste() {
     }
     return Object.entries(out).sort(([a], [b]) => a.localeCompare(b));
   }, []);
-  const peakMonthly = Math.max(...monthly.map(([, kg]) => kg));
+  // Math.max() with no args returns -Infinity, and Math.max(0, ...) on
+  // a no-data set returns 0 — either of which would have produced a
+  // bar width of NaN/Infinity% below. Floor at 1 so the divisor is
+  // safe and empty months render as zero-width bars instead of
+  // breaking the layout.
+  const peakMonthly = Math.max(1, ...monthly.map(([, kg]) => kg));
 
   return (
     <ModulePage
