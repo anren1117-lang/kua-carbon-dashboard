@@ -4,6 +4,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/plan-agent', label: 'Plan Agent' },
+  { to: '/admin/stage-planner', label: 'Stage Planner' },
   { to: '/admin/facilities', label: 'Facilities' },
   { to: '/admin/bms-export', label: 'BMS Export' },
   { to: '/admin/framework', label: 'Framework' },

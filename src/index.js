@@ -55,6 +55,7 @@ const AdminMethodology = lazy(() => import('./pages/admin/AdminMethodology'));
 const AdminFramework = lazy(() => import('./pages/admin/AdminFramework'));
 const AdminActions = lazy(() => import('./pages/admin/AdminActions'));
 const AdminPlanAgent = lazy(() => import('./pages/admin/AdminPlanAgent'));
+const AdminStagePlanner = lazy(() => import('./pages/admin/AdminStagePlanner'));
 const AdminFacilities = lazy(() => import('./pages/admin/AdminFacilities'));
 const AdminBmsExport = lazy(() => import('./pages/admin/AdminBmsExport'));
 const AdminAIIngestion = lazy(() => import('./pages/admin/AdminAIIngestion'));
@@ -167,6 +168,7 @@ root.render(
             <Route path="methodology" element={<AdminMethodology />} />
             <Route path="actions" element={<AdminActions />} />
             <Route path="plan-agent" element={<AdminPlanAgent />} />
+            <Route path="stage-planner" element={<AdminStagePlanner />} />
             <Route path="facilities" element={<AdminFacilities />} />
             <Route path="bms-export" element={<AdminBmsExport />} />
             <Route path="legacy" element={<AdminPortal />} />

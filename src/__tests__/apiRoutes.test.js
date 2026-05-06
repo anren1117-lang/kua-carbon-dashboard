@@ -21,6 +21,7 @@ import readingsExportHandler from '../../api/meters/readings/export.js';
 import healthHandler         from '../../api/health.js';
 import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
 import adminPlanHandler      from '../../api/admin/plan.js';
+import adminEstimateAction   from '../../api/admin/estimate-action.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
 import { createRateLimit }   from '../utils/rateLimit.js';
@@ -644,6 +645,56 @@ describe('POST /api/admin/plan', () => {
       expect(item.expectedMtPerYear).toBeGreaterThanOrEqual(0);
     }
     expect(typeof r.body.percentOfGross).toBe('number');
+  });
+});
+
+describe('POST /api/admin/estimate-action', () => {
+  it('rejects non-POST', async () => {
+    const r = await call(adminEstimateAction, { method: 'GET', body: {}, headers: {} });
+    expect(r.statusCode).toBe(405);
+  });
+
+  it('400s without title', async () => {
+    const r = await call(adminEstimateAction, { method: 'POST', body: {}, headers: {} });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('400s on overlong title', async () => {
+    const r = await call(adminEstimateAction, {
+      method: 'POST',
+      body: { title: 'x'.repeat(201) },
+      headers: { 'x-forwarded-for': '10.0.0.51' },
+    });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('returns rule-fallback estimate when ANTHROPIC_API_KEY is unset', async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const r = await call(adminEstimateAction, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.52' },
+      body: { title: 'Replace Densmore boiler with high-efficiency condensing unit', description: 'Single-dorm heat-pump conversion', category: 'energy' },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.mode).toBe('rule');
+    expect(typeof r.body.expectedMtPerYear).toBe('number');
+    expect(r.body.expectedMtPerYear).toBeGreaterThanOrEqual(0);
+    expect(['low','medium','high']).toContain(r.body.confidence);
+    expect(['estimated','cited']).toContain(r.body.provenance);
+    expect(typeof r.body.methodology).toBe('string');
+    expect(r.body.methodology.length).toBeGreaterThan(0);
+  });
+
+  it('rule-fallback recognizes a heat-pump campus retrofit anchor', async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const r = await call(adminEstimateAction, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.53' },
+      body: { title: 'Convert all campus buildings from oil to heat pumps', description: 'Whole-campus electrification', category: 'energy' },
+    });
+    expect(r.statusCode).toBe(200);
+    // Should land in the published 600-900 mt anchor band, not fall through to the 5-mt generic.
+    expect(r.body.expectedMtPerYear).toBeGreaterThan(400);
   });
 });
 
