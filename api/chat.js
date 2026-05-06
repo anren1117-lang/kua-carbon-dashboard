@@ -88,11 +88,11 @@ Heat-resilient cities, coastal retreat and managed realignment, agricultural ada
 Campus profile: ~340 students (boarding + day), ~1,000 acres total, much in mixed maple/beech/birch forest, 19 tracked buildings, Plainfield NH (climate zone 6, ~7,500 HDD).
 
 Preliminary annual estimate (Fermi-level until measured data lands):
-- Scope 1 (heating + refrigerants + fleet): ~1,250 mtCO₂e
-- Scope 2 (electricity, MEASURED via BMS): ~385 mtCO₂e/yr from ~1.64M kWh annualized × ISO-NE 2024 per-fuel output factors (effective ~0.235 kg/kWh)
-- Scope 3 (student travel + supply chain + waste): ~2,660 mtCO₂e central, range 1,750–3,750 mt across published methodologies. Multi-method bottom-up (3-4 methods per component): student travel ~760 (day 90-140 / US boarders 260-530 / international 220-325), dining ~270, waste ~0, faculty commute ~90, purchased goods ~1,300, upstream fuel ~220.
-- Sinks (campus forest): ~2,650 mtCO₂e drawdown
-- Gross: ~4,335 / Net: ~1,685 mtCO₂e/yr / Per student: ~5.0
+- Scope 1 (heating + refrigerants + fleet): ~1,250 mtCO₂e central, range 891–1,867 mt across 3 methods × 3 components (heating ~1,290 / fleet ~54 / refrigerants ~7).
+- Scope 2 (electricity, MEASURED via BMS): ~385 mtCO₂e/yr from ~1.64M kWh annualized × ISO-NE 2024 per-fuel output factors (effective ~0.235 kg/kWh), ±5% measured band.
+- Scope 3 (student travel + supply chain + waste): ~2,660 mtCO₂e central, range 1,750–3,750 mt across 3-4 methods × 8 components. Bottom-up: student travel ~760 (day 90-140 / US boarders 260-530 / international 220-325), dining ~270, waste ~0, faculty commute ~90, purchased goods ~1,300, upstream fuel ~220.
+- Sinks (campus forest): ~2,650 mtCO₂e drawdown, range 2,100–2,650 across 3 methods (Birdsey 1992 / USDA NH FIA / Nowak 2013 stand-specific).
+- Gross: ~4,335 / Net: ~1,685 mtCO₂e/yr / Per student: ~5.0. Composite range: gross 3,011–6,036, net 361–3,936, per-student net 1.1–11.6 mt across all method combinations.
 
 Peer per-student (rough, sustainability reports): Phillips Exeter ~10, Andover ~9, Lawrenceville ~9, Choate ~8, Williams ~6, Middlebury ~5.5 (uses offsets), Yale ~4, KUA ~5.0 (uniquely measures sinks).
 
