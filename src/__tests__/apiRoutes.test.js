@@ -22,6 +22,8 @@ import healthHandler         from '../../api/health.js';
 import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
 import adminPlanHandler      from '../../api/admin/plan.js';
 import adminEstimateAction   from '../../api/admin/estimate-action.js';
+import adminLoginHandler     from '../../api/admin/login.js';
+import { signAdminToken, verifyAdminToken } from '../utils/adminToken.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
 import { createRateLimit }   from '../utils/rateLimit.js';
@@ -50,6 +52,16 @@ async function call(handler, req) {
   const wrap = makeRes();
   await handler(req, wrap.res);
   return wrap;
+}
+
+// Tests for the admin endpoints need a valid bearer. Set the secret
+// once at module load and mint a fresh token per request via this
+// helper. Also expose an "expired" path so the token-verification
+// tests can prove the server actually checks expiry.
+process.env.ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET
+  || 'test-admin-secret-12345678901234567890abcdefABCDEF';
+function adminAuthHeaders() {
+  return { authorization: `Bearer ${signAdminToken().token}` };
 }
 
 describe('GET /api/meters', () => {
@@ -601,8 +613,19 @@ describe('POST /api/admin/plan', () => {
     expect(r.statusCode).toBe(405);
   });
 
-  it('400s without context', async () => {
+  it('401s without admin auth', async () => {
     const r = await call(adminPlanHandler, { method: 'POST', body: {}, headers: {} });
+    expect(r.statusCode).toBe(401);
+    expect(r.body.error).toMatch(/admin auth/i);
+  });
+
+  it('401s with malformed bearer', async () => {
+    const r = await call(adminPlanHandler, { method: 'POST', body: {}, headers: { authorization: 'Bearer not-a-valid-token' } });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('400s without context (auth ok)', async () => {
+    const r = await call(adminPlanHandler, { method: 'POST', body: {}, headers: adminAuthHeaders() });
     expect(r.statusCode).toBe(400);
   });
 
@@ -610,7 +633,7 @@ describe('POST /api/admin/plan', () => {
     const r = await call(adminPlanHandler, {
       method: 'POST',
       body: { context: { fiscalYear: '2026-2027' } },
-      headers: {},
+      headers: adminAuthHeaders(),
     });
     expect(r.statusCode).toBe(400);
     expect(r.body.error).toMatch(/required/i);
@@ -620,14 +643,14 @@ describe('POST /api/admin/plan', () => {
     delete process.env.ANTHROPIC_API_KEY;
     const r = await call(adminPlanHandler, {
       method: 'POST',
-      headers: { 'x-forwarded-for': '10.0.0.42' },
+      headers: { 'x-forwarded-for': '10.0.0.42', ...adminAuthHeaders() },
       body: {
         context: {
           fiscalYear: '2026-2027',
           capitalAppetite: 'medium',
           topPriority: 'scope1',
           timeHorizonYears: 3,
-          grossMt: 4335,
+          grossMt: 4370,
           sinksMt: 2650,
           enrollment: 340,
         },
@@ -654,8 +677,13 @@ describe('POST /api/admin/estimate-action', () => {
     expect(r.statusCode).toBe(405);
   });
 
-  it('400s without title', async () => {
-    const r = await call(adminEstimateAction, { method: 'POST', body: {}, headers: {} });
+  it('401s without admin auth', async () => {
+    const r = await call(adminEstimateAction, { method: 'POST', body: { title: 'Anything' }, headers: {} });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('400s without title (auth ok)', async () => {
+    const r = await call(adminEstimateAction, { method: 'POST', body: {}, headers: adminAuthHeaders() });
     expect(r.statusCode).toBe(400);
   });
 
@@ -663,7 +691,7 @@ describe('POST /api/admin/estimate-action', () => {
     const r = await call(adminEstimateAction, {
       method: 'POST',
       body: { title: 'x'.repeat(201) },
-      headers: { 'x-forwarded-for': '10.0.0.51' },
+      headers: { 'x-forwarded-for': '10.0.0.51', ...adminAuthHeaders() },
     });
     expect(r.statusCode).toBe(400);
   });
@@ -672,7 +700,7 @@ describe('POST /api/admin/estimate-action', () => {
     delete process.env.ANTHROPIC_API_KEY;
     const r = await call(adminEstimateAction, {
       method: 'POST',
-      headers: { 'x-forwarded-for': '10.0.0.52' },
+      headers: { 'x-forwarded-for': '10.0.0.52', ...adminAuthHeaders() },
       body: { title: 'Replace Densmore boiler with high-efficiency condensing unit', description: 'Single-dorm heat-pump conversion', category: 'energy' },
     });
     expect(r.statusCode).toBe(200);
@@ -689,12 +717,90 @@ describe('POST /api/admin/estimate-action', () => {
     delete process.env.ANTHROPIC_API_KEY;
     const r = await call(adminEstimateAction, {
       method: 'POST',
-      headers: { 'x-forwarded-for': '10.0.0.53' },
+      headers: { 'x-forwarded-for': '10.0.0.53', ...adminAuthHeaders() },
       body: { title: 'Convert all campus buildings from oil to heat pumps', description: 'Whole-campus electrification', category: 'energy' },
     });
     expect(r.statusCode).toBe(200);
     // Should land in the published 600-900 mt anchor band, not fall through to the 5-mt generic.
     expect(r.body.expectedMtPerYear).toBeGreaterThan(400);
+  });
+});
+
+describe('POST /api/admin/login', () => {
+  it('rejects non-POST', async () => {
+    const r = await call(adminLoginHandler, { method: 'GET', body: {}, headers: {} });
+    expect(r.statusCode).toBe(405);
+  });
+
+  it('503s when ADMIN_PASSWORD is unset', async () => {
+    const saved = process.env.ADMIN_PASSWORD;
+    delete process.env.ADMIN_PASSWORD;
+    const r = await call(adminLoginHandler, { method: 'POST', body: { password: 'whatever' }, headers: {} });
+    expect(r.statusCode).toBe(503);
+    if (saved !== undefined) process.env.ADMIN_PASSWORD = saved;
+  });
+
+  it('400s without password', async () => {
+    process.env.ADMIN_PASSWORD = 'rightpw';
+    const r = await call(adminLoginHandler, { method: 'POST', body: {}, headers: { 'x-forwarded-for': '10.0.0.71' } });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('401s on wrong password', async () => {
+    process.env.ADMIN_PASSWORD = 'rightpw';
+    const r = await call(adminLoginHandler, { method: 'POST', body: { password: 'wrong' }, headers: { 'x-forwarded-for': '10.0.0.72' } });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('200 + signed token on correct password', async () => {
+    process.env.ADMIN_PASSWORD = 'rightpw';
+    const r = await call(adminLoginHandler, { method: 'POST', body: { password: 'rightpw' }, headers: { 'x-forwarded-for': '10.0.0.73' } });
+    expect(r.statusCode).toBe(200);
+    expect(typeof r.body.token).toBe('string');
+    expect(typeof r.body.expiresAt).toBe('string');
+    const verify = verifyAdminToken(r.body.token);
+    expect(verify.valid).toBe(true);
+    expect(verify.payload.role).toBe('admin');
+  });
+
+  it('rate-limits sustained guessing (429 after burst)', async () => {
+    process.env.ADMIN_PASSWORD = 'rightpw';
+    const ip = '10.0.0.74';
+    let last;
+    for (let i = 0; i < 10; i++) {
+      last = await call(adminLoginHandler, { method: 'POST', body: { password: 'wrong' }, headers: { 'x-forwarded-for': ip } });
+    }
+    expect(last.statusCode).toBe(429);
+  });
+});
+
+describe('verifyAdminToken', () => {
+  it('rejects empty / malformed input', () => {
+    expect(verifyAdminToken(null).valid).toBe(false);
+    expect(verifyAdminToken('').valid).toBe(false);
+    expect(verifyAdminToken('not-two-segments').valid).toBe(false);
+  });
+
+  it('rejects an expired token', () => {
+    // Mint with negative TTL so exp is in the past, then verify.
+    const { token } = signAdminToken({ ttlSeconds: -10 });
+    const r = verifyAdminToken(token);
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/expired/i);
+  });
+
+  it('rejects a tampered signature', () => {
+    const { token } = signAdminToken();
+    const [payload] = token.split('.');
+    const r = verifyAdminToken(`${payload}.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`);
+    expect(r.valid).toBe(false);
+  });
+
+  it('accepts a freshly-signed token', () => {
+    const { token } = signAdminToken();
+    const r = verifyAdminToken(token);
+    expect(r.valid).toBe(true);
+    expect(r.payload.role).toBe('admin');
   });
 });
 

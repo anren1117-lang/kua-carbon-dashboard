@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 // Reusable password gate. Wraps any subtree; renders the children only
-// after the user enters the right password. The check is client-side
-// (the password compares against import.meta.env.VITE_<envKey>), and
-// the unlock is stored in localStorage under storageKey so it
-// persists across refreshes.
+// after the user has unlocked it.
 //
-// IMPORTANT: this is NOT a real auth boundary. Anyone who pulls the
-// JS bundle can read the password value. Real protection of
-// sensitive data must happen on the server (the Vercel API handlers
-// already enforce CRON_SECRET / Google OIDC for the routes that
-// matter). This gate exists to keep casual visitors out of the
-// teacher / admin UIs.
+// For the admin path (envKey === 'ADMIN_PASSWORD' or storageKey ===
+// 'adminLoggedIn'), this calls /api/admin/login server-side and stores
+// the returned HMAC-signed session token in localStorage under
+// `kua_admin_session`. The token (not the storageKey flag) is what the
+// admin API endpoints actually verify.
+//
+// For non-admin paths (e.g. teacher gate), the legacy client-side
+// compare against import.meta.env.VITE_<envKey> still applies — those
+// gates are intentionally light, since the routes they wrap don't
+// expose any server-protected operations.
 
 /**
  * @param {object} props
@@ -27,16 +28,31 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
   const [unlocked, setUnlocked] = useState(false);
   const [pw, setPw] = useState('');
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Admin gates flow through /api/admin/login; everything else stays on
+  // the legacy client-side compare.
+  const isAdminGate = envKey === 'ADMIN_PASSWORD' || storageKey === 'adminLoggedIn';
 
   useEffect(() => {
     try {
-      // Accept either 'true' (matches the existing AdminLayout convention)
-      // or 'unlocked' (older PasswordGate convention) so a single admin
-      // login covers both /admin/* and any PasswordGate-wrapped page.
+      if (isAdminGate) {
+        // Trust requires a valid signed session, not just a flag.
+        const raw = localStorage.getItem('kua_admin_session');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.token && parsed?.expiresAt && new Date(parsed.expiresAt).getTime() > Date.now()) {
+            setUnlocked(true);
+            return;
+          }
+          localStorage.removeItem('kua_admin_session');
+        }
+        return;
+      }
       const v = localStorage.getItem(storageKey);
       if (v === 'true' || v === 'unlocked') setUnlocked(true);
     } catch {}
-  }, [storageKey]);
+  }, [storageKey, isAdminGate]);
 
   function expectedPassword() {
     try {
@@ -46,11 +62,36 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
     return defaultPassword || '';
   }
 
-  function tryUnlock(e) {
+  async function tryUnlock(e) {
     e.preventDefault();
+    if (isAdminGate) {
+      setSubmitting(true);
+      setError(null);
+      try {
+        const r = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw }),
+        });
+        let body = {};
+        try { body = await r.json(); } catch {}
+        if (!r.ok) {
+          setError(body.error || `Login failed (HTTP ${r.status})`);
+          setSubmitting(false);
+          return;
+        }
+        localStorage.setItem('kua_admin_session', JSON.stringify(body));
+        try { localStorage.setItem(storageKey, 'true'); } catch {}
+        setUnlocked(true);
+        setError(null);
+      } catch {
+        setError('Network error contacting login endpoint');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
     if (pw === expectedPassword()) {
-      // Write 'true' to match the existing AdminLayout convention so
-      // shared keys (e.g. 'adminLoggedIn') keep both gates in sync.
       try { localStorage.setItem(storageKey, 'true'); } catch {}
       setUnlocked(true);
       setError(null);
@@ -60,7 +101,10 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
   }
 
   function logout() {
-    try { localStorage.removeItem(storageKey); } catch {}
+    try {
+      localStorage.removeItem(storageKey);
+      if (isAdminGate) localStorage.removeItem('kua_admin_session');
+    } catch {}
     setUnlocked(false);
     setPw('');
   }
@@ -84,8 +128,8 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
               autoFocus
             />
             {error && <div style={styles.error}>{error}</div>}
-            <button type="submit" style={{ ...styles.submit, background: accent }} disabled={!pw}>
-              Unlock
+            <button type="submit" style={{ ...styles.submit, background: accent }} disabled={!pw || submitting}>
+              {submitting ? 'Checking…' : 'Unlock'}
             </button>
           </form>
           <p style={styles.note}>

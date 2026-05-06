@@ -5,6 +5,7 @@ import { GRID_MIX_TOTAL_MTCO2E } from '../../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
+import { adminFetch } from '../../utils/adminFetch.js';
 
 // Admin-only AI-driven institutional plan. Three-step flow stored in
 // localStorage:
@@ -116,9 +117,8 @@ export default function AdminPlanAgent() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/plan', {
+      const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ context, history }),
       });
       if (!res.ok) {

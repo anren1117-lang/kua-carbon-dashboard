@@ -23,6 +23,7 @@
 // heuristic so the editor at least populates a defensible number.
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
+import { verifyAdminRequest } from '../../src/utils/adminToken.js';
 
 // Per-IP throttle: 12 burst, 6/min sustained. Each call burns LLM
 // tokens, but the call is small (<1k tokens) so this is generous.
@@ -143,6 +144,12 @@ function ruleEstimate({ title, description }) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const auth = verifyAdminRequest(req);
+  if (!auth.valid) {
+    res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
 

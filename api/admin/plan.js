@@ -42,6 +42,7 @@
 // next-best whole-school lever.
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
+import { verifyAdminRequest } from '../../src/utils/adminToken.js';
 
 const limiter = createRateLimit({ capacity: 8, refillPerSec: 0.1 });
 
@@ -219,6 +220,11 @@ function tryParseJson(text) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+  const auth = verifyAdminRequest(req);
+  if (!auth.valid) {
+    res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
   const { context, history } = req.body || {};

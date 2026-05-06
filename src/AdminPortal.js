@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
+// Read the server-issued admin session blob saved by handleLogin.
+function readStoredAdminSession() {
+  try {
+    const raw = localStorage.getItem('kua_admin_session');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.token === 'string') return parsed;
+    return null;
+  } catch { return null; }
+}
+
 function AdminPortal() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState('');
@@ -31,26 +42,54 @@ function AdminPortal() {
   const fuelFactors = { 'Propane': 5.72, 'Heating Oil': 10.16, 'Diesel': 10.18, 'Gasoline': 8.89 };
   const wasteFactors = { 'Landfill': 0.52, 'Recycling': -0.10, 'Composting': 0.04, 'Hazardous': 0.50, 'E-Waste': 0.30 };
 
+  // Server-checked admin auth: /api/admin/login validates the password
+  // against ADMIN_PASSWORD (server-side env) and returns an HMAC-signed
+  // token. The token expiry is enforced both client-side (we drop a
+  // stale token on mount) and server-side (every admin API rejects
+  // expired tokens). localStorage is now an opaque blob, not a trust
+  // bit — anyone can flip a flag in DevTools, but only a valid signed
+  // token gets past the server.
   useEffect(() => {
-    if (localStorage.getItem('adminLoggedIn') === 'true') {
+    const stored = readStoredAdminSession();
+    if (stored && stored.expiresAt && new Date(stored.expiresAt).getTime() > Date.now()) {
       setIsLoggedIn(true);
       fetchAllData();
+    } else if (stored) {
+      // Expired or malformed — wipe so the gate re-prompts.
+      localStorage.removeItem('kua_admin_session');
     }
   }, []);
 
-  const handleLogin = () => {
-    if (password === 'KUA2026') {
-      setIsLoggedIn(true);
+  const handleLogin = async () => {
+    setError('');
+    try {
+      const r = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      let body = {};
+      try { body = await r.json(); } catch {}
+      if (!r.ok) {
+        setError(body.error || `Login failed (HTTP ${r.status})`);
+        return;
+      }
+      localStorage.setItem('kua_admin_session', JSON.stringify(body));
+      // Legacy flag kept ONLY for any in-flight code paths still
+      // reading 'adminLoggedIn' — they should migrate to reading the
+      // session blob, but the flag is harmless on its own (no API
+      // accepts it as auth).
       localStorage.setItem('adminLoggedIn', 'true');
-      setError('');
+      setIsLoggedIn(true);
       fetchAllData();
-    } else {
-      setError('Incorrect password');
+    } catch (err) {
+      setError('Network error contacting login endpoint');
     }
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    localStorage.removeItem('kua_admin_session');
     localStorage.removeItem('adminLoggedIn');
   };
 

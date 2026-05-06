@@ -5,6 +5,7 @@ import { ProvenancePill } from '../../components/ProvenancePill.js';
 import { reductionActions, reductionActionsByVisibility } from '../../data/reductionActions.js';
 import { rankActions } from '../../utils/hotspots.js';
 import { getCustomActions, saveCustomAction, deleteCustomAction } from '../../data/customActions.js';
+import { adminFetch } from '../../utils/adminFetch.js';
 
 // Admin Actions — same UX as the public /actions page, but shows
 // EVERY action regardless of visibility, including capex / vendor /
@@ -288,9 +289,8 @@ function AddCustomActionForm({ onAdded }) {
     setEstimate(null);
     setSaved(false);
     try {
-      const r = await fetch('/api/admin/estimate-action', {
+      const r = await adminFetch('/api/admin/estimate-action', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim() || undefined,
