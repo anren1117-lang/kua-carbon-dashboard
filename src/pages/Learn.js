@@ -48,7 +48,19 @@ function ClassLessons() {
   useEffect(() => {
     let cancelled = false;
     fetch('/api/teacher/lessons?status=published')
-      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(async (r) => {
+        if (!r.ok) {
+          let detail = '';
+          try { const body = await r.json(); detail = body?.error ? ` — ${body.error}` : ''; }
+          catch {}
+          throw new Error(`HTTP ${r.status}${detail}`);
+        }
+        // Vite-local serves /api/* as the SPA shell — r.json() on HTML
+        // throws SyntaxError. Degrade to an empty list so the page
+        // renders the curated paths without a scary error banner.
+        try { return await r.json(); }
+        catch { return { lessons: [] }; }
+      })
       .then((j) => { if (!cancelled) setLessons(j.lessons || []); })
       .catch((err) => { if (!cancelled) setError(err.message); });
     return () => { cancelled = true; };

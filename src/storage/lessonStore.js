@@ -121,7 +121,10 @@ export async function listLessons({ createdByHash, status } = {}) {
       console.warn('teacher_lessons list failed, falling back to memory:', err.message);
     }
   }
-  let out = memStore.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // Sort defensively — undefined createdAt would throw .localeCompare
+  // on undefined and propagate as a 500 even after the Supabase paths
+  // were hardened above. Coerce to '' so bad rows sort to the end.
+  let out = memStore.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   if (createdByHash) out = out.filter((l) => l.createdByHash === createdByHash);
   if (status) out = out.filter((l) => l.status === status);
   return out;

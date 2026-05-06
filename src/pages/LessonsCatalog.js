@@ -41,7 +41,21 @@ export default function LessonsCatalog() {
   useEffect(() => {
     let cancelled = false;
     fetch('/api/teacher/lessons?status=published')
-      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(async (r) => {
+        // Same tri-state error tolerance as TeacherPortal MyLessons:
+        // surface the server-reported error on non-OK; degrade to an
+        // empty list when Vite-local serves the SPA shell instead of
+        // a JSON response (so the catalog reads as "no lessons yet"
+        // rather than throwing a SyntaxError).
+        if (!r.ok) {
+          let detail = '';
+          try { const body = await r.json(); detail = body?.error ? ` — ${body.error}` : ''; }
+          catch {}
+          throw new Error(`HTTP ${r.status}${detail}`);
+        }
+        try { return await r.json(); }
+        catch { return { lessons: [] }; }
+      })
       .then((j) => { if (!cancelled) setLessons(j.lessons || []); })
       .catch((err) => { if (!cancelled) setError(err.message); });
     return () => { cancelled = true; };

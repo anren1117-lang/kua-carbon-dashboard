@@ -46,17 +46,25 @@ function MyLessons() {
     const hash = getTeacherHash();
     fetch(`/api/teacher/lessons?createdByHash=${encodeURIComponent(hash)}`)
       .then(async (r) => {
-        if (r.ok) return r.json();
-        // Surface the server's actual error message instead of a generic
-        // "HTTP 500" — the handler returns { error: '...' } on every
-        // failure path. Without this the user (and the developer
-        // debugging from the dashboard) had no way to tell whether the
-        // 500 was a Supabase outage, a missing table, an env-var
-        // misconfig, or something else.
-        let detail = '';
-        try { const body = await r.json(); detail = body?.error ? ` — ${body.error}` : ''; }
-        catch {}
-        throw new Error(`HTTP ${r.status}${detail}`);
+        // Tolerate three error shapes:
+        //   1. Non-OK status with a JSON body — surface the body's
+        //      `error` field so the user sees the real cause.
+        //   2. Non-OK status with non-JSON — show the status code.
+        //   3. OK status but body isn't JSON. Happens when Vite serves
+        //      this page locally without /api/* routes wired — the
+        //      SPA fallback rewrites /api/teacher/lessons to
+        //      index.html and returns HTTP 200 with HTML. r.json()
+        //      throws SyntaxError. Treat it as "API not running here"
+        //      so the panel falls back to the empty state instead of
+        //      yelling at the user.
+        if (!r.ok) {
+          let detail = '';
+          try { const body = await r.json(); detail = body?.error ? ` — ${body.error}` : ''; }
+          catch {}
+          throw new Error(`HTTP ${r.status}${detail}`);
+        }
+        try { return await r.json(); }
+        catch { return { lessons: [] }; }
       })
       .then((j) => { if (!cancelled) setLessons(j.lessons || []); })
       .catch((err) => { if (!cancelled) setError(err.message); });

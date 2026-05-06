@@ -33,7 +33,18 @@ export default function StudentLesson() {
     let cancelled = false;
     setLoading(true);
     fetch(`/api/teacher/lessons?id=${encodeURIComponent(id)}`)
-      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(async (r) => {
+        if (!r.ok) {
+          let detail = '';
+          try { const body = await r.json(); detail = body?.error ? ` — ${body.error}` : ''; }
+          catch {}
+          throw new Error(`HTTP ${r.status}${detail}`);
+        }
+        // Vite-local serves /api/* as the SPA shell — bail with a
+        // not-found shape so the existing error branch renders.
+        try { return await r.json(); }
+        catch { throw new Error('API unavailable (development server has /api/* unwired)'); }
+      })
       .then((j) => {
         if (cancelled) return;
         setLesson(j.lesson);

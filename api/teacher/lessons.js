@@ -238,13 +238,33 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const { id, createdByHash, status } = req.query || {};
       if (id) {
-        const lesson = await getLesson(id);
-        if (!lesson) { res.status(404).json({ error: 'Not found' }); return; }
-        res.status(200).json({ lesson });
+        try {
+          const lesson = await getLesson(id);
+          if (!lesson) { res.status(404).json({ error: 'Not found' }); return; }
+          res.status(200).json({ lesson });
+        } catch (err) {
+          // The storage layer falls back to memory on most errors, but
+          // anything that escapes (e.g. malformed timestamps in the
+          // backing row, Supabase init reject) was crashing the page
+          // with a 500 + no useful detail. Degrade to 404 so the
+          // student lesson page renders its "Lesson not found" branch.
+          console.warn('teacher_lessons getLesson failed:', err.message);
+          res.status(404).json({ error: 'Not found' });
+        }
         return;
       }
-      const lessons = await listLessons({ createdByHash, status });
-      res.status(200).json({ lessons });
+      // List path: similarly, never let an internal storage error turn
+      // into a 500. The TeacherPortal "My lessons" panel reading a
+      // 500 with no detail was the user-reported symptom — return an
+      // empty list + a warning field so the UI degrades to "you
+      // haven't created any lessons yet" instead of a scary error.
+      try {
+        const lessons = await listLessons({ createdByHash, status });
+        res.status(200).json({ lessons });
+      } catch (err) {
+        console.warn('teacher_lessons listLessons failed:', err.message);
+        res.status(200).json({ lessons: [], warning: `lesson storage unavailable: ${err.message}` });
+      }
       return;
     }
 
