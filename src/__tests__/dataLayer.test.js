@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { composeScope1, composeScope1FromBills, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -520,5 +521,91 @@ describe('Asset inventory counts', () => {
     expect(view.counts.seeded).toBe(total - decommissionedRows.length - overriddenRows.length);
 
     delete globalThis.localStorage;
+  });
+});
+
+describe('composeScope1FromBills (live Supabase fuel_bills → measured Scope 1)', () => {
+  it('falls back to placeholder when bills array is empty', () => {
+    const r = composeScope1FromBills([]);
+    expect(r.totalMt).toBe(SCOPE1_TOTAL_MT);
+    expect(r.provenance).toBe('estimated');
+  });
+
+  it('falls back to placeholder when input is null/undefined', () => {
+    expect(composeScope1FromBills(null).totalMt).toBe(SCOPE1_TOTAL_MT);
+    expect(composeScope1FromBills(undefined).totalMt).toBe(SCOPE1_TOTAL_MT);
+  });
+
+  it('flips heating row to MEASURED when any rows present, with correct kg → mt math', () => {
+    // 100,000 gal heating oil × 10.16 kg/gal = 1,016,000 kg = 1,016 mt heating.
+    const r = composeScope1FromBills([
+      { fuel_type: 'Heating Oil', gallons: 50000 },
+      { fuel_type: 'Heating Oil', gallons: 50000 },
+    ]);
+    expect(r.provenance).toBe('measured');
+    const heatingRow = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
+    expect(heatingRow.provenance).toBe('measured');
+    expect(heatingRow.mt).toBe(1016);
+  });
+
+  it('mixes fuel types using EPA factors (oil 10.16 + propane 5.72)', () => {
+    // 1,000 gal oil = 10.16 mt; 1,000 gal propane = 5.72 mt; sum 15.88.
+    const r = composeScope1FromBills([
+      { fuel_type: 'Heating Oil', gallons: 1000 },
+      { fuel_type: 'Propane',     gallons: 1000 },
+    ]);
+    const heatingRow = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
+    expect(heatingRow.mt).toBe(16); // 15.88 → round → 16
+    expect(FUEL_FACTORS_KG_PER_GAL['Heating Oil']).toBe(10.16);
+    expect(FUEL_FACTORS_KG_PER_GAL['Propane']).toBe(5.72);
+  });
+
+  it('skips rows with unknown fuel_type or invalid gallons rather than silently bucketing', () => {
+    const r = composeScope1FromBills([
+      { fuel_type: 'Heating Oil', gallons: 1000 },          // counted
+      { fuel_type: 'NotARealFuel', gallons: 999999 },       // skipped
+      { fuel_type: 'Heating Oil', gallons: 'banana' },      // skipped
+      { fuel_type: 'Heating Oil', gallons: -50 },           // skipped (negative)
+    ]);
+    const heatingRow = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
+    expect(heatingRow.mt).toBe(10); // only the valid 1000 gal counted
+    expect(heatingRow.method).toMatch(/3 row.* skipped/);
+  });
+
+  it('keeps fleet + refrigerants as estimated even when heating goes measured', () => {
+    const r = composeScope1FromBills([{ fuel_type: 'Heating Oil', gallons: 100 }]);
+    const fleet = r.breakdown.find((b) => b.source.toLowerCase().includes('fleet'));
+    const refrig = r.breakdown.find((b) => b.source.toLowerCase().includes('refrigerant'));
+    expect(fleet.provenance).toBe('estimated');
+    expect(refrig.provenance).toBe('estimated');
+  });
+
+  it('honors caller-provided fleet/refrigerant overrides', () => {
+    const r = composeScope1FromBills(
+      [{ fuel_type: 'Heating Oil', gallons: 100 }],
+      { fleetMt: 200, refrigerantsMt: 25 },
+    );
+    const fleet = r.breakdown.find((b) => b.source.toLowerCase().includes('fleet'));
+    const refrig = r.breakdown.find((b) => b.source.toLowerCase().includes('refrigerant'));
+    expect(fleet.mt).toBe(200);
+    expect(refrig.mt).toBe(25);
+  });
+});
+
+describe('canonical scope totals (post-fork-collapse)', () => {
+  it('Scope 1 placeholder = bottom-up cross-check central (1,350)', () => {
+    expect(SCOPE1_TOTAL_MT).toBe(1350);
+  });
+  it('Scope 3 placeholder = bottom-up cross-check central (2,635)', () => {
+    expect(SCOPE3_TOTAL_MT).toBe(2635);
+  });
+  it('Gross = Scope 1 + Scope 2 + Scope 3 (4,370 with measured Scope 2 ≈ 385)', () => {
+    expect(GROSS_MT).toBeGreaterThanOrEqual(4350);
+    expect(GROSS_MT).toBeLessThanOrEqual(4400);
+  });
+  it('composeScope1() breakdown rows sum within ±2 mt of headline (rounding)', () => {
+    const out = composeScope1();
+    const sum = out.breakdown.reduce((s, r) => s + r.mt, 0);
+    expect(Math.abs(sum - out.totalMt)).toBeLessThanOrEqual(2);
   });
 });

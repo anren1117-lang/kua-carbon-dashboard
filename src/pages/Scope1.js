@@ -4,6 +4,7 @@ import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 
 const SCOPE1_PER_STUDENT = +(SCOPE1_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
@@ -26,6 +27,18 @@ const styles = {
 };
 
 function Scope1() {
+  // The page renders the bottom-up estimate by default. The moment any
+  // fuel_bills rows exist, useMeasuredScope1() upgrades the heading
+  // total + flips the provenance pill from 'estimated' → 'measured'.
+  const live = useMeasuredScope1();
+  const isMeasured = live.measured && !live.loading && !live.error;
+  const headlineTotal = isMeasured ? live.totalMt : SCOPE1_TOTAL_MT;
+  const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(2);
+  const headlineProvenance = isMeasured ? 'measured' : 'estimated';
+  const headlineNote = isMeasured
+    ? `Heating row composed live from fuel_bills (${live.note}). Fleet + refrigerants still bottom-up.`
+    : 'Heating fuel is the overwhelming driver. Refrigerant leakage and fleet vehicles add roughly 20–50 mtCO₂e between them.';
+
   return (
     <div>
       <h1 style={styles.title}>Scope 1 — Direct Emissions</h1>
@@ -69,12 +82,12 @@ function Scope1() {
       <ScopePageInfo
         color="#ef4444"
         estimate={{
-          total: `~${SCOPE1_TOTAL_MT.toLocaleString()}`,
+          total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`,
           totalRange: `${SCOPE1_RANGE.low.toLocaleString()} – ${SCOPE1_RANGE.high.toLocaleString()} mt across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical NH-CZ6 stock / ENERGY STAR HDD-direct upper bound)`,
-          perStudent: SCOPE1_PER_STUDENT,
+          perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
-          provenance: 'estimated',
-          note: 'Heating fuel is the overwhelming driver. Refrigerant leakage and fleet vehicles add roughly 20–50 mtCO₂e between them.',
+          provenance: headlineProvenance,
+          note: headlineNote,
           currentMethod: 'Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Range across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical / ENERGY STAR HDD-direct upper) gives 891–1,867 mt total — see /admin/methodology for the full breakdown.',
           futureMethod: 'Heating fuel → annual delivery invoices per building entered via Admin Portal (fuel_bills table) × EPA factors → flips to MEASURED. Refrigerants → HVAC technician service-report mass balance × IPCC AR6 GWP100 → MEASURED. Fleet → KUA fuel-card records × EPA Mobile Combustion factors → MEASURED. Once all three integrate, this page reads measured end-to-end.',
         }}

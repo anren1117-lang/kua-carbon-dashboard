@@ -27,13 +27,95 @@ const SCOPE1_PLACEHOLDER_BREAKDOWN = [
 ];
 
 /** Compute Scope 1 from the underlying components. Today this is the
- *  placeholder; once data wiring ships it composes from real records. */
+ *  bottom-up cross-check central; once data wiring ships it composes
+ *  from real records. */
 export function composeScope1() {
   return {
     totalMt: SCOPE1_PLACEHOLDER_MT,
     breakdown: SCOPE1_PLACEHOLDER_BREAKDOWN,
     provenance: 'estimated',
-    note: 'Hand-set placeholder. Composes from fuel_bills + refrigerant logs + fuel-card records once those are integrated.',
+    note: 'Bottom-up cross-check central. Replaces with measured records via composeScope1FromBills() once fuel_bills + refrigerant logs + fuel-card records are integrated.',
+  };
+}
+
+// EPA GHG Emission Factors Hub 2024 (kg CO2e per gallon).
+// Used by composeScope1FromBills() to convert fuel-delivery invoices
+// into a Scope 1 heating component. Keep keys spelled exactly as the
+// admin form's `fuel_type` dropdown so the lookup is direct.
+export const FUEL_FACTORS_KG_PER_GAL = {
+  'Heating Oil': 10.16,
+  'Propane':      5.72,
+  'Diesel':      10.18,
+  'Gasoline':     8.89,
+};
+
+/**
+ * Compose a Scope 1 result from real Supabase fuel_bills rows. Returns
+ * the same shape as composeScope1() but with provenance='measured' if
+ * any fuel rows are present, falling back to the bottom-up placeholder
+ * for fleet + refrigerants until those tables ship too.
+ *
+ * Pure function: no I/O, no global state. The Supabase fetch is the
+ * caller's responsibility (see src/hooks/useMeasuredScope1.js).
+ *
+ * @param {Array<{ fuel_type: string, gallons: number|string }>} bills
+ * @param {{ fleetMt?: number, refrigerantsMt?: number }} [opts]
+ * @returns {{ totalMt: number, breakdown: object[], provenance: string, note: string }}
+ */
+export function composeScope1FromBills(bills, opts = {}) {
+  const fleetMt = typeof opts.fleetMt === 'number' ? opts.fleetMt
+    : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('fleet'))?.mt || 0);
+  const refrigMt = typeof opts.refrigerantsMt === 'number' ? opts.refrigerantsMt
+    : (SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes('refrigerant'))?.mt || 0);
+
+  if (!Array.isArray(bills) || bills.length === 0) {
+    // Nothing measured yet — return the placeholder unchanged so the
+    // dashboard is honest about what's not yet sourced.
+    return composeScope1();
+  }
+
+  // Sum kg by fuel type. Skip rows with unknown fuel types or
+  // non-numeric gallons rather than silently bucketing them.
+  let heatingKg = 0;
+  let unknownTypeRows = 0;
+  for (const row of bills) {
+    const factor = FUEL_FACTORS_KG_PER_GAL[row.fuel_type];
+    const gal = Number(row.gallons);
+    if (!factor || !Number.isFinite(gal) || gal < 0) { unknownTypeRows++; continue; }
+    heatingKg += gal * factor;
+  }
+  const heatingMt = heatingKg / 1000;
+  const totalMt = heatingMt + fleetMt + refrigMt;
+
+  const breakdown = [
+    {
+      source: 'Heating oil + propane',
+      mt: Math.round(heatingMt),
+      provenance: 'measured',
+      method: `${bills.length} fuel_bills row${bills.length === 1 ? '' : 's'} × EPA Stationary Combustion factors${unknownTypeRows > 0 ? ` (${unknownTypeRows} row${unknownTypeRows === 1 ? '' : 's'} skipped — unknown fuel_type or invalid gallons)` : ''}.`,
+    },
+    {
+      source: 'Fleet vehicles',
+      mt: Math.round(fleetMt),
+      provenance: 'estimated',
+      method: 'Bottom-up registry placeholder (fuel-card records not yet integrated).',
+    },
+    {
+      source: 'Refrigerant leakage',
+      mt: Math.round(refrigMt),
+      provenance: 'estimated',
+      method: 'Bottom-up placeholder (refrigerant service-report mass balance not yet integrated).',
+    },
+  ];
+
+  return {
+    totalMt: Math.round(totalMt),
+    breakdown,
+    // 'measured' for the heating row; the page should still show the
+    // estimated pill for fleet + refrigerants. Consumers that want
+    // mixed provenance read breakdown[i].provenance directly.
+    provenance: 'measured',
+    note: `Heating composed from ${bills.length} fuel_bills row${bills.length === 1 ? '' : 's'}. Fleet + refrigerants still bottom-up.`,
   };
 }
 
