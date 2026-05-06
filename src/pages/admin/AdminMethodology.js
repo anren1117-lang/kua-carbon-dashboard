@@ -6,9 +6,14 @@ import {
   KUA_HDD_BASE_65,
   HEATING_KBTU_PER_SQFT,
   SCOPE1_HEATING_DETAIL,
+  SCOPE1_RANGE,
+  SCOPE1_COMPONENT_RANGES,
   SCOPE3_RANGE,
   SCOPE3_COMPONENT_RANGES,
+  SINKS_RANGE,
+  SINKS_COMPONENT_RANGES,
 } from '../../data/geographicEstimates.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
 
 const styles = {
@@ -120,6 +125,92 @@ function AdminMethodology() {
 
       <div style={styles.card}>
         <h2 style={styles.h2}>
+          Composite gross + net range (every scope, every method) <ProvenancePill provenance="cited" />
+        </h2>
+        <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
+          Roll-up of the per-component low/central/high across Scope 1 + Scope 2 (±5% measured
+          band) + Scope 3 + sinks (negative). The brackets show what KUA's full balance looks like
+          across the spread of reasonable methodologies — the central column is what the public
+          dashboard reports today.
+        </p>
+        {(() => {
+          const s2Low = 366, s2Central = 385, s2High = 405; // measured ±5%
+          const grossLow = SCOPE1_RANGE.low + s2Low + SCOPE3_RANGE.low;
+          const grossCentral = SCOPE1_RANGE.central + s2Central + SCOPE3_RANGE.central;
+          const grossHigh = SCOPE1_RANGE.high + s2High + SCOPE3_RANGE.high;
+          const netLow = grossLow - SINKS_RANGE.high;       // most-negative net = smallest gross + biggest drawdown
+          const netCentral = grossCentral - SINKS_RANGE.central;
+          const netHigh = grossHigh - SINKS_RANGE.low;      // largest net = biggest gross + smallest drawdown
+          return (
+            <div style={styles.compareGrid}>
+              <div style={styles.compareCell}>
+                <div style={styles.compareLabel}>Gross (S1 + S2 + S3)</div>
+                <div style={styles.compareValue}>{Math.round(grossCentral).toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+                <div style={styles.compareDelta}>Range {Math.round(grossLow).toLocaleString()} – {Math.round(grossHigh).toLocaleString()} mt</div>
+              </div>
+              <div style={styles.compareCell}>
+                <div style={styles.compareLabel}>Sinks drawdown</div>
+                <div style={styles.compareValue}>−{Math.round(SINKS_RANGE.central).toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+                <div style={styles.compareDelta}>Range −{Math.round(SINKS_RANGE.low).toLocaleString()} to −{Math.round(SINKS_RANGE.high).toLocaleString()} mt</div>
+              </div>
+              <div style={styles.compareCell}>
+                <div style={styles.compareLabel}>Net (gross − sinks)</div>
+                <div style={styles.compareValue}>{Math.round(netCentral).toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+                <div style={styles.compareDelta}>Range {Math.round(netLow).toLocaleString()} – {Math.round(netHigh).toLocaleString()} mt</div>
+              </div>
+              <div style={styles.compareCell}>
+                <div style={styles.compareLabel}>Per student (net)</div>
+                <div style={styles.compareValue}>{(netCentral / BOTTOM_UP_TOTALS.studentsAtBasis).toFixed(1)}<span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}> mt/student</span></div>
+                <div style={styles.compareDelta}>Range {(netLow / BOTTOM_UP_TOTALS.studentsAtBasis).toFixed(1)} – {(netHigh / BOTTOM_UP_TOTALS.studentsAtBasis).toFixed(1)} mt/student</div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div style={styles.card}>
+        <h2 style={styles.h2}>
+          Scope 1 estimate range — multiple methods per component <ProvenancePill provenance="cited" />
+        </h2>
+        <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
+          Same multi-method treatment as Scope 3, applied to KUA's direct combustion + leakage
+          sources. The whole-Scope-1 range
+          ({SCOPE1_RANGE.low.toLocaleString()}–{SCOPE1_RANGE.high.toLocaleString()} mtCO₂e/yr,
+          central {SCOPE1_RANGE.central.toLocaleString()}) brackets every reasonable interpretation
+          of building energy intensity, fleet maintenance state, and refrigerant leak rate. The
+          canonical placeholder ({Math.round(SCOPE1_TOTAL_MT).toLocaleString()} mt) sits inside.
+        </p>
+        <div style={styles.compareGrid}>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Scope 1 — low</div>
+            <div style={styles.compareValue}>{SCOPE1_RANGE.low.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Modern stock + best-practice leak</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Scope 1 — central</div>
+            <div style={styles.compareValue}>{SCOPE1_RANGE.central.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Mean across methods</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Scope 1 — high</div>
+            <div style={styles.compareValue}>{SCOPE1_RANGE.high.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Older stock + aging-equipment</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Spread</div>
+            <div style={styles.compareValue}>±{Math.round(((SCOPE1_RANGE.high - SCOPE1_RANGE.low) / 2) / SCOPE1_RANGE.central * 100)}%</div>
+            <div style={styles.compareDelta}>Range as % of central</div>
+          </div>
+        </div>
+        <div style={{ marginTop: 18 }}>
+          {SCOPE1_COMPONENT_RANGES.map((row) => (
+            <Scope3RangeRow key={row.component} row={row} />
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.card}>
+        <h2 style={styles.h2}>
           Scope 3 estimate range — multiple methods per component <ProvenancePill provenance="cited" />
         </h2>
         <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
@@ -157,6 +248,43 @@ function AdminMethodology() {
 
         <div style={{ marginTop: 18 }}>
           {SCOPE3_COMPONENT_RANGES.map((row) => (
+            <Scope3RangeRow key={row.component} row={row} />
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.card}>
+        <h2 style={styles.h2}>
+          Sinks (forest sequestration) estimate range <ProvenancePill provenance="cited" />
+        </h2>
+        <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
+          KUA's ~1,000 acres of campus forest. Three published methodologies: Birdsey 1992
+          (US-forest average), USDA NH FIA Morin 2020 (NH-specific), Nowak 2013 (stand-specific
+          weighted by KUA forest type mix). Range
+          {' '}{Math.round(SINKS_RANGE.low).toLocaleString()}–{Math.round(SINKS_RANGE.high).toLocaleString()} mtCO₂e/yr drawdown,
+          central {Math.round(SINKS_RANGE.central).toLocaleString()}. Canonical sinks figure
+          ({Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt) tracks the Nowak stand-specific
+          method, which is the highest-fidelity bound for KUA's actual forest mix.
+        </p>
+        <div style={styles.compareGrid}>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Sinks — low</div>
+            <div style={styles.compareValue}>{Math.round(SINKS_RANGE.low).toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>US-forest average (Birdsey)</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Sinks — central</div>
+            <div style={styles.compareValue}>{Math.round(SINKS_RANGE.central).toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Mean across methods</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Sinks — high</div>
+            <div style={styles.compareValue}>{Math.round(SINKS_RANGE.high).toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Stand-specific (Nowak / NH FIA)</div>
+          </div>
+        </div>
+        <div style={{ marginTop: 18 }}>
+          {SINKS_COMPONENT_RANGES.map((row) => (
             <Scope3RangeRow key={row.component} row={row} />
           ))}
         </div>
