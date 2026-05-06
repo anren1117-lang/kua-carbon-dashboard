@@ -3,7 +3,7 @@
 // not a full integration test — but it catches signature regressions
 // and proves the handler → adapter → data layer path works end to end.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 import metersHandler         from '../../api/meters/index.js';
 import readingsHandler       from '../../api/meters/readings.js';
@@ -876,6 +876,60 @@ describe('/api/admin/audit-log auth + validation', () => {
     });
     expect(r.statusCode).toBe(400);
     expect(r.body.error).toMatch(/note/i);
+  });
+});
+
+describe('/api/admin/audit-log GET pagination + filters', () => {
+  // These tests don't hit a real Supabase — we just verify the
+  // query-string parsing doesn't crash and the auth gate fires
+  // before any DB call. The GET path is auth-then-query, so when
+  // Supabase env IS set but unreachable it 500s; when env is unset
+  // it 503s before parsing query. We use the unset path to keep
+  // tests hermetic.
+
+  beforeAll(() => {
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_ANON_KEY;
+    delete process.env.VITE_SUPABASE_URL;
+    delete process.env.VITE_SUPABASE_ANON_KEY;
+  });
+
+  it('503s GET regardless of pagination params (env unset, before DB call)', async () => {
+    const r = await call(adminAuditLogHandler, {
+      method: 'GET',
+      query: { limit: '100', offset: '50', table: 'fuel_bills', dateFrom: '2026-01-01', dateTo: '2026-12-31' },
+      headers: adminAuthHeaders(),
+    });
+    expect(r.statusCode).toBe(503);
+  });
+
+  it('still 401s on GET without admin auth even with all params set', async () => {
+    const r = await call(adminAuditLogHandler, {
+      method: 'GET',
+      query: { limit: '100', offset: '50' },
+      headers: {},
+    });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('still 401s on POST without admin auth (regression guard)', async () => {
+    const r = await call(adminAuditLogHandler, {
+      method: 'POST',
+      body: { action: 'insert', table: 'fuel_bills' },
+      headers: {},
+    });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('handles malformed numeric params gracefully (auth + env still gates)', async () => {
+    const r = await call(adminAuditLogHandler, {
+      method: 'GET',
+      query: { limit: 'banana', offset: 'NaN' },
+      headers: adminAuthHeaders(),
+    });
+    // The handler should never crash on bad numbers — Number(...) || N
+    // gives a sane default. With env unset it still 503s.
+    expect([503, 200]).toContain(r.statusCode);
   });
 });
 

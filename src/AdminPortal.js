@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { logAdminWrite } from './utils/adminAudit.js';
+import { toCsv, downloadCsv } from './utils/csv.js';
 
 // Read the server-issued admin session blob saved by handleLogin.
 function readStoredAdminSession() {
@@ -268,6 +269,18 @@ function AdminPortal() {
     }
   };
 
+  // Helper that downloads a single Supabase table as a CSV. Builds
+  // a date-stamped filename so consecutive exports don't clobber each
+  // other in the admin's downloads folder.
+  const exportCsv = (rows, tableName) => {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      showMessage(`No ${tableName} rows to export.`);
+      return;
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`kua_${tableName}_${stamp}.csv`, toCsv(rows));
+  };
+
   // Calculate emissions
   const calcFuelEmissions = (gallons, type) => ((parseFloat(gallons) || 0) * (fuelFactors[type] || 0) / 1000).toFixed(3);
   const calcWasteEmissions = (amount, unit, type) => {
@@ -374,7 +387,10 @@ function AdminPortal() {
               </form>
             </div>
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Fuel Records ({fuelBills.length}) — Total: {totalFuelEmissions.toFixed(2)} mtCO2e</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Fuel Records ({fuelBills.length}) — Total: {totalFuelEmissions.toFixed(2)} mtCO2e</h2>
+                {fuelBills.length > 0 && <button type="button" onClick={() => exportCsv(fuelBills, 'fuel_bills')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               {fuelBills.length === 0 ? <p style={styles.noData}>No records yet</p> : (
                 <div style={styles.list}>
                   {fuelBills.map(b => (
@@ -401,7 +417,10 @@ function AdminPortal() {
 
             {/* Day Students */}
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Day Students ({dayStudents.length})</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Day Students ({dayStudents.length})</h2>
+                {dayStudents.length > 0 && <button type="button" onClick={() => exportCsv(dayStudents, 'day_students')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               <form onSubmit={submitDayStudent}>
                 <div style={styles.formRow}>
                   <input type="text" placeholder="Zip Code" value={dayForm.zip_code} onChange={(e) => setDayForm({...dayForm, zip_code: e.target.value})} style={styles.input} required />
@@ -425,7 +444,10 @@ function AdminPortal() {
 
             {/* US Boarding */}
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>US Boarding Students ({usBoardingStudents.length})</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>US Boarding Students ({usBoardingStudents.length})</h2>
+                {usBoardingStudents.length > 0 && <button type="button" onClick={() => exportCsv(usBoardingStudents, 'us_boarding_students')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               <form onSubmit={submitUSStudent}>
                 <div style={styles.formRow}>
                   <input type="text" placeholder="Zip Code" value={usForm.zip_code} onChange={(e) => setUsForm({...usForm, zip_code: e.target.value})} style={styles.input} required />
@@ -450,7 +472,10 @@ function AdminPortal() {
 
             {/* International */}
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>International Students ({intlStudents.length})</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>International Students ({intlStudents.length})</h2>
+                {intlStudents.length > 0 && <button type="button" onClick={() => exportCsv(intlStudents, 'international_students')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               <form onSubmit={submitIntlStudent}>
                 <div style={styles.formRow}>
                   <input type="text" placeholder="Country" value={intlForm.country} onChange={(e) => setIntlForm({...intlForm, country: e.target.value})} style={styles.input} required />
@@ -483,7 +508,10 @@ function AdminPortal() {
 
             {/* Study Abroad */}
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Study Abroad ({studyAbroad.length})</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Study Abroad ({studyAbroad.length})</h2>
+                {studyAbroad.length > 0 && <button type="button" onClick={() => exportCsv(studyAbroad, 'study_abroad')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               <form onSubmit={submitStudyAbroad}>
                 <div style={styles.formRow}>
                   <input type="text" placeholder="Country" value={saForm.destination_country} onChange={(e) => setSaForm({...saForm, destination_country: e.target.value})} style={styles.input} required />
@@ -507,7 +535,10 @@ function AdminPortal() {
 
             {/* Faculty Travel */}
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Faculty Travel ({facultyTravel.length})</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Faculty Travel ({facultyTravel.length})</h2>
+                {facultyTravel.length > 0 && <button type="button" onClick={() => exportCsv(facultyTravel, 'faculty_travel')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               <form onSubmit={submitFacultyTravel}>
                 <div style={styles.formRow}>
                   <input type="text" placeholder="Country" value={ftForm.destination_country} onChange={(e) => setFtForm({...ftForm, destination_country: e.target.value})} style={styles.input} required />
@@ -569,7 +600,10 @@ function AdminPortal() {
               </form>
             </div>
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Waste Records ({wasteRecords.length}) — Net: {totalWasteEmissions.toFixed(2)} mtCO2e</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Waste Records ({wasteRecords.length}) — Net: {totalWasteEmissions.toFixed(2)} mtCO2e</h2>
+                {wasteRecords.length > 0 && <button type="button" onClick={() => exportCsv(wasteRecords, 'waste')} style={styles.csvBtn}>Download CSV</button>}
+              </div>
               {wasteRecords.length === 0 ? <p style={styles.noData}>No records yet</p> : (
                 <div style={styles.list}>
                   {wasteRecords.map(w => {
@@ -624,6 +658,8 @@ const styles = {
   infoBox: { backgroundColor: '#1e3a5f', borderRadius: '8px', padding: '12px', marginBottom: '15px', fontSize: '0.85rem', color: '#93c5fd' },
   card: { backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '15px' },
   cardTitle: { fontSize: '1.1rem', color: '#22c55e', marginBottom: '15px', margin: '0 0 15px 0' },
+  cardHeaderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 15 },
+  csvBtn: { padding: '6px 14px', background: 'transparent', color: '#22c55e', border: '1px solid #22c55e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: 0.4, textTransform: 'uppercase' },
   formRow: { display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' },
   input: { flex: 1, minWidth: '120px', padding: '10px', borderRadius: '6px', border: '1px solid #334155', backgroundColor: '#0f172a', color: 'white', fontSize: '0.95rem' },
   submitBtn: { padding: '10px 20px', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },
