@@ -127,17 +127,17 @@ function Scope1() {
           },
           {
             action: 'Thermostat setback at night and breaks',
-            impact: '−7 to −60 mtCO₂e/yr campus-wide',
+            impact: '−8 to −67 mtCO₂e/yr campus-wide',
             detail: 'Lowering setpoint 2°F overnight, weekends, and during breaks. EPA-published rule of thumb: ~7% reduction per 1°F × 8 hours.',
             data: [
               { input: 'Heating reduction per 1°F × 8 hrs setback', value: '~7%', source: 'EPA ENERGY STAR Programmable Thermostat guidance' },
-              { input: 'Total campus heating fuel', value: '~100,000 gal/yr (estimate)', source: 'KUA Scope 1 estimate, this dashboard' },
+              { input: 'Total campus heating fuel', value: '~111,000 gal/yr oil + ~19,000 gal propane (bottom-up estimate)', source: 'KUA Scope 1 estimate, this dashboard' },
               { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Hub 2024' },
             ],
             math: [
               '# 2°F overnight setback ≈ 7% reduction (one full 8-hr window)',
-              '# campus = 100,000 gal × 7% × 10.16 = 71,120 kg ≈ 71 mtCO₂e/yr',
-              '# realistic implementation across mixed building stock: 7-60 mt range',
+              '# campus = 111,000 gal × 7% × 10.16 = 78,943 kg ≈ 79 mtCO₂e/yr',
+              '# realistic implementation across mixed building stock: 8-67 mt range',
             ],
           },
           {

@@ -205,7 +205,7 @@ export default function AnnualReport() {
         <ul style={styles.notes}>
           <li><strong>Source factors.</strong> Electricity uses ISO-NE 2024 generation mix with per-fuel output emission factors (~0.235 kg CO₂/kWh effective system rate, in eGRID NEWE 2022 published range). Heating fuel uses EPA Greenhouse Gas Emission Factors Hub. Food uses Poore & Nemecek (2018). Waste uses EPA WARM v15. Procurement uses US EPA EEIO v2.0 spend-based.</li>
           <li><strong>Forest sequestration</strong> uses stand-specific accumulation rates from Birdsey (1992) for closed-canopy and Nowak (2013) for open-grown trees.</li>
-          <li><strong>This report is preliminary.</strong> Until the data ingestion pipeline is fully populated, several Scope 1 and Scope 3 figures are bottom-up estimates. The headline numbers above are central values; the published-method range is Scope 1 891–1,867 mt, Scope 3 1,726–3,720 mt, sinks 2,100–2,650 mt. Full per-component method-by-method breakdown at <em>/admin/methodology</em>.</li>
+          <li><strong>This report is preliminary.</strong> Until the data ingestion pipeline is fully populated, several Scope 1 and Scope 3 figures are dashboard placeholders. A published-method bottom-up cross-check brackets each scope: Scope 1 891–1,867 mt (central ~1,351), Scope 3 1,726–3,720 mt (central ~2,635), sinks 2,100–2,650 mt. The placeholders sit inside each cross-check bracket. Full per-component method-by-method breakdown at <em>/admin/methodology</em>.</li>
           <li><strong>Audit trail.</strong> Every emission factor in the dashboard carries its citation and year. The full registry is at <em>/data-admin</em>.</li>
         </ul>
       </Section>

@@ -45,7 +45,7 @@ KUA fingerprint (use this — DO NOT generalize):
 - Fleet: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans (16 mpg) + 1 truck (14 mpg). ~54 mt/yr current.
 - 1,000 acres of campus forest sequestering ~2,650 mt/yr (Birdsey 1992 + Nowak 2013).
 - Student travel cohorts: ~100 day students (local Upper Valley), ~190 US boarders (mostly Northeast + scattered nationwide), ~50 international (East Asia heavy; Europe + South America secondary).
-- Bottom-up scope totals (central / range): Scope 1 ≈ 1,250 mt (range 891–1,867 across 3 methods); Scope 2 ≈ 385 mt (±5% measured); Scope 3 ≈ 2,635 mt (range 1,726–3,720 across 3-4 methods × 8 components: student travel dominated by international / US boarders, plus dining + procurement). Heating-oil dominates Scope 1; international student travel + purchased goods dominate Scope 3.
+- Scope totals — Scope 1: ~1,250 mt dashboard placeholder, bottom-up cross-check ~1,351 mt central with range 891–1,867 across 3 methods. Scope 2: ~385 mt measured ±5%. Scope 3: ~2,700 mt dashboard placeholder, bottom-up cross-check ~2,635 mt central with range 1,726–3,720 across 3-4 methods × 8 components (student travel dominated by international / US boarders, plus dining + procurement). Heating-oil dominates Scope 1; international student travel + purchased goods dominate Scope 3.
 
 Anchor your estimate against these whole-school annual mtCO2e benchmarks:
 - Heat-pump retrofit, single dorm (Densmore-class): 30–55 mt/yr (4-8K gal oil × 10.16 kg/gal × 70% displacement after Scope 2 add-back).
