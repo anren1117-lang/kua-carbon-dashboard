@@ -262,6 +262,8 @@ function AdminPortal() {
     }
   };
 
+  const [editingWasteId, setEditingWasteId] = useState(null);
+
   const submitWaste = async (e) => {
     e.preventDefault();
     const amountNum = parseFloat(wasteForm.amount);
@@ -278,15 +280,41 @@ function AdminPortal() {
       school_year: wasteForm.school_year
     };
     try {
-      const { error } = await supabase.from('waste').insert([wasteRow]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'waste', payload: wasteRow });
-      showMessage('✓ Waste record added!');
+      if (editingWasteId) {
+        const { error } = await supabase.from('waste').update(wasteRow).eq('id', editingWasteId);
+        if (error) throw error;
+        logAdminWrite({ action: 'update', table: 'waste', payload: { id: editingWasteId, ...wasteRow } });
+        showMessage('✓ Waste record updated!');
+      } else {
+        const { error } = await supabase.from('waste').insert([wasteRow]);
+        if (error) throw error;
+        logAdminWrite({ action: 'insert', table: 'waste', payload: wasteRow });
+        showMessage('✓ Waste record added!');
+      }
       setWasteForm({ date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: '2025-2026' });
+      setEditingWasteId(null);
       fetchAllData();
     } catch (err) {
       showMessage('Error: ' + err.message);
     }
+  };
+
+  const startEditWaste = (w) => {
+    setWasteForm({
+      date: w.date || '',
+      waste_type: w.waste_type || 'Landfill',
+      amount: w.amount != null ? String(w.amount) : '',
+      unit: w.unit || 'tons',
+      notes: w.notes || '',
+      school_year: w.school_year || '2025-2026',
+    });
+    setEditingWasteId(w.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEditWaste = () => {
+    setEditingWasteId(null);
+    setWasteForm({ date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: '2025-2026' });
   };
 
   const deleteRecord = async (table, id) => {
@@ -901,7 +929,16 @@ function AdminPortal() {
                 {wasteForm.amount && <p style={{...styles.preview, color: parseFloat(calcWasteEmissions(wasteForm.amount, wasteForm.unit, wasteForm.waste_type)) < 0 ? '#22c55e' : '#f97316'}}>
                   Emissions: <strong>{calcWasteEmissions(wasteForm.amount, wasteForm.unit, wasteForm.waste_type)} mtCO2e</strong>
                 </p>}
-                <button type="submit" style={styles.submitBtn}>Add Waste Record</button>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button type="submit" style={styles.submitBtn}>
+                    {editingWasteId ? 'Update Waste Record' : 'Add Waste Record'}
+                  </button>
+                  {editingWasteId && (
+                    <button type="button" onClick={cancelEditWaste} style={styles.cancelBtn}>
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
             <div style={styles.card}>
@@ -914,12 +951,15 @@ function AdminPortal() {
                   {filteredWasteRecords.map(w => {
                     const em = parseFloat(calcWasteEmissions(w.amount, w.unit, w.waste_type));
                     return (
-                      <div key={w.id} style={styles.listItem}>
+                      <div key={w.id} style={{ ...styles.listItem, ...(editingWasteId === w.id ? styles.listItemEditing : {}) }}>
                         <div>
                           <strong>{w.waste_type}</strong> — {w.date} — {w.amount} {w.unit}
                           <br /><small style={{color: em < 0 ? '#22c55e' : '#f97316'}}>{em >= 0 ? '+' : ''}{em} mtCO2e</small>
                         </div>
-                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('waste', w.id)} style={styles.deleteBtn}>🗑️</button>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button type="button" aria-label="Edit record" onClick={() => startEditWaste(w)} style={styles.editBtn}>✎</button>
+                          <button type="button" aria-label="Delete record" onClick={() => deleteRecord('waste', w.id)} style={styles.deleteBtn}>🗑️</button>
+                        </div>
                       </div>
                     );
                   })}
