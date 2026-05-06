@@ -49,7 +49,9 @@ vi.mock('../supabaseClient.js', () => ({ supabase: makeQueryHarness() }));
 // Imports must come AFTER vi.mock so the hook picks up the mock.
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
+import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 
 beforeEach(() => {
   setNextResponses({});
@@ -173,6 +175,53 @@ describe('useMeasuredScope3', () => {
     const { result } = renderHook(() => useMeasuredScope3());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toMatch(/connection/i);
+    expect(result.current.measured).toBe(false);
+  });
+});
+
+describe('useMeasuredSinks', () => {
+  it('returns hardcoded inventory on first paint (loading=true)', () => {
+    const { result } = renderHook(() => useMeasuredSinks());
+    expect(result.current.totalMt).toBe(Math.round(ANNUAL_SEQUESTRATION_MT));
+    expect(result.current.acres).toBe(TOTAL_FOREST_ACRES);
+    expect(result.current.loading).toBe(true);
+    expect(result.current.measured).toBe(false);
+    expect(Array.isArray(result.current.perStand)).toBe(true);
+    expect(result.current.perStand.length).toBeGreaterThan(0);
+  });
+
+  it('keeps placeholder inventory when forest_stand_actuals is empty', async () => {
+    setNextResponses({ forest_stand_actuals: { data: [], error: null } });
+    const { result } = renderHook(() => useMeasuredSinks());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.totalMt).toBe(Math.round(ANNUAL_SEQUESTRATION_MT));
+    expect(result.current.measured).toBe(false);
+  });
+
+  it('flips to measured when forest_stand_actuals has rows', async () => {
+    setNextResponses({
+      forest_stand_actuals: {
+        data: [
+          { stand_id: 'a', name: 'North',  acres: 100, mtco2e_acre_yr: 2.5 },  // 250
+          { stand_id: 'b', name: 'South',  acres: 200, mtco2e_acre_yr: 3.0 },  // 600
+        ],
+        error: null,
+      },
+    });
+    const { result } = renderHook(() => useMeasuredSinks());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.measured).toBe(true);
+    expect(result.current.totalMt).toBe(850);
+    expect(result.current.standCount).toBe(2);
+    expect(result.current.acres).toBe(300);
+    expect(result.current.perStand[0]).toMatchObject({ stand_id: 'a', name: 'North', mt: 250 });
+  });
+
+  it('surfaces a Supabase error as state.error', async () => {
+    setNextResponses({ forest_stand_actuals: { data: null, error: { message: 'rls denied' } } });
+    const { result } = renderHook(() => useMeasuredSinks());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toMatch(/rls/i);
     expect(result.current.measured).toBe(false);
   });
 });
