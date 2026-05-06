@@ -14,6 +14,7 @@ import {
   SINKS_COMPONENT_RANGES,
 } from '../../data/geographicEstimates.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
+import { GRID_MIX_ANNUAL_MTCO2E } from '../../data/gridMix.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
 
 const styles = {
@@ -130,11 +131,15 @@ function AdminMethodology() {
         <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
           Roll-up of the per-component low/central/high across Scope 1 + Scope 2 (±5% measured
           band) + Scope 3 + sinks (negative). The brackets show what KUA's full balance looks like
-          across the spread of reasonable methodologies — the central column is what the public
-          dashboard reports today.
+          across the spread of reasonable methodologies. The central column is the cross-check
+          arithmetic central across published methods — the public dashboard headline (using the
+          hand-set placeholders for Scope 1 + Scope 3 until measured records replace them) sits
+          inside this bracket.
         </p>
         {(() => {
-          const s2Low = 366, s2Central = 385, s2High = 405; // measured ±5%
+          const s2Central = Math.round(GRID_MIX_ANNUAL_MTCO2E);
+          const s2Low = Math.round(s2Central * 0.95);
+          const s2High = Math.round(s2Central * 1.05); // measured ±5%
           const grossLow = SCOPE1_RANGE.low + s2Low + SCOPE3_RANGE.low;
           const grossCentral = SCOPE1_RANGE.central + s2Central + SCOPE3_RANGE.central;
           const grossHigh = SCOPE1_RANGE.high + s2High + SCOPE3_RANGE.high;
