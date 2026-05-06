@@ -24,10 +24,18 @@ function ResultsContent() {
   useEffect(() => {
     let cancelled = false;
     setError(null);
+    // Reject non-OK responses up front. Earlier this used .then(r => r.json())
+    // unconditionally, so a 404 (lesson not found) parsed as { error: 'Not found' },
+    // setLesson got `undefined`, and the !lesson branch below kept showing
+    // "Loading…" forever. Fail loudly instead.
+    const okJson = (label) => (r) => {
+      if (!r.ok) throw new Error(`${label} ${r.status}`);
+      return r.json();
+    };
     Promise.all([
-      fetch(`/api/teacher/lessons?id=${encodeURIComponent(lessonId)}`).then((r) => r.json()),
-      fetch(`/api/quiz/attempts?lessonId=${encodeURIComponent(lessonId)}&rollup=students`).then((r) => r.json()),
-      fetch(`/api/quiz/attempts?lessonId=${encodeURIComponent(lessonId)}`).then((r) => r.json()),
+      fetch(`/api/teacher/lessons?id=${encodeURIComponent(lessonId)}`).then(okJson('lesson')),
+      fetch(`/api/quiz/attempts?lessonId=${encodeURIComponent(lessonId)}&rollup=students`).then(okJson('rollup')),
+      fetch(`/api/quiz/attempts?lessonId=${encodeURIComponent(lessonId)}`).then(okJson('attempts')),
     ])
       .then(([lj, sj, aj]) => {
         if (cancelled) return;
