@@ -47,11 +47,15 @@ function safeEqual(a, b) {
 function isAuthorized(req) {
   const expected = readEnv('CRON_SECRET');
   if (!expected) return false; // Refuse to run unauthenticated.
+  // Vercel's built-in cron scheduler invokes paths with
+  // `Authorization: Bearer <CRON_SECRET>` when the CRON_SECRET env is
+  // set on the project. That's the only auth path Vercel itself uses;
+  // earlier code also accepted `x-vercel-cron-secret`, but no Vercel
+  // surface actually sends a header by that name — it was a phantom
+  // alternate path. Keep just the Bearer-token check (constant-time)
+  // so the contract matches the platform.
   const auth = req.headers?.authorization || req.headers?.Authorization;
   if (auth && safeEqual(auth, `Bearer ${expected}`)) return true;
-  // Vercel built-in crons send a signed header that includes the secret.
-  const vercelCron = req.headers?.['x-vercel-cron-secret'];
-  if (vercelCron && safeEqual(vercelCron, expected)) return true;
   return false;
 }
 
@@ -61,7 +65,7 @@ export default async function handler(req, res) {
     return;
   }
   if (!isAuthorized(req)) {
-    res.status(401).json({ error: 'Unauthorized — set CRON_SECRET and pass it as Bearer token or x-vercel-cron-secret' });
+    res.status(401).json({ error: 'Unauthorized — set CRON_SECRET and pass it as an Authorization: Bearer header' });
     return;
   }
 
