@@ -35,23 +35,36 @@ function readEnv(key) {
   return undefined;
 }
 
-const SYSTEM_PROMPT = `You estimate the annual whole-school CO2e reduction for a single proposed action at Kimball Union Academy (340-student boarding school in Plainfield NH on the ISO-NE grid).
+const SYSTEM_PROMPT = `You estimate the annual whole-school CO2e reduction for a single proposed action at Kimball Union Academy. Calibrate every estimate against KUA's specific geographic + institutional context.
 
-Anchor your estimate against these published benchmarks (whole-school annual mtCO2e):
-- Heat-pump retrofit, single dorm: 30–60 mt/yr
-- Heating-oil to heat-pump, full campus: 600–900 mt/yr
-- LED retrofit, full campus: 6–10 mt/yr
-- 60 kW rooftop solar: 6–8 mt/yr
-- HVAC schedule optimization (auto-shutoff): 9–15 mt/yr
-- Dorm setpoint reduction 2°F: 15–22 mt/yr
-- 20% beef cut in dining: 50–60 mt/yr
-- Beef → chicken full swap: 100–150 mt/yr
-- Compost expansion: 4–6 mt/yr
-- Faculty commute incentives: 25–35 mt/yr
-- One fewer international round-trip × 50 students: ~150 mt/yr
-- LED lighting per dorm: <1 mt/yr
-- Lights-off campaign: 1–3 mt/yr
-- Recycling program: 2–5 mt/yr
+KUA fingerprint (use this — DO NOT generalize):
+- 340 students, ~228 boarders + ~100 day, in Plainfield/Meriden NH (climate zone 6A, ~7,500 HDD).
+- 19 buildings, ~290,300 sqft total. 8 dorms ~95K sqft, academic+athletic+dining ~195K sqft.
+- Heating: ~111K gal #2 heating oil + ~12K gal propane per year (bottom-up: sqft × NH-CZ6 intensity 45-75 kBtu/sqft/yr).
+- Electricity: ~1.64M kWh/yr Year-1 projection on the ISO-NE grid (effective rate 0.235 kg/kWh from per-fuel × 2024 mix).
+- Fleet: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans (16 mpg) + 1 truck (14 mpg). ~54 mt/yr current.
+- 1,000 acres of campus forest sequestering ~2,650 mt/yr (Birdsey 1992 + Nowak 2013).
+- Student travel cohorts: ~100 day students (local Upper Valley), ~190 US boarders (mostly Northeast + scattered nationwide), ~50 international (East Asia heavy; Europe + South America secondary).
+- Bottom-up scope totals: Scope 1 ≈ 1,300 mt, Scope 2 ≈ 385 mt, Scope 3 ≈ 2,700 mt (heating-oil-dominated Scope 1; international travel + dining + procurement dominate Scope 3).
+
+Anchor your estimate against these whole-school annual mtCO2e benchmarks:
+- Heat-pump retrofit, single dorm (Densmore-class): 30–55 mt/yr (4-8K gal oil × 10.16 kg/gal × 70% displacement after Scope 2 add-back).
+- Heating-oil to heat-pump, full campus: 600–900 mt/yr (~70% of bottom-up Scope 1 heating ≈ 1,234 mt).
+- Building envelope upgrade (insulation + air sealing) per building: 8–20 mt/yr (15-25% heating reduction × per-building gal).
+- LED retrofit (remaining T8s campus-wide): 6–10 mt/yr (most KUA fixtures already LED; this targets the residual fluorescent inventory).
+- 60 kW rooftop solar (Phase-2): 6–8 mt/yr (NH 14% capacity factor × ~50% self-consumption × 0.235 kg/kWh).
+- HVAC schedule optimization (auto-shutoff after 9 PM, Whittemore-class buildings): 9–15 mt/yr.
+- Dorm setpoint reduction 2°F: 15–22 mt/yr (EIA RECS 1°F ≈ 3% heating × 8 dorms × ~6K gal oil each).
+- 20% beef cut in dining (~257K student meals/yr): 50–60 mt/yr (Project Drawdown + Poore & Nemecek).
+- Beef → chicken full swap: 200–250 mt/yr (Poore & Nemecek beef 60 kg/kg vs chicken 6 kg/kg × throughput).
+- Compost expansion: 4–6 mt/yr (EPA WARM landfill methane avoided).
+- Faculty/staff commute incentives (52 staff × Upper Valley ~12 mi avg one-way): 25–35 mt/yr.
+- One fewer international round-trip × 50 students: ~150 mt/yr (50 × 3 mt/RT East Asia, ICAO + DEFRA RF).
+- One fewer domestic boarder RT (winter break): ~50 mt/yr (190 × 0.3 mt avg saved).
+- Lights-off campaign: 1–3 mt/yr (small effect on already-LED stock).
+- Recycling program improvement: 2–5 mt/yr.
+- Buy 100% NH-Class-1 RECs: 385 mt/yr full Scope 2 offset, ~$115K/yr (NEPOOL GIS market price).
+- Forest conservation easement on 1,000 acres: 0 net mt added (protects existing 2,650 mt/yr sink — important for accounting permanence).
 
 Output STRICT JSON only — no prose before/after — matching this shape:
 {
