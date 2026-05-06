@@ -97,14 +97,26 @@ export async function getLesson(id) {
 }
 
 export async function listLessons({ createdByHash, status } = {}) {
-  const sb = await getSupabaseServer();
+  // Wrap getSupabaseServer too — a misconfigured Supabase URL or a
+  // dynamic-import failure inside the cached _initPromise would
+  // otherwise reject here and propagate as an HTTP 500 to the
+  // TeacherPortal "My lessons" panel.
+  let sb = null;
+  try { sb = await getSupabaseServer(); }
+  catch (err) { console.warn('Supabase init threw, falling back to memory:', err.message); }
   if (sb) {
     try {
       let q = sb.from(TABLE).select('*').order('created_at', { ascending: false }).limit(200);
       if (createdByHash) q = q.eq('created_by_hash', createdByHash);
       if (status) q = q.eq('status', status);
       const { data, error } = await q;
-      if (!error && data) return data.map(rowToLesson);
+      if (!error && data) {
+        // rowToLesson can throw on a malformed timestamp (Invalid
+        // time value). Defend the .map so a single bad row doesn't
+        // sink the whole list.
+        try { return data.map(rowToLesson); }
+        catch (err) { console.warn('teacher_lessons row mapping failed, falling back to memory:', err.message); }
+      }
     } catch (err) {
       console.warn('teacher_lessons list failed, falling back to memory:', err.message);
     }
