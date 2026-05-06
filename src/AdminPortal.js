@@ -183,7 +183,7 @@ function AdminPortal() {
     }
   };
 
-  const startEditFuel = (b) => {
+  const fillFuelForm = (b) => {
     setFuelForm({
       date: b.date || '',
       fuel_type: b.fuel_type || 'Propane',
@@ -191,10 +191,14 @@ function AdminPortal() {
       cost: b.cost != null ? String(b.cost) : '',
       notes: b.notes || '',
     });
-    setEditingFuelId(b.id);
-    // Scroll to the form so the admin sees the prefilled values.
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditFuel = (b) => { fillFuelForm(b); setEditingFuelId(b.id); };
+  // Pre-fill the form with the row's values but DON'T set editingId
+  // — submit will INSERT a new row. Useful for entering recurring
+  // deliveries / repeated trips. Caller can tweak the form before
+  // saving.
+  const duplicateFuel = (b) => { fillFuelForm(b); setEditingFuelId(null); };
 
   const cancelEditFuel = () => {
     setEditingFuelId(null);
@@ -234,15 +238,16 @@ function AdminPortal() {
     setEditingDayId(null);
     fetchAllData();
   };
-  const startEditDay = (s) => {
+  const fillDayForm = (s) => {
     setDayForm({
       zip_code: s.zip_code || '',
       graduation_year: s.graduation_year != null ? String(s.graduation_year) : '2026',
       school_year: s.school_year || '2025-2026',
     });
-    setEditingDayId(s.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditDay = (s) => { fillDayForm(s); setEditingDayId(s.id); };
+  const duplicateDay = (s) => { fillDayForm(s); setEditingDayId(null); };
   const cancelEditDay = () => { setEditingDayId(null); setDayForm({ zip_code: '', graduation_year: '2026', school_year: '2025-2026' }); };
 
   const submitUSStudent = async (e) => {
@@ -254,16 +259,17 @@ function AdminPortal() {
     setEditingUsId(null);
     fetchAllData();
   };
-  const startEditUs = (s) => {
+  const fillUsForm = (s) => {
     setUsForm({
       zip_code: s.zip_code || '',
       state: s.state || '',
       graduation_year: s.graduation_year != null ? String(s.graduation_year) : '2026',
       school_year: s.school_year || '2025-2026',
     });
-    setEditingUsId(s.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditUs = (s) => { fillUsForm(s); setEditingUsId(s.id); };
+  const duplicateUs = (s) => { fillUsForm(s); setEditingUsId(null); };
   const cancelEditUs = () => { setEditingUsId(null); setUsForm({ zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' }); };
 
   const submitIntlStudent = async (e) => {
@@ -275,15 +281,16 @@ function AdminPortal() {
     setEditingIntlId(null);
     fetchAllData();
   };
-  const startEditIntl = (s) => {
+  const fillIntlForm = (s) => {
     setIntlForm({
       country: s.country || '',
       graduation_year: s.graduation_year != null ? String(s.graduation_year) : '2026',
       school_year: s.school_year || '2025-2026',
     });
-    setEditingIntlId(s.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditIntl = (s) => { fillIntlForm(s); setEditingIntlId(s.id); };
+  const duplicateIntl = (s) => { fillIntlForm(s); setEditingIntlId(null); };
   const cancelEditIntl = () => { setEditingIntlId(null); setIntlForm({ country: '', graduation_year: '2026', school_year: '2025-2026' }); };
 
   const submitStudyAbroad = async (e) => {
@@ -295,7 +302,7 @@ function AdminPortal() {
     setEditingSaId(null);
     fetchAllData();
   };
-  const startEditSa = (t) => {
+  const fillSaForm = (t) => {
     setSaForm({
       destination_country: t.destination_country || '',
       destination_city: t.destination_city || '',
@@ -303,9 +310,10 @@ function AdminPortal() {
       return_date: t.return_date || '',
       school_year: t.school_year || '2025-2026',
     });
-    setEditingSaId(t.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditSa = (t) => { fillSaForm(t); setEditingSaId(t.id); };
+  const duplicateSa = (t) => { fillSaForm(t); setEditingSaId(null); };
   const cancelEditSa = () => { setEditingSaId(null); setSaForm({ destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' }); };
 
   const submitFacultyTravel = async (e) => {
@@ -317,7 +325,7 @@ function AdminPortal() {
     setEditingFtId(null);
     fetchAllData();
   };
-  const startEditFt = (t) => {
+  const fillFtForm = (t) => {
     setFtForm({
       destination_country: t.destination_country || '',
       destination_city: t.destination_city || '',
@@ -325,9 +333,10 @@ function AdminPortal() {
       departure_date: t.departure_date || '',
       return_date: t.return_date || '',
     });
-    setEditingFtId(t.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditFt = (t) => { fillFtForm(t); setEditingFtId(t.id); };
+  const duplicateFt = (t) => { fillFtForm(t); setEditingFtId(null); };
   const cancelEditFt = () => { setEditingFtId(null); setFtForm({ destination_country: '', destination_city: '', trip_purpose: 'Conference', departure_date: '', return_date: '' }); };
 
   const [editingWasteId, setEditingWasteId] = useState(null);
@@ -367,7 +376,7 @@ function AdminPortal() {
     }
   };
 
-  const startEditWaste = (w) => {
+  const fillWasteForm = (w) => {
     setWasteForm({
       date: w.date || '',
       waste_type: w.waste_type || 'Landfill',
@@ -376,9 +385,10 @@ function AdminPortal() {
       notes: w.notes || '',
       school_year: w.school_year || '2025-2026',
     });
-    setEditingWasteId(w.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const startEditWaste = (w) => { fillWasteForm(w); setEditingWasteId(w.id); };
+  const duplicateWaste = (w) => { fillWasteForm(w); setEditingWasteId(null); };
 
   const cancelEditWaste = () => {
     setEditingWasteId(null);
@@ -585,6 +595,7 @@ function AdminPortal() {
                       </div>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button type="button" aria-label="Edit record" onClick={() => startEditFuel(b)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Duplicate record" onClick={() => duplicateFuel(b)} style={styles.editBtn}>⎘</button>
                         <button type="button" aria-label="Delete record" onClick={() => deleteRecord('fuel_bills', b.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     </div>
@@ -637,6 +648,7 @@ function AdminPortal() {
                       <span>Zip: {s.zip_code} | Class of {s.graduation_year}</span>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button type="button" aria-label="Edit record" onClick={() => startEditDay(s)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Duplicate record" onClick={() => duplicateDay(s)} style={styles.editBtn}>⎘</button>
                         <button type="button" aria-label="Delete record" onClick={() => deleteRecord('day_students', s.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     </div>
@@ -681,6 +693,7 @@ function AdminPortal() {
                       <span>{s.state || '?'} - {s.zip_code} | Class of {s.graduation_year}</span>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button type="button" aria-label="Edit record" onClick={() => startEditUs(s)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Duplicate record" onClick={() => duplicateUs(s)} style={styles.editBtn}>⎘</button>
                         <button type="button" aria-label="Delete record" onClick={() => deleteRecord('us_boarding_students', s.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     </div>
@@ -724,6 +737,7 @@ function AdminPortal() {
                       <span>{s.country} | Class of {s.graduation_year}</span>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button type="button" aria-label="Edit record" onClick={() => startEditIntl(s)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Duplicate record" onClick={() => duplicateIntl(s)} style={styles.editBtn}>⎘</button>
                         <button type="button" aria-label="Delete record" onClick={() => deleteRecord('international_students', s.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     </div>
@@ -776,6 +790,7 @@ function AdminPortal() {
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.departure_date || 'TBD'}</span>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button type="button" aria-label="Edit record" onClick={() => startEditSa(t)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Duplicate record" onClick={() => duplicateSa(t)} style={styles.editBtn}>⎘</button>
                         <button type="button" aria-label="Delete record" onClick={() => deleteRecord('study_abroad', t.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     </div>
@@ -824,6 +839,7 @@ function AdminPortal() {
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.trip_purpose}</span>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button type="button" aria-label="Edit record" onClick={() => startEditFt(t)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Duplicate record" onClick={() => duplicateFt(t)} style={styles.editBtn}>⎘</button>
                         <button type="button" aria-label="Delete record" onClick={() => deleteRecord('faculty_travel', t.id)} style={styles.deleteBtn}>🗑️</button>
                       </div>
                     </div>
@@ -904,6 +920,7 @@ function AdminPortal() {
                         </div>
                         <div style={{ display: 'flex', gap: 4 }}>
                           <button type="button" aria-label="Edit record" onClick={() => startEditWaste(w)} style={styles.editBtn}>✎</button>
+                          <button type="button" aria-label="Duplicate record" onClick={() => duplicateWaste(w)} style={styles.editBtn}>⎘</button>
                           <button type="button" aria-label="Delete record" onClick={() => deleteRecord('waste', w.id)} style={styles.deleteBtn}>🗑️</button>
                         </div>
                       </div>
