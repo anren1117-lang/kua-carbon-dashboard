@@ -460,14 +460,23 @@ export const SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT = Math.round(SCOPE3_STUDENT_TRAV
 
 // ─── Dining (food procurement) — 3 method cross-check ─────────
 const _diningRange = (() => {
-  const studentMealsPerYr = 340 * 3 * 36 * 7;
-  const otherMealsPerYr = 50000;
-  const totalMeals = studentMealsPerYr + otherMealsPerYr;
+  // Boarders eat school meals essentially all the time (3 meals × 7
+  // days × 36 weeks = 756 meals/yr). Day students eat fewer school
+  // meals — typically breakfast + lunch on weekdays only (~10/wk ×
+  // 36 wks = 360 meals/yr). Earlier code used `340 * 3 * 36 * 7`
+  // which assumed every student eats 3 meals 7 days/wk, overstating
+  // by ~18%. Split the cohorts so the meal count reflects actual
+  // boarding/day mix.
+  const boarderMealsPerYr = COHORTS.usBoarder.count * 3 * 7 * 36
+                           + COHORTS.international.count * 3 * 7 * 36; // 240 × 756 = 181,440
+  const dayMealsPerYr = COHORTS.day.count * 10 * 36;                  // 100 × 360 = 36,000
+  const otherMealsPerYr = 50000;                                       // faculty/staff/visitor
+  const totalMeals = boarderMealsPerYr + dayMealsPerYr + otherMealsPerYr;
   // Method A: Sodexo institutional benchmark.
   const A = {
     label: 'Sodexo institutional benchmark (mixed protein)',
     mt: totalMeals * 0.70 / 1000,
-    basis: `${totalMeals.toLocaleString()} meals/yr × 0.70 kg CO2e/meal (Sodexo Education benchmark, mixed-protein menu).`,
+    basis: `${totalMeals.toLocaleString()} meals/yr (${boarderMealsPerYr.toLocaleString()} boarder + ${dayMealsPerYr.toLocaleString()} day + ${otherMealsPerYr.toLocaleString()} faculty/staff) × 0.70 kg CO2e/meal (Sodexo Education benchmark, mixed-protein menu).`,
   };
   // Method B: Poore & Nemecek 2018 weighted by KUA-typical NH menu
   // (more meat than national avg).
