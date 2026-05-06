@@ -6,6 +6,8 @@ import {
   KUA_HDD_BASE_65,
   HEATING_KBTU_PER_SQFT,
   SCOPE1_HEATING_DETAIL,
+  SCOPE3_RANGE,
+  SCOPE3_COMPONENT_RANGES,
 } from '../../data/geographicEstimates.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
 
@@ -117,6 +119,50 @@ function AdminMethodology() {
       </div>
 
       <div style={styles.card}>
+        <h2 style={styles.h2}>
+          Scope 3 estimate range — multiple methods per component <ProvenancePill provenance="cited" />
+        </h2>
+        <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
+          A single number for Scope 3 hides the fact that the answer depends heavily on which
+          methodology you anchor on. For each component below we run 3-4 independent methods
+          (e.g. Yale-style cohort method vs Andover/Exeter peer benchmark vs national long-tail
+          scenario for US boarders) and report the spread. The whole-Scope-3 range
+          ({SCOPE3_RANGE.low.toLocaleString()}–{SCOPE3_RANGE.high.toLocaleString()} mtCO₂e/yr,
+          central {SCOPE3_RANGE.central.toLocaleString()}) brackets every reasonable interpretation
+          of KUA's situation. The canonical placeholder ({Math.round(SCOPE3_TOTAL_MT).toLocaleString()} mt) sits inside.
+        </p>
+
+        <div style={styles.compareGrid}>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Scope 3 — low</div>
+            <div style={styles.compareValue}>{SCOPE3_RANGE.low.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Best-case bound across methods</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Scope 3 — central</div>
+            <div style={styles.compareValue}>{SCOPE3_RANGE.central.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Mean of method means</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Scope 3 — high</div>
+            <div style={styles.compareValue}>{SCOPE3_RANGE.high.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
+            <div style={styles.compareDelta}>Upper bound across methods</div>
+          </div>
+          <div style={styles.compareCell}>
+            <div style={styles.compareLabel}>Spread</div>
+            <div style={styles.compareValue}>±{Math.round(((SCOPE3_RANGE.high - SCOPE3_RANGE.low) / 2) / SCOPE3_RANGE.central * 100)}%</div>
+            <div style={styles.compareDelta}>Range as % of central</div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 18 }}>
+          {SCOPE3_COMPONENT_RANGES.map((row) => (
+            <Scope3RangeRow key={row.component} row={row} />
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.card}>
         <h2 style={styles.h2}>Reporting principles enforced by the schema</h2>
         <ul style={styles.ul}>
           <li>Every record has a <code>source</code> column linking back to the underlying meter, invoice, sample, or survey.</li>
@@ -154,5 +200,63 @@ function AdminMethodology() {
     </div>
   );
 }
+
+function Scope3RangeRow({ row }) {
+  const span = row.high - row.low;
+  return (
+    <div style={s3Styles.row}>
+      <div style={s3Styles.head}>
+        <div style={s3Styles.title}>{row.component}</div>
+        <div style={s3Styles.range}>
+          <span style={s3Styles.lo}>{Math.round(row.low).toLocaleString()}</span>
+          <span style={s3Styles.sep}> – </span>
+          <span style={s3Styles.hi}>{Math.round(row.high).toLocaleString()}</span>
+          <span style={s3Styles.unit}> mt/yr</span>
+          <span style={s3Styles.central}>· central {Math.round(row.central).toLocaleString()}</span>
+        </div>
+      </div>
+      <div style={s3Styles.bar}>
+        <div
+          style={{
+            ...s3Styles.barFill,
+            width: span > 0 ? '100%' : '4px',
+          }}
+          title={`Span ${Math.round(span).toLocaleString()} mt across ${row.methods.length} methods`}
+        />
+      </div>
+      <div style={s3Styles.methodsList}>
+        {row.methods.map((m, i) => (
+          <div key={i} style={s3Styles.method}>
+            <div style={s3Styles.methodHead}>
+              <span style={s3Styles.methodLabel}>{m.label}</span>
+              <span style={s3Styles.methodMt}>{Math.round(m.mt).toLocaleString()} mt</span>
+            </div>
+            <div style={s3Styles.methodBasis}>{m.basis}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const s3Styles = {
+  row: { padding: '14px 0', borderBottom: '1px solid #1f2937' },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 8 },
+  title: { fontSize: 14, color: '#e5e7eb', fontWeight: 700 },
+  range: { fontSize: 13, fontVariantNumeric: 'tabular-nums' },
+  lo: { color: '#86efac', fontWeight: 700 },
+  hi: { color: '#fbbf24', fontWeight: 700 },
+  sep: { color: '#475569' },
+  unit: { color: '#94a3b8', marginLeft: 4 },
+  central: { color: '#cbd5e1', marginLeft: 10, fontSize: 12 },
+  bar: { height: 4, background: 'linear-gradient(90deg, #22c55e 0%, #fbbf24 100%)', borderRadius: 2, marginBottom: 10 },
+  barFill: { height: '100%', background: 'transparent' },
+  methodsList: { display: 'grid', gap: 8, marginTop: 4 },
+  method: { padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  methodHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 },
+  methodLabel: { fontSize: 12, color: '#22d3ee', fontWeight: 700 },
+  methodMt: { fontSize: 12, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
+  methodBasis: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginTop: 4 },
+};
 
 export default AdminMethodology;

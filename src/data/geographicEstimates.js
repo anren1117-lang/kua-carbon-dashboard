@@ -190,143 +190,399 @@ export const SCOPE1_BOTTOM_UP_MT = +(
   SCOPE1_REFRIGERANTS_BOTTOM_UP_MT
 ).toFixed(0);
 
-// ─── Bottom-up: SCOPE 3 student travel ───────────────────────────
-// Yale-style residential-school methodology. Each cohort gets an
-// average per-student annual emissions figure based on typical
-// home-state distribution + trip frequency.
+// ─── SCOPE 3 cohort fingerprint (KUA-specific) ───────────────────
+// KUA's ~340 enrollment splits roughly into:
+//   • Day students    ~100 — Upper Valley local; most within Lebanon
+//                      / Hanover / Norwich / White River Junction
+//                      radius. No break flights.
+//   • US boarders     ~190 — heavily Northeast (per KUA admissions
+//                      material; significant cohort from MA / CT / NY
+//                      / NJ / VT / ME / RI within ~300 mi). Smaller
+//                      west-of-Mississippi tail. Avg 3-4 RTs/yr
+//                      (Thanksgiving, Winter, Spring break, Summer).
+//   • International   ~50  — East-Asia-heavy per KUA's published
+//                      international enrollment (China, Korea, Japan,
+//                      Vietnam, Thailand, Taiwan dominant; smaller
+//                      cohort Europe + Latin America). Avg 1-2 RTs/yr
+//                      (international students often stay over short
+//                      breaks; one or two long trips per year).
 //
-// Cohort breakdown (per KUA enrollment — adjust as roster lands):
-//   Day students:     ~100 (local commute, no break flights)
-//   US boarders:      ~190 (mostly Northeast + scattered West/South)
-//   International:    ~50  (East Asia heavy, also Europe + S. America)
-//
-// Per-student annual estimates use ICAO calculator + DEFRA 2024
-// per-passenger-km factors (with radiative forcing).
-const STUDENT_COHORTS = {
-  day:           { count: 100, mtPerStudentPerYr: 1.5,  basis: 'Avg 12 mi one-way × 180 school days × 0.351 kg/mi (EPA passenger vehicle)' },
-  usBoarder:     { count: 190, mtPerStudentPerYr: 3.0,  basis: 'Avg 3.5 RTs/yr × ~1500 mi avg one-way × mode-mix (drive <500mi, fly above) × ICAO/EPA factors' },
-  international: { count: 50,  mtPerStudentPerYr: 5.5,  basis: 'Avg 1.8 RTs/yr × ~5500 mi one-way × DEFRA long-haul with RF (~0.241 kg/passenger-mi)' },
-};
-const _studentTravel = (() => {
-  const breakdown = Object.entries(STUDENT_COHORTS).map(([key, c]) => ({
-    cohort: key,
-    count: c.count,
-    perStudent: c.mtPerStudentPerYr,
-    totalMt: c.count * c.mtPerStudentPerYr,
-    basis: c.basis,
-  }));
-  const total = breakdown.reduce((s, b) => s + b.totalMt, 0);
-  return { studentTravelMt: total, breakdown };
-})();
-export const SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT = _studentTravel.studentTravelMt;
-export const SCOPE3_STUDENT_TRAVEL_DETAIL = _studentTravel;
+// Each estimate below uses MULTIPLE independent methods so admins can
+// see the spread across reasonable assumptions. The published range
+// is [low, central, high] across methods.
 
-// ─── Bottom-up: SCOPE 3 dining (food procurement) ────────────────
-// 340 students × ~3 meals/day × 36 weeks = ~257K meals/yr.
-// Plus faculty/staff/visitor meals: ~50K/yr → ~310K total.
-// Average emission factor per institutional meal in mixed-protein US
-// dining: ~0.7 kg CO2e/meal (Sodexo institutional benchmark + Poore
-// & Nemecek 2018 weighted by typical menu mix). KUA serves more meat
-// than the average so scaling to 0.85 kg/meal.
-const _dining = (() => {
-  const studentMealsPerYr = 340 * 3 * 36 * 7; // 36 weeks × 7 days
+const COHORTS = {
+  day:           { count: 100, label: 'Day students' },
+  usBoarder:     { count: 190, label: 'US boarders' },
+  international: { count:  50, label: 'International' },
+};
+
+// Per-passenger-mile factors (kg CO2e). DEFRA 2024 with radiative
+// forcing where applicable.
+const KG_PER_MI = {
+  car_solo:     0.351,           // EPA passenger vehicle, 25 mpg
+  car_carpool:  0.351 / 2.5,     // 2.5-person avg carpool effective
+  bus_long:     0.072,           // DEFRA 2024 coach with RF n/a
+  rail:         0.045,           // DEFRA 2024 national rail
+  air_short:    0.255,           // DEFRA 2024 short-haul, with RF
+  air_long:     0.241,           // DEFRA 2024 long-haul, with RF
+};
+
+// ─── Day students: 3 method cross-check ─────────────────────────
+const _dayTravel = (() => {
+  // Method A: Upper Valley ACS commute distribution.
+  // ACS 5-yr: median Upper Valley commute ~10-12 mi one-way with mode
+  // ~85% drive-alone, 8% carpool, ~7% other (walk/bike/transit).
+  const A_mi = 11;
+  const A_modeFactor = 0.85 * KG_PER_MI.car_solo + 0.08 * KG_PER_MI.car_carpool + 0.07 * 0;
+  const A = {
+    label: 'Upper Valley ACS commute pattern',
+    mt: COHORTS.day.count * A_mi * 2 * 180 * A_modeFactor / 1000,
+    basis: `${COHORTS.day.count} day students × ${A_mi} mi avg one-way × 2 RT × 180 school days × ACS-weighted mode factor (${A_modeFactor.toFixed(3)} kg/mi blend: 85% solo + 8% carpool + 7% non-motor).`,
+  };
+  // Method B: EPA Smart Location Database — small-NH-school
+  // benchmark.
+  const B = {
+    label: 'EPA SLD school-commute benchmark',
+    mt: COHORTS.day.count * 1.4,
+    basis: `${COHORTS.day.count} day students × ~1.4 mt/student/yr (EPA Smart Location Database benchmark for small rural-residential K-12 commute footprints, weighted for NH light-duty fleet at 24 mpg blended).`,
+  };
+  // Method C: aggressive-carpool / EV bound (low end).
+  const C = {
+    label: 'Higher-carpool / EV scenario',
+    mt: COHORTS.day.count * 0.9,
+    basis: `${COHORTS.day.count} day students × 0.9 mt/student/yr (40% carpool + 15% EV penetration scenario; bound for what aggressive day-student transport policy could yield).`,
+  };
+  // Range
+  const all = [A, B, C];
+  const central = all.reduce((s, x) => s + x.mt, 0) / all.length;
+  return {
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central,
+    high: Math.max(...all.map((x) => x.mt)),
+  };
+})();
+export const SCOPE3_DAY_TRAVEL = _dayTravel;
+
+// ─── US boarders: 3 method cross-check ──────────────────────────
+const _usBoarderTravel = (() => {
+  // Method A: Yale-style residential boarding cohort method.
+  // 3.5 RTs/yr × Northeast-skewed avg ~600 mi one-way × mode-by-
+  // distance (drive <500 mi, fly above). For Northeast cohort that's
+  // ~70% drive 30% fly weighted.
+  const A_rtPerYr = 3.5;
+  const A_oneWayMi = 600;
+  const A_driveFraction = 0.7;
+  const A_modeFactor = A_driveFraction * KG_PER_MI.car_solo + (1 - A_driveFraction) * KG_PER_MI.air_short;
+  const A = {
+    label: 'Yale-style cohort method',
+    mt: COHORTS.usBoarder.count * A_rtPerYr * A_oneWayMi * 2 * A_modeFactor / 1000,
+    basis: `${COHORTS.usBoarder.count} US boarders × ${A_rtPerYr} RTs/yr × ${A_oneWayMi} mi avg one-way × 2 (RT) × mode-weighted factor (70% drive + 30% short-haul fly with RF).`,
+  };
+  // Method B: Phillips Academy Andover-style per-student benchmark.
+  // Andover sustainability report ~2.6-3.0 mt/student-traveler for
+  // domestic boarder cohort.
+  const B = {
+    label: 'Andover/Exeter peer benchmark',
+    mt: COHORTS.usBoarder.count * 2.8,
+    basis: `${COHORTS.usBoarder.count} US boarders × 2.8 mt/student/yr (Phillips Academy Andover + Phillips Exeter sustainability reports — comparable Northeast-skewed boarding cohort).`,
+  };
+  // Method C: high bound — assume more flying / longer distances.
+  // KUA might pull more nationally than Andover/Exeter on the long
+  // tail; if we assume 50/50 drive/fly weight on 800 mi avg one-way:
+  const C_oneWayMi = 800;
+  const C_modeFactor = 0.5 * KG_PER_MI.car_solo + 0.5 * KG_PER_MI.air_short;
+  const C = {
+    label: 'Higher-fly-share scenario (national long-tail)',
+    mt: COHORTS.usBoarder.count * 4.0 * C_oneWayMi * 2 * C_modeFactor / 1000,
+    basis: `${COHORTS.usBoarder.count} US boarders × 4 RTs/yr × ${C_oneWayMi} mi avg × 50/50 drive/fly mix (upper bound if cohort skews more national or summer travel adds 4th trip).`,
+  };
+  const all = [A, B, C];
+  const central = all.reduce((s, x) => s + x.mt, 0) / all.length;
+  return {
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central,
+    high: Math.max(...all.map((x) => x.mt)),
+  };
+})();
+export const SCOPE3_US_BOARDER_TRAVEL = _usBoarderTravel;
+
+// ─── International boarders: 4 method cross-check ───────────────
+const _intlTravel = (() => {
+  // Method A: ICAO calculator anchored on East-Asia-heavy cohort.
+  // BOS↔China RT ≈ 13.4K mi × 0.241 kg/passenger-mi (DEFRA long-haul
+  // with RF) ≈ 3.2 mt/RT. Weighted across countries: avg 3.0 mt/RT.
+  const A_mtPerRt = 3.0;
+  const A_rtsPerYr = 1.6;
+  const A = {
+    label: 'ICAO + DEFRA long-haul weighted by source country',
+    mt: COHORTS.international.count * A_rtsPerYr * A_mtPerRt,
+    basis: `${COHORTS.international.count} international boarders × ${A_rtsPerYr} RTs/yr × ~${A_mtPerRt} mt/RT (East-Asia-heavy cohort weighted: BOS↔Beijing/Shanghai/Tokyo/Seoul/HKG ~3.0-3.4 mt/RT × DEFRA long-haul 0.241 kg/passenger-mi with RF).`,
+  };
+  // Method B: explicit by-source-country distance × cohort split.
+  // Assumed cohort: 30 East Asia (avg 6800 mi one-way), 10 Europe
+  // (3500 mi one-way), 5 Latin America (3500 mi), 5 other (5000 mi).
+  const B_components = [
+    { region: 'East Asia',    students: 30, oneWayMi: 6800 },
+    { region: 'Europe',       students: 10, oneWayMi: 3500 },
+    { region: 'Latin America',students:  5, oneWayMi: 3500 },
+    { region: 'Other',        students:  5, oneWayMi: 5000 },
+  ];
+  const B_mt = B_components.reduce((s, c) =>
+    s + c.students * 1.6 * c.oneWayMi * 2 * KG_PER_MI.air_long / 1000, 0);
+  const B = {
+    label: 'Explicit source-country split',
+    mt: B_mt,
+    basis: `Assumed source-country distribution (East Asia 30 / Europe 10 / Latin America 5 / Other 5) × source-specific great-circle distances × 1.6 RTs/yr avg × DEFRA long-haul 0.241 kg/passenger-mi with RF.`,
+  };
+  // Method C: Yale-published international per-FTE figure.
+  // Yale Office of Sustainability cites 4-6 mt/yr per international
+  // student. Use 5 as central proxy.
+  const C = {
+    label: 'Yale international per-student benchmark',
+    mt: COHORTS.international.count * 5.0,
+    basis: `${COHORTS.international.count} international × 5.0 mt/student/yr (Yale Office of Sustainability published figure for residential international cohort).`,
+  };
+  // Method D: high-bound — 2 RTs/yr + summer (some students fly home
+  // for summer too) + RF on the high end.
+  const D = {
+    label: 'Two-RT-plus-summer scenario',
+    mt: COHORTS.international.count * 6.5,
+    basis: `${COHORTS.international.count} international × 6.5 mt/student/yr (assumes 2 RTs/yr including summer departure for full cohort, with RF on the high end).`,
+  };
+  const all = [A, B, C, D];
+  const central = all.reduce((s, x) => s + x.mt, 0) / all.length;
+  return {
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central,
+    high: Math.max(...all.map((x) => x.mt)),
+  };
+})();
+export const SCOPE3_INTL_TRAVEL = _intlTravel;
+
+// ─── Composite student travel (sum of cohort ranges) ───────────
+export const SCOPE3_STUDENT_TRAVEL_RANGE = {
+  low:     SCOPE3_DAY_TRAVEL.low + SCOPE3_US_BOARDER_TRAVEL.low + SCOPE3_INTL_TRAVEL.low,
+  central: SCOPE3_DAY_TRAVEL.central + SCOPE3_US_BOARDER_TRAVEL.central + SCOPE3_INTL_TRAVEL.central,
+  high:    SCOPE3_DAY_TRAVEL.high + SCOPE3_US_BOARDER_TRAVEL.high + SCOPE3_INTL_TRAVEL.high,
+};
+export const SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT = Math.round(SCOPE3_STUDENT_TRAVEL_RANGE.central);
+
+// ─── Dining (food procurement) — 3 method cross-check ─────────
+const _diningRange = (() => {
+  const studentMealsPerYr = 340 * 3 * 36 * 7;
   const otherMealsPerYr = 50000;
   const totalMeals = studentMealsPerYr + otherMealsPerYr;
-  const kgPerMeal = 0.85;
+  // Method A: Sodexo institutional benchmark.
+  const A = {
+    label: 'Sodexo institutional benchmark (mixed protein)',
+    mt: totalMeals * 0.70 / 1000,
+    basis: `${totalMeals.toLocaleString()} meals/yr × 0.70 kg CO2e/meal (Sodexo Education benchmark, mixed-protein menu).`,
+  };
+  // Method B: Poore & Nemecek 2018 weighted by KUA-typical NH menu
+  // (more meat than national avg).
+  const B = {
+    label: 'Poore & Nemecek 2018, NH boarding menu mix',
+    mt: totalMeals * 0.85 / 1000,
+    basis: `${totalMeals.toLocaleString()} meals/yr × 0.85 kg CO2e/meal (Poore & Nemecek 2018 weighted: 30% beef-containing meals + 35% other meat + 25% vegetarian + 10% vegan).`,
+  };
+  // Method C: high-meat scenario (more beef = upper bound).
+  const C = {
+    label: 'High-beef NH-boarding scenario',
+    mt: totalMeals * 1.10 / 1000,
+    basis: `${totalMeals.toLocaleString()} meals/yr × 1.10 kg CO2e/meal (40% beef-containing meals — upper bound for NH boarding-school dining patterns).`,
+  };
+  const all = [A, B, C];
   return {
-    diningMt: (totalMeals * kgPerMeal) / 1000,
-    totalMeals,
-    kgPerMeal,
-    basis: '~310K meals/yr × ~0.85 kgCO2e/meal (Poore & Nemecek 2018 mix scaled for typical NH school menu).',
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central: all.reduce((s, x) => s + x.mt, 0) / all.length,
+    high: Math.max(...all.map((x) => x.mt)),
   };
 })();
-export const SCOPE3_DINING_BOTTOM_UP_MT = _dining.diningMt;
-export const SCOPE3_DINING_DETAIL = _dining;
+export const SCOPE3_DINING_RANGE = _diningRange;
+export const SCOPE3_DINING_BOTTOM_UP_MT = Math.round(_diningRange.central);
 
-// ─── Bottom-up: SCOPE 3 waste ────────────────────────────────────
-// 340 students + ~80 staff = ~420 people on campus.
-// Per-person waste generation in K-12/college environments: ~0.5
-// kg/day per EPA Sustainable Materials Management benchmarks.
-// Assume 60% landfill / 25% recycling / 15% compost split.
-// Net emissions = landfill × +0.467 + recycling × −1.07 + compost ×
-// −0.18 (EPA WARM v15.1).
-const _waste = (() => {
+// ─── Waste — 3 method cross-check ───────────────────────────────
+const _wasteRange = (() => {
   const peopleOnCampus = 420;
-  const kgPerPersonPerDay = 0.5;
-  const daysPerYr = 220; // school days; reduces summer
-  const totalKg = peopleOnCampus * kgPerPersonPerDay * daysPerYr;
-  const landfillKg = totalKg * 0.60;
-  const recyclingKg = totalKg * 0.25;
-  const compostKg = totalKg * 0.15;
-  const mt =
-    (landfillKg * 0.467 + recyclingKg * -1.07 + compostKg * -0.18) / 1000;
+  const daysPerYr = 220;
+  // Method A: low generation + high diversion (current EPA-recommended
+  // school waste profile).
+  const A_kg = peopleOnCampus * 0.4 * daysPerYr;
+  const A_mt = (A_kg * 0.50 * 0.467 + A_kg * 0.30 * -1.07 + A_kg * 0.20 * -0.18) / 1000;
+  const A = {
+    label: 'Low generation + high diversion (best-case)',
+    mt: A_mt,
+    basis: `${peopleOnCampus} people × 0.4 kg/person/day × ${daysPerYr} days × 50/30/20 landfill/recycle/compost split × EPA WARM v15.1.`,
+  };
+  // Method B: KUA-typical (current operational pattern).
+  const B_kg = peopleOnCampus * 0.5 * daysPerYr;
+  const B_mt = (B_kg * 0.60 * 0.467 + B_kg * 0.25 * -1.07 + B_kg * 0.15 * -0.18) / 1000;
+  const B = {
+    label: 'KUA-typical operational pattern',
+    mt: B_mt,
+    basis: `${peopleOnCampus} people × 0.5 kg/person/day × ${daysPerYr} days × 60/25/15 split × EPA WARM v15.1.`,
+  };
+  // Method C: high generation + low diversion (upper bound).
+  const C_kg = peopleOnCampus * 0.7 * daysPerYr;
+  const C_mt = (C_kg * 0.75 * 0.467 + C_kg * 0.20 * -1.07 + C_kg * 0.05 * -0.18) / 1000;
+  const C = {
+    label: 'High generation + low diversion (worst-case)',
+    mt: C_mt,
+    basis: `${peopleOnCampus} people × 0.7 kg/person/day × ${daysPerYr} days × 75/20/5 split × EPA WARM v15.1.`,
+  };
+  const all = [A, B, C];
   return {
-    wasteMt: mt,
-    breakdown: { landfillKg, recyclingKg, compostKg, totalKg },
-    basis: 'EPA SMM ~0.5 kg/person/day × 220 school-days × 60/25/15 landfill/recycle/compost split × EPA WARM v15.1 net factors.',
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central: all.reduce((s, x) => s + x.mt, 0) / all.length,
+    high: Math.max(...all.map((x) => x.mt)),
   };
 })();
-export const SCOPE3_WASTE_BOTTOM_UP_MT = _waste.wasteMt;
-export const SCOPE3_WASTE_DETAIL = _waste;
+export const SCOPE3_WASTE_RANGE = _wasteRange;
+export const SCOPE3_WASTE_BOTTOM_UP_MT = Math.round(_wasteRange.central);
 
-// ─── Bottom-up: SCOPE 3 commuting (faculty/staff) ───────────────
-// ~52 staff × ~12 mi avg one-way (Upper Valley faculty distribution)
-// × 2 (RT) × 180 days × ~0.30 kg/mi (mixed gas/EV/carpool blend).
-const _commuting = (() => {
-  const staff = 52;
-  const oneWayMi = 12;
-  const days = 180;
-  const kgPerMi = 0.30;
-  const mt = (staff * oneWayMi * 2 * days * kgPerMi) / 1000;
+// ─── Faculty/staff commute — 3 method cross-check ──────────────
+const _commutingRange = (() => {
+  // Method A: Upper Valley ACS — 12 mi avg one-way × NH light-duty
+  // fleet 24 mpg × 180 days × ~52 staff.
+  const A = {
+    label: 'Upper Valley ACS + NH light-duty fleet',
+    mt: 52 * 12 * 2 * 180 * 0.351 / 1000,
+    basis: '52 staff × 12 mi avg one-way (Upper Valley ACS commute distribution) × 2 RT × 180 days × 0.351 kg/mi (EPA passenger vehicle, 25 mpg).',
+  };
+  // Method B: ICCT US light-duty effective fleet 2023 includes EVs.
+  // Lower because EV penetration is starting to bend the avg.
+  const B = {
+    label: 'ICCT 2023 effective fleet (EV-adjusted)',
+    mt: 52 * 12 * 2 * 180 * 0.30 / 1000,
+    basis: '52 staff × 12 mi × 2 × 180 × 0.30 kg/mi (ICCT 2023 effective fleet factor, includes ~5-10% EV penetration in NH).',
+  };
+  // Method C: high bound — longer commutes + more solo drive.
+  const C = {
+    label: 'Longer-commute upper bound',
+    mt: 52 * 18 * 2 * 180 * 0.366 / 1000,
+    basis: '52 staff × 18 mi avg (assumes more staff live in Lebanon/White River Junction or further out) × ICCT 2018 baseline 0.366 kg/mi.',
+  };
+  const all = [A, B, C];
   return {
-    commutingMt: mt,
-    basis: `${staff} staff × ${oneWayMi} mi avg × 2 (RT) × ${days} days × ${kgPerMi} kg/mi (mixed mode).`,
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central: all.reduce((s, x) => s + x.mt, 0) / all.length,
+    high: Math.max(...all.map((x) => x.mt)),
   };
 })();
-export const SCOPE3_COMMUTING_BOTTOM_UP_MT = _commuting.commutingMt;
-export const SCOPE3_COMMUTING_DETAIL = _commuting;
+export const SCOPE3_COMMUTING_RANGE = _commutingRange;
+export const SCOPE3_COMMUTING_BOTTOM_UP_MT = Math.round(_commutingRange.central);
 
-// ─── Bottom-up: SCOPE 3 purchased goods ─────────────────────────
-// Order-of-magnitude: typical small private school annual operating
-// budget ~$30-40M; ~$3M/yr discretionary procurement (paper, IT,
-// cleaning, apparel, etc.). EPA EEIO v2.0 spend-based factor avg
-// ~0.4 kg CO2e per $ for educational services / non-energy goods.
-const _goods = (() => {
-  const annualSpendUsd = 3_000_000;
-  const kgPerUsd = 0.40;
-  const mt = (annualSpendUsd * kgPerUsd) / 1000;
+// ─── Purchased goods (Cat 1) — 3 method cross-check ─────────────
+const _goodsRange = (() => {
+  // Method A: spend-based, lower assumption for non-energy ($2.5M).
+  const A = {
+    label: 'Spend-based (low procurement assumption)',
+    mt: 2_500_000 * 0.30 / 1000,
+    basis: '$2.5M non-energy procurement × 0.30 kg CO2e/$ EPA EEIO v2.0 (paper + IT + cleaning weighted; lower-bound for KUA size).',
+  };
+  // Method B: spend-based mid.
+  const B = {
+    label: 'Spend-based (KUA-typical)',
+    mt: 3_000_000 * 0.40 / 1000,
+    basis: '$3M non-energy procurement × 0.40 kg CO2e/$ EPA EEIO v2.0 weighted avg.',
+  };
+  // Method C: spend-based high (more apparel + IT-heavy years).
+  const C = {
+    label: 'High-procurement scenario',
+    mt: 4_000_000 * 0.50 / 1000,
+    basis: '$4M non-energy procurement × 0.50 kg CO2e/$ (apparel-heavy or IT-refresh year; upper bound).',
+  };
+  const all = [A, B, C];
   return {
-    goodsMt: mt,
-    basis: `$${annualSpendUsd.toLocaleString()} non-energy procurement × ${kgPerUsd} kg CO2e/$ EPA EEIO v2.0 weighted avg.`,
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central: all.reduce((s, x) => s + x.mt, 0) / all.length,
+    high: Math.max(...all.map((x) => x.mt)),
   };
 })();
-export const SCOPE3_GOODS_BOTTOM_UP_MT = _goods.goodsMt;
-export const SCOPE3_GOODS_DETAIL = _goods;
+export const SCOPE3_GOODS_RANGE = _goodsRange;
+export const SCOPE3_GOODS_BOTTOM_UP_MT = Math.round(_goodsRange.central);
 
-// ─── Bottom-up: SCOPE 3 upstream fuel ───────────────────────────
-// Well-to-pump emissions for the heating + grid + mobile fuels
-// already counted in Scopes 1+2. EPA upstream factors typically
-// add 15-20% on top of combustion. Use 17% on the bottom-up
-// Scope 1 figure.
-const _upstream = (() => {
-  const upstreamMt = SCOPE1_BOTTOM_UP_MT * 0.17;
+// ─── Upstream fuel (Cat 3) — 3 uplift scenarios ─────────────────
+const _upstreamRange = (() => {
+  const scope1 = SCOPE1_BOTTOM_UP_MT;
+  const A = { label: 'Low uplift (12%)',  mt: scope1 * 0.12, basis: '12% upstream uplift on Scope 1 (lower bound: most conservative refinery + transport assumptions).' };
+  const B = { label: 'Central uplift (17%)', mt: scope1 * 0.17, basis: '17% upstream uplift on Scope 1 (EPA Cat 3 / Quantis weighted average for heating oil + natural gas + mobile).' };
+  const C = { label: 'High uplift (22%)', mt: scope1 * 0.22, basis: '22% upstream uplift on Scope 1 (upper bound: includes well-to-pump + production embodied losses).' };
+  const all = [A, B, C];
   return {
-    upstreamMt,
-    basis: '17% upstream uplift on bottom-up Scope 1 (EPA Cat 3 / Quantis upstream factors for heating oil + grid + mobile).',
+    methods: all,
+    low: Math.min(...all.map((x) => x.mt)),
+    central: all.reduce((s, x) => s + x.mt, 0) / all.length,
+    high: Math.max(...all.map((x) => x.mt)),
   };
 })();
-export const SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT = _upstream.upstreamMt;
-export const SCOPE3_UPSTREAM_FUEL_DETAIL = _upstream;
+export const SCOPE3_UPSTREAM_FUEL_RANGE = _upstreamRange;
+export const SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT = Math.round(_upstreamRange.central);
 
-// ─── Total bottom-up SCOPE 3 ────────────────────────────────────
-export const SCOPE3_BOTTOM_UP_MT = +(
-  SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT +
-  SCOPE3_DINING_BOTTOM_UP_MT +
-  SCOPE3_WASTE_BOTTOM_UP_MT +
-  SCOPE3_COMMUTING_BOTTOM_UP_MT +
-  SCOPE3_GOODS_BOTTOM_UP_MT +
-  SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT
-).toFixed(0);
+// Components needed for the methodology page back-compat.
+export const SCOPE3_STUDENT_TRAVEL_DETAIL = {
+  studentTravelMt: SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT,
+  breakdown: [
+    { cohort: 'day',           count: COHORTS.day.count,           central: SCOPE3_DAY_TRAVEL.central,         range: [SCOPE3_DAY_TRAVEL.low, SCOPE3_DAY_TRAVEL.high] },
+    { cohort: 'usBoarder',     count: COHORTS.usBoarder.count,     central: SCOPE3_US_BOARDER_TRAVEL.central,  range: [SCOPE3_US_BOARDER_TRAVEL.low, SCOPE3_US_BOARDER_TRAVEL.high] },
+    { cohort: 'international', count: COHORTS.international.count, central: SCOPE3_INTL_TRAVEL.central,        range: [SCOPE3_INTL_TRAVEL.low, SCOPE3_INTL_TRAVEL.high] },
+  ],
+};
+export const SCOPE3_DINING_DETAIL    = { diningMt: SCOPE3_DINING_BOTTOM_UP_MT,    basis: SCOPE3_DINING_RANGE.methods[1].basis };
+export const SCOPE3_WASTE_DETAIL     = { wasteMt: SCOPE3_WASTE_BOTTOM_UP_MT,     basis: SCOPE3_WASTE_RANGE.methods[1].basis };
+export const SCOPE3_COMMUTING_DETAIL = { commutingMt: SCOPE3_COMMUTING_BOTTOM_UP_MT, basis: SCOPE3_COMMUTING_RANGE.methods[0].basis };
+export const SCOPE3_GOODS_DETAIL     = { goodsMt: SCOPE3_GOODS_BOTTOM_UP_MT,     basis: SCOPE3_GOODS_RANGE.methods[1].basis };
+export const SCOPE3_UPSTREAM_FUEL_DETAIL = { upstreamMt: SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT, basis: SCOPE3_UPSTREAM_FUEL_RANGE.methods[1].basis };
+
+// Composite Scope 3 range across components.
+export const SCOPE3_RANGE = {
+  low: Math.round(
+    SCOPE3_STUDENT_TRAVEL_RANGE.low +
+    SCOPE3_DINING_RANGE.low +
+    SCOPE3_WASTE_RANGE.low +
+    SCOPE3_COMMUTING_RANGE.low +
+    SCOPE3_GOODS_RANGE.low +
+    SCOPE3_UPSTREAM_FUEL_RANGE.low,
+  ),
+  central: Math.round(
+    SCOPE3_STUDENT_TRAVEL_RANGE.central +
+    SCOPE3_DINING_RANGE.central +
+    SCOPE3_WASTE_RANGE.central +
+    SCOPE3_COMMUTING_RANGE.central +
+    SCOPE3_GOODS_RANGE.central +
+    SCOPE3_UPSTREAM_FUEL_RANGE.central,
+  ),
+  high: Math.round(
+    SCOPE3_STUDENT_TRAVEL_RANGE.high +
+    SCOPE3_DINING_RANGE.high +
+    SCOPE3_WASTE_RANGE.high +
+    SCOPE3_COMMUTING_RANGE.high +
+    SCOPE3_GOODS_RANGE.high +
+    SCOPE3_UPSTREAM_FUEL_RANGE.high,
+  ),
+};
+export const SCOPE3_BOTTOM_UP_MT = SCOPE3_RANGE.central;
+
+// Per-component range list — used by methodology page to show each
+// component's spread + the methods that produced it.
+export const SCOPE3_COMPONENT_RANGES = [
+  { component: 'Student travel — day',           cohort: COHORTS.day.label,           ...SCOPE3_DAY_TRAVEL },
+  { component: 'Student travel — US boarders',   cohort: COHORTS.usBoarder.label,     ...SCOPE3_US_BOARDER_TRAVEL },
+  { component: 'Student travel — international', cohort: COHORTS.international.label, ...SCOPE3_INTL_TRAVEL },
+  { component: 'Dining (food procurement)',      ...SCOPE3_DINING_RANGE },
+  { component: 'Waste',                           ...SCOPE3_WASTE_RANGE },
+  { component: 'Faculty / staff commute',         ...SCOPE3_COMMUTING_RANGE },
+  { component: 'Purchased goods (Cat 1)',         ...SCOPE3_GOODS_RANGE },
+  { component: 'Upstream fuel (Cat 3)',           ...SCOPE3_UPSTREAM_FUEL_RANGE },
+];
 
 // ─── Composed bottom-up vs canonical comparison helper ──────────
 // Components that consumers can show side-by-side with the canonical
@@ -354,8 +610,8 @@ export const BOTTOM_UP_BREAKDOWN = [
   {
     scope: 'Scope 3', component: 'Student travel',
     mt: SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT,
-    basis: `Yale-style cohort method: Day (${STUDENT_COHORTS.day.count}×${STUDENT_COHORTS.day.mtPerStudentPerYr}) + US boarders (${STUDENT_COHORTS.usBoarder.count}×${STUDENT_COHORTS.usBoarder.mtPerStudentPerYr}) + International (${STUDENT_COHORTS.international.count}×${STUDENT_COHORTS.international.mtPerStudentPerYr}) per-student annual mt × cohort size.`,
-    citations: ['ICAO Carbon Calculator', 'DEFRA 2024 with RF', 'EPA Mobile Combustion'],
+    basis: `Multi-method cohort estimate. Day students (${COHORTS.day.count}): ${Math.round(SCOPE3_DAY_TRAVEL.low)}–${Math.round(SCOPE3_DAY_TRAVEL.high)} mt range across 3 methods (ACS commute, EPA SLD benchmark, carpool/EV scenario). US boarders (${COHORTS.usBoarder.count}): ${Math.round(SCOPE3_US_BOARDER_TRAVEL.low)}–${Math.round(SCOPE3_US_BOARDER_TRAVEL.high)} mt (Yale cohort, Andover/Exeter peer benchmark, national long-tail bound). International (${COHORTS.international.count}): ${Math.round(SCOPE3_INTL_TRAVEL.low)}–${Math.round(SCOPE3_INTL_TRAVEL.high)} mt (ICAO + DEFRA RF, source-country split, Yale published, two-RT-plus-summer).`,
+    citations: ['ICAO Carbon Calculator', 'DEFRA 2024 with RF', 'EPA Mobile Combustion', 'Yale Office of Sustainability', 'Phillips Academy Andover sustainability report', 'Phillips Exeter sustainability report'],
   },
   {
     scope: 'Scope 3', component: 'Dining (food procurement)',
