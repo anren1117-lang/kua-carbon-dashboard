@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from './ErrorBoundary.js';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -184,7 +185,9 @@ function Layout() {
         </div>
       </header>
       <main id="main" style={styles.main} tabIndex="-1">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <footer style={styles.footer}>
         Kimball Union Academy · Net Carbon Dashboard · methodology and source code public on GitHub

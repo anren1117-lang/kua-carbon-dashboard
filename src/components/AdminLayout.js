@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ADMIN_AUTH_EXPIRED_EVENT } from '../utils/adminFetch.js';
+import { ErrorBoundary } from './ErrorBoundary.js';
 
 // Grouped admin navigation. The flat 14-tab bar that lived here was
 // hard to scan; admins had to read every label to find the page they
@@ -331,7 +332,9 @@ function AdminLayout() {
       </header>
       <main style={styles.main}>
         <Breadcrumb />
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );

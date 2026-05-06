@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
+import { ErrorBoundary } from './components/ErrorBoundary.js';
 
 // All non-homepage routes are lazy-loaded so the initial bundle stays small.
 // Homepage (App) and Layout stay eager so first paint is fast.
@@ -92,8 +93,9 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Suspense fallback={<PageFallback />}>
-        <Routes>
+      <ErrorBoundary>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<App />} />
             <Route path="/scope-1" element={<Scope1 />} />
@@ -176,8 +178,9 @@ root.render(
             <Route path="legacy" element={<AdminPortal />} />
             <Route path="*" element={<NotFound />} />
           </Route>
-        </Routes>
-      </Suspense>
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   </React.StrictMode>
 );

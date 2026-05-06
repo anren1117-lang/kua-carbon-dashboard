@@ -87,9 +87,9 @@ The `KUA2026` literal compare on the client is gone. The flow is now:
 
 Without them, `/api/admin/login` 503s and `/api/admin/estimate-action` + `/api/admin/plan` 401 on every request.
 
-### Orphaned admin files
+### Admin entry points
 
-`AdminFuel.js`, `AdminStudents.js`, `AdminTravel.js`, `AdminWaste.js` exist in `src/` but are **not routed or imported anywhere** — the most recent commit consolidated them into `AdminPortal.js`. Treat them as dead code: don't edit them expecting changes to appear in the app, and prefer modifying `AdminPortal.js`. They can likely be deleted, but confirm with the user before removing.
+`AdminPortal.js` is the legacy single-file Supabase CRUD UI (still routed at `/admin/legacy`). Day-to-day admin entry now happens through the per-scope pages under `/admin/scope-1`, `/admin/scope-2`, `/admin/scope-3`, etc. The old per-table singletons (`AdminFuel.js`, `AdminStudents.js`, `AdminTravel.js`, `AdminWaste.js`) were deleted in Phase 12b — modify the per-scope pages or `AdminPortal.js` instead.
 
 ## Tests
 
