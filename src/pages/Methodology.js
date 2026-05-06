@@ -19,6 +19,7 @@ const principles = [
   'Emission factors are versioned in the database so historical numbers remain reproducible when factors are updated.',
   'AI-generated text is constrained at the prompt level to reference values present in the database, exposes a “show calculation” control, and is visually distinct from measured data.',
   'Scope 3 categories not applicable to a school (Cat 9, Cat 12) are explicitly excluded rather than silently dropped.',
+  'Where measured data is not yet integrated, headline numbers carry a multi-method range (3-4 published methodologies per component) so the spread of reasonable interpretations is visible — not just a single point. The full per-method breakdown lives at /admin/methodology.',
 ];
 
 const styles = {
