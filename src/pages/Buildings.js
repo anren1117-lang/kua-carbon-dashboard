@@ -403,7 +403,9 @@ function DormEnergySection({ rows }) {
     return 0;
   });
 
-  const maxPerStudent = Math.max(...enriched.map((d) => d.kwhPerStudentPerDay));
+  // Floor at 1 so empty/zero data doesn't poison DormCard's bar widths
+  // (would divide by 0 → Infinity% and break the dorm-comparison grid).
+  const maxPerStudent = Math.max(1, ...enriched.map((d) => d.kwhPerStudentPerDay));
 
   return (
     <ModuleSection
