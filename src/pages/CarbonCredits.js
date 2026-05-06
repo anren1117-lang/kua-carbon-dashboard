@@ -228,7 +228,7 @@ function CarbonCredits() {
           <p style={styles.tradeOffText}>
             If KUA sells the ~2,650 mtCO₂e/year of forest sequestration as carbon credits, those credits are claimed by the
             buyer. KUA can no longer subtract them from its own gross emissions — the dashboard's
-            net balance would jump from ~1,700 mtCO₂e/yr up to ~4,350 mtCO₂e/yr because the
+            net balance would jump from ~1,720 mtCO₂e/yr up to ~4,370 mtCO₂e/yr because the
             sequestration line goes to zero from the school's accounting perspective.
           </p>
           <p style={{ ...styles.tradeOffText, marginTop: 10 }}>

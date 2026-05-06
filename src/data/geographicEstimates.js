@@ -1,10 +1,11 @@
 // Geography-anchored bottom-up emission estimates for KUA.
 //
-// The canonical figures in scopeTotals.js are hand-set placeholders
-// (Scope 1 = 1,250 mt, Scope 3 = 2,700 mt) that explicitly need
-// replacing with measured data. THIS file provides a parallel
-// bottom-up estimate computed from KUA's actual building stock,
-// fleet, and student composition × published NH/Upper Valley factors.
+// scopeTotals.js now uses the cross-check centrals from THIS file
+// (Scope 1 = 1,350 mt, Scope 3 = 2,635 mt) as its canonical placeholders
+// — until measured records (fuel_bills + travel office + Sodexo invoices)
+// replace them. THIS file remains the source of truth for the per-component
+// method-by-method ranges that surface on /admin/methodology and feed
+// /api/admin/estimate-action.
 //
 // Two reasons this exists:
 //   1. The /admin/methodology page can show admins the geography-
