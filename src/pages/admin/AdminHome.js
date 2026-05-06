@@ -173,25 +173,29 @@ export default function AdminHome() {
       label: 'Scope 2 (electricity)',
       measured: true,
       detail: 'BMS-measured kWh × ISO-NE 2024 per-fuel factors. Always live.',
+      // No CTA — Scope 2 is permanently measured via the BMS.
     },
     {
       label: 'Scope 1 (heating + fleet + refrigerants)',
       measured: live.scope1Measured,
       detail: live.scope1Measured
         ? 'Heating row composed live from fuel_bills. Fleet + refrigerants still bottom-up.'
-        : 'Add fuel-delivery invoices via "Log Scope 3 data" → fuel tab to flip to measured.',
+        : 'Heating-fuel-delivery invoices flip this row to measured.',
+      cta: live.scope1Measured ? null : { to: '/admin/legacy', label: 'Log fuel bill →' },
     },
     {
       label: 'Scope 3 (travel + waste)',
       measured: live.scope3Measured,
       detail: live.scope3Measured
         ? 'Cohort + trip + waste rows now feeding the canonical total.'
-        : 'Add student/travel/waste records via "Log Scope 3 data" to flip to measured.',
+        : 'Student / travel / waste records flip this row to measured.',
+      cta: live.scope3Measured ? null : { to: '/admin/scope-3', label: 'Log Scope 3 data →' },
     },
     {
       label: 'Scope 3 (purchased goods + dining + commuting)',
       measured: false,
       detail: 'Sodexo / Business Office / HR commute survey integrations not yet shipped — these stay estimated.',
+      // No CTA — these tables don't exist yet.
     },
   ];
   const measuredCount = ingestionRows.filter((r) => r.measured).length;
@@ -230,6 +234,11 @@ export default function AdminHome() {
                 <span style={styles.ingestionLabel}>{row.label}</span>
               </div>
               <div style={styles.ingestionDetail}>{row.detail}</div>
+              {row.cta && (
+                <Link to={row.cta.to} style={styles.ingestionCta}>
+                  {row.cta.label}
+                </Link>
+              )}
             </div>
           ))}
         </div>
@@ -367,6 +376,7 @@ const styles = {
   ingestionPill: { fontSize: 10, padding: '2px 8px', border: '1px solid', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 },
   ingestionLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
   ingestionDetail: { fontSize: 12, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 },
+  ingestionCta: { display: 'inline-block', marginTop: 10, padding: '4px 10px', background: '#0f172a', border: '1px solid #f59e0b', borderRadius: 4, color: '#fbbf24', textDecoration: 'none', fontSize: 12, fontWeight: 700, letterSpacing: 0.4 },
 
   feedList: { display: 'flex', flexDirection: 'column', gap: 4 },
   feedRow: { display: 'grid', gridTemplateColumns: '110px 130px 1fr', gap: 12, padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, alignItems: 'baseline' },

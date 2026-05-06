@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# KUA Carbon Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A live carbon-accounting dashboard for Kimball Union Academy (Plainfield NH).
+Tracks Scopes 1/2/3 + on-campus forest sequestration. Public emissions counters,
+methodology references, peer comparison, learn modules, an admin portal for
+data entry, and an AI-driven institutional planning agent.
 
-## Available Scripts
+## Quick start
 
-In the project directory, you can run:
+All active development happens **inside `src/`** (Vite + React 18 + Vitest).
 
-### `npm start`
+```bash
+cd src
+npm install
+npm run dev       # Vite dev server on http://localhost:5173
+npm run build     # production build → src/dist/
+npm test          # vitest (188+ tests)
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The root `/package.json` is stale CRA scaffolding — its only durable role
+is providing `"type": "module"` so the `api/*.js` Vercel functions parse
+as ESM.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Deploying to Vercel
 
-### `npm test`
+This project deploys to Vercel as a Vite app + serverless `api/*` functions.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Env vars (required for production)
 
-### `npm run build`
+The admin portal won't work in production until both of these are set in
+the Vercel project. Without them, `/api/admin/login` returns 503 and every
+authenticated admin route 401s.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| Var | Purpose | How to generate |
+|---|---|---|
+| `ADMIN_PASSWORD` | Password admins type into the gate | Pick a strong password — nothing fancy required |
+| `ADMIN_TOKEN_SECRET` | HMAC-SHA256 secret used to sign admin session tokens. **Must be ≥ 32 chars.** | `openssl rand -hex 32` |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Env vars (optional)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Var | Purpose |
+|---|---|
+| `ANTHROPIC_API_KEY` | Enables LLM-driven `/api/admin/estimate-action` + `/api/admin/plan`. When unset, both endpoints fall back to a rule-based response so the admin UI still works. |
+| `CRON_SECRET` | Required for `/api/cron/*` routes. Vercel cron sends this in the Authorization header. |
+| `AUTH_GOOGLE_AUDIENCE`, `AUTH_ALLOWED_DOMAINS` | Required for `/api/auth/session` Google SSO (used by chatbot persistence + teacher portal). |
+| `AUTH_DEV_MODE=1` | Local dev only — accepts mock session tokens without Google SSO. **Never set in production.** |
 
-### `npm run eject`
+### Setting env vars
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Either through the Vercel dashboard (Project Settings → Environment Variables)
+or via the Vercel CLI:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm i -g vercel              # if not installed
+vercel link                  # one-time, links this local dir to the Vercel project
+vercel env add ADMIN_PASSWORD production
+vercel env add ADMIN_TOKEN_SECRET production
+vercel deploy --prod         # redeploy so the new env takes effect
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Push to deploy
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+The repo is wired for Vercel auto-deploy on push to `main`. Local commits
+won't go live until they're pushed:
 
-## Learn More
+```bash
+git push origin main
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Architecture cheat sheet
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Canonical scope numbers** live in `src/data/scopeTotals.js`. Today's
+  values match the bottom-up multi-method cross-check centrals from
+  `src/data/geographicEstimates.js`: Scope 1 = 1,350 mt, Scope 2 = 385 mt,
+  Scope 3 = 2,635 mt, sinks = 2,650 mt → gross 4,370 / net 1,720 / per-student 5.0.
 
-### Code Splitting
+- **Live measured-data hooks** (`src/hooks/useMeasuredScope1.js`,
+  `useMeasuredScope3.js`, `useMeasuredScopeTotals.js`) upgrade the headline
+  numbers from "estimated" to "measured" the moment admins enter rows into
+  the corresponding Supabase tables. Pages already wired: Scope1, Scope3,
+  Executive, Goals, NetEstimate (homepage hero), AdminHome.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **Admin auth** is server-checked: `/api/admin/login` validates against
+  `ADMIN_PASSWORD` and returns an HMAC-signed session token. Client uses
+  `adminFetch()` from `src/utils/adminFetch.js` to attach `Authorization:
+  Bearer <token>` automatically; 401 responses clear the local token and
+  emit a `kua-admin-auth-expired` event so the AdminLayout can re-prompt
+  for login.
 
-### Analyzing the Bundle Size
+- **Supabase** tables that drive the live dashboard:
+  `fuel_bills`, `day_students`, `us_boarding_students`,
+  `international_students`, `study_abroad`, `faculty_travel`, `waste`.
+  Read/written through the publishable anon key client in
+  `src/supabaseClient.js`. RLS policies live in
+  `supabase/migrations/*.sql`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+For deeper context (data flow, conventions, where to make which kind of
+edit), see [CLAUDE.md](CLAUDE.md).
