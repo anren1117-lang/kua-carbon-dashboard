@@ -38,7 +38,7 @@ export const NAV_GROUPS = [
     items: [
       { to: '/admin/scope-1',    label: 'Scope 1',    desc: 'Heating fuel, refrigerants, fleet vehicles.' },
       { to: '/admin/scope-2',    label: 'Scope 2',    desc: 'Electricity meter readings, Liberty Utilities bills.' },
-      { to: '/admin/scope-3',    label: 'Scope 3',    desc: 'Travel, waste, commuting, purchased goods, students.' },
+      { to: '/admin/scope-3',    label: 'Scope 3',    desc: 'Tabbed entry hub for student travel, faculty trips, waste, purchased goods, commuting — replaces the legacy portal.' },
       { to: '/admin/renewables', label: 'Renewables', desc: 'Solar, geothermal, wind generation.' },
       { to: '/admin/sinks',      label: 'Sinks',      desc: 'Tree inventory, soil samples.' },
       { to: '/admin/framework',  label: 'Framework sandbox', desc: 'Generic typed-row entry while category-specific forms are still being designed.' },
