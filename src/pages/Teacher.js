@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { PasswordGate } from '../components/PasswordGate.js';
 import { knowledgeArticles } from '../data/learningContent.js';
 import { reductionActions } from '../data/reductionActions.js';
 
@@ -78,7 +79,26 @@ const MOCK_CLASS_RESULTS = [
   { class: 'Advisory — Mr. Smith', students: 12, completed: 8, avgScore: 65, lastTopic: 'Climate basics' },
 ];
 
+// PasswordGate-wrapped because this page surfaces class-level quiz
+// rollups + lesson modules that are part of the teacher portal. Same
+// storageKey as TeacherPortal + LessonEditor + TeacherLessonResults
+// so a single unlock covers /teacher/*.
 export default function Teacher() {
+  return (
+    <PasswordGate
+      title="Teacher Portal — Lesson modules"
+      subtitle="Curated lesson modules + class-level quiz rollups. Sign in with your teacher password."
+      envKey="TEACHER_PASSWORD"
+      storageKey="kua_teacher_unlocked"
+      defaultPassword="kua-teach"
+      accent="#22c55e"
+    >
+      <TeacherContent />
+    </PasswordGate>
+  );
+}
+
+function TeacherContent() {
   const [expanded, setExpanded] = useState(LESSON_MODULES[0].id);
   const [liveRollup, setLiveRollup] = useState(null);
   const [liveError, setLiveError] = useState(null);

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
+import { PasswordGate } from '../components/PasswordGate.js';
 import { hashUserId } from '../utils/hash.js';
 import { extractFileText, FILE_LIMITS } from '../utils/extractFileText.js';
 
@@ -9,6 +10,14 @@ import { extractFileText, FILE_LIMITS } from '../utils/extractFileText.js';
 // Anthropic with strict grounding rules and returns the generated
 // reading + 4-option questions. Teacher reviews + publishes; the
 // resulting URL (/lessons/:id) is what they share with students.
+//
+// PasswordGate-wrapped: anyone hitting /teacher/create directly was
+// otherwise able to fire the LLM-billed POST /api/teacher/lessons and
+// publish lessons into the public catalog. The endpoint is
+// rate-limited per-IP, but that's a wallet guard, not an auth check;
+// publishing especially needs the same teacher-password gate the rest
+// of /teacher/* enforces. Same storageKey as TeacherPortal +
+// TeacherLessonResults so one unlock covers all three.
 
 const TOPICS = [
   { id: 'climate_basics', label: 'Climate basics' },
@@ -45,6 +54,21 @@ function getTeacherHash() {
 }
 
 export default function LessonEditor() {
+  return (
+    <PasswordGate
+      title="Teacher Portal — Create lesson"
+      subtitle="Lesson generation calls the Anthropic API and can publish to the public catalog. Sign in with your teacher password to continue."
+      envKey="TEACHER_PASSWORD"
+      storageKey="kua_teacher_unlocked"
+      defaultPassword="kua-teach"
+      accent="#22c55e"
+    >
+      <LessonEditorContent />
+    </PasswordGate>
+  );
+}
+
+function LessonEditorContent() {
   const nav = useNavigate();
   const [title, setTitle] = useState('');
   const [topic, setTopic] = useState(TOPICS[0].id);
