@@ -723,6 +723,41 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
     expect(empty.totalMt).toBe(placeholder.totalMt);
     expect(empty.breakdown.length).toBe(placeholder.breakdown.length);
   });
+
+  it('exposes per-cohort detail when records exist', () => {
+    const r = composeScope3FromRecords({
+      dayStudents: Array.from({ length: 50 }, () => ({})),
+      usBoardingStudents: Array.from({ length: 100 }, () => ({})),
+      internationalStudents: Array.from({ length: 25 }, () => ({})),
+      studyAbroad: [{ destination_country: 'China' }],
+      facultyTravel: [{ destination_country: 'USA' }],
+    });
+    expect(Array.isArray(r.cohortDetail)).toBe(true);
+    expect(r.cohortDetail).toHaveLength(4);
+    const day = r.cohortDetail.find((c) => c.cohort === 'day');
+    const us  = r.cohortDetail.find((c) => c.cohort === 'usBoarder');
+    const intl = r.cohortDetail.find((c) => c.cohort === 'international');
+    const trips = r.cohortDetail.find((c) => c.cohort === 'trips');
+    expect(day.count).toBe(50);
+    expect(day.mt).toBe(70);  // 50 × 1.4
+    expect(day.provenance).toBe('measured');
+    expect(us.count).toBe(100);
+    expect(us.mt).toBe(280); // 100 × 2.8
+    expect(intl.count).toBe(25);
+    expect(intl.mt).toBe(125); // 25 × 5.0
+    expect(trips.count).toBe(2);
+    expect(trips.mt).toBe(4);  // 3.0 (China) + 0.5 (USA) = 3.5 → 4 (rounded)
+  });
+
+  it('cohortDetail rows mark themselves estimated when their cohort is empty', () => {
+    const r = composeScope3FromRecords({
+      dayStudents: [{}, {}],
+      // us, intl, sa, fac all empty
+    });
+    const us = r.cohortDetail.find((c) => c.cohort === 'usBoarder');
+    expect(us.count).toBe(0);
+    expect(us.provenance).toBe('estimated');
+  });
 });
 
 // Invariant tests pin down the canonical-arithmetic contract so any

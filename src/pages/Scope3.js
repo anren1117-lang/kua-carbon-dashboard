@@ -29,6 +29,14 @@ const styles = {
   status: { fontSize: 12, color: '#22d3ee', textTransform: 'uppercase' },
   desc: { marginTop: 6, color: '#cbd5e1' },
   factor: { marginTop: 6, fontSize: 12, color: '#64748b' },
+
+  cohortPanel: { marginTop: 28, padding: '24px 26px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 12 },
+  cohortHead: { marginBottom: 16 },
+  cohortTitle: { fontSize: 16, color: '#e5e7eb', fontWeight: 700, letterSpacing: 0.4 },
+  cohortSubtitle: { fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 1.5, maxWidth: 760 },
+  cohortTable: { width: '100%', borderCollapse: 'collapse' },
+  cohortTh: { textAlign: 'left', padding: '10px 8px', fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, borderBottom: '1px solid #1f2937', fontWeight: 700 },
+  cohortTd: { padding: '12px 8px', fontSize: 14, color: '#cbd5e1', borderBottom: '1px solid #1f2937', verticalAlign: 'top' },
 };
 
 function Scope3() {
@@ -226,6 +234,50 @@ function Scope3() {
           },
         ]}
       />
+
+      {isMeasured && Array.isArray(live.cohortDetail) && (
+        <section style={styles.cohortPanel}>
+          <div style={styles.cohortHead}>
+            <div style={styles.cohortTitle}>Per-cohort student travel</div>
+            <div style={styles.cohortSubtitle}>
+              Live measured row-counts × cited per-cohort factors. The
+              dashboard headline above sums these plus the trip-level
+              study-abroad / faculty-travel rows.
+            </div>
+          </div>
+          <table style={styles.cohortTable}>
+            <thead>
+              <tr>
+                <th style={styles.cohortTh}>Cohort</th>
+                <th style={{ ...styles.cohortTh, textAlign: 'right' }}>Count</th>
+                <th style={{ ...styles.cohortTh, textAlign: 'right' }}>Per-student</th>
+                <th style={{ ...styles.cohortTh, textAlign: 'right' }}>mtCO₂e/yr</th>
+                <th style={styles.cohortTh}>Provenance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {live.cohortDetail.map((c) => (
+                <tr key={c.cohort}>
+                  <td style={styles.cohortTd}>
+                    <div style={{ fontWeight: 600 }}>{c.label}</div>
+                    <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.4 }}>{c.method}</div>
+                  </td>
+                  <td style={{ ...styles.cohortTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.count.toLocaleString()}</td>
+                  <td style={{ ...styles.cohortTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: '#94a3b8' }}>
+                    {c.perStudentMt !== null ? `${c.perStudentMt} mt` : '—'}
+                  </td>
+                  <td style={{ ...styles.cohortTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{c.mt.toLocaleString()}</td>
+                  <td style={styles.cohortTd}>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, background: c.provenance === 'measured' ? '#0e3a1f' : '#1f2937', color: c.provenance === 'measured' ? '#86efac' : '#94a3b8', border: `1px solid ${c.provenance === 'measured' ? '#16a34a' : '#475569'}` }}>
+                      {c.provenance === 'measured' ? '✓ measured' : 'estimated'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <div style={styles.list}>
         {categories.map((c) => (

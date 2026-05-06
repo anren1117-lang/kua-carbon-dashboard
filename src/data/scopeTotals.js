@@ -324,12 +324,59 @@ export function composeScope3FromRecords(records = {}) {
 
   const totalMt = Math.round(breakdown.reduce((s, r) => s + r.mt, 0));
   const measuredRowCount = (studentTravelMeasured ? 1 : 0) + (wasteMeasured ? 1 : 0);
+
+  // Per-cohort detail so the Scope 3 page (and Executive) can show day
+  // / US boarder / international as separate sub-rows when measured.
+  // Each entry mirrors the breakdown row shape so callers can render
+  // them with the same components. Trip-level rows (study abroad +
+  // faculty travel) collapse into a single "trips" entry since each
+  // row is already one trip.
+  const cohortDetail = [
+    {
+      cohort: 'day',
+      label: 'Day students',
+      count: day.length,
+      mt: Math.round(dayMt),
+      perStudentMt: SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.day,
+      provenance: day.length > 0 ? 'measured' : 'estimated',
+      method: 'EPA Smart Location Database benchmark for small rural-residential K-12 commute footprints, weighted for NH light-duty fleet at 24 mpg blended.',
+    },
+    {
+      cohort: 'usBoarder',
+      label: 'US boarders',
+      count: usBoard.length,
+      mt: Math.round(usMt),
+      perStudentMt: SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.usBoarder,
+      provenance: usBoard.length > 0 ? 'measured' : 'estimated',
+      method: 'Andover / Exeter sustainability-report central — comparable Northeast-skewed boarding cohort × 3-4 RTs/yr.',
+    },
+    {
+      cohort: 'international',
+      label: 'International boarders',
+      count: intl.length,
+      mt: Math.round(intlMt),
+      perStudentMt: SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.international,
+      provenance: intl.length > 0 ? 'measured' : 'estimated',
+      method: 'Yale Office of Sustainability published per-FTE figure for residential international cohort × DEFRA long-haul with radiative forcing.',
+    },
+    {
+      cohort: 'trips',
+      label: 'Study abroad + faculty trips',
+      count: sa.length + fac.length,
+      mt: Math.round(tripMt),
+      perStudentMt: null,
+      provenance: (sa.length + fac.length) > 0 ? 'measured' : 'estimated',
+      method: 'Per-trip mtCO₂e by destination region (domestic 0.5 / Europe 2.4 / Asia 3.0 / other 2.5) — DEFRA long-haul × great-circle distances from BOS.',
+    },
+  ];
+
   return {
     totalMt,
     breakdown,
     // 'measured' if at least one component flipped; consumers that need
     // mixed provenance read breakdown[i].provenance directly.
     provenance: measuredRowCount > 0 ? 'measured' : 'estimated',
+    cohortDetail,
     note: measuredRowCount > 0
       ? `${measuredRowCount} Scope 3 component${measuredRowCount === 1 ? '' : 's'} composed from Supabase records. Dining, goods, upstream fuel, commuting still bottom-up until those tables ship.`
       : 'No Scope 3 records yet — bottom-up placeholder.',
