@@ -459,7 +459,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Scope 3 — everything else',
-        body: '**Scope 3 is the biggest, messiest, and usually most important category** at any institution that doesn\'t own factories. It covers every emission that\'s indirectly caused by your activities but happens at someone else\'s facility, on someone else\'s account.\n\nThe GHG Protocol formally divides Scope 3 into **15 categories**: purchased goods and services, capital goods, fuel and energy upstream, upstream transportation, waste, business travel, employee commuting, upstream leased assets, downstream transportation, processing of sold products, use of sold products, end-of-life, downstream leased assets, franchises, investments. Most of those don\'t apply to a school (we don\'t sell physical products, we don\'t have franchises, we don\'t hold investments at scale), but several do.\n\n**For a residential boarding school, the dominant Scope 3 source is student travel.** When a student flies from Boston to Tokyo for winter break, the airline burns jet fuel, but it\'s indirectly caused by KUA\'s decision to enroll international students who need to fly home. The Yale Office of Sustainability formalized this as a "student travel" category outside the GHG Protocol\'s 15 because it\'s materially the largest source at residential institutions and was being missed in standard accounting.\n\n**Other Scope 3 sources for KUA:**\n\n**Purchased goods and services** — the food in the dining hall, the paper for class, the lab supplies, the cleaning products, the new computers. Each of these embodies emissions from production, transportation, and packaging. We estimate this using the EPA Supply Chain GHG Emission Factors (a method called Environmentally-Extended Input-Output, or EEIO), which gives kg CO₂e per dollar spent in each industry sector.\n\n**Waste** — landfilled trash, recycling, composting, hazardous waste. Each disposal pathway has its own emission factor in the EPA\'s WARM model. Landfilled food waste is particularly bad because it generates methane as it decomposes.\n\n**Commuting** — non-resident faculty and staff driving to campus. Smaller for KUA than for a day school, but real.\n\n**Upstream fuel and energy** — the emissions caused by drilling, refining, and transporting the heating oil that KUA already burns in Scope 1. The combustion is Scope 1, but the upstream supply chain is Scope 3.\n\n**Why Scope 3 is hardest to measure:** the data lives at suppliers, vendors, and individual students\' homes — not on a meter at KUA. We use estimation methods (spend-based, distance-based, average factors) that get better as more specific data comes in. KUA\'s Scope 3 estimate is **~3,000 mtCO₂e/year**, with about 70% from student travel and the rest split among goods, waste, commuting, and upstream fuel.',
+        body: '**Scope 3 is the biggest, messiest, and usually most important category** at any institution that doesn\'t own factories. It covers every emission that\'s indirectly caused by your activities but happens at someone else\'s facility, on someone else\'s account.\n\nThe GHG Protocol formally divides Scope 3 into **15 categories**: purchased goods and services, capital goods, fuel and energy upstream, upstream transportation, waste, business travel, employee commuting, upstream leased assets, downstream transportation, processing of sold products, use of sold products, end-of-life, downstream leased assets, franchises, investments. Most of those don\'t apply to a school (we don\'t sell physical products, we don\'t have franchises, we don\'t hold investments at scale), but several do.\n\n**For a residential boarding school, the dominant Scope 3 source is student travel.** When a student flies from Boston to Tokyo for winter break, the airline burns jet fuel, but it\'s indirectly caused by KUA\'s decision to enroll international students who need to fly home. The Yale Office of Sustainability formalized this as a "student travel" category outside the GHG Protocol\'s 15 because it\'s materially the largest source at residential institutions and was being missed in standard accounting.\n\n**Other Scope 3 sources for KUA:**\n\n**Purchased goods and services** — the food in the dining hall, the paper for class, the lab supplies, the cleaning products, the new computers. Each of these embodies emissions from production, transportation, and packaging. We estimate this using the EPA Supply Chain GHG Emission Factors (a method called Environmentally-Extended Input-Output, or EEIO), which gives kg CO₂e per dollar spent in each industry sector.\n\n**Waste** — landfilled trash, recycling, composting, hazardous waste. Each disposal pathway has its own emission factor in the EPA\'s WARM model. Landfilled food waste is particularly bad because it generates methane as it decomposes.\n\n**Commuting** — non-resident faculty and staff driving to campus. Smaller for KUA than for a day school, but real.\n\n**Upstream fuel and energy** — the emissions caused by drilling, refining, and transporting the heating oil that KUA already burns in Scope 1. The combustion is Scope 1, but the upstream supply chain is Scope 3.\n\n**Why Scope 3 is hardest to measure:** the data lives at suppliers, vendors, and individual students\' homes — not on a meter at KUA. We use estimation methods (spend-based, distance-based, average factors) that get better as more specific data comes in. KUA\'s Scope 3 dashboard placeholder is **~2,700 mtCO₂e/year** (bottom-up cross-check ~2,635 mt central, range 1,726–3,720 across 3-4 published methods), dominated by student travel with the rest split among goods, dining, waste, commuting, and upstream fuel.',
       },
       {
         type: 'quiz',
@@ -474,12 +474,12 @@ const paths = [
       {
         type: 'concept',
         heading: 'Sinks — the only category that goes the other way',
-        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is the **~1,000 acres of campus forest**. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates = **2,000–4,000 mtCO₂e/year** drawdown, with a mid-estimate of about **3,000 mtCO₂e/year**.\n\n**Why does this matter so much?** Because it\'s **almost the same magnitude as KUA\'s gross emissions**. If gross emissions are ~4,150 mtCO₂e/year and sequestration is ~3,000 mtCO₂e/year, then **net emissions are only ~1,150 mtCO₂e/year**. Per student, that\'s about 3.4 mtCO₂e — far below most peer schools, which sit at 6–10 mtCO₂e per student. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university footprint studies and found that on-campus sequestration was rarely measured even at institutions with significant forested land. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks.** Middlebury College reports as "carbon neutral" by purchasing carbon credits equal to their gross emissions — a financial drawdown rather than a physical one. KUA\'s 3,000 mtCO₂e/year is REAL — those CO₂ molecules are actually being pulled out of the air, on KUA land, by trees you can walk up to and measure.',
+        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is the **~1,000 acres of campus forest**. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates × stand-mix weighting gives **2,100–2,650 mtCO₂e/year** drawdown across published methods (Birdsey 1992 / USDA NH FIA / Nowak 2013), with the dashboard adopting the per-stand inventory result of **~2,650 mtCO₂e/year**.\n\n**Why does this matter so much?** Because it\'s **more than half the magnitude of KUA\'s gross emissions**. If gross emissions are ~4,335 mtCO₂e/year and sequestration is ~2,650 mtCO₂e/year, then **net emissions are about ~1,685 mtCO₂e/year**. Per student, that\'s about 5.0 mtCO₂e — below most peer boarding schools, which sit at 6–10 mtCO₂e per student. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university footprint studies and found that on-campus sequestration was rarely measured even at institutions with significant forested land. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks.** Middlebury College reports as "carbon neutral" by purchasing carbon credits equal to their gross emissions — a financial drawdown rather than a physical one. KUA\'s 2,650 mtCO₂e/year is REAL — those CO₂ molecules are actually being pulled out of the air, on KUA land, by trees you can walk up to and measure.',
       },
       {
         type: 'concept',
         heading: 'Stocks vs flows — APES distinction that matters',
-        body: 'Annual emissions (4,150 mtCO₂e/yr) are a FLOW — a rate. The atmospheric CO₂ concentration (~425 ppm) is a STOCK — total accumulated. Stopping emissions doesn\'t reduce the stock; it just stops the stock from growing. CO₂ residence time is centuries, so even after we cut emissions to zero, today\'s atmospheric CO₂ stays mostly stuck for the lifetime of every student now in school.',
+        body: 'Annual emissions (~4,335 mtCO₂e/yr) are a FLOW — a rate. The atmospheric CO₂ concentration (~425 ppm) is a STOCK — total accumulated. Stopping emissions doesn\'t reduce the stock; it just stops the stock from growing. CO₂ residence time is centuries, so even after we cut emissions to zero, today\'s atmospheric CO₂ stays mostly stuck for the lifetime of every student now in school.',
       },
       {
         type: 'math',
@@ -708,27 +708,27 @@ const paths = [
     steps: [
       {
         type: 'concept',
-        heading: 'KUA\'s headline number is ~1,150 mtCO₂e/year',
-        body: 'That\'s the NET balance — gross emissions minus on-campus sequestration. The range is wide right now (−760 to +3,572) because most of the inputs are estimates. Once measured data fills in, the range tightens.',
+        heading: 'KUA\'s headline number is ~1,685 mtCO₂e/year',
+        body: 'That\'s the NET balance — gross emissions minus on-campus sequestration. The composite range across all method combinations is 333–3,892 mt because most of the inputs are estimates. Once measured data fills in, the range tightens.',
       },
       {
         type: 'concept',
         heading: 'AP Stats: range, point estimate, and uncertainty',
-        body: 'A point estimate (1,150) by itself is misleading without an uncertainty range. Our range is roughly ±1,400 — meaning the "true" value is most plausibly somewhere between −250 and +2,500. AP Statistics calls this a confidence interval. The width of the interval comes from the uncertainty in each line item: heating fuel ±25%, student travel ±40%, sink rate ±30%, etc. These uncertainties propagate.',
+        body: 'A point estimate (1,685) by itself is misleading without an uncertainty range. Our composite cross-check range is 333–3,892 — meaning the "true" value is most plausibly somewhere in that band. AP Statistics calls this a confidence interval. The width of the interval comes from the uncertainty in each line item: Scope 1 published-method range 891–1,867, Scope 3 1,726–3,720, sinks 2,100–2,650. These uncertainties propagate.',
       },
       {
         type: 'concept',
         heading: 'Where does the headline come from?',
-        body: 'Gross: ~4,150 mtCO₂e/yr (Scope 1 ~1,000 + Scope 2 ~222 + Scope 3 ~3,000). Sequestration: ~3,000 mtCO₂e/yr drawdown. Net: 4,150 − 3,000 = 1,150.',
+        body: 'Gross: ~4,335 mtCO₂e/yr (Scope 1 ~1,250 + Scope 2 ~385 + Scope 3 ~2,700). Sequestration: ~2,650 mtCO₂e/yr drawdown. Net: 4,335 − 2,650 = 1,685.',
       },
       {
         type: 'quiz',
         question: 'Roughly what fraction of KUA\'s GROSS emissions comes from Scope 3?',
         options: [
           { text: '~25%', correct: false, explanation: 'Too low — Scope 3 dominates at residential boarding schools.' },
-          { text: '~50%', correct: false, explanation: 'Closer, but Scope 3 is even bigger here.' },
-          { text: '~72%', correct: true, explanation: 'Right. **~3,000 of ~4,150 mtCO₂e gross is Scope 3** — about 72%. Most of that is student travel: international students flying home, US boarders\' term-break trips. Scope 1 (~1,000) and Scope 2 (~222) together are only ~28%. Kool (2025) found this same pattern at Royal Roads University, where student air travel alone dominated all other sources combined.' },
-          { text: '~95%', correct: false, explanation: 'Too high — Scope 1 and 2 still total ~28% (1,222/4,150). Scope 3 dominates but doesn\'t exclude the others.' },
+          { text: '~45%', correct: false, explanation: 'Closer, but Scope 3 is even bigger here.' },
+          { text: '~62%', correct: true, explanation: 'Right. **~2,700 of ~4,335 mtCO₂e gross is Scope 3** — about 62%. Most of that is student travel: international students flying home, US boarders\' term-break trips. Scope 1 (~1,250) and Scope 2 (~385) together are only ~38%. Kool (2025) found this same Scope-3-dominant pattern at Royal Roads University, where student air travel alone dominated all other sources combined.' },
+          { text: '~90%', correct: false, explanation: 'Too high — Scope 1 and 2 still total ~38% (1,635/4,335). Scope 3 dominates but doesn\'t exclude the others.' },
         ],
       },
       {
@@ -768,18 +768,18 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: per-student net footprint',
-        scenario: 'KUA gross: ~4,150 mtCO₂e. Sequestration: ~3,000 mtCO₂e. Enrollment: ~340 students.',
+        scenario: 'KUA gross: ~4,335 mtCO₂e. Sequestration: ~2,650 mtCO₂e. Enrollment: ~340 students.',
         given: [
-          { label: 'Gross', value: '4,150 mtCO₂e/yr' },
-          { label: 'Sequestration', value: '3,000 mtCO₂e/yr' },
+          { label: 'Gross', value: '4,335 mtCO₂e/yr' },
+          { label: 'Sequestration', value: '2,650 mtCO₂e/yr' },
           { label: 'Students', value: '340' },
         ],
         question: 'Net per student:',
         options: [
-          { text: '~3.4 mtCO₂e/student', correct: true, explanation: 'Right. Net = 1,150. Per student = 1,150/340 = 3.38 mtCO₂e.' },
-          { text: '~6.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
-          { text: '~4.2 mtCO₂e/student', correct: false, explanation: 'Almost — that\'s the gross-only per student. Net is lower because the forest pulls some carbon back.' },
-          { text: '~8.8 mtCO₂e/student', correct: false, explanation: 'That is sequestration per student alone (3,000/340 = 8.8). The net is gross minus sinks, divided by enrollment.' },
+          { text: '~5.0 mtCO₂e/student', correct: true, explanation: 'Right. Net = 4,335 − 2,650 = 1,685. Per student = 1,685/340 = 4.96 mtCO₂e.' },
+          { text: '~12.7 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
+          { text: '~7.8 mtCO₂e/student', correct: false, explanation: 'That\'s sequestration per student alone (2,650/340 = 7.8). The net is gross minus sinks, divided by enrollment.' },
+          { text: '~3.4 mtCO₂e/student', correct: false, explanation: 'Older value from a previous methodology iteration. Current canonical is ~5.0 mt/student.' },
         ],
       },
       {
@@ -802,7 +802,7 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA\'s ~3.4 mtCO₂e/student. How does that compare to peer boarding schools?',
+        question: 'KUA\'s ~5.0 mtCO₂e/student. How does that compare to peer boarding schools?',
         options: [
           { text: 'About the same', correct: false, explanation: 'Most peer boarding schools are 6–10 mt/student because they don\'t count sinks.' },
           { text: 'Lower than peers', correct: true, explanation: 'Right. Phillips Exeter ~10, Andover ~9. KUA looks lower mostly because we measure on-campus sequestration.' },
@@ -812,7 +812,7 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA reports ~3.4 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
+        question: 'KUA reports ~5.0 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
         options: [
           { text: 'It would drop, because more students share the same fixed emissions', correct: true, explanation: 'Right. **Most KUA emissions are roughly fixed costs of operating the campus** — heating buildings, generating administrative emissions, maintaining facilities. Adding students adds some marginal emissions (more food, more travel) but proportionally less. Per-student would drop because the denominator grows faster than the numerator. This is why "per-student" can be a deceptive metric on its own — it rewards growth without necessarily reducing total impact.' },
           { text: 'It would stay exactly the same', correct: false, explanation: 'Per-student divides total by enrollment. Both numbers change with growth, but not proportionally. Per-student typically falls.' },
@@ -823,7 +823,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'You can verify the dashboard yourself',
-        body: 'Net ~1,150 mt/yr ± ~1,580 (combined uncertainty). 72% of gross from Scope 3. Per student ~3.4 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
+        body: 'Net ~1,685 mt/yr (composite cross-check range 333–3,892). 62% of gross from Scope 3. Per student ~5.0 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
       },
     ],
   },
@@ -1161,18 +1161,18 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: same school, different methodology',
-        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,150 mtCO₂e gross, 3,000 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
+        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,335 mtCO₂e gross, 2,650 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
         given: [
-          { label: 'Gross (both)', value: '4,150 mtCO₂e' },
-          { label: 'Sequestration (real)', value: '3,000 mtCO₂e' },
+          { label: 'Gross (both)', value: '4,335 mtCO₂e' },
+          { label: 'Sequestration (real)', value: '2,650 mtCO₂e' },
           { label: 'Students (both)', value: '340' },
         ],
         question: 'Difference in published per-student footprint:',
         options: [
-          { text: 'Both publish ~3.4 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
-          { text: 'A: ~3.4 mt; B: ~12.2 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,150 − 3,000) / 340 = 3.38. B: 4,150 / 340 = 12.21. Same physical campus, 3.6× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
-          { text: 'Both publish ~6.9 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
-          { text: 'A: ~5.0 mt; B: ~5.0 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 3.4 (A) and 12.2 (B).' },
+          { text: 'Both publish ~5.0 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
+          { text: 'A: ~5.0 mt; B: ~12.7 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,335 − 2,650) / 340 = 4.96. B: 4,335 / 340 = 12.75. Same physical campus, 2.6× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
+          { text: 'Both publish ~9.0 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
+          { text: 'A: ~5.0 mt; B: ~5.0 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 5.0 (A) and 12.7 (B).' },
         ],
       },
       {
@@ -1180,7 +1180,7 @@ const paths = [
         question: 'What\'s the fundamental difference between an "offset" and an on-campus "sink"?',
         options: [
           { text: 'They\'re the same thing', correct: false, explanation: 'They\'re not — and the distinction matters a lot for honest reporting.' },
-          { text: 'Offsets are purchased credits paid for emissions reductions or removals elsewhere; sinks are physical drawdown happening on your own land', correct: true, explanation: 'Right. **An offset is a financial transaction** — you pay someone else (a forest project in Brazil, a wind farm in Texas) to either reduce their own emissions or pull carbon from the atmosphere on your behalf. **A sink is physical drawdown** happening on land you control. Offsets work in principle but their quality varies enormously, and there\'s no guarantee the seller actually delivered what they sold. KUA\'s 3,000 mtCO₂e/yr from the campus forest is real, measurable, and physically here. Middlebury\'s "net zero" via offsets is a financial claim about CO₂ molecules they paid someone else to handle — not the same thing.' },
+          { text: 'Offsets are purchased credits paid for emissions reductions or removals elsewhere; sinks are physical drawdown happening on your own land', correct: true, explanation: 'Right. **An offset is a financial transaction** — you pay someone else (a forest project in Brazil, a wind farm in Texas) to either reduce their own emissions or pull carbon from the atmosphere on your behalf. **A sink is physical drawdown** happening on land you control. Offsets work in principle but their quality varies enormously, and there\'s no guarantee the seller actually delivered what they sold. KUA\'s ~2,650 mtCO₂e/yr from the campus forest is real, measurable, and physically here. Middlebury\'s "net zero" via offsets is a financial claim about CO₂ molecules they paid someone else to handle — not the same thing.' },
           { text: 'Offsets are bigger than sinks', correct: false, explanation: 'Either can be bigger — depends on the project. The fundamental difference is offsets-as-payment vs sinks-as-physical-drawdown, not size.' },
           { text: 'Sinks are more expensive', correct: false, explanation: 'Sinks (your existing forest) are typically free if you already own the land. Offsets cost real money. The cost direction is opposite of what this option claims.' },
         ],
@@ -1198,7 +1198,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Middlebury\'s "net zero" is not the same as KUA\'s drawdown',
-        body: 'Middlebury reports as carbon-neutral by purchasing offsets equal to gross emissions. The CO₂ molecules they emit still go up; they paid someone else to remove an equal amount somewhere else. KUA\'s 3,000 mtCO₂e/yr from the campus forest is physical — those molecules are actually pulled out, on KUA land.',
+        body: 'Middlebury reports as carbon-neutral by purchasing offsets equal to gross emissions. The CO₂ molecules they emit still go up; they paid someone else to remove an equal amount somewhere else. KUA\'s ~2,650 mtCO₂e/yr from the campus forest is physical — those molecules are actually pulled out, on KUA land.',
       },
       {
         type: 'quiz',
@@ -1273,7 +1273,7 @@ const paths = [
           { text: 'Student turning off dorm lights', correct: false, explanation: 'Tiny — about 0.005 mtCO₂e per LED bulb saved per year.' },
           { text: 'One fewer round-trip flight per international student', correct: true, explanation: 'Right. 50 × 1 × 2.93 = 146 mtCO₂e/yr saved across the international cohort. The single highest-leverage individual lever in the entire dashboard.' },
           { text: 'Composting in dining hall', correct: false, explanation: 'Real but smaller — ~10–24 mt/yr at full diversion. Captures fugitive methane that would otherwise leak from landfilled food.' },
-          { text: 'Buying offsets equal to KUA\'s gross emissions', correct: false, explanation: 'Offsets equal gross would account for ~4,150 mt on paper, but the offset quality varies and KUA\'s emissions don\'t actually fall. Reduction wins over offsetting per dollar of effort.' },
+          { text: 'Buying offsets equal to KUA\'s gross emissions', correct: false, explanation: 'Offsets equal gross would account for ~4,335 mt on paper, but the offset quality varies and KUA\'s emissions don\'t actually fall. Reduction wins over offsetting per dollar of effort.' },
         ],
       },
       {
