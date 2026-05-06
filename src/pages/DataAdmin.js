@@ -39,7 +39,6 @@ export default function DataAdmin() {
       subtitle="Operational tools — live health, CSV upload, factor registry, meter quality. Sign in with the admin password."
       envKey="ADMIN_PASSWORD"
       storageKey="adminLoggedIn"
-      defaultPassword="KUA2026"
       accent="#22d3ee"
     >
       <DataAdminContent />
