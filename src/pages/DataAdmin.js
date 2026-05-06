@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { PasswordGate } from '../components/PasswordGate.js';
 import { meters } from '../data/meters.js';
@@ -178,16 +178,34 @@ function HealthPanel() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Refresh is exposed both to useEffect (initial mount) and to the
+  // refresh button. Either path can be in flight when the component
+  // unmounts (e.g. user signs out of /data-admin). Track an abort
+  // controller per call so unmount cancels the pending request and
+  // setState doesn't fire on a torn-down component.
+  const ctrlRef = useRef(null);
 
   function refresh() {
+    if (ctrlRef.current) ctrlRef.current.abort();
+    const ctrl = new AbortController();
+    ctrlRef.current = ctrl;
     setLoading(true); setError(null);
-    fetch('/api/health')
+    fetch('/api/health', { signal: ctrl.signal })
       .then((r) => r.json().then((j) => ({ ok: r.ok, body: j })))
-      .then(({ ok, body }) => { setData({ ok, ...body }); setLoading(false); })
-      .catch((err) => { setError(err.message); setLoading(false); });
+      .then(({ ok, body }) => {
+        if (ctrl.signal.aborted) return;
+        setData({ ok, ...body }); setLoading(false);
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setError(err.message); setLoading(false);
+      });
   }
 
-  useEffect(refresh, []);
+  useEffect(() => {
+    refresh();
+    return () => { if (ctrlRef.current) ctrlRef.current.abort(); };
+  }, []);
 
   return (
     <ModuleSection
