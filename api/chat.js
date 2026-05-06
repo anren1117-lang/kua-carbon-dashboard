@@ -85,7 +85,7 @@ Heat-resilient cities, coastal retreat and managed realignment, agricultural ada
 
 # KUA-specific data — use when relevant
 
-Campus profile: ~340 students (boarding + day), ~1,000 acres total, much in mixed maple/beech/birch forest, 18 tracked buildings, Plainfield NH (climate zone 6, ~7,500 HDD).
+Campus profile: ~340 students (boarding + day), ~1,000 acres total, much in mixed maple/beech/birch forest, 19 tracked buildings, Plainfield NH (climate zone 6, ~7,500 HDD).
 
 Preliminary annual estimate (Fermi-level until measured data lands):
 - Scope 1 (heating + refrigerants + fleet): ~1,250 mtCO₂e
