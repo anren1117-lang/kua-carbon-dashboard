@@ -1,44 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { NAV_GROUPS } from '../../components/AdminLayout.js';
+import { GROSS_MT, SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
+import { getCustomActions, getStagePlans } from '../../data/customActions.js';
 
-const opsCards = [
-  {
-    to: '/admin/actions',
-    icon: '🎯',
-    title: 'Reduction Actions (admin view)',
-    body: 'Every action regardless of visibility, including capex, vendor selection, and pre-board figures. Public-tagged items also appear on /actions; admin-tagged items live only here.',
-    stat: 'Capex · Vendor · Pre-board',
-  },
-  {
-    to: '/data-admin',
-    icon: '🩺',
-    title: 'Data Admin',
-    body: 'Live health probe (adapter / Supabase / factors), CSV upload + parse preview, full emission-factor registry, meter registry with BMS join numbers.',
-    stat: 'Health · Quality · Imports',
-  },
-  {
-    to: '/trends',
-    icon: '📈',
-    title: 'Trend Builder',
-    body: 'Pick a building, a window, an interval. Renders a time-series chart with hover tooltip. Reads through /api/meters/readings.',
-    stat: 'Mock today · BMS once relay is wired',
-  },
-  {
-    to: '/admin/legacy',
-    icon: '🗂',
-    title: 'Legacy admin (Supabase CRUD)',
-    body: 'The original password-gated CRUD UI for fuel bills, students, travel, and waste. Still functional during the data-layer transition.',
-    stat: 'Supabase-backed',
-  },
-];
+// Admin dashboard. Mirrors NAV_GROUPS exactly so the home page and the
+// header dropdowns stay in sync — adding a new admin page in
+// AdminLayout's NAV_GROUPS automatically surfaces here.
+//
+// Layout: top-line "where the school stands today" stats, then 4
+// cards-of-cards (one per nav group), then the live record-count
+// strip from Supabase at the bottom.
 
-const sections = [
-  { to: '/admin/scope-1',    name: 'Scope 1',    desc: 'Heating fuel, refrigerants, fleet' },
-  { to: '/admin/scope-2',    name: 'Scope 2',    desc: 'Electricity (campus meter + Liberty bills)' },
-  { to: '/admin/scope-3',    name: 'Scope 3',    desc: 'Travel, waste, commuting, purchased goods' },
-  { to: '/admin/renewables', name: 'Renewables', desc: 'Solar, geothermal, wind' },
-  { to: '/admin/sinks',      name: 'Sinks',      desc: 'Tree inventory, soil samples' },
+const QUICK_LINKS = [
+  { to: '/admin/plan-agent',    icon: '🧭', label: 'Generate a plan',     desc: 'AI-driven 5-7 step plan from your fiscal context.' },
+  { to: '/admin/stage-planner', icon: '📋', label: 'Compose stages',      desc: 'Build a phased reduction plan from custom + library actions.' },
+  { to: '/admin/actions',       icon: '✎',  label: 'Add a custom action', desc: 'Type an action; AI estimates carbon impact + cost.' },
+  { to: '/data-admin',          icon: '🩺', label: 'Data health',         desc: 'Live adapter / Supabase / factor probe + CSV upload.' },
 ];
 
 const tableMap = [
@@ -51,33 +31,10 @@ const tableMap = [
   { table: 'waste',                label: 'Waste records' },
 ];
 
-const styles = {
-  title: { margin: 0, fontSize: 32, fontWeight: 700 },
-  subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 720 },
-
-  sectionTitle: { marginTop: 32, marginBottom: 12, fontSize: 16, color: '#22d3ee', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 },
-
-  opsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 },
-  opsCard: { display: 'block', padding: '18px 20px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10, color: 'inherit', textDecoration: 'none' },
-  opsIcon: { fontSize: 28, marginBottom: 8 },
-  opsName: { fontSize: 17, color: '#e5e7eb', fontWeight: 700, marginBottom: 8 },
-  opsBody: { fontSize: 13, color: '#94a3b8', lineHeight: 1.6 },
-  opsStat: { fontSize: 11, color: '#22d3ee', marginTop: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 },
-
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 },
-  card: { display: 'block', padding: 18, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 10, textDecoration: 'none', color: '#e5e7eb' },
-  name: { fontSize: 17, fontWeight: 600 },
-  desc: { marginTop: 6, color: '#94a3b8', fontSize: 14 },
-
-  counts: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 },
-  count: { padding: 14, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 8 },
-  countLabel: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6 },
-  countValue: { marginTop: 6, fontSize: 22, fontWeight: 700 },
-};
-
-function AdminHome() {
+export default function AdminHome() {
   const [counts, setCounts] = useState({});
   const [error, setError] = useState('');
+  const [tick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,48 +54,133 @@ function AdminHome() {
     return () => { cancelled = true; };
   }, []);
 
+  // Live counts of admin-authored content.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const customActionCount = getCustomActions().length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stagePlanCount = getStagePlans().length;
+
+  const grossRounded = Math.round(GROSS_MT).toLocaleString();
+  const netRounded = Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toLocaleString();
+
   return (
     <div>
-      <h1 style={styles.title}>Admin & Ops Portal</h1>
-      <p style={styles.subtitle}>
-        Operational tools and data management. The cards below cover live health, CSV imports,
-        the Trend Builder, and the structured CRUD admin tree for every emissions category.
-      </p>
-
-      <div style={styles.sectionTitle}>Operations</div>
-      <div style={styles.opsGrid}>
-        {opsCards.map((c) => (
-          <Link key={c.to} to={c.to} style={styles.opsCard}>
-            <div style={styles.opsIcon} aria-hidden="true">{c.icon}</div>
-            <div style={styles.opsName}>{c.title}</div>
-            <div style={styles.opsBody}>{c.body}</div>
-            <div style={styles.opsStat}>{c.stat}</div>
-          </Link>
-        ))}
+      <div style={styles.headLine}>
+        <h1 style={styles.title}>Admin Dashboard</h1>
+        <p style={styles.subtitle}>
+          Generate plans, log data, and manage the asset inventory. Use the dropdowns above for
+          everything; the cards below mirror those groups so you can also navigate by clicking.
+        </p>
       </div>
 
-      <div style={styles.sectionTitle}>Data entry by category</div>
-      <div style={styles.grid}>
-        {sections.map((s) => (
-          <Link key={s.to} to={s.to} style={styles.card}>
-            <div style={styles.name}>{s.name}</div>
-            <div style={styles.desc}>{s.desc}</div>
-          </Link>
-        ))}
+      <div style={styles.statRow} role="region" aria-label="Headline numbers">
+        <Stat label="Gross emissions"      value={grossRounded}                                unit="mtCO₂e/yr" accent="#fbbf24" />
+        <Stat label="Net (after sinks)"    value={netRounded}                                  unit="mtCO₂e/yr" accent="#86efac" />
+        <Stat label="Scope 1 / 2 / 3"      value={`${Math.round(SCOPE1_TOTAL_MT)} / ${Math.round(SCOPE2_TOTAL_MT)} / ${Math.round(SCOPE3_TOTAL_MT)}`} unit="mtCO₂e/yr" accent="#22d3ee" />
+        <Stat label="Custom actions"        value={customActionCount}                           unit={customActionCount === 1 ? 'admin-authored' : 'admin-authored'} accent="#a855f7" />
+        <Stat label="Stage plans"           value={stagePlanCount}                              unit={stagePlanCount === 1 ? 'in your library' : 'in your library'} accent="#22c55e" />
       </div>
 
-      <div style={styles.sectionTitle}>Current record counts</div>
-      {error && <div style={{ marginTop: 8, color: '#fca5a5', fontSize: 13, marginBottom: 8 }}>Error: {error}</div>}
-      <div style={styles.counts}>
-        {tableMap.map(({ table, label }) => (
-          <div key={table} style={styles.count}>
-            <div style={styles.countLabel}>{label}</div>
-            <div style={styles.countValue}>{counts[table] ?? '…'}</div>
+      <Section title="Quick actions" hint="The four most-used admin starting points.">
+        <div style={styles.quickGrid}>
+          {QUICK_LINKS.map((q) => (
+            <Link key={q.to} to={q.to} style={styles.quickCard}>
+              <div style={styles.quickIcon} aria-hidden="true">{q.icon}</div>
+              <div style={styles.quickLabel}>{q.label}</div>
+              <div style={styles.quickDesc}>{q.desc}</div>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      {NAV_GROUPS.map((group) => (
+        <Section
+          key={group.key}
+          title={group.label}
+          hint={group.blurb}
+          accent={group.accent}
+        >
+          <div style={styles.groupGrid}>
+            {group.items.map((item) => (
+              <Link key={item.to} to={item.to} style={{ ...styles.groupCard, borderLeftColor: group.accent }}>
+                <div style={styles.groupCardLabel}>{item.label}</div>
+                <div style={styles.groupCardDesc}>{item.desc}</div>
+                <div style={styles.groupCardLink}>Open →</div>
+              </Link>
+            ))}
           </div>
-        ))}
-      </div>
+        </Section>
+      ))}
+
+      <Section title="Supabase record counts" hint="Rows currently in each Supabase table. Falls back to '—' if the database isn't reachable.">
+        {error && <div style={styles.error}>Error: {error}</div>}
+        <div style={styles.recordGrid}>
+          {tableMap.map(({ table, label }) => (
+            <div key={table} style={styles.recordCell}>
+              <div style={styles.recordLabel}>{label}</div>
+              <div style={styles.recordValue}>{counts[table] ?? '…'}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
     </div>
   );
 }
 
-export default AdminHome;
+function Section({ title, hint, accent, children }) {
+  return (
+    <section style={styles.section}>
+      <div style={{ ...styles.sectionHead, borderColor: accent || '#1f2937' }}>
+        <div style={{ ...styles.sectionTitle, color: accent || '#22d3ee' }}>{title}</div>
+        {hint && <div style={styles.sectionHint}>{hint}</div>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Stat({ label, value, unit, accent }) {
+  return (
+    <div style={{ ...styles.stat, borderLeftColor: accent }}>
+      <div style={styles.statLabel}>{label}</div>
+      <div style={styles.statValue}>{value}</div>
+      {unit && <div style={styles.statUnit}>{unit}</div>}
+    </div>
+  );
+}
+
+const styles = {
+  headLine: { marginBottom: 24 },
+  title: { margin: 0, fontSize: 32, fontWeight: 700 },
+  subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 760, lineHeight: 1.6 },
+
+  statRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 28 },
+  stat: { padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 8 },
+  statLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  statValue: { fontSize: 22, color: '#e5e7eb', fontWeight: 800, marginTop: 6, fontVariantNumeric: 'tabular-nums' },
+  statUnit: { fontSize: 11, color: '#64748b', marginTop: 4 },
+
+  section: { marginTop: 28 },
+  sectionHead: { borderLeft: '3px solid #1f2937', paddingLeft: 12, marginBottom: 14 },
+  sectionTitle: { fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 },
+  sectionHint: { fontSize: 13, color: '#94a3b8', marginTop: 4 },
+
+  quickGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 },
+  quickCard: { display: 'block', padding: '16px 18px', background: 'linear-gradient(135deg, #0f172a 0%, #0b1220 100%)', border: '1px solid #1f2937', borderRadius: 10, color: 'inherit', textDecoration: 'none' },
+  quickIcon: { fontSize: 26, marginBottom: 8 },
+  quickLabel: { fontSize: 16, color: '#e5e7eb', fontWeight: 700 },
+  quickDesc: { fontSize: 13, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 },
+
+  groupGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 },
+  groupCard: { display: 'block', padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 8, color: 'inherit', textDecoration: 'none' },
+  groupCardLabel: { fontSize: 15, color: '#e5e7eb', fontWeight: 700 },
+  groupCardDesc: { fontSize: 13, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 },
+  groupCardLink: { fontSize: 11, color: '#22d3ee', marginTop: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase' },
+
+  recordGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 },
+  recordCell: { padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  recordLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6 },
+  recordValue: { marginTop: 6, fontSize: 20, color: '#cbd5e1', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+
+  error: { marginBottom: 10, color: '#fca5a5', fontSize: 13 },
+};
