@@ -8,6 +8,7 @@ import {
   ANNUAL_SEQUESTRATION_MT,
   soilCarbonStored,
 } from '../data/sinks.js';
+import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 
 // Sinks OS module — forest + soil sequestration. Mirrors the Renewables
 // module pattern. Lives at /sinks-os to avoid colliding with the older
@@ -21,14 +22,36 @@ const TYPE_COLORS = {
 };
 
 export default function Sinks() {
-  const sortedStands = [...forestStands].sort((a, b) => (b.acres * b.mtco2eAcreYr) - (a.acres * a.mtco2eAcreYr));
+  const live = useMeasuredSinks();
+  // Use live data when forest_stand_actuals has rows; fall back to the
+  // hardcoded inventory otherwise. Soil carbon stays on the static
+  // soil_samples list — there's no live soil-stock table yet.
+  const isMeasured = live.measured && !live.loading && !live.error;
+  const totalAcres = isMeasured ? live.acres : TOTAL_FOREST_ACRES;
+  const annualMt = isMeasured ? live.totalMt : Math.round(ANNUAL_SEQUESTRATION_MT);
+  const standCount = isMeasured ? live.standCount : forestStands.length;
+  // For the per-stand cards: sort whichever list is active.
+  const sortedStands = isMeasured
+    ? [...live.perStand].sort((a, b) => b.mt - a.mt).map((s) => ({
+        id: s.stand_id || `stand_${Math.random().toString(36).slice(2, 8)}`,
+        name: s.name || s.stand_id || '—',
+        acres: s.acres,
+        mtco2eAcreYr: s.mtco2eAcreYr,
+        // Live rows don't have type / age / dominant_species in the
+        // shape composeSinksFromActuals returns. Default to neutral
+        // placeholders so existing render logic doesn't break.
+        type: 'mixed_hardwood',
+        ageClass: 'mature',
+        dominantSpecies: '',
+      }))
+    : [...forestStands].sort((a, b) => (b.acres * b.mtco2eAcreYr) - (a.acres * a.mtco2eAcreYr));
 
   // Soil carbon: average %OC across samples, applied to total acreage.
   const avgOC = soilSamples.length
     ? soilSamples.filter((s) => s.depthCm <= 30).reduce((s, x) => s + x.percentOrganicC, 0) /
       soilSamples.filter((s) => s.depthCm <= 30).length
     : 0;
-  const totalSoilStored = soilCarbonStored(avgOC, TOTAL_FOREST_ACRES);
+  const totalSoilStored = soilCarbonStored(avgOC, totalAcres);
 
   return (
     <ModulePage
@@ -36,10 +59,10 @@ export default function Sinks() {
       subtitle="On-campus carbon drawdown — what KUA's roughly 1,000 acres of forest and the soil under it pull out of the air every year. Most peer schools don't measure their sinks at all; that gap is the single biggest reason KUA's net footprint reads near zero."
     >
       <MetricGrid metrics={[
-        { label: 'Forest acres',        value: TOTAL_FOREST_ACRES.toLocaleString(), accent: '#22c55e' },
-        { label: 'Annual sequestration', value: ANNUAL_SEQUESTRATION_MT.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: 'Stand-weighted' },
+        { label: 'Forest acres',        value: totalAcres.toLocaleString(), accent: '#22c55e' },
+        { label: 'Annual sequestration', value: annualMt.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: isMeasured ? 'Live forest_stand_actuals' : 'Stand-weighted (placeholder)' },
         { label: 'Soil carbon stored',   value: Math.round(totalSoilStored).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: 'Top 30 cm' },
-        { label: 'Forest stands',        value: forestStands.length, accent: '#22d3ee' },
+        { label: 'Forest stands',        value: standCount, accent: '#22d3ee' },
       ]} />
 
       <ModuleSection title="Data provenance" hint="What the four numbers above are based on, and the upgrade path that replaces each placeholder with measured data.">
@@ -55,8 +78,8 @@ export default function Sinks() {
           </div>
           <div style={styles.provRow}>
             <div style={styles.provHead}>
-              <ProvenancePill provenance="estimated" />
-              <span style={styles.provLabel}>Annual sequestration ({ANNUAL_SEQUESTRATION_MT.toFixed(0)} mtCO₂e/yr)</span>
+              <ProvenancePill provenance={isMeasured ? 'measured' : 'estimated'} />
+              <span style={styles.provLabel}>Annual sequestration ({annualMt.toFixed(0)} mtCO₂e/yr)</span>
             </div>
             <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> 7 placeholder forest stands (named "North Hill", "Potato Patch", "Chellis Pond riparian", etc. — not from a KUA forest inventory) × per-acre rates that sit inside IPCC LULUCF default ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total acreage and the mix of mature hardwood / softwood / transitional / open-grown is real-ish; the per-stand subdivision and individual acreages are invented.</div>
             <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> Commission a USFS Forest Inventory & Analysis-style stand survey of the actual KUA woodlot — species composition, age class, basal area, real per-stand acreage. IPCC per-acre rates stay (they're appropriate for this regional + age-class mix); inputs become real. Flips estimated → cited.</div>
@@ -71,8 +94,8 @@ export default function Sinks() {
           </div>
           <div style={styles.provRow}>
             <div style={styles.provHead}>
-              <ProvenancePill provenance="estimated" />
-              <span style={styles.provLabel}>Forest stands ({forestStands.length})</span>
+              <ProvenancePill provenance={isMeasured ? 'measured' : 'estimated'} />
+              <span style={styles.provLabel}>Forest stands ({standCount})</span>
             </div>
             <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> 7 placeholder stands. The names, individual acreages, age classes, and dominant species are best-effort guesses sized so totals match the cited 1,000-acre disclosure.</div>
             <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> Replaced with real stands from the FIA-style inventory above. Number of stands is whatever the survey returns — could be 4 or 12.</div>

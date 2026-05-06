@@ -269,6 +269,24 @@ function AdminPortal() {
     }
   };
 
+  // Plaintext substring filter applied to whichever records list is
+  // active on the current tab. Stringifies each row's values and does
+  // a case-insensitive substring match — cheap, ad-hoc, and good
+  // enough for the "find that delivery from January" use case.
+  const [recordsFilter, setRecordsFilter] = useState('');
+  const matchesFilter = (row) => {
+    const q = recordsFilter.trim().toLowerCase();
+    if (!q) return true;
+    return Object.values(row).some((v) => v != null && String(v).toLowerCase().includes(q));
+  };
+  const filteredFuelBills            = fuelBills.filter(matchesFilter);
+  const filteredDayStudents          = dayStudents.filter(matchesFilter);
+  const filteredUsBoardingStudents   = usBoardingStudents.filter(matchesFilter);
+  const filteredIntlStudents         = intlStudents.filter(matchesFilter);
+  const filteredStudyAbroad          = studyAbroad.filter(matchesFilter);
+  const filteredFacultyTravel        = facultyTravel.filter(matchesFilter);
+  const filteredWasteRecords         = wasteRecords.filter(matchesFilter);
+
   // Helper that downloads a single Supabase table as a CSV. Builds
   // a date-stamped filename so consecutive exports don't clobber each
   // other in the admin's downloads folder.
@@ -347,6 +365,68 @@ function AdminPortal() {
       showMessage('Import error: ' + err.message);
     }
     setFuelImportBusy(false);
+  };
+
+  // Waste bulk-import — same pattern as fuel. Validates against the
+  // waste_type enum + unit enum + non-negative amount.
+  const [showWasteImport, setShowWasteImport] = useState(false);
+  const [wasteImportText, setWasteImportText] = useState('');
+  const [wasteImportPreview, setWasteImportPreview] = useState(null);
+  const [wasteImportBusy, setWasteImportBusy] = useState(false);
+
+  const validateWasteRow = (raw, idx) => {
+    const date = (raw.date || '').trim();
+    const waste_type = (raw.waste_type || raw['waste type'] || '').trim();
+    const amountStr = (raw.amount || '').trim();
+    const unit = (raw.unit || 'tons').trim();
+    const notes = (raw.notes || '').trim();
+    const school_year = (raw.school_year || raw['school year'] || '2025-2026').trim();
+
+    if (!date) return { ok: false, message: `row ${idx + 2}: missing date` };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, message: `row ${idx + 2}: date must be YYYY-MM-DD (got "${date}")` };
+    if (!['Landfill', 'Recycling', 'Composting', 'Hazardous', 'E-Waste'].includes(waste_type)) {
+      return { ok: false, message: `row ${idx + 2}: waste_type must be one of Landfill/Recycling/Composting/Hazardous/E-Waste (got "${waste_type}")` };
+    }
+    const amount = parseFloat(amountStr);
+    if (!Number.isFinite(amount) || amount < 0) return { ok: false, message: `row ${idx + 2}: amount must be a non-negative number (got "${amountStr}")` };
+    if (!['tons', 'lbs', 'cubic yards'].includes(unit)) {
+      return { ok: false, message: `row ${idx + 2}: unit must be one of tons/lbs/cubic yards (got "${unit}")` };
+    }
+    return { ok: true, row: { date, waste_type, amount, unit, notes: notes || null, school_year } };
+  };
+
+  const handleWasteImportPreview = () => {
+    const parsed = parseCsv(wasteImportText);
+    const rowResults = parsed.rows.map((r, i) => validateWasteRow(r, i));
+    const valid = rowResults.filter((r) => r.ok).map((r) => r.row);
+    const errors = [
+      ...parsed.errors.map((e) => `row ${e.row}: ${e.message}`),
+      ...rowResults.filter((r) => !r.ok).map((r) => r.message),
+    ];
+    setWasteImportPreview({ valid, errors, totalRowsParsed: parsed.rows.length });
+  };
+
+  const handleWasteImportCommit = async () => {
+    if (!wasteImportPreview || wasteImportPreview.valid.length === 0) return;
+    setWasteImportBusy(true);
+    try {
+      const { error } = await supabase.from('waste').insert(wasteImportPreview.valid);
+      if (error) throw error;
+      logAdminWrite({
+        action: 'insert',
+        table: 'waste',
+        payload: { bulk_count: wasteImportPreview.valid.length },
+        note: `CSV bulk import: ${wasteImportPreview.valid.length} rows`,
+      });
+      showMessage(`✓ ${wasteImportPreview.valid.length} waste rows imported`);
+      setWasteImportText('');
+      setWasteImportPreview(null);
+      setShowWasteImport(false);
+      fetchAllData();
+    } catch (err) {
+      showMessage('Import error: ' + err.message);
+    }
+    setWasteImportBusy(false);
   };
 
   // Calculate emissions
@@ -429,6 +509,22 @@ function AdminPortal() {
       <div style={styles.content}>
         {loading && <p style={styles.loading}>Loading...</p>}
 
+        <div style={styles.filterRow}>
+          <input
+            type="search"
+            value={recordsFilter}
+            onChange={(e) => setRecordsFilter(e.target.value)}
+            placeholder="Filter records (date, name, fuel type, country, …)"
+            style={styles.filterInput}
+            aria-label="Filter records"
+          />
+          {recordsFilter && (
+            <button type="button" onClick={() => setRecordsFilter('')} style={styles.filterClear}>
+              Clear
+            </button>
+          )}
+        </div>
+
         {/* FUEL TAB */}
         {activeTab === 'fuel' && (
           <>
@@ -505,9 +601,9 @@ function AdminPortal() {
                 <h2 style={styles.cardTitle}>Fuel Records ({fuelBills.length}) — Total: {totalFuelEmissions.toFixed(2)} mtCO2e</h2>
                 {fuelBills.length > 0 && <button type="button" onClick={() => exportCsv(fuelBills, 'fuel_bills')} style={styles.csvBtn}>Download CSV</button>}
               </div>
-              {fuelBills.length === 0 ? <p style={styles.noData}>No records yet</p> : (
+              {fuelBills.length === 0 ? <p style={styles.noData}>No records yet</p> : filteredFuelBills.length === 0 ? <p style={styles.noData}>No matches for "{recordsFilter}"</p> : (
                 <div style={styles.list}>
-                  {fuelBills.map(b => (
+                  {filteredFuelBills.map(b => (
                     <div key={b.id} style={styles.listItem}>
                       <div>
                         <strong>{b.fuel_type}</strong> — {b.date} — {b.gallons} gal {b.cost && `— $${b.cost}`}
@@ -544,9 +640,10 @@ function AdminPortal() {
                   <button type="submit" style={styles.submitBtn}>Add</button>
                 </div>
               </form>
-              {dayStudents.length > 0 && (
+              {dayStudents.length > 0 && filteredDayStudents.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
+              {filteredDayStudents.length > 0 && (
                 <div style={styles.list}>
-                  {dayStudents.map(s => (
+                  {filteredDayStudents.map(s => (
                     <div key={s.id} style={styles.listItem}>
                       <span>Zip: {s.zip_code} | Class of {s.graduation_year}</span>
                       <button type="button" aria-label="Delete record" onClick={() => deleteRecord('day_students', s.id)} style={styles.deleteBtn}>🗑️</button>
@@ -572,9 +669,10 @@ function AdminPortal() {
                   <button type="submit" style={styles.submitBtn}>Add</button>
                 </div>
               </form>
-              {usBoardingStudents.length > 0 && (
+              {usBoardingStudents.length > 0 && filteredUsBoardingStudents.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
+              {filteredUsBoardingStudents.length > 0 && (
                 <div style={styles.list}>
-                  {usBoardingStudents.map(s => (
+                  {filteredUsBoardingStudents.map(s => (
                     <div key={s.id} style={styles.listItem}>
                       <span>{s.state || '?'} - {s.zip_code} | Class of {s.graduation_year}</span>
                       <button type="button" aria-label="Delete record" onClick={() => deleteRecord('us_boarding_students', s.id)} style={styles.deleteBtn}>🗑️</button>
@@ -599,9 +697,10 @@ function AdminPortal() {
                   <button type="submit" style={styles.submitBtn}>Add</button>
                 </div>
               </form>
-              {intlStudents.length > 0 && (
+              {intlStudents.length > 0 && filteredIntlStudents.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
+              {filteredIntlStudents.length > 0 && (
                 <div style={styles.list}>
-                  {intlStudents.map(s => (
+                  {filteredIntlStudents.map(s => (
                     <div key={s.id} style={styles.listItem}>
                       <span>{s.country} | Class of {s.graduation_year}</span>
                       <button type="button" aria-label="Delete record" onClick={() => deleteRecord('international_students', s.id)} style={styles.deleteBtn}>🗑️</button>
@@ -635,9 +734,10 @@ function AdminPortal() {
                   <button type="submit" style={styles.submitBtn}>Add</button>
                 </div>
               </form>
-              {studyAbroad.length > 0 && (
+              {studyAbroad.length > 0 && filteredStudyAbroad.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
+              {filteredStudyAbroad.length > 0 && (
                 <div style={styles.list}>
-                  {studyAbroad.map(t => (
+                  {filteredStudyAbroad.map(t => (
                     <div key={t.id} style={styles.listItem}>
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.departure_date || 'TBD'}</span>
                       <button type="button" aria-label="Delete record" onClick={() => deleteRecord('study_abroad', t.id)} style={styles.deleteBtn}>🗑️</button>
@@ -667,9 +767,10 @@ function AdminPortal() {
                   <button type="submit" style={styles.submitBtn}>Add</button>
                 </div>
               </form>
-              {facultyTravel.length > 0 && (
+              {facultyTravel.length > 0 && filteredFacultyTravel.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
+              {filteredFacultyTravel.length > 0 && (
                 <div style={styles.list}>
-                  {facultyTravel.map(t => (
+                  {filteredFacultyTravel.map(t => (
                     <div key={t.id} style={styles.listItem}>
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.trip_purpose}</span>
                       <button type="button" aria-label="Delete record" onClick={() => deleteRecord('faculty_travel', t.id)} style={styles.deleteBtn}>🗑️</button>
@@ -688,7 +789,53 @@ function AdminPortal() {
               <strong>Factors:</strong> Landfill: 0.52 | Recycling: -0.10 | Composting: 0.04 | Hazardous: 0.50 | E-Waste: 0.30 mtCO2e/ton
             </div>
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Add Waste Record</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Add Waste Record</h2>
+                <button type="button" onClick={() => setShowWasteImport(!showWasteImport)} style={styles.csvBtn}>
+                  {showWasteImport ? 'Single entry' : 'Bulk import (CSV)'}
+                </button>
+              </div>
+
+              {showWasteImport && (
+                <div style={styles.importBlock}>
+                  <p style={styles.importHint}>
+                    Paste CSV with columns <code>date,waste_type,amount,unit,notes,school_year</code>
+                    {' '}(notes + school_year optional, default unit "tons"). waste_type one of
+                    Landfill / Recycling / Composting / Hazardous / E-Waste.
+                  </p>
+                  <textarea
+                    placeholder={'date,waste_type,amount,unit,notes,school_year\n2026-01-15,Landfill,2.4,tons,Monthly haul,2025-2026\n2026-01-15,Recycling,1.1,tons,,2025-2026'}
+                    value={wasteImportText}
+                    onChange={(e) => { setWasteImportText(e.target.value); setWasteImportPreview(null); }}
+                    style={styles.importTextarea}
+                  />
+                  <div style={{ display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+                    <button type="button" onClick={handleWasteImportPreview} style={styles.csvBtn} disabled={!wasteImportText.trim()}>
+                      Preview
+                    </button>
+                    {wasteImportPreview && wasteImportPreview.valid.length > 0 && (
+                      <button type="button" onClick={handleWasteImportCommit} disabled={wasteImportBusy} style={styles.submitBtn}>
+                        {wasteImportBusy ? 'Importing…' : `Import ${wasteImportPreview.valid.length} row${wasteImportPreview.valid.length === 1 ? '' : 's'}`}
+                      </button>
+                    )}
+                  </div>
+                  {wasteImportPreview && (
+                    <div style={styles.importPreview}>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Parsed {wasteImportPreview.totalRowsParsed} rows</strong>: {wasteImportPreview.valid.length} valid
+                        {wasteImportPreview.errors.length > 0 && `, ${wasteImportPreview.errors.length} with errors`}
+                      </div>
+                      {wasteImportPreview.errors.length > 0 && (
+                        <ul style={styles.importErrors}>
+                          {wasteImportPreview.errors.slice(0, 20).map((e, i) => <li key={i}>{e}</li>)}
+                          {wasteImportPreview.errors.length > 20 && <li>…and {wasteImportPreview.errors.length - 20} more</li>}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <form onSubmit={submitWaste}>
                 <div style={styles.formRow}>
                   <input type="date" value={wasteForm.date} onChange={(e) => setWasteForm({...wasteForm, date: e.target.value})} style={styles.input} required />
@@ -718,9 +865,9 @@ function AdminPortal() {
                 <h2 style={styles.cardTitle}>Waste Records ({wasteRecords.length}) — Net: {totalWasteEmissions.toFixed(2)} mtCO2e</h2>
                 {wasteRecords.length > 0 && <button type="button" onClick={() => exportCsv(wasteRecords, 'waste')} style={styles.csvBtn}>Download CSV</button>}
               </div>
-              {wasteRecords.length === 0 ? <p style={styles.noData}>No records yet</p> : (
+              {wasteRecords.length === 0 ? <p style={styles.noData}>No records yet</p> : filteredWasteRecords.length === 0 ? <p style={styles.noData}>No matches for "{recordsFilter}"</p> : (
                 <div style={styles.list}>
-                  {wasteRecords.map(w => {
+                  {filteredWasteRecords.map(w => {
                     const em = parseFloat(calcWasteEmissions(w.amount, w.unit, w.waste_type));
                     return (
                       <div key={w.id} style={styles.listItem}>
@@ -779,6 +926,9 @@ const styles = {
   importTextarea: { width: '100%', minHeight: 120, padding: 10, background: '#0a0f1c', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontFamily: 'ui-monospace, monospace', fontSize: 12, boxSizing: 'border-box' },
   importPreview: { marginTop: 12, padding: 10, background: '#0a0f1c', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, color: '#cbd5e1' },
   importErrors: { margin: '4px 0 0 16px', padding: 0, color: '#fca5a5', fontSize: 11, lineHeight: 1.5 },
+  filterRow: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14 },
+  filterInput: { flex: 1, minWidth: 240, padding: '8px 12px', background: '#0b1220', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontSize: 13, fontFamily: 'inherit' },
+  filterClear: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
   formRow: { display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' },
   input: { flex: 1, minWidth: '120px', padding: '10px', borderRadius: '6px', border: '1px solid #334155', backgroundColor: '#0f172a', color: 'white', fontSize: '0.95rem' },
   submitBtn: { padding: '10px 20px', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },
