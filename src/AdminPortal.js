@@ -125,6 +125,12 @@ function AdminPortal() {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  // Editing state for the fuel form. When non-null, the form is in
+  // edit mode for the row with this id and submitFuel will UPDATE
+  // instead of INSERT. Cleared after a successful save / explicit
+  // cancel.
+  const [editingFuelId, setEditingFuelId] = useState(null);
+
   // Submit handlers
   const submitFuel = async (e) => {
     e.preventDefault();
@@ -149,15 +155,41 @@ function AdminPortal() {
       notes: fuelForm.notes || null
     };
     try {
-      const { error } = await supabase.from('fuel_bills').insert([fuelRow]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'fuel_bills', payload: fuelRow });
-      showMessage('✓ Fuel bill added!');
+      if (editingFuelId) {
+        const { error } = await supabase.from('fuel_bills').update(fuelRow).eq('id', editingFuelId);
+        if (error) throw error;
+        logAdminWrite({ action: 'update', table: 'fuel_bills', payload: { id: editingFuelId, ...fuelRow } });
+        showMessage('✓ Fuel bill updated!');
+      } else {
+        const { error } = await supabase.from('fuel_bills').insert([fuelRow]);
+        if (error) throw error;
+        logAdminWrite({ action: 'insert', table: 'fuel_bills', payload: fuelRow });
+        showMessage('✓ Fuel bill added!');
+      }
       setFuelForm({ date: '', fuel_type: 'Propane', gallons: '', cost: '', notes: '' });
+      setEditingFuelId(null);
       fetchAllData();
     } catch (err) {
       showMessage('Error: ' + err.message);
     }
+  };
+
+  const startEditFuel = (b) => {
+    setFuelForm({
+      date: b.date || '',
+      fuel_type: b.fuel_type || 'Propane',
+      gallons: b.gallons != null ? String(b.gallons) : '',
+      cost: b.cost != null ? String(b.cost) : '',
+      notes: b.notes || '',
+    });
+    setEditingFuelId(b.id);
+    // Scroll to the form so the admin sees the prefilled values.
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEditFuel = () => {
+    setEditingFuelId(null);
+    setFuelForm({ date: '', fuel_type: 'Propane', gallons: '', cost: '', notes: '' });
   };
 
   const submitDayStudent = async (e) => {
@@ -593,7 +625,16 @@ function AdminPortal() {
                 </div>
                 <input type="text" placeholder="Notes (optional)" value={fuelForm.notes} onChange={(e) => setFuelForm({...fuelForm, notes: e.target.value})} style={{...styles.input, marginBottom: '10px'}} />
                 {fuelForm.gallons && <p style={styles.preview}>Emissions: <strong>{calcFuelEmissions(fuelForm.gallons, fuelForm.fuel_type)} mtCO2e</strong></p>}
-                <button type="submit" style={styles.submitBtn}>Add Fuel Bill</button>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button type="submit" style={styles.submitBtn}>
+                    {editingFuelId ? 'Update Fuel Bill' : 'Add Fuel Bill'}
+                  </button>
+                  {editingFuelId && (
+                    <button type="button" onClick={cancelEditFuel} style={styles.cancelBtn}>
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
             <div style={styles.card}>
@@ -604,12 +645,15 @@ function AdminPortal() {
               {fuelBills.length === 0 ? <p style={styles.noData}>No records yet</p> : filteredFuelBills.length === 0 ? <p style={styles.noData}>No matches for "{recordsFilter}"</p> : (
                 <div style={styles.list}>
                   {filteredFuelBills.map(b => (
-                    <div key={b.id} style={styles.listItem}>
+                    <div key={b.id} style={{ ...styles.listItem, ...(editingFuelId === b.id ? styles.listItemEditing : {}) }}>
                       <div>
                         <strong>{b.fuel_type}</strong> — {b.date} — {b.gallons} gal {b.cost && `— $${b.cost}`}
                         <br /><small style={{color: '#f97316'}}>{calcFuelEmissions(b.gallons, b.fuel_type)} mtCO2e</small>
                       </div>
-                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('fuel_bills', b.id)} style={styles.deleteBtn}>🗑️</button>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button type="button" aria-label="Edit record" onClick={() => startEditFuel(b)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('fuel_bills', b.id)} style={styles.deleteBtn}>🗑️</button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -929,6 +973,9 @@ const styles = {
   filterRow: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14 },
   filterInput: { flex: 1, minWidth: 240, padding: '8px 12px', background: '#0b1220', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontSize: 13, fontFamily: 'inherit' },
   filterClear: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  editBtn: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#22d3ee', padding: '0 6px' },
+  cancelBtn: { background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, padding: '8px 14px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' },
+  listItemEditing: { borderLeft: '3px solid #22d3ee', paddingLeft: '12px', background: 'rgba(34, 211, 238, 0.04)' },
   formRow: { display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' },
   input: { flex: 1, minWidth: '120px', padding: '10px', borderRadius: '6px', border: '1px solid #334155', backgroundColor: '#0f172a', color: 'white', fontSize: '0.95rem' },
   submitBtn: { padding: '10px 20px', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },
