@@ -724,3 +724,74 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
     expect(empty.breakdown.length).toBe(placeholder.breakdown.length);
   });
 });
+
+// Invariant tests pin down the canonical-arithmetic contract so any
+// future placeholder edit that breaks one of these surfaces in CI
+// instead of silently drifting through narrative pages.
+describe('canonical scope-totals invariants', () => {
+  it('GROSS_MT === SCOPE1 + SCOPE2 + SCOPE3', () => {
+    // Re-import to be defensive against any module-init race.
+    const { SCOPE1_TOTAL_MT: s1, SCOPE2_TOTAL_MT: s2, SCOPE3_TOTAL_MT: s3, GROSS_MT: gross } = require('../data/scopeTotals.js');
+    expect(gross).toBe(s1 + s2 + s3);
+  });
+
+  it('SCOPE_TOTALS object mirrors the per-scope exports', () => {
+    const m = require('../data/scopeTotals.js');
+    expect(m.SCOPE_TOTALS.scope1Mt).toBe(m.SCOPE1_TOTAL_MT);
+    expect(m.SCOPE_TOTALS.scope2Mt).toBe(m.SCOPE2_TOTAL_MT);
+    expect(m.SCOPE_TOTALS.scope3Mt).toBe(m.SCOPE3_TOTAL_MT);
+  });
+
+  it('targets baseline values match canonical scope totals', async () => {
+    // Re-import via dynamic import so vitest picks up the latest
+    // module state if other tests mutated env vars first.
+    const { reductionTargets } = await import('../data/targets.js');
+    const { GROSS_MT } = await import('../data/scopeTotals.js');
+    const { ANNUAL_SEQUESTRATION_MT } = await import('../data/sinks.js');
+    const grossT = reductionTargets.find((t) => t.id === 'tg_gross_2030');
+    const netT   = reductionTargets.find((t) => t.id === 'tg_net_2050');
+    expect(grossT).toBeTruthy();
+    expect(netT).toBeTruthy();
+    expect(grossT.baselineValue).toBe(GROSS_MT);
+    expect(netT.baselineValue).toBe(GROSS_MT - ANNUAL_SEQUESTRATION_MT);
+  });
+
+  it('Scope 1 placeholder is inside the cross-check range', async () => {
+    const { SCOPE1_TOTAL_MT } = await import('../data/scopeTotals.js');
+    const { SCOPE1_RANGE } = await import('../data/geographicEstimates.js');
+    expect(SCOPE1_TOTAL_MT).toBeGreaterThanOrEqual(SCOPE1_RANGE.low);
+    expect(SCOPE1_TOTAL_MT).toBeLessThanOrEqual(SCOPE1_RANGE.high);
+  });
+
+  it('Scope 3 placeholder is inside the cross-check range', async () => {
+    const { SCOPE3_TOTAL_MT } = await import('../data/scopeTotals.js');
+    const { SCOPE3_RANGE } = await import('../data/geographicEstimates.js');
+    expect(SCOPE3_TOTAL_MT).toBeGreaterThanOrEqual(SCOPE3_RANGE.low);
+    expect(SCOPE3_TOTAL_MT).toBeLessThanOrEqual(SCOPE3_RANGE.high);
+  });
+
+  it('Sinks placeholder is inside the cross-check range', async () => {
+    const { ANNUAL_SEQUESTRATION_MT } = await import('../data/sinks.js');
+    const { SINKS_RANGE } = await import('../data/geographicEstimates.js');
+    expect(ANNUAL_SEQUESTRATION_MT).toBeGreaterThanOrEqual(SINKS_RANGE.low);
+    expect(ANNUAL_SEQUESTRATION_MT).toBeLessThanOrEqual(SINKS_RANGE.high);
+  });
+
+  it('per-student net falls in the published peer-school 2-15 mt envelope', async () => {
+    const { GROSS_MT } = await import('../data/scopeTotals.js');
+    const { ANNUAL_SEQUESTRATION_MT } = await import('../data/sinks.js');
+    const { TOTAL_STUDENTS } = await import('../data/students.js');
+    const perStudent = (GROSS_MT - ANNUAL_SEQUESTRATION_MT) / TOTAL_STUDENTS;
+    // Gutiérrez-Mosquera et al. 2024 envelope for HEI footprints,
+    // applied to KUA's residential-secondary scale.
+    expect(perStudent).toBeGreaterThan(2);
+    expect(perStudent).toBeLessThan(15);
+  });
+
+  it('Scope 3 placeholder breakdown rows sum to within ±2 mt of the headline', async () => {
+    const { composeScope3 } = await import('../data/scopeTotals.js');
+    const out = composeScope3();
+    const sum = out.breakdown.reduce((s, r) => s + r.mt, 0);
+    expect(Math.abs(sum - out.totalMt)).toBeLessThanOrEqual(2);
+  });
+});

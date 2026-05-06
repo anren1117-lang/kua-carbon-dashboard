@@ -32,8 +32,54 @@ const tableMap = [
   { table: 'waste',                label: 'Waste records' },
 ];
 
+// Per-table specs for the unified activity feed. `tsCol` is the
+// column we sort by (varies — fuel_bills uses `date`, students use
+// `created_at`, travel uses `departure_date`). `summarize` produces
+// the human-readable line (e.g. "100 gal Heating Oil — 2026-04-15").
+const FEED_TABLES = [
+  {
+    table: 'fuel_bills', label: 'Fuel bill', tsCol: 'date',
+    select: 'date, fuel_type, gallons',
+    summarize: (r) => `${r.gallons || '?'} gal ${r.fuel_type || ''}`.trim(),
+  },
+  {
+    table: 'day_students', label: 'Day student', tsCol: 'created_at',
+    select: 'created_at, zip_code, graduation_year',
+    summarize: (r) => `Day student • zip ${r.zip_code || '—'} • class of ${r.graduation_year || '—'}`,
+  },
+  {
+    table: 'us_boarding_students', label: 'US boarder', tsCol: 'created_at',
+    select: 'created_at, zip_code, state, graduation_year',
+    summarize: (r) => `US boarder • ${r.state || ''} ${r.zip_code || ''} • class of ${r.graduation_year || '—'}`,
+  },
+  {
+    table: 'international_students', label: 'International', tsCol: 'created_at',
+    select: 'created_at, country, graduation_year',
+    summarize: (r) => `International • ${r.country || '—'} • class of ${r.graduation_year || '—'}`,
+  },
+  {
+    table: 'study_abroad', label: 'Study abroad', tsCol: 'departure_date',
+    select: 'departure_date, destination_country, destination_city, return_date',
+    summarize: (r) => `Study abroad • ${r.destination_city || ''}${r.destination_city && r.destination_country ? ', ' : ''}${r.destination_country || ''}`.trim(),
+  },
+  {
+    table: 'faculty_travel', label: 'Faculty trip', tsCol: 'departure_date',
+    select: 'departure_date, destination_country, destination_city, trip_purpose',
+    summarize: (r) => `${r.trip_purpose || 'Faculty trip'} • ${r.destination_city || ''}${r.destination_city && r.destination_country ? ', ' : ''}${r.destination_country || ''}`.trim(),
+  },
+  {
+    table: 'waste', label: 'Waste', tsCol: 'date',
+    select: 'date, waste_type, amount, unit',
+    summarize: (r) => `${r.amount || '?'} ${r.unit || 'tons'} ${r.waste_type || ''}`.trim(),
+  },
+];
+
+const FEED_LIMIT_PER_TABLE = 5;
+const FEED_DISPLAY_LIMIT = 10;
+
 export default function AdminHome() {
   const [counts, setCounts] = useState({});
+  const [feed, setFeed] = useState([]);
   const [error, setError] = useState('');
   const [tick] = useState(0);
   const live = useMeasuredScopeTotals();
@@ -51,6 +97,50 @@ export default function AdminHome() {
         setCounts(next);
       } catch (err) {
         if (!cancelled) setError(err.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Recent-activity feed. Fetches the last N rows from each canonical
+  // admin table, normalizes each row to a uniform { ts, label, summary }
+  // shape, sorts by timestamp desc, slices to FEED_DISPLAY_LIMIT.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          FEED_TABLES.map((spec) =>
+            supabase
+              .from(spec.table)
+              .select(spec.select)
+              .order(spec.tsCol, { ascending: false })
+              .limit(FEED_LIMIT_PER_TABLE)
+              .then((r) => ({ spec, data: r.data || [] }))
+          )
+        );
+        if (cancelled) return;
+        const flat = [];
+        for (const { spec, data } of results) {
+          for (const row of data) {
+            const ts = row[spec.tsCol];
+            if (!ts) continue;
+            flat.push({
+              ts,
+              tsMs: new Date(ts).getTime(),
+              table: spec.table,
+              label: spec.label,
+              summary: spec.summarize(row),
+            });
+          }
+        }
+        flat.sort((a, b) => b.tsMs - a.tsMs);
+        setFeed(flat.slice(0, FEED_DISPLAY_LIMIT));
+      } catch {
+        // Activity feed is non-critical; the rest of the page works
+        // without it. Surface nothing on failure rather than a scary
+        // error banner — the record-counts panel below will already
+        // surface DB connectivity issues.
       }
     })();
     return () => { cancelled = true; };
@@ -176,6 +266,24 @@ export default function AdminHome() {
         </Section>
       ))}
 
+      {feed.length > 0 && (
+        <Section
+          title="Recent activity"
+          hint={`Last ${feed.length} record${feed.length === 1 ? '' : 's'} entered across all canonical tables, newest first.`}
+          accent="#22c55e"
+        >
+          <div style={styles.feedList}>
+            {feed.map((item, i) => (
+              <div key={i} style={styles.feedRow}>
+                <div style={styles.feedDate}>{formatFeedDate(item.ts)}</div>
+                <div style={styles.feedLabel}>{item.label}</div>
+                <div style={styles.feedSummary}>{item.summary}</div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
       <Section title="Supabase record counts" hint="Rows currently in each Supabase table. Falls back to '—' if the database isn't reachable.">
         {error && <div style={styles.error}>Error: {error}</div>}
         <div style={styles.recordGrid}>
@@ -189,6 +297,13 @@ export default function AdminHome() {
       </Section>
     </div>
   );
+}
+
+function formatFeedDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return d.toISOString().slice(0, 10);
 }
 
 function Section({ title, hint, accent, children }) {
@@ -252,6 +367,12 @@ const styles = {
   ingestionPill: { fontSize: 10, padding: '2px 8px', border: '1px solid', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 },
   ingestionLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
   ingestionDetail: { fontSize: 12, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 },
+
+  feedList: { display: 'flex', flexDirection: 'column', gap: 4 },
+  feedRow: { display: 'grid', gridTemplateColumns: '110px 130px 1fr', gap: 12, padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, alignItems: 'baseline' },
+  feedDate: { color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: 12 },
+  feedLabel: { color: '#22d3ee', fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 },
+  feedSummary: { color: '#cbd5e1' },
 
   error: { marginBottom: 10, color: '#fca5a5', fontSize: 13 },
 };
