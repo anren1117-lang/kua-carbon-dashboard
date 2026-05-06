@@ -197,6 +197,14 @@ export default function AdminHome() {
       detail: 'Sodexo / Business Office / HR commute survey integrations not yet shipped — these stay estimated.',
       // No CTA — these tables don't exist yet.
     },
+    {
+      label: 'Sinks (forest sequestration)',
+      measured: live.sinksMeasured,
+      detail: live.sinksMeasured
+        ? 'Per-stand inventory in forest_stand_actuals composes the headline live.'
+        : 'A USFS Forest Inventory & Analysis-style walk-through, entered as forest_stand_actuals rows, flips this from the hardcoded 7-stand placeholder.',
+      cta: live.sinksMeasured ? null : { to: '/admin/sinks', label: 'Enter forest inventory →' },
+    },
   ];
   const measuredCount = ingestionRows.filter((r) => r.measured).length;
   const totalCount = ingestionRows.length;

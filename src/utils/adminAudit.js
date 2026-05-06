@@ -48,22 +48,37 @@ export function logAdminWrite(entry) {
 }
 
 /**
- * Read recent audit-log entries. Returns { rows, error } — never
- * throws. The caller decides how to surface errors.
+ * Read audit-log entries. Returns { rows, total, offset, limit, error }
+ * — never throws. The caller decides how to surface errors.
  *
- * @param {{ limit?: number, table?: string }} [opts]
+ * @param {{
+ *   limit?: number,
+ *   offset?: number,
+ *   table?: string,
+ *   dateFrom?: string,    // ISO date e.g. '2026-01-01'
+ *   dateTo?: string,      // ISO date e.g. '2026-12-31'
+ * }} [opts]
  */
 export async function fetchAuditLog(opts = {}) {
   const params = new URLSearchParams();
-  if (opts.limit) params.set('limit', String(opts.limit));
-  if (opts.table) params.set('table', opts.table);
+  if (opts.limit)    params.set('limit',    String(opts.limit));
+  if (opts.offset)   params.set('offset',   String(opts.offset));
+  if (opts.table)    params.set('table',    opts.table);
+  if (opts.dateFrom) params.set('dateFrom', opts.dateFrom);
+  if (opts.dateTo)   params.set('dateTo',   opts.dateTo);
   const qs = params.toString();
   try {
     const r = await adminFetch(`/api/admin/audit-log${qs ? `?${qs}` : ''}`);
     const body = await r.json().catch(() => ({}));
-    if (!r.ok) return { rows: [], error: body.error || `HTTP ${r.status}` };
-    return { rows: Array.isArray(body.rows) ? body.rows : [], error: null };
+    if (!r.ok) return { rows: [], total: null, offset: 0, limit: 0, error: body.error || `HTTP ${r.status}` };
+    return {
+      rows: Array.isArray(body.rows) ? body.rows : [],
+      total: typeof body.total === 'number' ? body.total : null,
+      offset: typeof body.offset === 'number' ? body.offset : 0,
+      limit: typeof body.limit === 'number' ? body.limit : 0,
+      error: null,
+    };
   } catch (err) {
-    return { rows: [], error: err?.message || 'fetch failed' };
+    return { rows: [], total: null, offset: 0, limit: 0, error: err?.message || 'fetch failed' };
   }
 }

@@ -10,7 +10,7 @@ import { fetchAuditLog } from '../../utils/adminAudit.js';
 // Used by AASHE STARS reviewers + admins debugging a "who changed
 // this row" question.
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100, 200];
+const PAGE_SIZE_OPTIONS = [20, 50, 100, 500];
 const TABLE_FILTERS = [
   { value: '', label: 'All tables' },
   { value: 'fuel_bills', label: 'fuel_bills' },
@@ -22,28 +22,51 @@ const TABLE_FILTERS = [
   { value: 'waste', label: 'waste' },
   { value: 'scope1_fleet_records', label: 'scope1_fleet_records' },
   { value: 'scope1_refrigerant_logs', label: 'scope1_refrigerant_logs' },
+  { value: 'forest_stand_actuals', label: 'forest_stand_actuals' },
 ];
 
 export default function AdminAuditLog() {
   const [rows, setRows] = useState([]);
+  const [total, setTotal] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [limit, setLimit] = useState(50);
+  const [offset, setOffset] = useState(0);
   const [tableFilter, setTableFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [expanded, setExpanded] = useState(null); // row id
+
+  // Reset offset whenever a filter changes — otherwise we'd skip into
+  // empty territory of the new result set.
+  useEffect(() => { setOffset(0); }, [tableFilter, dateFrom, dateTo, limit]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchAuditLog({ limit, table: tableFilter || undefined }).then(({ rows, error }) => {
+    fetchAuditLog({
+      limit,
+      offset,
+      table: tableFilter || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+    }).then(({ rows, total, error }) => {
       if (cancelled) return;
       setRows(rows);
+      setTotal(total);
       setError(error);
       setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [limit, tableFilter]);
+  }, [limit, offset, tableFilter, dateFrom, dateTo]);
+
+  const page = Math.floor(offset / limit) + 1;
+  const lastPage = total !== null ? Math.max(1, Math.ceil(total / limit)) : null;
+  const hasPrev = offset > 0;
+  const hasNext = total !== null
+    ? offset + limit < total
+    : rows.length === limit; // optimistic when total unknown
 
   const actionColor = {
     insert: '#86efac',
@@ -81,6 +104,33 @@ export default function AdminAuditLog() {
             {TABLE_FILTERS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </label>
+        <label style={styles.controlLabel}>
+          From
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            style={styles.dateInput}
+          />
+        </label>
+        <label style={styles.controlLabel}>
+          To
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            style={styles.dateInput}
+          />
+        </label>
+        {(dateFrom || dateTo || tableFilter) && (
+          <button
+            type="button"
+            style={styles.clearBtn}
+            onClick={() => { setTableFilter(''); setDateFrom(''); setDateTo(''); }}
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {loading && <div style={styles.placeholder}>Loading…</div>}
@@ -142,6 +192,37 @@ export default function AdminAuditLog() {
           </tbody>
         </table>
       )}
+
+      {rows.length > 0 && (
+        <div style={styles.pager}>
+          <div style={styles.pagerInfo}>
+            {total !== null
+              ? `Showing ${offset + 1}–${Math.min(offset + rows.length, total)} of ${total.toLocaleString()}`
+              : `Showing ${offset + 1}–${offset + rows.length}`}
+            {lastPage && (
+              <span style={styles.pagerPage}> · page {page} of {lastPage}</span>
+            )}
+          </div>
+          <div style={styles.pagerBtns}>
+            <button
+              type="button"
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+              disabled={!hasPrev}
+              style={{ ...styles.pagerBtn, opacity: hasPrev ? 1 : 0.4, cursor: hasPrev ? 'pointer' : 'not-allowed' }}
+            >
+              ← Prev
+            </button>
+            <button
+              type="button"
+              onClick={() => setOffset(offset + limit)}
+              disabled={!hasNext}
+              style={{ ...styles.pagerBtn, opacity: hasNext ? 1 : 0.4, cursor: hasNext ? 'pointer' : 'not-allowed' }}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -177,4 +258,13 @@ const styles = {
 
   payloadCell: { padding: 0, background: '#0b1220', borderBottom: '1px solid #1f2937' },
   payload: { margin: 0, padding: '12px 16px', fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, overflow: 'auto' },
+
+  dateInput: { padding: '6px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontSize: 13, marginLeft: 4, fontFamily: 'inherit', minWidth: 130 },
+  clearBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 },
+
+  pager: { marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
+  pagerInfo: { fontSize: 12, color: '#94a3b8' },
+  pagerPage: { color: '#64748b', marginLeft: 8 },
+  pagerBtns: { display: 'flex', gap: 8 },
+  pagerBtn: { padding: '6px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #334155', borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: 'inherit' },
 };

@@ -24,6 +24,14 @@ const styles = {
   big: { fontSize: 26, fontWeight: 700, marginTop: 12 },
   sub: { color: '#94a3b8', marginTop: 6, fontSize: 13 },
   cite: { marginTop: 12, fontSize: 12, color: '#64748b', borderTop: '1px solid #1f2937', paddingTop: 8 },
+
+  standPanel: { marginTop: 28, padding: '24px 26px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 12 },
+  standHead: { marginBottom: 16 },
+  standTitle: { fontSize: 16, color: '#e5e7eb', fontWeight: 700, letterSpacing: 0.4 },
+  standSubtitle: { fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 1.5, maxWidth: 760 },
+  standTable: { width: '100%', borderCollapse: 'collapse' },
+  standTh: { textAlign: 'left', padding: '10px 8px', fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, borderBottom: '1px solid #1f2937', fontWeight: 700 },
+  standTd: { padding: '12px 8px', fontSize: 14, color: '#cbd5e1', borderBottom: '1px solid #1f2937', verticalAlign: 'top' },
 };
 
 function Sinks() {
@@ -217,6 +225,48 @@ function Sinks() {
           },
         ]}
       />
+
+      {isMeasured && Array.isArray(live.perStand) && live.perStand.length > 0 && (
+        <section style={styles.standPanel}>
+          <div style={styles.standHead}>
+            <div style={styles.standTitle}>Per-stand inventory ({live.standCount} stand{live.standCount === 1 ? '' : 's'})</div>
+            <div style={styles.standSubtitle}>
+              Live forest_stand_actuals × per-acre Birdsey/Nowak rates. The headline above sums these.
+            </div>
+          </div>
+          <table style={styles.standTable}>
+            <thead>
+              <tr>
+                <th style={styles.standTh}>Stand</th>
+                <th style={{ ...styles.standTh, textAlign: 'right' }}>Acres</th>
+                <th style={{ ...styles.standTh, textAlign: 'right' }}>mt/acre/yr</th>
+                <th style={{ ...styles.standTh, textAlign: 'right' }}>mtCO₂e/yr</th>
+              </tr>
+            </thead>
+            <tbody>
+              {live.perStand.map((s, i) => (
+                <tr key={s.stand_id || `stand_${i}`}>
+                  <td style={styles.standTd}>
+                    <div style={{ fontWeight: 600 }}>{s.name || s.stand_id || '—'}</div>
+                    {s.stand_id && s.name && (
+                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, monospace' }}>{s.stand_id}</div>
+                    )}
+                  </td>
+                  <td style={{ ...styles.standTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{Number(s.acres).toLocaleString()}</td>
+                  <td style={{ ...styles.standTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: '#94a3b8' }}>{s.mtco2eAcreYr.toFixed(2)}</td>
+                  <td style={{ ...styles.standTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{s.mt.toLocaleString()}</td>
+                </tr>
+              ))}
+              <tr>
+                <td style={{ ...styles.standTd, fontWeight: 700, color: '#22c55e' }}>Total</td>
+                <td style={{ ...styles.standTd, textAlign: 'right', fontWeight: 700, color: '#22c55e', fontVariantNumeric: 'tabular-nums' }}>{live.acres.toLocaleString()}</td>
+                <td style={styles.standTd}></td>
+                <td style={{ ...styles.standTd, textAlign: 'right', fontWeight: 700, color: '#22c55e', fontVariantNumeric: 'tabular-nums' }}>{live.totalMt.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <div style={styles.grid}>
         <div style={styles.card}>

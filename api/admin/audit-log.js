@@ -104,20 +104,35 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const limit = Math.min(Math.max(Number(req.query?.limit) || 20, 1), 200);
-    const table = req.query?.table;
+    // Pagination via offset (Supabase .range is inclusive on both
+    // ends, so 0..49 returns 50 rows). Caps preserved so a malicious
+    // caller can't ask for the entire table in one shot.
+    const limit  = Math.min(Math.max(Number(req.query?.limit)  || 50, 1), 500);
+    const offset = Math.max(Number(req.query?.offset) || 0, 0);
+    const table  = req.query?.table;
+    const dateFrom = req.query?.dateFrom; // ISO date string, optional
+    const dateTo   = req.query?.dateTo;   // ISO date string, optional
+
     let q = sb
       .from('admin_audit_log')
-      .select('id, created_at, action, table_name, payload, note, actor_hash')
+      .select('id, created_at, action, table_name, payload, note, actor_hash', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
     if (table && typeof table === 'string') q = q.eq('table_name', table);
-    const { data, error } = await q;
+    if (dateFrom && typeof dateFrom === 'string') q = q.gte('created_at', dateFrom);
+    if (dateTo   && typeof dateTo   === 'string') q = q.lte('created_at', dateTo);
+
+    const { data, error, count } = await q;
     if (error) {
       res.status(500).json({ error: error.message || 'audit read failed' });
       return;
     }
-    res.status(200).json({ rows: data || [] });
+    res.status(200).json({
+      rows: data || [],
+      total: typeof count === 'number' ? count : null,
+      offset,
+      limit,
+    });
     return;
   }
 
