@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const items = [
-  { to: '/admin/sinks/trees', name: 'Tree inventory',  table: 'sinks_trees',        status: 'Live form', desc: 'Per-tree DBH-based row. Jenkins-style biomass preview; USDA UTD allometrics later.' },
-  { to: '/admin/sinks/soil',  name: 'Soil samples',    table: 'sinks_soil_samples', status: 'Live form', desc: 'Inputs for SOC stock = depth × bulk density × OC%. Land-use weighted at report time.' },
+  { to: '/admin/sinks/stands', name: 'Forest stands',   table: 'forest_stand_actuals', status: 'Live form', desc: 'Per-stand acreage × Birdsey/Nowak per-acre rate. Flips the Sinks headline from the placeholder inventory to live measured.' },
+  { to: '/admin/sinks/trees',  name: 'Tree inventory',  table: 'sinks_trees',          status: 'Live form', desc: 'Per-tree DBH-based row. Jenkins-style biomass preview; USDA UTD allometrics later.' },
+  { to: '/admin/sinks/soil',   name: 'Soil samples',    table: 'sinks_soil_samples',   status: 'Live form', desc: 'Inputs for SOC stock = depth × bulk density × OC%. Land-use weighted at report time.' },
 ];
 
 const styles = {

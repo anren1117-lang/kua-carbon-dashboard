@@ -71,6 +71,7 @@ const Geothermal = lazy(() => import('./pages/admin/renewables/Geothermal'));
 const Wind = lazy(() => import('./pages/admin/renewables/Wind'));
 const TreeInventory = lazy(() => import('./pages/admin/sinks/TreeInventory'));
 const SoilSample = lazy(() => import('./pages/admin/sinks/SoilSample'));
+const ForestStands = lazy(() => import('./pages/admin/sinks/ForestStands'));
 const Cat1PurchasedGoods = lazy(() => import('./pages/admin/scope3/Cat1PurchasedGoods'));
 const Cat3UpstreamFuel = lazy(() => import('./pages/admin/scope3/Cat3UpstreamFuel'));
 const Cat5Waste = lazy(() => import('./pages/admin/scope3/Cat5Waste'));
@@ -165,6 +166,7 @@ root.render(
             <Route path="renewables/wind" element={<Wind />} />
 
             <Route path="sinks" element={<AdminSinks />} />
+            <Route path="sinks/stands" element={<ForestStands />} />
             <Route path="sinks/trees" element={<TreeInventory />} />
             <Route path="sinks/soil" element={<SoilSample />} />
 
