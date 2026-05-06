@@ -61,7 +61,13 @@ export default function Dining() {
     }), { pre: 0, post: 0, compost: 0, landfill: 0 });
   }, []);
   const wasteTotal = wasteSummary.pre + wasteSummary.post;
-  const wasteDiversion = wasteTotal ? (wasteSummary.compost / (wasteSummary.compost + wasteSummary.landfill)) * 100 : 0;
+  // Diversion = compost / (compost + landfill). The earlier guard
+  // gated on wasteTotal (pre + post), but the divisor uses compost +
+  // landfill — different sums. If pre/post data exists but compost +
+  // landfill is zero, the original expression hit 0/0 = NaN and the
+  // metric card showed "NaN%". Gate on the actual divisor instead.
+  const wasteSinks = wasteSummary.compost + wasteSummary.landfill;
+  const wasteDiversion = wasteSinks ? (wasteSummary.compost / wasteSinks) * 100 : 0;
 
   const selectedScenario = menuScenarios.find((s) => s.id === scenarioId);
 
