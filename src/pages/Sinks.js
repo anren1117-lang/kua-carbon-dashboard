@@ -2,12 +2,17 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
+import { SINKS_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 
+// Use the multi-method range from geographicEstimates.js (Birdsey 1992
+// US-forest avg / USDA NH FIA Morin 2020 / Nowak 2013 stand-specific)
+// instead of the legacy ±25% placeholder band, so the public sink page
+// matches the methodology page's published-method-spread reasoning.
 const SEQ_TOTAL  = Math.round(ANNUAL_SEQUESTRATION_MT);
 const SEQ_PER_ST = +(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS).toFixed(1);
-const SEQ_LOW    = Math.round(SEQ_TOTAL * 0.75);
-const SEQ_HIGH   = Math.round(SEQ_TOTAL * 1.5);
+const SEQ_LOW    = Math.round(SINKS_RANGE.low);
+const SEQ_HIGH   = Math.round(SINKS_RANGE.high);
 
 const styles = {
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
@@ -65,7 +70,7 @@ function Sinks() {
       <ScopePageInfo
         color="#22c55e"
         estimate={{
-          totalPrefix: '−', total: `~${SEQ_TOTAL.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out`, perStudent: -SEQ_PER_ST,
+          totalPrefix: '−', total: `~${SEQ_TOTAL.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across 3 methods (Birdsey 1992 / USDA NH FIA / Nowak 2013 stand-specific)`, perStudent: -SEQ_PER_ST,
           thirdMetric: { label: 'Forested area', value: `~${TOTAL_FOREST_ACRES.toLocaleString()}`, note: 'acres of campus forest' },
           note: `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`,
         }}

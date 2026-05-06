@@ -2,6 +2,7 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { SCOPE3_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 
 const SCOPE3_PER_STUDENT = +(SCOPE3_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
@@ -77,7 +78,7 @@ function Scope3() {
         color="#8b5cf6"
         estimate={{
           total: `~${SCOPE3_TOTAL_MT.toLocaleString()}`,
-          totalRange: `${Math.round(SCOPE3_TOTAL_MT * 0.75).toLocaleString()} – ${Math.round(SCOPE3_TOTAL_MT * 1.25).toLocaleString()} (placeholder ±25%)`,
+          totalRange: `${SCOPE3_RANGE.low.toLocaleString()} – ${SCOPE3_RANGE.high.toLocaleString()} mt across 3-4 methods per component (Yale cohort / Andover-Exeter peer / national long-tail / source-country split — see /admin/methodology for full breakdown)`,
           perStudent: SCOPE3_PER_STUDENT,
           thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
           provenance: 'estimated',

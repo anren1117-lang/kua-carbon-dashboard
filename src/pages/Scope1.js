@@ -2,6 +2,7 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
+import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 
 const SCOPE1_PER_STUDENT = +(SCOPE1_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
@@ -69,7 +70,7 @@ function Scope1() {
         color="#ef4444"
         estimate={{
           total: `~${SCOPE1_TOTAL_MT.toLocaleString()}`,
-          totalRange: `${Math.round(SCOPE1_TOTAL_MT * 0.8).toLocaleString()} – ${Math.round(SCOPE1_TOTAL_MT * 1.2).toLocaleString()} (placeholder ±20%)`,
+          totalRange: `${SCOPE1_RANGE.low.toLocaleString()} – ${SCOPE1_RANGE.high.toLocaleString()} mt across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical NH-CZ6 stock / ENERGY STAR HDD-direct upper bound)`,
           perStudent: SCOPE1_PER_STUDENT,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
           provenance: 'estimated',
