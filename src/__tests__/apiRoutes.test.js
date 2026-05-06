@@ -20,6 +20,7 @@ import { _resetLessonStoreForTests } from '../storage/lessonStore.js';
 import readingsExportHandler from '../../api/meters/readings/export.js';
 import healthHandler         from '../../api/health.js';
 import cronSyncBmsHandler    from '../../api/cron/sync-bms.js';
+import adminPlanHandler      from '../../api/admin/plan.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
 import { createRateLimit }   from '../utils/rateLimit.js';
@@ -590,6 +591,59 @@ describe('rate limiter', () => {
     expect(limit.consume('ip3').allowed).toBe(false);
     await new Promise((r) => setTimeout(r, 25));
     expect(limit.consume('ip3').allowed).toBe(true);
+  });
+});
+
+describe('POST /api/admin/plan', () => {
+  it('rejects non-POST', async () => {
+    const r = await call(adminPlanHandler, { method: 'GET', body: {}, headers: {} });
+    expect(r.statusCode).toBe(405);
+  });
+
+  it('400s without context', async () => {
+    const r = await call(adminPlanHandler, { method: 'POST', body: {}, headers: {} });
+    expect(r.statusCode).toBe(400);
+  });
+
+  it('400s with missing required context fields', async () => {
+    const r = await call(adminPlanHandler, {
+      method: 'POST',
+      body: { context: { fiscalYear: '2026-2027' } },
+      headers: {},
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.body.error).toMatch(/required/i);
+  });
+
+  it('falls back to rule-based plan when ANTHROPIC_API_KEY is unset', async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const r = await call(adminPlanHandler, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.42' },
+      body: {
+        context: {
+          fiscalYear: '2026-2027',
+          capitalAppetite: 'medium',
+          topPriority: 'scope1',
+          timeHorizonYears: 3,
+          grossMt: 4335,
+          sinksMt: 2650,
+          enrollment: 340,
+        },
+      },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(r.body.mode).toBe('rule');
+    expect(Array.isArray(r.body.plan)).toBe(true);
+    expect(r.body.plan.length).toBeGreaterThan(0);
+    expect(r.body.plan.length).toBeLessThanOrEqual(7);
+    // Every rule must surface a provenance label and an mt benchmark.
+    for (const item of r.body.plan) {
+      expect(['measured', 'cited', 'estimated']).toContain(item.provenance);
+      expect(typeof item.expectedMtPerYear).toBe('number');
+      expect(item.expectedMtPerYear).toBeGreaterThanOrEqual(0);
+    }
+    expect(typeof r.body.percentOfGross).toBe('number');
   });
 });
 
