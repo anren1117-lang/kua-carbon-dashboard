@@ -164,6 +164,18 @@ export function NetEstimate() {
     ? (live.scope1Measured && live.scope3Measured ? 'Measured estimate' : 'Partially measured')
     : 'Preliminary estimate';
 
+  // Per-row provenance derived from live state. Heating fuel flips to
+  // 'measured' when fuel_bills has rows (the actual table that drives
+  // the scope1Measured flag). Student travel flips when any of the
+  // five cohort/trip tables has rows. The "goods + dining + ..." row
+  // only partially flips (waste alone is in the live hook); call that
+  // 'cited' rather than 'measured' until the other components ship.
+  // Refrigerants + fleet have no live tables yet; sinks always 'cited'.
+  const livePerRowProvenance = {
+    'Scope 1 — Heating fuel': live.scope1Measured ? 'measured' : 'cited',
+    'Scope 3 — Student travel (international + boarder)': live.scope3Measured ? 'measured' : 'cited',
+  };
+
   return (
     <div style={styles.wrap}>
       <section style={styles.card}>
@@ -215,7 +227,7 @@ export function NetEstimate() {
                     <td style={styles.tdNum}>
                       {r.low === r.high ? fmt(r.low) : `${fmt(r.low)} to ${fmt(r.high)}`}
                     </td>
-                    <td style={styles.td}><ProvenancePill provenance={r.provenance} /></td>
+                    <td style={styles.td}><ProvenancePill provenance={livePerRowProvenance[r.name] ?? r.provenance} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -230,7 +242,7 @@ export function NetEstimate() {
                   <li key={r.name}>
                     <div style={{ marginBottom: 4 }}>
                       <strong style={{ color: '#e5e7eb' }}>{r.name}</strong>{' '}
-                      <ProvenancePill provenance={r.provenance} />
+                      <ProvenancePill provenance={livePerRowProvenance[r.name] ?? r.provenance} />
                     </div>
                     <div style={styles.methodLine}>
                       <span style={styles.methodLabel}>Today:</span> {r.currentMethod}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { ADMIN_AUTH_EXPIRED_EVENT } from '../utils/adminFetch.js';
 
 // Grouped admin navigation. The flat 14-tab bar that lived here was
 // hard to scan; admins had to read every label to find the page they
@@ -125,9 +126,24 @@ const styles = {
   input: { width: '100%', boxSizing: 'border-box', marginTop: 16, padding: '10px 12px', background: '#0b1220', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontSize: 14 },
   loginBtn: { width: '100%', marginTop: 12, padding: '10px 12px', background: '#f59e0b', color: '#0b1220', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   err: { marginTop: 10, fontSize: 13, color: '#fca5a5' },
+  expiredBanner: { marginTop: 14, padding: '8px 12px', background: '#3a2a0d', border: '1px solid #92400e', borderRadius: 4, color: '#fbbf24', fontSize: 12, lineHeight: 1.5 },
 };
 
-const ADMIN_PASSWORD = 'KUA2026';
+// Helper: read the server-issued admin session blob. Returns null if
+// missing, malformed, or expired.
+function readStoredAdminSession() {
+  try {
+    const raw = localStorage.getItem('kua_admin_session');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.token || !parsed?.expiresAt) return null;
+    if (new Date(parsed.expiresAt).getTime() <= Date.now()) {
+      localStorage.removeItem('kua_admin_session');
+      return null;
+    }
+    return parsed;
+  } catch { return null; }
+}
 
 function GroupMenu({ group }) {
   const [open, setOpen] = useState(false);
@@ -206,29 +222,63 @@ function Breadcrumb() {
 
 function AdminLayout() {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('adminLoggedIn') === 'true');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => readStoredAdminSession() !== null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  // Banner shown when a previous session expired mid-use (adminFetch
+  // detected a 401 and dispatched the event). Cleared as soon as the
+  // user successfully logs in again.
+  const [expiredNotice, setExpiredNotice] = useState(null);
 
   useEffect(() => {
-    const onStorage = () => setIsLoggedIn(localStorage.getItem('adminLoggedIn') === 'true');
+    const onStorage = () => setIsLoggedIn(readStoredAdminSession() !== null);
+    const onExpired = (e) => {
+      setIsLoggedIn(false);
+      setExpiredNotice(e?.detail?.reason || 'Your admin session expired. Please sign in again.');
+    };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(ADMIN_AUTH_EXPIRED_EVENT, onExpired);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(ADMIN_AUTH_EXPIRED_EVENT, onExpired);
+    };
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
+    setError('');
+    setSubmitting(true);
+    try {
+      const r = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      let body = {};
+      try { body = await r.json(); } catch {}
+      if (!r.ok) {
+        setError(body.error || `Login failed (HTTP ${r.status})`);
+        setSubmitting(false);
+        return;
+      }
+      localStorage.setItem('kua_admin_session', JSON.stringify(body));
+      // Legacy flag — harmless on its own (no API trusts it as auth)
+      // but kept for any in-flight callers still reading it.
       localStorage.setItem('adminLoggedIn', 'true');
       setIsLoggedIn(true);
       setError('');
       setPassword('');
-    } else {
-      setError('Incorrect password');
+      setExpiredNotice(null);
+    } catch {
+      setError('Network error contacting login endpoint');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('kua_admin_session');
     localStorage.removeItem('adminLoggedIn');
     setIsLoggedIn(false);
     navigate('/admin');
@@ -240,6 +290,11 @@ function AdminLayout() {
         <form style={styles.loginCard} onSubmit={handleLogin}>
           <h1 style={styles.loginTitle}>Admin Portal</h1>
           <p style={styles.loginSub}>Enter the admin password to manage emissions data.</p>
+          {expiredNotice && (
+            <div style={styles.expiredBanner}>
+              Session expired — please sign in again.
+            </div>
+          )}
           <input
             type="password"
             value={password}
@@ -247,8 +302,11 @@ function AdminLayout() {
             placeholder="Password"
             style={styles.input}
             autoFocus
+            disabled={submitting}
           />
-          <button type="submit" style={styles.loginBtn}>Sign in</button>
+          <button type="submit" style={styles.loginBtn} disabled={submitting || !password}>
+            {submitting ? 'Checking…' : 'Sign in'}
+          </button>
           {error && <div style={styles.err}>{error}</div>}
         </form>
       </div>
