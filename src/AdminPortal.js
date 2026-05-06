@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { logAdminWrite } from './utils/adminAudit.js';
-import { toCsv, downloadCsv } from './utils/csv.js';
+import { toCsv, parseCsv, downloadCsv } from './utils/csv.js';
 
 // Read the server-issued admin session blob saved by handleLogin.
 function readStoredAdminSession() {
@@ -281,6 +281,74 @@ function AdminPortal() {
     downloadCsv(`kua_${tableName}_${stamp}.csv`, toCsv(rows));
   };
 
+  // Bulk-import state for the fuel tab. Each tab can later get its own
+  // identical block — kept in one component for now since the pattern
+  // is small enough.
+  const [showFuelImport, setShowFuelImport] = useState(false);
+  const [fuelImportText, setFuelImportText] = useState('');
+  const [fuelImportPreview, setFuelImportPreview] = useState(null);
+  const [fuelImportBusy, setFuelImportBusy] = useState(false);
+
+  // Validate + coerce a parsed-CSV row into the fuel_bills shape. Returns
+  // either { ok: true, row } with the row ready to insert, or
+  // { ok: false, message } so the preview can flag bad rows.
+  const validateFuelRow = (raw, idx) => {
+    const date = (raw.date || '').trim();
+    const fuel_type = (raw.fuel_type || raw['fuel type'] || '').trim();
+    const gallonsStr = (raw.gallons || '').trim();
+    const costStr = (raw.cost || '').trim();
+    const notes = (raw.notes || '').trim();
+
+    if (!date) return { ok: false, message: `row ${idx + 2}: missing date` };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, message: `row ${idx + 2}: date must be YYYY-MM-DD (got "${date}")` };
+    if (!['Propane', 'Heating Oil', 'Diesel', 'Gasoline'].includes(fuel_type)) {
+      return { ok: false, message: `row ${idx + 2}: fuel_type must be one of Propane/Heating Oil/Diesel/Gasoline (got "${fuel_type}")` };
+    }
+    const gallons = parseFloat(gallonsStr);
+    if (!Number.isFinite(gallons) || gallons < 0) return { ok: false, message: `row ${idx + 2}: gallons must be a non-negative number (got "${gallonsStr}")` };
+    let cost = null;
+    if (costStr) {
+      const n = parseFloat(costStr);
+      if (!Number.isFinite(n) || n < 0) return { ok: false, message: `row ${idx + 2}: cost must be a non-negative number (got "${costStr}")` };
+      cost = n;
+    }
+    return { ok: true, row: { date, fuel_type, gallons, cost, notes: notes || null } };
+  };
+
+  const handleFuelImportPreview = () => {
+    const parsed = parseCsv(fuelImportText);
+    const rowResults = parsed.rows.map((r, i) => validateFuelRow(r, i));
+    const valid = rowResults.filter((r) => r.ok).map((r) => r.row);
+    const errors = [
+      ...parsed.errors.map((e) => `row ${e.row}: ${e.message}`),
+      ...rowResults.filter((r) => !r.ok).map((r) => r.message),
+    ];
+    setFuelImportPreview({ valid, errors, totalRowsParsed: parsed.rows.length });
+  };
+
+  const handleFuelImportCommit = async () => {
+    if (!fuelImportPreview || fuelImportPreview.valid.length === 0) return;
+    setFuelImportBusy(true);
+    try {
+      const { error } = await supabase.from('fuel_bills').insert(fuelImportPreview.valid);
+      if (error) throw error;
+      logAdminWrite({
+        action: 'insert',
+        table: 'fuel_bills',
+        payload: { bulk_count: fuelImportPreview.valid.length },
+        note: `CSV bulk import: ${fuelImportPreview.valid.length} rows`,
+      });
+      showMessage(`✓ ${fuelImportPreview.valid.length} fuel rows imported`);
+      setFuelImportText('');
+      setFuelImportPreview(null);
+      setShowFuelImport(false);
+      fetchAllData();
+    } catch (err) {
+      showMessage('Import error: ' + err.message);
+    }
+    setFuelImportBusy(false);
+  };
+
   // Calculate emissions
   const calcFuelEmissions = (gallons, type) => ((parseFloat(gallons) || 0) * (fuelFactors[type] || 0) / 1000).toFixed(3);
   const calcWasteEmissions = (amount, unit, type) => {
@@ -368,7 +436,53 @@ function AdminPortal() {
               <strong>Emission Factors (EPA):</strong> Propane: 5.72 kg/gal | Heating Oil: 10.16 kg/gal | Diesel: 10.18 kg/gal | Gasoline: 8.89 kg/gal
             </div>
             <div style={styles.card}>
-              <h2 style={styles.cardTitle}>Add Fuel Bill</h2>
+              <div style={styles.cardHeaderRow}>
+                <h2 style={styles.cardTitle}>Add Fuel Bill</h2>
+                <button type="button" onClick={() => setShowFuelImport(!showFuelImport)} style={styles.csvBtn}>
+                  {showFuelImport ? 'Single entry' : 'Bulk import (CSV)'}
+                </button>
+              </div>
+
+              {showFuelImport && (
+                <div style={styles.importBlock}>
+                  <p style={styles.importHint}>
+                    Paste CSV with columns <code>date,fuel_type,gallons,cost,notes</code> (cost + notes
+                    optional). The first row must be the header. Date format YYYY-MM-DD; fuel_type
+                    one of Propane / Heating Oil / Diesel / Gasoline.
+                  </p>
+                  <textarea
+                    placeholder="date,fuel_type,gallons,cost,notes&#10;2026-01-15,Heating Oil,5000,18000,Brockway Smith Jan delivery&#10;2026-02-20,Propane,300,750,"
+                    value={fuelImportText}
+                    onChange={(e) => { setFuelImportText(e.target.value); setFuelImportPreview(null); }}
+                    style={styles.importTextarea}
+                  />
+                  <div style={{ display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+                    <button type="button" onClick={handleFuelImportPreview} style={styles.csvBtn} disabled={!fuelImportText.trim()}>
+                      Preview
+                    </button>
+                    {fuelImportPreview && fuelImportPreview.valid.length > 0 && (
+                      <button type="button" onClick={handleFuelImportCommit} disabled={fuelImportBusy} style={styles.submitBtn}>
+                        {fuelImportBusy ? 'Importing…' : `Import ${fuelImportPreview.valid.length} row${fuelImportPreview.valid.length === 1 ? '' : 's'}`}
+                      </button>
+                    )}
+                  </div>
+                  {fuelImportPreview && (
+                    <div style={styles.importPreview}>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Parsed {fuelImportPreview.totalRowsParsed} rows</strong>: {fuelImportPreview.valid.length} valid
+                        {fuelImportPreview.errors.length > 0 && `, ${fuelImportPreview.errors.length} with errors`}
+                      </div>
+                      {fuelImportPreview.errors.length > 0 && (
+                        <ul style={styles.importErrors}>
+                          {fuelImportPreview.errors.slice(0, 20).map((e, i) => <li key={i}>{e}</li>)}
+                          {fuelImportPreview.errors.length > 20 && <li>…and {fuelImportPreview.errors.length - 20} more</li>}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <form onSubmit={submitFuel}>
                 <div style={styles.formRow}>
                   <input type="date" value={fuelForm.date} onChange={(e) => setFuelForm({...fuelForm, date: e.target.value})} style={styles.input} required />
@@ -660,6 +774,11 @@ const styles = {
   cardTitle: { fontSize: '1.1rem', color: '#22c55e', marginBottom: '15px', margin: '0 0 15px 0' },
   cardHeaderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 15 },
   csvBtn: { padding: '6px 14px', background: 'transparent', color: '#22c55e', border: '1px solid #22c55e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: 0.4, textTransform: 'uppercase' },
+  importBlock: { marginBottom: 18, padding: 14, background: '#0b1220', border: '1px dashed #334155', borderRadius: 8 },
+  importHint: { margin: '0 0 10px 0', fontSize: 12, color: '#94a3b8', lineHeight: 1.6 },
+  importTextarea: { width: '100%', minHeight: 120, padding: 10, background: '#0a0f1c', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontFamily: 'ui-monospace, monospace', fontSize: 12, boxSizing: 'border-box' },
+  importPreview: { marginTop: 12, padding: 10, background: '#0a0f1c', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, color: '#cbd5e1' },
+  importErrors: { margin: '4px 0 0 16px', padding: 0, color: '#fca5a5', fontSize: 11, lineHeight: 1.5 },
   formRow: { display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' },
   input: { flex: 1, minWidth: '120px', padding: '10px', borderRadius: '6px', border: '1px solid #334155', backgroundColor: '#0f172a', color: 'white', fontSize: '0.95rem' },
   submitBtn: { padding: '10px 20px', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },

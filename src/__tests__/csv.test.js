@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect } from 'vitest';
-import { toCsv, downloadCsv } from '../utils/csv.js';
+import { toCsv, parseCsv, downloadCsv } from '../utils/csv.js';
 
 describe('toCsv', () => {
   it('returns empty string for empty input', () => {
@@ -60,6 +60,63 @@ describe('toCsv', () => {
   it('appends trailing newline', () => {
     const csv = toCsv([{ a: 1 }]);
     expect(csv.endsWith('\n')).toBe(true);
+  });
+});
+
+describe('parseCsv', () => {
+  it('returns empty arrays for empty input', () => {
+    expect(parseCsv('')).toEqual({ rows: [], columns: [], errors: [] });
+    expect(parseCsv(null)).toEqual({ rows: [], columns: [], errors: [] });
+    expect(parseCsv(undefined)).toEqual({ rows: [], columns: [], errors: [] });
+  });
+
+  it('parses a simple header + rows', () => {
+    const r = parseCsv('a,b,c\n1,2,3\n4,5,6\n');
+    expect(r.columns).toEqual(['a', 'b', 'c']);
+    expect(r.rows).toEqual([
+      { a: '1', b: '2', c: '3' },
+      { a: '4', b: '5', c: '6' },
+    ]);
+    expect(r.errors).toEqual([]);
+  });
+
+  it('handles CRLF and trailing newline tolerantly', () => {
+    const r = parseCsv('a,b\r\n1,2\r\n3,4\r\n');
+    expect(r.rows.length).toBe(2);
+    expect(r.rows[1]).toEqual({ a: '3', b: '4' });
+  });
+
+  it('honors quoted fields with commas + newlines + doubled quotes', () => {
+    const csv = 'name,note,addr\n"Hello, World","has ""quotes""","line1\nline2"\n';
+    const r = parseCsv(csv);
+    expect(r.rows[0].name).toBe('Hello, World');
+    expect(r.rows[0].note).toBe('has "quotes"');
+    expect(r.rows[0].addr).toBe('line1\nline2');
+  });
+
+  it('records an error when a row has wrong number of cells', () => {
+    const csv = 'a,b,c\n1,2\n4,5,6,7\n';
+    const r = parseCsv(csv);
+    expect(r.errors.length).toBe(2);
+    expect(r.errors[0]).toMatchObject({ row: 2 });
+    expect(r.errors[1]).toMatchObject({ row: 3 });
+    // Still emits the partial rows for preview purposes.
+    expect(r.rows.length).toBe(2);
+  });
+
+  it('skips entirely empty data rows (trailing blank lines)', () => {
+    const r = parseCsv('a,b\n1,2\n\n\n');
+    expect(r.rows.length).toBe(1);
+  });
+
+  it('round-trips with toCsv on plain data', () => {
+    const original = [
+      { date: '2026-01-15', fuel_type: 'Heating Oil', gallons: '5000' },
+      { date: '2026-02-20', fuel_type: 'Propane', gallons: '300' },
+    ];
+    const r = parseCsv(toCsv(original));
+    expect(r.rows).toEqual(original);
+    expect(r.columns).toEqual(['date', 'fuel_type', 'gallons']);
   });
 });
 

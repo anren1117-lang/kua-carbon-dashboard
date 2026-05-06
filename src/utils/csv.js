@@ -58,6 +58,96 @@ function escapeCell(value) {
 }
 
 /**
+ * Parse a CSV string back into an array of plain objects, keyed by
+ * the header row. Counterpart to toCsv() — the round-trip on a row
+ * with no special characters is lossless.
+ *
+ * Honors RFC 4180:
+ *   - Comma delimiter, optional CRLF or LF line endings.
+ *   - Quoted fields can contain commas, newlines, and quotes (the
+ *     latter doubled as ""). Whitespace inside quotes is preserved.
+ *   - Empty cells render as empty strings (NOT null).
+ *
+ * Returns { rows, columns, errors } so callers can show a row-by-row
+ * preview and surface parse failures without rejecting the whole
+ * file.
+ *
+ * @param {string} text         The full CSV file contents
+ * @returns {{ rows: object[], columns: string[], errors: Array<{ row: number, message: string }> }}
+ */
+export function parseCsv(text) {
+  const errors = [];
+  if (typeof text !== 'string' || text.length === 0) {
+    return { rows: [], columns: [], errors: [] };
+  }
+  // Normalize line endings; the tokenizer below treats '\n' as the
+  // record separator outside quoted fields.
+  const src = text.replace(/\r\n?/g, '\n');
+
+  // Single-pass tokenizer: walks the string, accumulating cells and
+  // rows. State machine: inField (default) or inQuoted.
+  const rawRows = [];
+  let cell = '';
+  let row = [];
+  let inQuoted = false;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (inQuoted) {
+      if (c === '"') {
+        // Doubled quote inside a quoted cell → literal quote.
+        if (src[i + 1] === '"') { cell += '"'; i++; }
+        else { inQuoted = false; }
+      } else {
+        cell += c;
+      }
+    } else {
+      if (c === '"') {
+        inQuoted = true;
+      } else if (c === ',') {
+        row.push(cell); cell = '';
+      } else if (c === '\n') {
+        row.push(cell); cell = '';
+        rawRows.push(row); row = [];
+      } else {
+        cell += c;
+      }
+    }
+  }
+  // Trailing cell + row (file may end without newline).
+  if (cell.length > 0 || row.length > 0) {
+    row.push(cell);
+    rawRows.push(row);
+  }
+  if (rawRows.length === 0) return { rows: [], columns: [], errors };
+
+  // First non-empty row is the header.
+  const header = rawRows.find((r) => r.some((c) => c && c.length > 0));
+  if (!header) return { rows: [], columns: [], errors };
+  const columns = header.map((h) => String(h).trim());
+  const dataRows = rawRows.slice(rawRows.indexOf(header) + 1);
+
+  const rows = [];
+  for (let idx = 0; idx < dataRows.length; idx++) {
+    const r = dataRows[idx];
+    // Skip rows that are entirely empty (often a trailing newline).
+    if (r.every((c) => !c || c.length === 0)) continue;
+    if (r.length !== columns.length) {
+      errors.push({
+        row: idx + 2, // +1 for 0-indexed → 1-indexed, +1 for header
+        message: `expected ${columns.length} cells, got ${r.length}`,
+      });
+      // Still emit a partial row so the preview shows what was parsed.
+    }
+    const obj = {};
+    for (let j = 0; j < columns.length; j++) {
+      obj[columns[j]] = r[j] !== undefined ? r[j] : '';
+    }
+    rows.push(obj);
+  }
+  return { rows, columns, errors };
+}
+
+/**
  * Trigger a browser download of a CSV file. No-ops on the server.
  *
  * @param {string} filename
