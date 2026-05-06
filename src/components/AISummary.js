@@ -32,7 +32,7 @@ function compose(records) {
     `KUA's preliminary total carbon footprint is approximately ${gross.toLocaleString()} mtCO₂e per year across Scopes 1, 2, and 3.`
   );
   sentences.push(
-    `Student travel is the largest contributor at roughly ${PRELIM.scope3.toLocaleString()} mtCO₂e — about ${Math.round(PRELIM.scope3 / gross * 100)}% of the total — driven primarily by international and US-boarder term-break flights.`
+    `Scope 3 is the largest contributor at roughly ${PRELIM.scope3.toLocaleString()} mtCO₂e — about ${Math.round(PRELIM.scope3 / gross * 100)}% of the total — dominated by student travel (international + US-boarder term-break flights), with dining, purchased goods, and waste making up the rest.`
   );
   sentences.push(
     `Heating fuel (Scope 1) contributes ~${PRELIM.scope1.toLocaleString()} mtCO₂e from cold-climate combustion, while purchased electricity (Scope 2) adds another ${PRELIM.scope2} mtCO₂e from the ISO-NE 2024 grid.`
