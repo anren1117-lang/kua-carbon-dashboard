@@ -192,75 +192,134 @@ function AdminPortal() {
     setFuelForm({ date: '', fuel_type: 'Propane', gallons: '', cost: '', notes: '' });
   };
 
+  // Edit state for each student / travel table — same pattern as
+  // fuel + waste. When non-null, submit performs UPDATE...WHERE id;
+  // otherwise INSERT.
+  const [editingDayId, setEditingDayId] = useState(null);
+  const [editingUsId, setEditingUsId] = useState(null);
+  const [editingIntlId, setEditingIntlId] = useState(null);
+  const [editingSaId, setEditingSaId] = useState(null);
+  const [editingFtId, setEditingFtId] = useState(null);
+
+  // Generic upsert helper to keep the per-table submit handlers tiny.
+  // Returns { ok, error } so callers can branch on success messaging.
+  const upsertRow = async (table, row, editingId) => {
+    if (editingId) {
+      const { error } = await supabase.from(table).update(row).eq('id', editingId);
+      if (error) return { ok: false, error };
+      logAdminWrite({ action: 'update', table, payload: { id: editingId, ...row } });
+    } else {
+      const { error } = await supabase.from(table).insert([row]);
+      if (error) return { ok: false, error };
+      logAdminWrite({ action: 'insert', table, payload: row });
+    }
+    return { ok: true };
+  };
+
   const submitDayStudent = async (e) => {
     e.preventDefault();
-    try {
-      const { error } = await supabase.from('day_students').insert([dayForm]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'day_students', payload: dayForm });
-      showMessage('✓ Day student added!');
-      setDayForm({ zip_code: '', graduation_year: '2026', school_year: '2025-2026' });
-      fetchAllData();
-    } catch (err) {
-      showMessage('Error: ' + err.message);
-    }
+    const r = await upsertRow('day_students', dayForm, editingDayId);
+    if (!r.ok) { showMessage('Error: ' + r.error.message); return; }
+    showMessage(editingDayId ? '✓ Day student updated!' : '✓ Day student added!');
+    setDayForm({ zip_code: '', graduation_year: '2026', school_year: '2025-2026' });
+    setEditingDayId(null);
+    fetchAllData();
   };
+  const startEditDay = (s) => {
+    setDayForm({
+      zip_code: s.zip_code || '',
+      graduation_year: s.graduation_year != null ? String(s.graduation_year) : '2026',
+      school_year: s.school_year || '2025-2026',
+    });
+    setEditingDayId(s.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const cancelEditDay = () => { setEditingDayId(null); setDayForm({ zip_code: '', graduation_year: '2026', school_year: '2025-2026' }); };
 
   const submitUSStudent = async (e) => {
     e.preventDefault();
-    try {
-      const { error } = await supabase.from('us_boarding_students').insert([usForm]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'us_boarding_students', payload: usForm });
-      showMessage('✓ US boarding student added!');
-      setUsForm({ zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' });
-      fetchAllData();
-    } catch (err) {
-      showMessage('Error: ' + err.message);
-    }
+    const r = await upsertRow('us_boarding_students', usForm, editingUsId);
+    if (!r.ok) { showMessage('Error: ' + r.error.message); return; }
+    showMessage(editingUsId ? '✓ US boarding student updated!' : '✓ US boarding student added!');
+    setUsForm({ zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' });
+    setEditingUsId(null);
+    fetchAllData();
   };
+  const startEditUs = (s) => {
+    setUsForm({
+      zip_code: s.zip_code || '',
+      state: s.state || '',
+      graduation_year: s.graduation_year != null ? String(s.graduation_year) : '2026',
+      school_year: s.school_year || '2025-2026',
+    });
+    setEditingUsId(s.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const cancelEditUs = () => { setEditingUsId(null); setUsForm({ zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' }); };
 
   const submitIntlStudent = async (e) => {
     e.preventDefault();
-    try {
-      const { error } = await supabase.from('international_students').insert([intlForm]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'international_students', payload: intlForm });
-      showMessage('✓ International student added!');
-      setIntlForm({ country: '', graduation_year: '2026', school_year: '2025-2026' });
-      fetchAllData();
-    } catch (err) {
-      showMessage('Error: ' + err.message);
-    }
+    const r = await upsertRow('international_students', intlForm, editingIntlId);
+    if (!r.ok) { showMessage('Error: ' + r.error.message); return; }
+    showMessage(editingIntlId ? '✓ International student updated!' : '✓ International student added!');
+    setIntlForm({ country: '', graduation_year: '2026', school_year: '2025-2026' });
+    setEditingIntlId(null);
+    fetchAllData();
   };
+  const startEditIntl = (s) => {
+    setIntlForm({
+      country: s.country || '',
+      graduation_year: s.graduation_year != null ? String(s.graduation_year) : '2026',
+      school_year: s.school_year || '2025-2026',
+    });
+    setEditingIntlId(s.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const cancelEditIntl = () => { setEditingIntlId(null); setIntlForm({ country: '', graduation_year: '2026', school_year: '2025-2026' }); };
 
   const submitStudyAbroad = async (e) => {
     e.preventDefault();
-    try {
-      const { error } = await supabase.from('study_abroad').insert([saForm]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'study_abroad', payload: saForm });
-      showMessage('✓ Study abroad trip added!');
-      setSaForm({ destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' });
-      fetchAllData();
-    } catch (err) {
-      showMessage('Error: ' + err.message);
-    }
+    const r = await upsertRow('study_abroad', saForm, editingSaId);
+    if (!r.ok) { showMessage('Error: ' + r.error.message); return; }
+    showMessage(editingSaId ? '✓ Study abroad trip updated!' : '✓ Study abroad trip added!');
+    setSaForm({ destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' });
+    setEditingSaId(null);
+    fetchAllData();
   };
+  const startEditSa = (t) => {
+    setSaForm({
+      destination_country: t.destination_country || '',
+      destination_city: t.destination_city || '',
+      departure_date: t.departure_date || '',
+      return_date: t.return_date || '',
+      school_year: t.school_year || '2025-2026',
+    });
+    setEditingSaId(t.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const cancelEditSa = () => { setEditingSaId(null); setSaForm({ destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' }); };
 
   const submitFacultyTravel = async (e) => {
     e.preventDefault();
-    try {
-      const { error } = await supabase.from('faculty_travel').insert([ftForm]);
-      if (error) throw error;
-      logAdminWrite({ action: 'insert', table: 'faculty_travel', payload: ftForm });
-      showMessage('✓ Faculty travel added!');
-      setFtForm({ destination_country: '', destination_city: '', trip_purpose: 'Conference', departure_date: '', return_date: '' });
-      fetchAllData();
-    } catch (err) {
-      showMessage('Error: ' + err.message);
-    }
+    const r = await upsertRow('faculty_travel', ftForm, editingFtId);
+    if (!r.ok) { showMessage('Error: ' + r.error.message); return; }
+    showMessage(editingFtId ? '✓ Faculty travel updated!' : '✓ Faculty travel added!');
+    setFtForm({ destination_country: '', destination_city: '', trip_purpose: 'Conference', departure_date: '', return_date: '' });
+    setEditingFtId(null);
+    fetchAllData();
   };
+  const startEditFt = (t) => {
+    setFtForm({
+      destination_country: t.destination_country || '',
+      destination_city: t.destination_city || '',
+      trip_purpose: t.trip_purpose || 'Conference',
+      departure_date: t.departure_date || '',
+      return_date: t.return_date || '',
+    });
+    setEditingFtId(t.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const cancelEditFt = () => { setEditingFtId(null); setFtForm({ destination_country: '', destination_city: '', trip_purpose: 'Conference', departure_date: '', return_date: '' }); };
 
   const [editingWasteId, setEditingWasteId] = useState(null);
 
@@ -709,16 +768,20 @@ function AdminPortal() {
                   <select value={dayForm.graduation_year} onChange={(e) => setDayForm({...dayForm, graduation_year: e.target.value})} style={styles.input}>
                     {['2025','2026','2027','2028','2029','2030'].map(y => <option key={y}>{y}</option>)}
                   </select>
-                  <button type="submit" style={styles.submitBtn}>Add</button>
+                  <button type="submit" style={styles.submitBtn}>{editingDayId ? 'Update' : 'Add'}</button>
+                  {editingDayId && <button type="button" onClick={cancelEditDay} style={styles.cancelBtn}>Cancel</button>}
                 </div>
               </form>
               {dayStudents.length > 0 && filteredDayStudents.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
               {filteredDayStudents.length > 0 && (
                 <div style={styles.list}>
                   {filteredDayStudents.map(s => (
-                    <div key={s.id} style={styles.listItem}>
+                    <div key={s.id} style={{ ...styles.listItem, ...(editingDayId === s.id ? styles.listItemEditing : {}) }}>
                       <span>Zip: {s.zip_code} | Class of {s.graduation_year}</span>
-                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('day_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button type="button" aria-label="Edit record" onClick={() => startEditDay(s)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('day_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -738,16 +801,20 @@ function AdminPortal() {
                   <select value={usForm.graduation_year} onChange={(e) => setUsForm({...usForm, graduation_year: e.target.value})} style={styles.input}>
                     {['2025','2026','2027','2028','2029','2030'].map(y => <option key={y}>{y}</option>)}
                   </select>
-                  <button type="submit" style={styles.submitBtn}>Add</button>
+                  <button type="submit" style={styles.submitBtn}>{editingUsId ? 'Update' : 'Add'}</button>
+                  {editingUsId && <button type="button" onClick={cancelEditUs} style={styles.cancelBtn}>Cancel</button>}
                 </div>
               </form>
               {usBoardingStudents.length > 0 && filteredUsBoardingStudents.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
               {filteredUsBoardingStudents.length > 0 && (
                 <div style={styles.list}>
                   {filteredUsBoardingStudents.map(s => (
-                    <div key={s.id} style={styles.listItem}>
+                    <div key={s.id} style={{ ...styles.listItem, ...(editingUsId === s.id ? styles.listItemEditing : {}) }}>
                       <span>{s.state || '?'} - {s.zip_code} | Class of {s.graduation_year}</span>
-                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('us_boarding_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button type="button" aria-label="Edit record" onClick={() => startEditUs(s)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('us_boarding_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -766,16 +833,20 @@ function AdminPortal() {
                   <select value={intlForm.graduation_year} onChange={(e) => setIntlForm({...intlForm, graduation_year: e.target.value})} style={styles.input}>
                     {['2025','2026','2027','2028','2029','2030'].map(y => <option key={y}>{y}</option>)}
                   </select>
-                  <button type="submit" style={styles.submitBtn}>Add</button>
+                  <button type="submit" style={styles.submitBtn}>{editingIntlId ? 'Update' : 'Add'}</button>
+                  {editingIntlId && <button type="button" onClick={cancelEditIntl} style={styles.cancelBtn}>Cancel</button>}
                 </div>
               </form>
               {intlStudents.length > 0 && filteredIntlStudents.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
               {filteredIntlStudents.length > 0 && (
                 <div style={styles.list}>
                   {filteredIntlStudents.map(s => (
-                    <div key={s.id} style={styles.listItem}>
+                    <div key={s.id} style={{ ...styles.listItem, ...(editingIntlId === s.id ? styles.listItemEditing : {}) }}>
                       <span>{s.country} | Class of {s.graduation_year}</span>
-                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('international_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button type="button" aria-label="Edit record" onClick={() => startEditIntl(s)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('international_students', s.id)} style={styles.deleteBtn}>🗑️</button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -803,16 +874,20 @@ function AdminPortal() {
                   <input type="text" placeholder="City" value={saForm.destination_city} onChange={(e) => setSaForm({...saForm, destination_city: e.target.value})} style={styles.input} />
                   <input type="date" placeholder="Departure" value={saForm.departure_date} onChange={(e) => setSaForm({...saForm, departure_date: e.target.value})} style={styles.input} />
                   <input type="date" placeholder="Return" value={saForm.return_date} onChange={(e) => setSaForm({...saForm, return_date: e.target.value})} style={styles.input} />
-                  <button type="submit" style={styles.submitBtn}>Add</button>
+                  <button type="submit" style={styles.submitBtn}>{editingSaId ? 'Update' : 'Add'}</button>
+                  {editingSaId && <button type="button" onClick={cancelEditSa} style={styles.cancelBtn}>Cancel</button>}
                 </div>
               </form>
               {studyAbroad.length > 0 && filteredStudyAbroad.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
               {filteredStudyAbroad.length > 0 && (
                 <div style={styles.list}>
                   {filteredStudyAbroad.map(t => (
-                    <div key={t.id} style={styles.listItem}>
+                    <div key={t.id} style={{ ...styles.listItem, ...(editingSaId === t.id ? styles.listItemEditing : {}) }}>
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.departure_date || 'TBD'}</span>
-                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('study_abroad', t.id)} style={styles.deleteBtn}>🗑️</button>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button type="button" aria-label="Edit record" onClick={() => startEditSa(t)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('study_abroad', t.id)} style={styles.deleteBtn}>🗑️</button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -836,16 +911,20 @@ function AdminPortal() {
                     <option>Athletic</option>
                     <option>Other</option>
                   </select>
-                  <button type="submit" style={styles.submitBtn}>Add</button>
+                  <button type="submit" style={styles.submitBtn}>{editingFtId ? 'Update' : 'Add'}</button>
+                  {editingFtId && <button type="button" onClick={cancelEditFt} style={styles.cancelBtn}>Cancel</button>}
                 </div>
               </form>
               {facultyTravel.length > 0 && filteredFacultyTravel.length === 0 && <p style={styles.noData}>No matches for "{recordsFilter}"</p>}
               {filteredFacultyTravel.length > 0 && (
                 <div style={styles.list}>
                   {filteredFacultyTravel.map(t => (
-                    <div key={t.id} style={styles.listItem}>
+                    <div key={t.id} style={{ ...styles.listItem, ...(editingFtId === t.id ? styles.listItemEditing : {}) }}>
                       <span>{t.destination_city && `${t.destination_city}, `}{t.destination_country} | {t.trip_purpose}</span>
-                      <button type="button" aria-label="Delete record" onClick={() => deleteRecord('faculty_travel', t.id)} style={styles.deleteBtn}>🗑️</button>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button type="button" aria-label="Edit record" onClick={() => startEditFt(t)} style={styles.editBtn}>✎</button>
+                        <button type="button" aria-label="Delete record" onClick={() => deleteRecord('faculty_travel', t.id)} style={styles.deleteBtn}>🗑️</button>
+                      </div>
                     </div>
                   ))}
                 </div>
