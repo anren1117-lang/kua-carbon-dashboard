@@ -5,6 +5,7 @@ import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.j
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { SCOPE_TOTALS as SCOPE_TOTALS_CENTRAL, GROSS_MT as GROSS_MT_CENTRAL } from '../data/scopeTotals.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { reductionActionsByVisibility } from '../data/reductionActions.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
@@ -23,13 +24,26 @@ const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
 // Scope totals come from the single-source-of-truth file
 // scopeTotals.js so this page automatically picks up new measured
-// values when fuel deliveries / Sodexo invoices / etc. land. Local
-// alias keeps the existing JSX call-sites unchanged.
-const SCOPE_TOTALS = SCOPE_TOTALS_CENTRAL;
-const GROSS_MT = GROSS_MT_CENTRAL;
-const NET_MT = GROSS_MT - ANNUAL_SEQUESTRATION_MT;
+// values when fuel deliveries / Sodexo invoices / etc. land. The
+// useMeasuredScopeTotals() hook below upgrades to live Supabase data
+// inside the component; these synchronous fallbacks are used for the
+// first paint and the few non-React consumers.
+const SCOPE_TOTALS_FALLBACK = SCOPE_TOTALS_CENTRAL;
+const GROSS_MT_FALLBACK = GROSS_MT_CENTRAL;
+const NET_MT_FALLBACK = GROSS_MT_FALLBACK - ANNUAL_SEQUESTRATION_MT;
 
 export default function Executive() {
+  const live = useMeasuredScopeTotals();
+  const SCOPE_TOTALS = {
+    scope1Mt: live.scope1Mt,
+    scope2Mt: live.scope2Mt,
+    scope3Mt: live.scope3Mt,
+  };
+  const GROSS_MT = live.grossMt || GROSS_MT_FALLBACK;
+  const NET_MT = live.netMt ?? NET_MT_FALLBACK;
+  const grossProvenance = live.scope1Measured && live.scope3Measured ? 'measured'
+    : (live.scope1Measured || live.scope3Measured ? 'measured' : 'estimated');
+  const netProvenance = grossProvenance;
   // Executive view = leadership decisions only. Public actions are
   // per-student behavioral commitments and don't belong in the same
   // ranked queue as institutional levers (different unit basis, different
@@ -101,15 +115,17 @@ export default function Executive() {
         <ProvenanceLegend />
         <div style={execProvStyles.list}>
           <ExecProvRow
-            provenance="estimated"
+            provenance={netProvenance}
             label={`Net annual emissions (${Math.round(NET_MT).toLocaleString()} mt)`}
-            today="Derived from gross − sinks; inherits the lowest-confidence inputs from below."
-            target="Becomes 'cited' the moment the two estimated scope rows below ship to measured."
+            today={netProvenance === 'measured'
+              ? `Derived from gross − sinks. ${live.measuredScopes}/3 scopes now sourced from live records (Scope 2 always measured via BMS; Scope 1 ${live.scope1Measured ? 'flipped via fuel_bills' : 'still estimated'}; Scope 3 ${live.scope3Measured ? 'flipped via the six admin tables' : 'still estimated'}).`
+              : 'Derived from gross − sinks; inherits the lowest-confidence inputs from below.'}
+            target="Becomes fully 'measured' once Scope 1 fuel_bills + Scope 3 travel/dining/waste tables all contain rows."
           />
           <ExecProvRow
-            provenance="estimated"
+            provenance={grossProvenance}
             label={`Gross emissions (${Math.round(GROSS_MT).toLocaleString()} mt)`}
-            today="Scope 1 (~1,350 mt central from bottom-up cross-check, range 891–1,867 across 3 methods × 3 components) + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization, ±5% measured band) + Scope 3 (~2,635 mt central, range 1,726–3,720 across 3-4 methods × 8 components). See /admin/methodology for the per-component method-by-method breakdown."
+            today={`Scope 1 ${live.scope1Measured ? `(MEASURED from fuel_bills, ${live.scope1Mt} mt)` : `(~${live.scope1Mt} mt central from bottom-up cross-check, range 891–1,867)`} + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization, ±5% measured band) + Scope 3 ${live.scope3Measured ? `(MEASURED from six admin tables, ${live.scope3Mt} mt)` : `(~${live.scope3Mt} mt central, range 1,726–3,720 across 3-4 methods × 8 components)`}. See /admin/methodology for the per-component method-by-method breakdown.`}
             target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
           />
           <ExecProvRow

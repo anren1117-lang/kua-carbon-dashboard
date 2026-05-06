@@ -4,6 +4,7 @@ import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE3_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
 
 const SCOPE3_PER_STUDENT = +(SCOPE3_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
@@ -31,6 +32,19 @@ const styles = {
 };
 
 function Scope3() {
+  // Live upgrade: any rows in day_students / us_boarding_students /
+  // international_students / study_abroad / faculty_travel / waste flip
+  // the headline + provenance pill from estimated → measured. Components
+  // without records still surface as 'estimated' inside the breakdown.
+  const live = useMeasuredScope3();
+  const isMeasured = live.measured && !live.loading && !live.error;
+  const headlineTotal = isMeasured ? live.totalMt : SCOPE3_TOTAL_MT;
+  const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(2);
+  const headlineProvenance = isMeasured ? 'measured' : 'estimated';
+  const headlineNote = isMeasured
+    ? `${live.note} Likely the largest scope at KUA. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.`
+    : 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.';
+
   return (
     <div>
       <h1 style={styles.title}>Scope 3 — Other Indirect Emissions</h1>
@@ -77,12 +91,12 @@ function Scope3() {
       <ScopePageInfo
         color="#8b5cf6"
         estimate={{
-          total: `~${SCOPE3_TOTAL_MT.toLocaleString()}`,
+          total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`,
           totalRange: `${SCOPE3_RANGE.low.toLocaleString()} – ${SCOPE3_RANGE.high.toLocaleString()} mt across 3-4 methods per component (Yale cohort / Andover-Exeter peer / national long-tail / source-country split — see /admin/methodology for full breakdown)`,
-          perStudent: SCOPE3_PER_STUDENT,
+          perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
-          provenance: 'estimated',
-          note: 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.',
+          provenance: headlineProvenance,
+          note: headlineNote,
           currentMethod: `Bottom-up multi-method estimate. Student travel uses Yale-style cohort method × KUA-specific fingerprint (~100 day commuters Upper Valley local, ~190 US boarders Northeast-skewed, ~50 international East-Asia heavy) cross-checked against Andover/Exeter peer benchmarks and source-country distance splits. Goods: EEIO spend-based across $2.5-4M procurement scenarios × EPA EEIO v2.0. Waste: 420 people × per-day generation × diversion-split scenarios × EPA WARM v15.1. Commuting: 52 staff × Upper Valley ACS distribution × ICCT effective fleet. Dining: actual boarding/day meal mix (~217K student meals + 50K faculty/staff) × 0.70-1.10 kg CO2e/meal. Upstream fuel: 12-22% uplift on bottom-up Scope 1. Range across 3-4 methods per component gives ${SCOPE3_RANGE.low.toLocaleString()}–${SCOPE3_RANGE.high.toLocaleString()} mt total — see /admin/methodology.`,
           futureMethod: 'Each subcategory ships independently and flips estimated → cited as inputs become real. Travel: KUA travel office departure logs + study abroad ledger + athletics bus routes. Dining (Cat 1 portion): Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream). Procurement: Business Office annual spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fleet fuel-economy. The methodologies are already standard; only KUA-specific inputs are pending.',
         }}

@@ -5,6 +5,7 @@ import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Goals & Targets — KUA's reduction pathway. Each target shows a
 // linear trajectory between baseline and target year, with the current
@@ -13,9 +14,10 @@ import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
 
 const CURRENT_YEAR = 2026;
 
-// "Actual" snapshot now derived from the single-source-of-truth
-// scope totals — flows through automatically when measured data lands.
-const ACTUAL_BY_SCOPE = {
+// First-paint fallback (synchronous module-level constants). The
+// component reads useMeasuredScopeTotals() to upgrade to live values
+// once the Supabase round-trip lands.
+const ACTUAL_BY_SCOPE_FALLBACK = {
   gross: GROSS_MT,
   scope1: SCOPE1_TOTAL_MT,
   scope2: SCOPE2_TOTAL_MT,
@@ -45,6 +47,16 @@ const STATUS_LABEL = {
 };
 
 export default function Goals() {
+  const live = useMeasuredScopeTotals();
+  const ACTUAL_BY_SCOPE = {
+    gross: live.grossMt || ACTUAL_BY_SCOPE_FALLBACK.gross,
+    scope1: live.scope1Mt || ACTUAL_BY_SCOPE_FALLBACK.scope1,
+    scope2: live.scope2Mt || ACTUAL_BY_SCOPE_FALLBACK.scope2,
+    scope3: live.scope3Mt || ACTUAL_BY_SCOPE_FALLBACK.scope3,
+    net: live.netMt ?? ACTUAL_BY_SCOPE_FALLBACK.net,
+    energy_kwh: ACTUAL_BY_SCOPE_FALLBACK.energy_kwh,
+  };
+
   return (
     <ModulePage
       title="Goals & Targets"

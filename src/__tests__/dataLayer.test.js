@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeScope1, composeScope1FromBills, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -607,5 +607,120 @@ describe('canonical scope totals (post-fork-collapse)', () => {
     const out = composeScope1();
     const sum = out.breakdown.reduce((s, r) => s + r.mt, 0);
     expect(Math.abs(sum - out.totalMt)).toBeLessThanOrEqual(2);
+  });
+});
+
+describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)', () => {
+  it('falls back to placeholder when every table is empty', () => {
+    const r = composeScope3FromRecords({});
+    expect(r.totalMt).toBe(SCOPE3_TOTAL_MT);
+    expect(r.provenance).toBe('estimated');
+  });
+
+  it('falls back to placeholder when no records arg passed', () => {
+    expect(composeScope3FromRecords().totalMt).toBe(SCOPE3_TOTAL_MT);
+  });
+
+  it('flips student-travel row to MEASURED on day-student rows alone', () => {
+    const r = composeScope3FromRecords({
+      dayStudents: Array.from({ length: 100 }, () => ({ zip_code: '03753' })),
+    });
+    expect(r.provenance).toBe('measured');
+    const travel = r.breakdown.find((b) => b.source.toLowerCase().includes('student travel'));
+    expect(travel.provenance).toBe('measured');
+    // 100 day × 1.4 mt/yr = 140 mt
+    expect(travel.mt).toBe(140);
+  });
+
+  it('uses cited per-cohort per-student factors', () => {
+    expect(SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.day).toBe(1.4);
+    expect(SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.usBoarder).toBe(2.8);
+    expect(SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.international).toBe(5.0);
+  });
+
+  it('applies actual cohort sizes (cohort A different from cohort B)', () => {
+    // 50 day × 1.4 + 100 us × 2.8 + 25 intl × 5.0 = 70 + 280 + 125 = 475
+    const r = composeScope3FromRecords({
+      dayStudents: Array.from({ length: 50 }, () => ({})),
+      usBoardingStudents: Array.from({ length: 100 }, () => ({})),
+      internationalStudents: Array.from({ length: 25 }, () => ({})),
+    });
+    const travel = r.breakdown.find((b) => b.source.toLowerCase().includes('student travel'));
+    expect(travel.mt).toBe(475);
+  });
+
+  it('adds per-trip mt for study_abroad and faculty_travel rows', () => {
+    // 1 China study-abroad (asia 3.0) + 1 USA faculty trip (domestic 0.5) = 3.5 mt
+    // Plus 1 day student × 1.4 mt = 1.4 mt → 5 mt total travel row
+    const r = composeScope3FromRecords({
+      dayStudents: [{}],
+      studyAbroad: [{ destination_country: 'China' }],
+      facultyTravel: [{ destination_country: 'USA' }],
+    });
+    const travel = r.breakdown.find((b) => b.source.toLowerCase().includes('student travel'));
+    expect(travel.mt).toBe(5);
+  });
+
+  it('flips waste row to MEASURED with EPA WARM net factors per stream', () => {
+    // 10 tons landfill × 0.52 + 5 tons recycling × -0.10 = 5.2 - 0.5 = 4.7 mt
+    const r = composeScope3FromRecords({
+      wasteRecords: [
+        { waste_type: 'Landfill', amount: 10, unit: 'tons' },
+        { waste_type: 'Recycling', amount: 5, unit: 'tons' },
+      ],
+    });
+    expect(r.provenance).toBe('measured');
+    const waste = r.breakdown.find((b) => b.source.toLowerCase() === 'waste');
+    expect(waste.provenance).toBe('measured');
+    expect(waste.mt).toBe(5); // 4.7 → round → 5
+  });
+
+  it('handles pounds → tons unit conversion in waste rows', () => {
+    // 4000 lbs landfill = 2 tons × 0.52 = 1.04 mt → round 1
+    const r = composeScope3FromRecords({
+      wasteRecords: [{ waste_type: 'Landfill', amount: 4000, unit: 'pounds' }],
+    });
+    const waste = r.breakdown.find((b) => b.source.toLowerCase() === 'waste');
+    expect(waste.mt).toBe(1);
+  });
+
+  it('skips waste rows with unknown waste_type or invalid amount', () => {
+    const r = composeScope3FromRecords({
+      wasteRecords: [
+        { waste_type: 'Landfill',     amount: 10, unit: 'tons' }, // counted: 5.2 mt
+        { waste_type: 'NotAStream',   amount: 50, unit: 'tons' }, // skipped
+        { waste_type: 'Landfill',     amount: 'banana' },         // skipped
+      ],
+    });
+    const waste = r.breakdown.find((b) => b.source.toLowerCase() === 'waste');
+    expect(waste.mt).toBe(5);
+    expect(waste.method).toMatch(/2 skipped/);
+  });
+
+  it('keeps non-Supabase components estimated even when Supabase rows present', () => {
+    const r = composeScope3FromRecords({
+      dayStudents: [{}],
+    });
+    const goods   = r.breakdown.find((b) => b.source.toLowerCase().includes('purchased goods'));
+    const dining  = r.breakdown.find((b) => b.source.toLowerCase().includes('dining'));
+    const upstream = r.breakdown.find((b) => b.source.toLowerCase().includes('upstream'));
+    const commute  = r.breakdown.find((b) => b.source.toLowerCase().includes('commuting'));
+    expect(goods.provenance).toBe('estimated');
+    expect(dining.provenance).toBe('estimated');
+    expect(upstream.provenance).toBe('estimated');
+    expect(commute.provenance).toBe('estimated');
+  });
+
+  it('exposes WASTE_FACTORS_MT_PER_TON for callers and tests', () => {
+    expect(WASTE_FACTORS_MT_PER_TON.Landfill).toBe(0.52);
+    expect(WASTE_FACTORS_MT_PER_TON.Recycling).toBe(-0.10);
+    expect(WASTE_FACTORS_MT_PER_TON.Composting).toBe(0.04);
+  });
+
+  it('round-trip with composeScope3() (no records) matches placeholder breakdown sum', () => {
+    const placeholder = composeScope3();
+    const empty = composeScope3FromRecords({});
+    expect(empty.totalMt).toBe(placeholder.totalMt);
+    expect(empty.breakdown.length).toBe(placeholder.breakdown.length);
   });
 });

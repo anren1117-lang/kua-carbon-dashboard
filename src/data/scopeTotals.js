@@ -143,6 +143,199 @@ export function composeScope3() {
   };
 }
 
+// Cited per-cohort and per-stream factors used by composeScope3FromRecords().
+// Each is the central from a published-method cross-check inside
+// geographicEstimates.js — pulled out here so the helper stays
+// self-contained and unit-testable without the full estimates module.
+
+// Per-student annual mtCO2e by cohort. Anchored on:
+//   - Day: EPA Smart Location Database benchmark for small rural-residential K-12 (~1.4 mt/student/yr).
+//   - US boarder: Andover/Exeter peer sustainability-report central (~2.8 mt/student/yr).
+//   - International: Yale Office of Sustainability published figure (~5.0 mt/student/yr).
+export const SCOPE3_COHORT_FACTORS_MT_PER_STUDENT = {
+  day:           1.4,
+  usBoarder:     2.8,
+  international: 5.0,
+};
+
+// EPA WARM v15.1 net factors (mtCO2e per short ton waste). Negative
+// values mean the disposal pathway is a net carbon avoidance vs the
+// assumed counterfactual (e.g. recycling steel/paper offsets virgin
+// production). Keys mirror waste_type strings the admin form writes.
+export const WASTE_FACTORS_MT_PER_TON = {
+  'Landfill':   0.52,
+  'Recycling': -0.10,
+  'Composting': 0.04,
+  'Hazardous':  0.50,
+  'E-Waste':    0.30,
+};
+
+// Convert a row's amount + unit field to short tons (the unit
+// WASTE_FACTORS_MT_PER_TON expects). Returns 0 for unrecognized units.
+function wasteTons(row) {
+  const amt = Number(row.amount);
+  if (!Number.isFinite(amt) || amt < 0) return 0;
+  const unit = String(row.unit || 'tons').toLowerCase();
+  if (unit === 'tons' || unit === 'ton')   return amt;
+  if (unit === 'pounds' || unit === 'lbs') return amt / 2000;
+  if (unit === 'kg')                       return amt / 907.185;
+  return 0;
+}
+
+// Per-trip mtCO2e estimate by destination region. Used for study_abroad
+// and faculty_travel rows where each row is a single trip (not an annual
+// per-student multiplier). DEFRA long-haul 0.241 kg/passenger-mi with
+// radiative forcing × typical great-circle BOS↔region distances.
+const TRIP_MT_BY_REGION = {
+  domestic: 0.5,   // BOS↔continental US, mostly drive or short-haul fly
+  europe:   2.4,   // BOS↔EU long-haul
+  asia:     3.0,   // BOS↔East Asia long-haul (matches intl student RT)
+  other:    2.5,   // catch-all for South America, Africa, Oceania
+};
+
+// Map a destination_country string (free-text from the admin form) to
+// a region key. Permissive: returns 'domestic' for US, 'asia' for any
+// East/South-East/South Asian country, etc. Unknown → 'other'.
+function regionFor(country) {
+  if (!country) return 'other';
+  const c = String(country).trim().toLowerCase();
+  if (!c) return 'other';
+  if (['usa', 'us', 'united states', 'united states of america'].includes(c)) return 'domestic';
+  // The admin form is free-text so spell variations (China / 中国 / etc.)
+  // can't all be caught here. Adding rows here is the cheapest
+  // calibration when KUA's actual cohort skews differently.
+  if (['china', 'japan', 'south korea', 'korea', 'taiwan', 'hong kong', 'thailand',
+       'vietnam', 'india', 'singapore', 'malaysia', 'philippines', 'indonesia'].includes(c)) return 'asia';
+  if (['uk', 'united kingdom', 'england', 'france', 'germany', 'spain', 'italy', 'portugal',
+       'netherlands', 'belgium', 'ireland', 'switzerland', 'austria', 'sweden', 'norway',
+       'denmark', 'finland', 'poland', 'greece', 'turkey'].includes(c)) return 'europe';
+  return 'other';
+}
+
+/**
+ * Compose Scope 3 from real Supabase records. For each component we
+ * have data for, the row count (or row-level fields) replaces the
+ * hardcoded COHORTS placeholder. Components without records (dining,
+ * goods, upstream fuel, faculty commute) keep their bottom-up
+ * placeholder rows from SCOPE3_PLACEHOLDER_BREAKDOWN until those
+ * tables ship too.
+ *
+ * @param {{
+ *   dayStudents?: Array<{ zip_code?: string, school_year?: string }>,
+ *   usBoardingStudents?: Array<{ zip_code?: string, state?: string }>,
+ *   internationalStudents?: Array<{ country?: string }>,
+ *   studyAbroad?: Array<{ destination_country?: string }>,
+ *   facultyTravel?: Array<{ destination_country?: string }>,
+ *   wasteRecords?: Array<{ waste_type: string, amount: number|string, unit?: string }>,
+ * }} records
+ */
+export function composeScope3FromRecords(records = {}) {
+  const day      = Array.isArray(records.dayStudents)           ? records.dayStudents           : [];
+  const usBoard  = Array.isArray(records.usBoardingStudents)    ? records.usBoardingStudents    : [];
+  const intl     = Array.isArray(records.internationalStudents) ? records.internationalStudents : [];
+  const sa       = Array.isArray(records.studyAbroad)           ? records.studyAbroad           : [];
+  const fac      = Array.isArray(records.facultyTravel)         ? records.facultyTravel         : [];
+  const waste    = Array.isArray(records.wasteRecords)          ? records.wasteRecords          : [];
+
+  // If literally nothing is in any table, fall back to the placeholder
+  // wholesale — the dashboard is honest about having no measured data.
+  const haveAnyRecords = day.length + usBoard.length + intl.length + sa.length + fac.length + waste.length > 0;
+  if (!haveAnyRecords) return composeScope3();
+
+  // ─── Student travel: cohort row counts × cited per-student factor ──
+  const dayMt    = day.length     * SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.day;
+  const usMt     = usBoard.length * SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.usBoarder;
+  const intlMt   = intl.length    * SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.international;
+  const cohortTravelMt = dayMt + usMt + intlMt;
+  const cohortRowCount = day.length + usBoard.length + intl.length;
+
+  // ─── Trip-level travel (study abroad + faculty) ──────────────────
+  let tripMt = 0;
+  for (const row of [...sa, ...fac]) {
+    tripMt += TRIP_MT_BY_REGION[regionFor(row.destination_country)] ?? TRIP_MT_BY_REGION.other;
+  }
+
+  // Combine cohort + trip travel into the single breakdown row
+  // (matches placeholder shape so downstream consumers don't branch).
+  const studentTravelMt = cohortTravelMt + tripMt;
+  const studentTravelMeasured = cohortRowCount > 0 || sa.length + fac.length > 0;
+
+  // ─── Waste (EPA WARM net factors) ────────────────────────────────
+  let wasteMt = 0;
+  let wasteSkipped = 0;
+  for (const row of waste) {
+    const tons = wasteTons(row);
+    const factor = WASTE_FACTORS_MT_PER_TON[row.waste_type];
+    if (!tons || factor === undefined) { wasteSkipped++; continue; }
+    wasteMt += tons * factor;
+  }
+  const wasteMeasured = waste.length > 0;
+
+  // ─── Components without records: keep placeholder rows ──────────
+  const placeholderRow = (sourceMatch) =>
+    SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes(sourceMatch.toLowerCase()));
+  const goodsMt    = placeholderRow('purchased goods')?.mt   ?? 0;
+  const diningMt   = placeholderRow('dining')?.mt            ?? 0;
+  const upstreamMt = placeholderRow('upstream fuel')?.mt     ?? 0;
+  const commuteMt  = placeholderRow('commuting')?.mt         ?? 0;
+
+  const breakdown = [
+    {
+      source: 'Purchased goods (non-dining)',
+      mt: Math.round(goodsMt),
+      provenance: 'estimated',
+      method: placeholderRow('purchased goods')?.method || '',
+    },
+    {
+      source: 'Student travel (international + boarder)',
+      mt: Math.round(studentTravelMt),
+      provenance: studentTravelMeasured ? 'measured' : 'estimated',
+      method: studentTravelMeasured
+        ? `${day.length} day_students × ${SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.day} mt/yr (EPA SLD) + ${usBoard.length} us_boarding × ${SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.usBoarder} mt/yr (Andover/Exeter peer) + ${intl.length} international × ${SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.international} mt/yr (Yale OoS)${(sa.length + fac.length) > 0 ? ` + ${sa.length} study-abroad + ${fac.length} faculty trips × DEFRA long-haul × RF` : ''}.`
+        : (placeholderRow('student travel')?.method || ''),
+    },
+    {
+      source: 'Dining (food production)',
+      mt: Math.round(diningMt),
+      provenance: 'estimated',
+      method: placeholderRow('dining')?.method || '',
+    },
+    {
+      source: 'Upstream fuel',
+      mt: Math.round(upstreamMt),
+      provenance: 'estimated',
+      method: placeholderRow('upstream fuel')?.method || '',
+    },
+    {
+      source: 'Commuting',
+      mt: Math.round(commuteMt),
+      provenance: 'estimated',
+      method: placeholderRow('commuting')?.method || '',
+    },
+    {
+      source: 'Waste',
+      mt: Math.round(wasteMt),
+      provenance: wasteMeasured ? 'measured' : 'estimated',
+      method: wasteMeasured
+        ? `${waste.length} waste row${waste.length === 1 ? '' : 's'} × EPA WARM v15.1 net factors${wasteSkipped > 0 ? ` (${wasteSkipped} skipped — unknown waste_type or invalid amount)` : ''}.`
+        : (placeholderRow('waste')?.method || ''),
+    },
+  ];
+
+  const totalMt = Math.round(breakdown.reduce((s, r) => s + r.mt, 0));
+  const measuredRowCount = (studentTravelMeasured ? 1 : 0) + (wasteMeasured ? 1 : 0);
+  return {
+    totalMt,
+    breakdown,
+    // 'measured' if at least one component flipped; consumers that need
+    // mixed provenance read breakdown[i].provenance directly.
+    provenance: measuredRowCount > 0 ? 'measured' : 'estimated',
+    note: measuredRowCount > 0
+      ? `${measuredRowCount} Scope 3 component${measuredRowCount === 1 ? '' : 's'} composed from Supabase records. Dining, goods, upstream fuel, commuting still bottom-up until those tables ship.`
+      : 'No Scope 3 records yet — bottom-up placeholder.',
+  };
+}
+
 export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 
 // ─── Combined / convenience exports ───────────────────────────────

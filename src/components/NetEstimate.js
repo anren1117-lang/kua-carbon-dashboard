@@ -11,6 +11,7 @@ import {
   SCOPE3_COMMUTING_RANGE, SCOPE3_GOODS_RANGE, SCOPE3_UPSTREAM_FUEL_RANGE,
   SINKS_RANGE,
 } from '../data/geographicEstimates.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -151,15 +152,26 @@ const fmtRange = (lo, hi) => lo === hi ? fmt(lo) : `${fmt(lo)} – ${fmt(hi)}`;
 export function NetEstimate() {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const live = useMeasuredScopeTotals();
+  // Override the hero + per-student with live measured values when any
+  // scope flipped to measured. The breakdown table below still shows
+  // the multi-method ranges per row (those are the cross-check view,
+  // independent of the measured headline).
+  const heroNetMid = live.scope1Measured || live.scope3Measured ? live.netMt : summary.netMid;
+  const heroGrossMid = live.scope1Measured || live.scope3Measured ? live.grossMt : summary.grossMid;
+  const heroPerStudentMid = +(heroNetMid / TOTAL_STUDENTS).toFixed(1);
+  const heroBadge = live.scope1Measured || live.scope3Measured
+    ? (live.scope1Measured && live.scope3Measured ? 'Measured estimate' : 'Partially measured')
+    : 'Preliminary estimate';
 
   return (
     <div style={styles.wrap}>
       <section style={styles.card}>
-        <span style={styles.badge}>Preliminary estimate</span>
+        <span style={styles.badge}>{heroBadge}</span>
         <div style={styles.hero}>
           <div style={styles.heroLabel}>Net annual carbon balance</div>
           <div style={styles.heroValue}>
-            {fmt(summary.netMid)}
+            {fmt(heroNetMid)}
             <span style={styles.heroUnit}>mtCO₂e / yr</span>
           </div>
           <div style={styles.heroRange}>
@@ -170,11 +182,11 @@ export function NetEstimate() {
         <div style={styles.numbers}>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Per student</div>
-            <div style={styles.numBig}>~{summary.perStudentMid}<span style={styles.numUnit}>mtCO₂e</span></div>
+            <div style={styles.numBig}>~{heroPerStudentMid}<span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Gross emissions</div>
-            <div style={styles.numBig}>~{fmt(summary.grossMid)}<span style={styles.numUnit}>mtCO₂e</span></div>
+            <div style={styles.numBig}>~{fmt(heroGrossMid)}<span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Sequestration</div>
