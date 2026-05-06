@@ -5,6 +5,7 @@ import { NAV_GROUPS } from '../../components/AdminLayout.js';
 import { GROSS_MT, SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { getCustomActions, getStagePlans } from '../../data/customActions.js';
+import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 
 // Admin dashboard. Mirrors NAV_GROUPS exactly so the home page and the
 // header dropdowns stay in sync — adding a new admin page in
@@ -35,6 +36,7 @@ export default function AdminHome() {
   const [counts, setCounts] = useState({});
   const [error, setError] = useState('');
   const [tick] = useState(0);
+  const live = useMeasuredScopeTotals();
 
   useEffect(() => {
     let cancelled = false;
@@ -60,8 +62,50 @@ export default function AdminHome() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stagePlanCount = getStagePlans().length;
 
-  const grossRounded = Math.round(GROSS_MT).toLocaleString();
-  const netRounded = Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toLocaleString();
+  // Headline numbers prefer live measured values when available so the
+  // admin sees the same total the public dashboard shows. Falls back
+  // to the synchronous module-level constants on first paint.
+  const grossEffective = live.grossMt || GROSS_MT;
+  const netEffective = live.netMt ?? (GROSS_MT - ANNUAL_SEQUESTRATION_MT);
+  const scope1Effective = live.scope1Mt || SCOPE1_TOTAL_MT;
+  const scope2Effective = live.scope2Mt || SCOPE2_TOTAL_MT;
+  const scope3Effective = live.scope3Mt || SCOPE3_TOTAL_MT;
+  const grossRounded = Math.round(grossEffective).toLocaleString();
+  const netRounded = Math.round(netEffective).toLocaleString();
+
+  // Data ingestion status: which scope components have flipped from
+  // estimated → measured by the rows admins have entered. The order
+  // mirrors how a typical admin onboarding plays out (Scope 2 always
+  // measured via BMS; Scope 1 next via fuel_bills; Scope 3 last via
+  // the six admin tables).
+  const ingestionRows = [
+    {
+      label: 'Scope 2 (electricity)',
+      measured: true,
+      detail: 'BMS-measured kWh × ISO-NE 2024 per-fuel factors. Always live.',
+    },
+    {
+      label: 'Scope 1 (heating + fleet + refrigerants)',
+      measured: live.scope1Measured,
+      detail: live.scope1Measured
+        ? 'Heating row composed live from fuel_bills. Fleet + refrigerants still bottom-up.'
+        : 'Add fuel-delivery invoices via "Log Scope 3 data" → fuel tab to flip to measured.',
+    },
+    {
+      label: 'Scope 3 (travel + waste)',
+      measured: live.scope3Measured,
+      detail: live.scope3Measured
+        ? 'Cohort + trip + waste rows now feeding the canonical total.'
+        : 'Add student/travel/waste records via "Log Scope 3 data" to flip to measured.',
+    },
+    {
+      label: 'Scope 3 (purchased goods + dining + commuting)',
+      measured: false,
+      detail: 'Sodexo / Business Office / HR commute survey integrations not yet shipped — these stay estimated.',
+    },
+  ];
+  const measuredCount = ingestionRows.filter((r) => r.measured).length;
+  const totalCount = ingestionRows.length;
 
   return (
     <div>
@@ -76,10 +120,30 @@ export default function AdminHome() {
       <div style={styles.statRow} role="region" aria-label="Headline numbers">
         <Stat label="Gross emissions"      value={grossRounded}                                unit="mtCO₂e/yr" accent="#fbbf24" />
         <Stat label="Net (after sinks)"    value={netRounded}                                  unit="mtCO₂e/yr" accent="#86efac" />
-        <Stat label="Scope 1 / 2 / 3"      value={`${Math.round(SCOPE1_TOTAL_MT)} / ${Math.round(SCOPE2_TOTAL_MT)} / ${Math.round(SCOPE3_TOTAL_MT)}`} unit="mtCO₂e/yr" accent="#22d3ee" />
+        <Stat label="Scope 1 / 2 / 3"      value={`${Math.round(scope1Effective)} / ${Math.round(scope2Effective)} / ${Math.round(scope3Effective)}`} unit="mtCO₂e/yr" accent="#22d3ee" />
         <Stat label="Custom actions"        value={customActionCount}                           unit={customActionCount === 1 ? 'admin-authored' : 'admin-authored'} accent="#a855f7" />
         <Stat label="Stage plans"           value={stagePlanCount}                              unit={stagePlanCount === 1 ? 'in your library' : 'in your library'} accent="#22c55e" />
       </div>
+
+      <Section
+        title="Data ingestion status"
+        hint={`${measuredCount} of ${totalCount} scope components are now sourced from measured data. The rest fall back to the published-method bottom-up estimate until the corresponding records land.`}
+        accent="#22d3ee"
+      >
+        <div style={styles.ingestionGrid}>
+          {ingestionRows.map((row, i) => (
+            <div key={i} style={{ ...styles.ingestionCell, borderLeftColor: row.measured ? '#22c55e' : '#475569' }}>
+              <div style={styles.ingestionHead}>
+                <span style={{ ...styles.ingestionPill, background: row.measured ? '#0e3a1f' : '#1f2937', color: row.measured ? '#86efac' : '#94a3b8', borderColor: row.measured ? '#16a34a' : '#475569' }}>
+                  {row.measured ? '✓ measured' : 'estimated'}
+                </span>
+                <span style={styles.ingestionLabel}>{row.label}</span>
+              </div>
+              <div style={styles.ingestionDetail}>{row.detail}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
 
       <Section title="Quick actions" hint="The four most-used admin starting points.">
         <div style={styles.quickGrid}>
@@ -181,6 +245,13 @@ const styles = {
   recordCell: { padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
   recordLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6 },
   recordValue: { marginTop: 6, fontSize: 20, color: '#cbd5e1', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+
+  ingestionGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 },
+  ingestionCell: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
+  ingestionHead: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' },
+  ingestionPill: { fontSize: 10, padding: '2px 8px', border: '1px solid', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 },
+  ingestionLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
+  ingestionDetail: { fontSize: 12, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 },
 
   error: { marginBottom: 10, color: '#fca5a5', fontSize: 13 },
 };

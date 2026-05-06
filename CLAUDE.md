@@ -21,17 +21,48 @@ To run a single test: `npx vitest run path/to/file.test.js` (or `npx vitest path
 
 There are **two `package.json` files** with different toolchains. Only one is live:
 
-- `/package.json` — **stale**. Create-React-App / `react-scripts` / React 19. Do not use. The `/build/` directory is a leftover CRA artifact.
+- `/package.json` — **stale** Create-React-App scaffolding. Does not host the dev server or build pipeline anymore. The one durable role it plays: `"type": "module"` so the `api/*.js` Vercel functions parse as ESM. Don't add new deps here.
 - `/src/package.json` — **active**. Vite + React 18 + Vitest. This is the one to install against and run. `src/index.html` is the Vite entry, and Vite treats `src/` as the project root.
 
 If `npm start` is requested, redirect to `npm run dev` from `src/`. If changing React or build tooling, update `src/package.json`, not the root.
 
 ## Architecture
 
-Single-page React app with two routes wired in `src/index.js`:
+Single-page React app routed in `src/index.js`. Two top-level surfaces:
 
-- `/`  → `App.js` — public carbon dashboard. Renders live-ticking emissions counters, the ISO New England 2024 energy mix (Natural Gas / Nuclear / Renewables / Hydro / Imports), and per-building energy data from Envysion. **Most of this data is hardcoded inline** as JS arrays/constants (`buildingsData`, `emissionsData`, `yearlyEmissions = 221.53`, `totalKwh = 2316469`). Updating the dashboard with new figures means editing these literals in `App.js`.
-- `/admin` → `AdminPortal.js` — password-gated CRUD UI over Supabase. Single tabbed component covering fuel, students (day / US boarding / international), travel (study abroad / faculty), and waste. Auth is a hardcoded password (`KUA2026`) compared client-side; a successful login sets `localStorage.adminLoggedIn = 'true'` and `useEffect` rehydrates the session on mount. Emission factors (`fuelFactors`, `wasteFactors` in kg CO₂ per unit) are defined as inline constants at the top of the component.
+- **Public dashboard** (`/`, `/scope-1`, `/scope-2`, `/scope-3`, `/sinks`, `/executive`, `/goals`, `/plan`, etc.) — emissions, methodology, learn, peer comparison.
+- **Admin portal** (`/admin`, `/admin/methodology`, `/admin/actions`, `/admin/plan-agent`, `/admin/stage-planner`, `/admin/scope-3/*`) — password-gated CRUD over Supabase + AI-driven planning.
+
+### Canonical scope numbers (single source of truth)
+
+`src/data/scopeTotals.js` exports the headline numbers every page reads. As of the latest fork-collapse, the placeholder values match the bottom-up multi-method cross-check centrals from `src/data/geographicEstimates.js` — there is **one** number per scope, not two:
+
+| Scope | Headline | Range (cross-check) |
+|---|---|---|
+| Scope 1 | **1,350 mt** (heating 1,290 + fleet 54 + refrigerants 7) | 891 – 1,867 across 3 methods × 3 components |
+| Scope 2 | **385 mt** (BMS-measured kWh × ISO-NE 2024) | ±5% measured band |
+| Scope 3 | **2,635 mt** | 1,726 – 3,720 across 3-4 methods × 8 components |
+| Sinks | **2,650 mt** (forest sequestration, 1,000 acres) | 2,100 – 2,650 across Birdsey / NH FIA / Nowak |
+| Gross | **4,370 mt** | composite 2,983 – 5,992 |
+| Net | **1,720 mt** | composite 333 – 3,892 |
+| Per-student net | **5.0 mt** | composite 1.0 – 11.4 |
+
+When you change a placeholder, recheck: targets.js baselines, LearnAgent narrative, Teacher / TeacherPortal / chatbotMatch quizzes, all three API system prompts (`api/chat.js`, `api/admin/plan.js`, `api/admin/estimate-action.js`), Executive provenance row, AnnualReport methodology note, CarbonCredits trade-off section. The composite range arithmetic in `api/chat.js` line 95 is independent — only edit it if you change the underlying per-scope ranges in `geographicEstimates.js`.
+
+### Live measured-data hooks
+
+The dashboard upgrades from "estimated" to "measured" automatically as admins enter data. The pattern:
+
+1. **Pure helper** in `scopeTotals.js`: `composeScope1FromBills(bills, opts?)` and `composeScope3FromRecords(records)` — take Supabase rows, return same shape as `composeScope1()` / `composeScope3()` with `provenance: 'measured'` when rows are present, fallback to placeholder when empty.
+2. **Per-scope hook** in `src/hooks/`: `useMeasuredScope1()`, `useMeasuredScope3()` — fetch from Supabase on mount, apply helper, return `{ totalMt, breakdown, provenance, loading, error, measured }`.
+3. **Composer hook**: `useMeasuredScopeTotals()` returns measured-or-fallback for ALL scopes + sinks + gross/net so consumers (Executive, Goals, NetEstimate) read one consistent measured-aware view.
+
+Pages already wired to live data:
+- `Scope1.js` → `useMeasuredScope1()`
+- `Scope3.js` → `useMeasuredScope3()`
+- `Executive.js`, `Goals.js`, `NetEstimate.js` → `useMeasuredScopeTotals()`
+
+When adding a new measured-data table to Supabase, follow the same pattern: helper in scopeTotals.js, hook in src/hooks/, wire to the page that displays it.
 
 ### Supabase
 
@@ -39,13 +70,38 @@ Single-page React app with two routes wired in `src/index.js`:
 
 `fuel_bills`, `day_students`, `us_boarding_students`, `international_students`, `study_abroad`, `faculty_travel`, `waste`.
 
-`AdminPortal.fetchAllData` pulls all seven in parallel; inserts/deletes happen through per-table handlers in the same file.
+`AdminPortal.fetchAllData` pulls all seven in parallel; inserts/deletes happen through per-table handlers in the same file. The live-measured hooks above also read from these tables.
+
+### Admin auth (server-checked)
+
+The `KUA2026` literal compare on the client is gone. The flow is now:
+
+1. `POST /api/admin/login` with `{ password }` — server compares timing-safe against `process.env.ADMIN_PASSWORD`. Rate-limited 6 attempts/IP.
+2. On success, returns `{ token, expiresAt }`. Token is HMAC-SHA256 signed via `process.env.ADMIN_TOKEN_SECRET` (32+ chars), payload `{ iat, exp, role: 'admin' }`, 8h TTL.
+3. Client stores the blob in `localStorage.kua_admin_session` and sends `Authorization: Bearer <token>` on every admin API call (use `adminFetch()` from `src/utils/adminFetch.js`).
+4. Server-side admin endpoints call `verifyAdminRequest(req)` from `src/utils/adminToken.js` and 401 on missing/expired/tampered tokens.
+
+**Required env vars to make admin auth work in production:**
+- `ADMIN_PASSWORD` — the secret password admins type into the gate
+- `ADMIN_TOKEN_SECRET` — 32+ random bytes (`openssl rand -hex 32`) used to sign tokens
+
+Without them, `/api/admin/login` 503s and `/api/admin/estimate-action` + `/api/admin/plan` 401 on every request.
 
 ### Orphaned admin files
 
-`AdminFuel.js`, `AdminStudents.js`, `AdminTravel.js`, `AdminWaste.js` exist in `src/` but are **not routed or imported anywhere** — the most recent commit ("Fresh Admin Portal") consolidated them into `AdminPortal.js`. Treat them as dead code: don't edit them expecting changes to appear in the app, and prefer modifying `AdminPortal.js`. They can likely be deleted, but confirm with the user before removing.
+`AdminFuel.js`, `AdminStudents.js`, `AdminTravel.js`, `AdminWaste.js` exist in `src/` but are **not routed or imported anywhere** — the most recent commit consolidated them into `AdminPortal.js`. Treat them as dead code: don't edit them expecting changes to appear in the app, and prefer modifying `AdminPortal.js`. They can likely be deleted, but confirm with the user before removing.
+
+## Tests
+
+Vitest. 158+ tests across:
+- `src/__tests__/dataLayer.test.js` — pure data-layer + composer helpers (composeScope1FromBills, composeScope3FromRecords, geographic estimates, hotspots, etc.)
+- `src/__tests__/apiRoutes.test.js` — all `/api/*` handlers including admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh).
+- `src/App.test.js` — top-level smoke test.
+
+When adding a measured-data path, mirror the existing test shape: empty/null fallback, math sanity, skip-invalid-row, factor-table exposure, round-trip with the placeholder version.
 
 ## Conventions
 
 - Styling is done with inline `style={{...}}` objects and a small `App.css`. There is no CSS framework, no component library, and no shared style module — matching the existing inline-style patterns is fine.
 - Emission factors and grid-mix numbers are duplicated between `App.js` (display) and `AdminPortal.js` (data entry). If you change one, check whether the other needs the same update.
+- API handlers use `createRateLimit` + `getClientKey` from `src/utils/rateLimit.js` — token-bucket per IP. Mirror existing handlers when adding new ones.
