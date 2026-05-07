@@ -36,6 +36,10 @@ export default function AdminAuditLog() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [expanded, setExpanded] = useState(null); // row id
+  // Bumping `refreshTick` re-runs the fetch effect — used by the
+  // manual "Refresh" button so admins can pull the latest entries
+  // after a write in another tab without leaving the page.
+  const [refreshTick, setRefreshTick] = useState(0);
 
   // Reset offset whenever a filter changes — otherwise we'd skip into
   // empty territory of the new result set.
@@ -57,9 +61,13 @@ export default function AdminAuditLog() {
       setTotal(total);
       setError(error);
       setLoading(false);
+      // Drop the expanded-payload state if the row in question is no
+      // longer in the new result set — avoids "expanded id points at
+      // ghost row" after pagination / filter changes.
+      setExpanded((prev) => (prev && rows.some((r) => r.id === prev) ? prev : null));
     });
     return () => { cancelled = true; };
-  }, [limit, offset, tableFilter, dateFrom, dateTo]);
+  }, [limit, offset, tableFilter, dateFrom, dateTo, refreshTick]);
 
   const page = Math.floor(offset / limit) + 1;
   const lastPage = total !== null ? Math.max(1, Math.ceil(total / limit)) : null;
@@ -131,6 +139,14 @@ export default function AdminAuditLog() {
             Clear filters
           </button>
         )}
+        <button
+          type="button"
+          style={styles.refreshBtn}
+          onClick={() => setRefreshTick((n) => n + 1)}
+          disabled={loading}
+        >
+          {loading ? 'Loading…' : '↻ Refresh'}
+        </button>
       </div>
 
       {loading && <div style={styles.placeholder}>Loading…</div>}
@@ -261,6 +277,7 @@ const styles = {
 
   dateInput: { padding: '6px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontSize: 13, marginLeft: 4, fontFamily: 'inherit', minWidth: 130 },
   clearBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 },
+  refreshBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, marginLeft: 'auto' },
 
   pager: { marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
   pagerInfo: { fontSize: 12, color: '#94a3b8' },
