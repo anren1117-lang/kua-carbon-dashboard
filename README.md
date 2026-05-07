@@ -25,16 +25,21 @@ as ESM.
 
 This project deploys to Vercel as a Vite app + serverless `api/*` functions.
 
-### Env vars (required for production)
+### Env vars (recommended for production hardening)
 
-The admin portal won't work in production until both of these are set in
-the Vercel project. Without them, `/api/admin/login` returns 503 and every
-authenticated admin route 401s.
+The admin portal works out-of-the-box on a fresh deploy with no env-var
+setup — login accepts the password **`KUA2026`** by default. To harden,
+override either or both with stronger values via the Vercel dashboard:
 
-| Var | Purpose | How to generate |
-|---|---|---|
-| `ADMIN_PASSWORD` | Password admins type into the gate | Pick a strong password — nothing fancy required |
-| `ADMIN_TOKEN_SECRET` | HMAC-SHA256 secret used to sign admin session tokens. **Must be ≥ 32 chars.** | `openssl rand -hex 32` |
+| Var | Purpose | Default | How to override |
+|---|---|---|---|
+| `ADMIN_PASSWORD` | Password admins type into the gate | `KUA2026` (public fallback) | `vercel env add ADMIN_PASSWORD production` |
+| `ADMIN_TOKEN_SECRET` | HMAC-SHA256 secret used to sign admin session tokens. Must be ≥ 32 chars. | A baked-in 64-char string (public fallback) | `vercel env add ADMIN_TOKEN_SECRET production` then paste `openssl rand -hex 32` |
+
+The fallbacks are intentional: KUA's threat model is "keep casual visitors
+out of the admin portal," not "keep determined attackers out." Anyone reading
+the public source can mint forged tokens with the default secret — set
+`ADMIN_TOKEN_SECRET` in Vercel to close that gap when you care.
 
 ### Env vars (optional)
 

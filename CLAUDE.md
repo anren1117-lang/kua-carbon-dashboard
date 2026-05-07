@@ -84,11 +84,11 @@ The `KUA2026` literal compare on the client is gone. The flow is now:
 3. Client stores the blob in `localStorage.kua_admin_session` and sends `Authorization: Bearer <token>` on every admin API call (use `adminFetch()` from `src/utils/adminFetch.js`).
 4. Server-side admin endpoints call `verifyAdminRequest(req)` from `src/utils/adminToken.js` and 401 on missing/expired/tampered tokens.
 
-**Required env vars to make admin auth work in production:**
-- `ADMIN_PASSWORD` — the secret password admins type into the gate
-- `ADMIN_TOKEN_SECRET` — 32+ random bytes (`openssl rand -hex 32`) used to sign tokens
+**Optional env vars for production hardening:**
+- `ADMIN_PASSWORD` — defaults to `KUA2026` (public fallback). Override in Vercel env to use a different password.
+- `ADMIN_TOKEN_SECRET` — defaults to a baked-in 64-char constant (public fallback). Override with `openssl rand -hex 32` to prevent token forgery by anyone reading the source.
 
-Without them, `/api/admin/login` 503s and `/api/admin/estimate-action` + `/api/admin/plan` 401 on every request.
+Login Just Works on a fresh deploy without setting either — the fallbacks ship in the source. Threat model: "keep casual visitors out of /admin," not "keep determined attackers out." Set `ADMIN_TOKEN_SECRET` when you need the latter.
 
 ### Admin entry points
 

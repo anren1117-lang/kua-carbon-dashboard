@@ -733,11 +733,24 @@ describe('POST /api/admin/login', () => {
     expect(r.statusCode).toBe(405);
   });
 
-  it('503s when ADMIN_PASSWORD is unset', async () => {
+  it('falls back to KUA2026 when ADMIN_PASSWORD is unset', async () => {
+    // Phase 27: login is required to Just Work on a fresh deploy
+    // without anyone setting env vars. The fallback IS public per
+    // CLAUDE.md / README — set ADMIN_PASSWORD in production to
+    // override.
     const saved = process.env.ADMIN_PASSWORD;
     delete process.env.ADMIN_PASSWORD;
-    const r = await call(adminLoginHandler, { method: 'POST', body: { password: 'whatever' }, headers: {} });
-    expect(r.statusCode).toBe(503);
+    const r = await call(adminLoginHandler, { method: 'POST', body: { password: 'KUA2026' }, headers: { 'x-forwarded-for': '10.0.0.70' } });
+    expect(r.statusCode).toBe(200);
+    expect(typeof r.body.token).toBe('string');
+    if (saved !== undefined) process.env.ADMIN_PASSWORD = saved;
+  });
+
+  it('rejects wrong password under fallback', async () => {
+    const saved = process.env.ADMIN_PASSWORD;
+    delete process.env.ADMIN_PASSWORD;
+    const r = await call(adminLoginHandler, { method: 'POST', body: { password: 'not-the-fallback' }, headers: { 'x-forwarded-for': '10.0.0.79' } });
+    expect(r.statusCode).toBe(401);
     if (saved !== undefined) process.env.ADMIN_PASSWORD = saved;
   });
 
