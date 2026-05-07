@@ -179,23 +179,23 @@ export default function AdminHome() {
       label: 'Scope 1 (heating + fleet + refrigerants)',
       measured: live.scope1Measured,
       detail: live.scope1Measured
-        ? 'Heating row composed live from fuel_bills. Fleet + refrigerants still bottom-up.'
-        : 'Heating-fuel-delivery invoices flip this row to measured.',
-      cta: live.scope1Measured ? null : { to: '/admin/legacy', label: 'Log fuel bill →' },
+        ? 'Live across 5 admin tables: fuel_bills + scope1_heating_oil + scope1_propane + scope1_fleet + scope1_refrigerants.'
+        : 'Heating-fuel-delivery invoices, fleet records, or refrigerant service logs flip this row to measured.',
+      cta: live.scope1Measured ? null : { to: '/admin/scope-1', label: 'Log Scope 1 data →' },
     },
     {
-      label: 'Scope 3 (travel + waste)',
+      label: 'Scope 3 (travel + waste + spend + commute)',
       measured: live.scope3Measured,
       detail: live.scope3Measured
-        ? 'Cohort + trip + waste rows now feeding the canonical total.'
-        : 'Student / travel / waste records flip this row to measured.',
+        ? 'Live across 8 admin tables: cohort counts (day / US / international), trip-level (study_abroad + faculty_travel), waste, purchased_goods (Cat 1), commuting (Cat 7).'
+        : 'Student / travel / waste / spend / commute records flip this row to measured.',
       cta: live.scope3Measured ? null : { to: '/admin/scope-3', label: 'Log Scope 3 data →' },
     },
     {
-      label: 'Scope 3 (purchased goods + dining + commuting)',
+      label: 'Scope 3 (dining + upstream fuel)',
       measured: false,
-      detail: 'Sodexo / Business Office / HR commute survey integrations not yet shipped — these stay estimated.',
-      // No CTA — these tables don't exist yet.
+      detail: 'Sodexo dining invoices + upstream-fuel uplift not yet wired — these stay bottom-up.',
+      // No CTA — those tables aren't yet wired up.
     },
     {
       label: 'Sinks (forest sequestration)',

@@ -118,14 +118,14 @@ export default function Executive() {
             provenance={netProvenance}
             label={`Net annual emissions (${Math.round(NET_MT).toLocaleString()} mt)`}
             today={netProvenance === 'measured'
-              ? `Derived from gross − sinks. ${live.measuredScopes}/3 scopes now sourced from live records (Scope 2 always measured via BMS; Scope 1 ${live.scope1Measured ? 'flipped via fuel_bills' : 'still estimated'}; Scope 3 ${live.scope3Measured ? 'flipped via the six admin tables' : 'still estimated'}).`
+              ? `Derived from gross − sinks. ${live.measuredScopes}/4 scope rows now sourced from live records (Scope 2 always measured via BMS; Scope 1 ${live.scope1Measured ? 'flipped via fuel_bills + scope1_heating_oil + scope1_propane + scope1_fleet + scope1_refrigerants' : 'still estimated'}; Scope 3 ${live.scope3Measured ? 'flipped via the eight admin tables (cohorts + travel + waste + purchased_goods + commuting)' : 'still estimated'}; Sinks ${live.sinksMeasured ? 'flipped via forest_stand_actuals' : 'still estimated'}).`
               : 'Derived from gross − sinks; inherits the lowest-confidence inputs from below.'}
-            target="Becomes fully 'measured' once Scope 1 fuel_bills + Scope 3 travel/dining/waste tables all contain rows."
+            target="Becomes fully 'measured' once every scope component table contains rows."
           />
           <ExecProvRow
             provenance={grossProvenance}
             label={`Gross emissions (${Math.round(GROSS_MT).toLocaleString()} mt)`}
-            today={`Scope 1 ${live.scope1Measured ? `(MEASURED from fuel_bills, ${live.scope1Mt} mt)` : `(~${live.scope1Mt} mt central from bottom-up cross-check, range 891–1,867)`} + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization, ±5% measured band) + Scope 3 ${live.scope3Measured ? `(MEASURED from six admin tables, ${live.scope3Mt} mt)` : `(~${live.scope3Mt} mt central, range 1,726–3,720 across 3-4 methods × 8 components)`}. See /admin/methodology for the per-component method-by-method breakdown.`}
+            today={`Scope 1 ${live.scope1Measured ? `(MEASURED from 5 admin tables, ${live.scope1Mt} mt)` : `(~${live.scope1Mt} mt central from bottom-up cross-check, range 891–1,867)`} + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization, ±5% measured band) + Scope 3 ${live.scope3Measured ? `(MEASURED from 8 admin tables, ${live.scope3Mt} mt)` : `(~${live.scope3Mt} mt central, range 1,726–3,720 across 3-4 methods × 8 components)`}. See /admin/methodology for the per-component method-by-method breakdown.`}
             target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
           />
           <ExecProvRow
