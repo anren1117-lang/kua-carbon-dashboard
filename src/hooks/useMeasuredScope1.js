@@ -46,16 +46,26 @@ export function useMeasuredScope1() {
         // Cached so a second consumer in the same render tree (or
         // within 30s) reuses the in-flight or recent fetch instead
         // of firing duplicate Supabase round-trips.
+        //
+        // Reads from THREE tables:
+        //   1. fuel_bills (legacy + admin-portal CRUD)         → heating
+        //   2. scope1_fleet (initial-schema, admin-form-driven) → fleet
+        //   3. scope1_refrigerants (initial-schema, admin-form) → refrigerants
+        //
+        // Phase 11d created `scope1_fleet_records` and
+        // `scope1_refrigerant_logs` migrations as parallel schemas,
+        // but the existing admin pages always wrote to scope1_fleet /
+        // scope1_refrigerants — so the live hook needs to read from
+        // those to actually pick up admin-entered data. composeFleetMt
+        // / composeRefrigerantMt accept BOTH column-name conventions.
         const [bills, fleet, refrig] = await cachedFetch('scope1', () => Promise.all([
           supabase.from('fuel_bills').select('fuel_type, gallons'),
-          supabase.from('scope1_fleet_records').select('fuel_type, gallons').then(
+          supabase.from('scope1_fleet').select('fuel_type, gallons').then(
             (r) => r,
-            // The migration may not have run yet on this Supabase
-            // project; tolerate "table does not exist" by returning
-            // an empty data set rather than 500-ing the whole page.
+            // Tolerate "table does not exist" — falls back to placeholder.
             () => ({ data: [], error: null })
           ),
-          supabase.from('scope1_refrigerant_logs').select('refrigerant_type, lbs_recharged, lbs_reclaimed').then(
+          supabase.from('scope1_refrigerants').select('refrigerant_type, recharge_lb, reclaim_lb').then(
             (r) => r,
             () => ({ data: [], error: null })
           ),

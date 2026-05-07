@@ -654,6 +654,14 @@ describe('composeFleetMt + composeRefrigerantMt (component helpers)', () => {
     expect(composeFleetMt([{ fuel_type: 'Gasoline', gallons: 1000 }])).toBeCloseTo(8.89, 2);
   });
 
+  it('composeFleetMt: also accepts lowercase fuel_type from legacy scope1_fleet schema', () => {
+    // The existing admin form writes 'gasoline' / 'diesel' (lowercase).
+    // Phase 32 reconciliation: the composer normalizes to capitalized
+    // before factor lookup so legacy data isn't silently dropped.
+    expect(composeFleetMt([{ fuel_type: 'gasoline', gallons: 1000 }])).toBeCloseTo(8.89, 2);
+    expect(composeFleetMt([{ fuel_type: 'diesel', gallons: 1000 }])).toBeCloseTo(10.21, 2);
+  });
+
   it('composeFleetMt: skips unknown fuel_type and invalid gallons', () => {
     const mt = composeFleetMt([
       { fuel_type: 'Gasoline', gallons: 100 },     // 0.889 mt
@@ -672,6 +680,16 @@ describe('composeFleetMt + composeRefrigerantMt (component helpers)', () => {
     // 10 lb net R-410A leak × 0.45359 kg/lb × 2256 GWP = 10,233 kg = 10.23 mt
     const mt = composeRefrigerantMt([
       { refrigerant_type: 'R-410A', lbs_recharged: 10, lbs_reclaimed: 0 },
+    ]);
+    expect(mt).toBeCloseTo(10.23, 1);
+  });
+
+  it('composeRefrigerantMt: also accepts recharge_lb / reclaim_lb from legacy scope1_refrigerants schema', () => {
+    // The existing admin form writes recharge_lb / reclaim_lb (note _lb
+    // suffix). Phase 32 reconciliation: composer reads either column
+    // naming so legacy data isn't silently dropped.
+    const mt = composeRefrigerantMt([
+      { refrigerant_type: 'R-410A', recharge_lb: 10, reclaim_lb: 0 },
     ]);
     expect(mt).toBeCloseTo(10.23, 1);
   });

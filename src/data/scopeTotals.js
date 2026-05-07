@@ -113,15 +113,35 @@ export function composeSinksFromActuals(rows) {
   return { totalMt: Math.round(totalMt), standCount: valid.length, perStand };
 }
 
+// Map legacy lowercase fuel_type values used by the existing
+// scope1_fleet admin form ('gasoline'/'diesel'/'other') onto the
+// canonical capitalized keys in FLEET_FACTORS_KG_PER_GAL. Anything
+// the admin form might emit that isn't in the canonical set falls
+// through to undefined and the row is skipped (with-counted).
+function normalizeFleetFuelType(raw) {
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  if (FLEET_FACTORS_KG_PER_GAL[trimmed]) return trimmed;
+  // Title-case the lowercase legacy form: 'gasoline' → 'Gasoline'.
+  const titled = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+  if (FLEET_FACTORS_KG_PER_GAL[titled]) return titled;
+  return undefined;
+}
+
 /**
  * Sum a fleet table to mtCO2e using EPA Mobile Combustion factors.
- * Skips rows with unknown fuel_type or non-numeric/negative gallons.
+ * Accepts rows from EITHER schema: the legacy `scope1_fleet` table
+ * (lowercase fuel_type, period-based) or the never-shipped
+ * `scope1_fleet_records` schema (capitalized fuel_type, per-
+ * transaction). Skips rows with unknown fuel_type or non-numeric/
+ * negative gallons.
  */
 export function composeFleetMt(rows) {
   if (!Array.isArray(rows) || rows.length === 0) return 0;
   let kg = 0;
   for (const row of rows) {
-    const factor = FLEET_FACTORS_KG_PER_GAL[row.fuel_type];
+    const fuelKey = normalizeFleetFuelType(row.fuel_type);
+    const factor = fuelKey ? FLEET_FACTORS_KG_PER_GAL[fuelKey] : undefined;
     const gal = Number(row.gallons);
     if (!factor || !Number.isFinite(gal) || gal < 0) continue;
     kg += gal * factor;
@@ -134,13 +154,19 @@ export function composeFleetMt(rows) {
  * (clamped at zero — a negative net would imply more was reclaimed
  * than ever leaked, which is conservation, not emission). Multiplied
  * by IPCC AR6 GWP100 for the listed chemical.
+ *
+ * Accepts rows from EITHER schema: the legacy `scope1_refrigerants`
+ * table (`recharge_lb` / `reclaim_lb` columns) or the never-shipped
+ * `scope1_refrigerant_logs` schema (`lbs_recharged` / `lbs_reclaimed`).
  */
 export function composeRefrigerantMt(rows) {
   if (!Array.isArray(rows) || rows.length === 0) return 0;
   let kgCO2e = 0;
   for (const row of rows) {
-    const recharged = Number(row.lbs_recharged) || 0;
-    const reclaimed = Number(row.lbs_reclaimed) || 0;
+    // Legacy column names take precedence so existing admin entries
+    // count; new column names act as the fallback.
+    const recharged = Number(row.recharge_lb ?? row.lbs_recharged) || 0;
+    const reclaimed = Number(row.reclaim_lb  ?? row.lbs_reclaimed) || 0;
     const netLbs = Math.max(0, recharged - reclaimed);
     if (netLbs <= 0) continue;
     const gwp = REFRIGERANT_GWP100[row.refrigerant_type] ?? REFRIGERANT_GWP100.other;
