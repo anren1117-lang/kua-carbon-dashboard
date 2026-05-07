@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTable, RecordsTable, formStyles as s, today, currentSchoolYear } from '../_shared';
 import { logAdminWrite } from '../../../utils/adminAudit.js';
 import { toCsv, downloadCsv } from '../../../utils/csv.js';
+import CsvImportPanel, { validateForestStandRow } from '../../../components/CsvImportPanel.js';
 
 // Per-stand forest inventory entry. Drives forest_stand_actuals which
 // flips the Sinks page from the hardcoded 7-stand placeholder to the
@@ -40,7 +41,7 @@ const empty = () => ({
 });
 
 function ForestStands() {
-  const { rows, error, insert, update, remove } = useTable('forest_stand_actuals', 'created_at');
+  const { rows, error, insert, update, remove, refresh } = useTable('forest_stand_actuals', 'created_at');
   const [form, setForm] = useState(empty());
   const [editingId, setEditingId] = useState(null);
   const [msg, setMsg] = useState(null);
@@ -144,6 +145,18 @@ function ForestStands() {
 
       {error && <div style={{ ...s.msg, ...s.msgErr }}>Supabase: {error.message || error}</div>}
       {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
+
+      <div style={{ marginTop: 16, marginBottom: 16 }}>
+        <CsvImportPanel
+          tableName="forest_stand_actuals"
+          labelSingular="stand"
+          columnsHint="stand_id,name,acres,type,age_class,mtco2e_acre_yr,dominant_species,surveyed_at,surveyed_by,notes,school_year"
+          examplePlaceholder={'stand_id,name,acres,type,age_class,mtco2e_acre_yr,dominant_species,surveyed_at,surveyed_by,notes\nstand_north,North Hill,320,mixed_hardwood,mature,2.8,"Sugar maple, red oak",2026-04-12,Forestry Consultants LLC,Phase-1 walkthrough\nstand_south,South ridge,240,softwood,mature,1.9,"White pine, hemlock",2026-04-12,Forestry Consultants LLC,'}
+          validateRow={validateForestStandRow}
+          onComplete={refresh}
+          onMessage={(text) => setMsg({ ok: text.startsWith('✓'), text })}
+        />
+      </div>
 
       <form onSubmit={submit} style={s.card}>
         <div style={s.formGrid}>

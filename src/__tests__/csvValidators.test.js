@@ -12,6 +12,7 @@ import {
   validateIntlStudentRow,
   validateStudyAbroadRow,
   validateFacultyTravelRow,
+  validateForestStandRow,
 } from '../components/CsvImportPanel.js';
 
 describe('validateFuelRow', () => {
@@ -200,5 +201,63 @@ describe('validateFacultyTravelRow', () => {
     const r = validateFacultyTravelRow({ destination_country: 'USA', trip_purpose: 'Vacation' }, 0);
     expect(r.ok).toBe(false);
     expect(r.message).toMatch(/trip_purpose/);
+  });
+});
+
+describe('validateForestStandRow', () => {
+  it('accepts a fully-specified stand', () => {
+    const r = validateForestStandRow({
+      stand_id: 'stand_north',
+      name: 'North Hill',
+      acres: '320',
+      type: 'mixed_hardwood',
+      age_class: 'mature',
+      mtco2e_acre_yr: '2.8',
+      dominant_species: 'Sugar maple, red oak',
+      surveyed_at: '2026-04-12',
+      surveyed_by: 'Forestry Consultants LLC',
+    }, 0);
+    expect(r.ok).toBe(true);
+    expect(r.row.acres).toBe(320);
+    expect(r.row.mtco2e_acre_yr).toBe(2.8);
+    expect(r.row.stand_id).toBe('stand_north');
+  });
+
+  it('applies type-default rate when blank', () => {
+    const r = validateForestStandRow({ name: 'Open trees', acres: '40', type: 'open_grown' }, 0);
+    expect(r.ok).toBe(true);
+    expect(r.row.mtco2e_acre_yr).toBe(4.0); // open_grown default
+  });
+
+  it('rejects bad type enum', () => {
+    const r = validateForestStandRow({ name: 'Foo', acres: '10', type: 'jungle' }, 0);
+    expect(r.ok).toBe(false);
+    expect(r.message).toMatch(/type/);
+  });
+
+  it('rejects bad age_class enum', () => {
+    const r = validateForestStandRow({ name: 'Foo', acres: '10', age_class: 'sapling' }, 0);
+    expect(r.ok).toBe(false);
+    expect(r.message).toMatch(/age_class/);
+  });
+
+  it('rejects negative acres', () => {
+    const r = validateForestStandRow({ name: 'Foo', acres: '-10' }, 0);
+    expect(r.ok).toBe(false);
+    expect(r.message).toMatch(/acres/);
+  });
+
+  it('rejects malformed surveyed_at', () => {
+    const r = validateForestStandRow({ name: 'Foo', acres: '10', surveyed_at: '04/12/2026' }, 0);
+    expect(r.ok).toBe(false);
+    expect(r.message).toMatch(/surveyed_at/);
+  });
+
+  it('coerces blank optional fields to null', () => {
+    const r = validateForestStandRow({ name: 'Foo', acres: '10' }, 0);
+    expect(r.ok).toBe(true);
+    expect(r.row.stand_id).toBeNull();
+    expect(r.row.dominant_species).toBeNull();
+    expect(r.row.surveyed_at).toBeNull();
   });
 });

@@ -248,6 +248,57 @@ export function validateStudyAbroadRow(raw, idx) {
   };
 }
 
+export function validateForestStandRow(raw, idx) {
+  const stand_id = (raw.stand_id || raw['stand id'] || '').trim();
+  const name = (raw.name || '').trim();
+  const acresStr = (raw.acres || '').trim();
+  const type = (raw.type || 'mixed_hardwood').trim();
+  const age_class = (raw.age_class || raw['age class'] || 'mature').trim();
+  const rateStr = (raw.mtco2e_acre_yr || raw['mtco2e acre yr'] || raw['mtco2e/acre/yr'] || '').trim();
+  const dominant_species = (raw.dominant_species || raw['dominant species'] || '').trim();
+  const surveyed_at = (raw.surveyed_at || raw['surveyed at'] || '').trim();
+  const surveyed_by = (raw.surveyed_by || raw['surveyed by'] || '').trim();
+  const notes = (raw.notes || '').trim();
+  const school_year = (raw.school_year || raw['school year'] || '').trim();
+
+  if (!name) return { ok: false, message: `row ${idx + 2}: missing name` };
+  if (!numOk(acresStr)) return { ok: false, message: `row ${idx + 2}: acres must be a non-negative number (got "${acresStr}")` };
+  if (!['mixed_hardwood', 'softwood', 'transitional', 'open_grown'].includes(type)) {
+    return { ok: false, message: `row ${idx + 2}: type must be one of mixed_hardwood/softwood/transitional/open_grown (got "${type}")` };
+  }
+  if (!['young', 'intermediate', 'mature', 'old_growth'].includes(age_class)) {
+    return { ok: false, message: `row ${idx + 2}: age_class must be one of young/intermediate/mature/old_growth (got "${age_class}")` };
+  }
+  // Rate is optional — defaults applied per type when blank.
+  let rate = null;
+  if (rateStr) {
+    if (!numOk(rateStr)) return { ok: false, message: `row ${idx + 2}: mtco2e_acre_yr must be a non-negative number (got "${rateStr}")` };
+    rate = parseFloat(rateStr);
+  } else {
+    const defaults = { mixed_hardwood: 2.5, softwood: 1.9, transitional: 2.7, open_grown: 4.0 };
+    rate = defaults[type] ?? 2.5;
+  }
+  if (surveyed_at && !dateOk(surveyed_at)) {
+    return { ok: false, message: `row ${idx + 2}: surveyed_at must be YYYY-MM-DD (got "${surveyed_at}")` };
+  }
+  return {
+    ok: true,
+    row: {
+      stand_id: stand_id || null,
+      name,
+      acres: parseFloat(acresStr),
+      type,
+      age_class,
+      mtco2e_acre_yr: rate,
+      dominant_species: dominant_species || null,
+      surveyed_at: surveyed_at || null,
+      surveyed_by: surveyed_by || null,
+      notes: notes || null,
+      school_year: school_year || null,
+    },
+  };
+}
+
 export function validateFacultyTravelRow(raw, idx) {
   const destination_country = (raw.destination_country || raw['destination country'] || '').trim();
   const destination_city = (raw.destination_city || raw['destination city'] || '').trim();
