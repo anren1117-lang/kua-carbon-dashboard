@@ -40,8 +40,9 @@ const empty = () => ({
 });
 
 function ForestStands() {
-  const { rows, error, insert, remove } = useTable('forest_stand_actuals', 'created_at');
+  const { rows, error, insert, update, remove } = useTable('forest_stand_actuals', 'created_at');
   const [form, setForm] = useState(empty());
+  const [editingId, setEditingId] = useState(null);
   const [msg, setMsg] = useState(null);
 
   const acresNum = parseFloat(form.acres);
@@ -78,20 +79,50 @@ function ForestStands() {
       school_year: form.school_year || null,
     };
     try {
-      await insert(payload);
-      logAdminWrite({ action: 'insert', table: 'forest_stand_actuals', payload });
-      setMsg({ ok: true, text: `Saved "${payload.name}" (${payload.acres} acres × ${payload.mtco2e_acre_yr} mt/acre/yr = ${(payload.acres * payload.mtco2e_acre_yr).toFixed(1)} mt/yr).` });
+      if (editingId) {
+        await update(editingId, payload);
+        logAdminWrite({ action: 'update', table: 'forest_stand_actuals', payload: { id: editingId, ...payload } });
+        setMsg({ ok: true, text: `Updated "${payload.name}" (${payload.acres} acres × ${payload.mtco2e_acre_yr} mt/acre/yr = ${(payload.acres * payload.mtco2e_acre_yr).toFixed(1)} mt/yr).` });
+      } else {
+        await insert(payload);
+        logAdminWrite({ action: 'insert', table: 'forest_stand_actuals', payload });
+        setMsg({ ok: true, text: `Saved "${payload.name}" (${payload.acres} acres × ${payload.mtco2e_acre_yr} mt/acre/yr = ${(payload.acres * payload.mtco2e_acre_yr).toFixed(1)} mt/yr).` });
+      }
       setForm(empty());
+      setEditingId(null);
     } catch (err) {
-      setMsg({ ok: false, text: `Insert failed: ${err.message || err}` });
+      setMsg({ ok: false, text: `${editingId ? 'Update' : 'Insert'} failed: ${err.message || err}` });
     }
   };
+
+  // Pre-fill form with this row's values + flip into update mode.
+  const onEdit = (row) => {
+    setForm({
+      stand_id: row.stand_id || '',
+      name: row.name || '',
+      acres: row.acres != null ? String(row.acres) : '',
+      type: row.type || 'mixed_hardwood',
+      age_class: row.age_class || 'mature',
+      mtco2e_acre_yr: row.mtco2e_acre_yr != null ? String(row.mtco2e_acre_yr) : '',
+      dominant_species: row.dominant_species || '',
+      surveyed_at: row.surveyed_at || today(),
+      surveyed_by: row.surveyed_by || '',
+      notes: row.notes || '',
+      school_year: row.school_year || currentSchoolYear(),
+    });
+    setEditingId(row.id);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => { setEditingId(null); setForm(empty()); setMsg(null); };
 
   const onDelete = async (id) => {
     if (!window.confirm('Delete this stand? The Sinks page will refresh on next visit.')) return;
     try {
       await remove(id);
       logAdminWrite({ action: 'delete', table: 'forest_stand_actuals', payload: { id } });
+      // If the row being deleted was loaded into the form, drop it.
+      if (editingId === id) cancelEdit();
     } catch (err) {
       setMsg({ ok: false, text: `Delete failed: ${err.message || err}` });
     }
@@ -178,7 +209,18 @@ function ForestStands() {
             Preview: <strong>{form.acres} acres × {form.mtco2e_acre_yr || (DEFAULT_RATE_BY_TYPE[form.type] ?? 2.5)} mt/acre/yr = {previewMt.toFixed(1)} mtCO₂e/yr</strong>
           </div>
         )}
-        <button type="submit" style={s.submit}>Save stand</button>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="submit" style={s.submit}>{editingId ? 'Update stand' : 'Save stand'}</button>
+          {editingId && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              style={{ padding: '8px 14px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 6, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              Cancel edit
+            </button>
+          )}
+        </div>
       </form>
 
       <div style={{ marginTop: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -201,7 +243,9 @@ function ForestStands() {
           { key: 'dominant_species', label: 'Species' },
           { key: 'surveyed_at',    label: 'Surveyed' },
         ]}
+        onEdit={onEdit}
         onDelete={onDelete}
+        editingId={editingId}
       />
     </div>
   );
