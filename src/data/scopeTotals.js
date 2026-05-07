@@ -79,6 +79,71 @@ export const REFRIGERANT_GWP100 = {
 
 const KG_PER_LB = 0.45359237;
 
+// Default EEIO factor (kg CO2e per USD) when a purchased_goods row
+// doesn't carry an explicit `eeio_factor_override`. Anchored on EPA
+// EEIO v2.0 KUA-typical weighted average across paper / IT / cleaning
+// / apparel sectors — same value SCOPE3_GOODS_RANGE.central is built
+// around.
+export const PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD = 0.40;
+
+/**
+ * Sum a purchased_goods table to mtCO2e: spend × EEIO factor.
+ * Each row has spend_usd + an optional eeio_factor_override; rows
+ * without an override use PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD.
+ * Skips rows with non-numeric / negative spend.
+ */
+export function composePurchasedGoodsMt(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return 0;
+  let kg = 0;
+  for (const row of rows) {
+    const spend = Number(row.spend_usd);
+    if (!Number.isFinite(spend) || spend < 0) continue;
+    const factor = Number.isFinite(Number(row.eeio_factor_override))
+      ? Number(row.eeio_factor_override)
+      : PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD;
+    kg += spend * factor;
+  }
+  return kg / 1000;
+}
+
+// EPA / DEFRA-anchored per-passenger-km factors for staff commute
+// modes (kg CO2e / passenger-km). Solo car at EPA passenger-vehicle
+// average; carpool effective per-passenger; transit / bike / walk /
+// EV from DEFRA + ICCT.
+export const COMMUTE_FACTORS_KG_PER_KM = {
+  car_solo: 0.218,    // EPA passenger vehicle avg ~0.218 kg/km (~0.351 kg/mi)
+  carpool:  0.087,    // 0.218 / 2.5 effective passenger share
+  transit:  0.103,    // DEFRA bus + light rail blend
+  bike:     0,
+  walk:     0,
+  ev:       0.060,    // ISO-NE 2024 grid × typical EV efficiency (3.5 mi/kWh)
+};
+const KM_PER_MI = 1.609344;
+
+/**
+ * Sum a commuting table to mtCO2e: each row's per-day round-trip miles
+ * × days/week × weeks/year × 2 (round-trip) × mode factor.
+ * Skips rows with unknown mode or invalid numeric fields.
+ */
+export function composeCommutingMt(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return 0;
+  let kg = 0;
+  for (const row of rows) {
+    const factor = COMMUTE_FACTORS_KG_PER_KM[row.mode];
+    const miles  = Number(row.one_way_miles);
+    const days   = Number(row.days_per_week ?? 5);
+    const weeks  = Number(row.weeks_per_year ?? 36);
+    if (factor === undefined) continue;
+    if (!Number.isFinite(miles) || miles < 0) continue;
+    if (!Number.isFinite(days)  || days  < 0) continue;
+    if (!Number.isFinite(weeks) || weeks < 0) continue;
+    // miles × 2 (RT) × KM_PER_MI = round-trip km/day
+    // × days/week × weeks/year × factor (kg/km) = kg/year
+    kg += miles * 2 * KM_PER_MI * days * weeks * factor;
+  }
+  return kg / 1000;
+}
+
 /**
  * Sum a forest_stand_actuals table to mtCO2e: acres × per-acre rate.
  * Used by useMeasuredSinks(). Skips rows with missing/invalid acreage
@@ -387,6 +452,8 @@ function regionFor(country) {
  *   studyAbroad?: Array<{ destination_country?: string }>,
  *   facultyTravel?: Array<{ destination_country?: string }>,
  *   wasteRecords?: Array<{ waste_type: string, amount: number|string, unit?: string }>,
+ *   purchasedGoods?: Array<{ spend_usd: number|string, eeio_factor_override?: number|string }>,
+ *   commuting?: Array<{ mode: string, one_way_miles: number|string, days_per_week?: number, weeks_per_year?: number }>,
  * }} records
  */
 export function composeScope3FromRecords(records = {}) {
@@ -396,10 +463,12 @@ export function composeScope3FromRecords(records = {}) {
   const sa       = Array.isArray(records.studyAbroad)           ? records.studyAbroad           : [];
   const fac      = Array.isArray(records.facultyTravel)         ? records.facultyTravel         : [];
   const waste    = Array.isArray(records.wasteRecords)          ? records.wasteRecords          : [];
+  const goods    = Array.isArray(records.purchasedGoods)        ? records.purchasedGoods        : [];
+  const commute  = Array.isArray(records.commuting)             ? records.commuting             : [];
 
   // If literally nothing is in any table, fall back to the placeholder
   // wholesale — the dashboard is honest about having no measured data.
-  const haveAnyRecords = day.length + usBoard.length + intl.length + sa.length + fac.length + waste.length > 0;
+  const haveAnyRecords = day.length + usBoard.length + intl.length + sa.length + fac.length + waste.length + goods.length + commute.length > 0;
   if (!haveAnyRecords) return composeScope3();
 
   // ─── Student travel: cohort row counts × cited per-student factor ──
@@ -431,20 +500,30 @@ export function composeScope3FromRecords(records = {}) {
   }
   const wasteMeasured = waste.length > 0;
 
+  // ─── Purchased goods (Cat 1): live from purchased_goods table ──
+  const goodsLiveMt  = composePurchasedGoodsMt(goods);
+  const goodsMeasured = goods.length > 0;
+
+  // ─── Commuting (Cat 7): live from commuting table ──
+  const commuteLiveMt = composeCommutingMt(commute);
+  const commuteMeasured = commute.length > 0;
+
   // ─── Components without records: keep placeholder rows ──────────
   const placeholderRow = (sourceMatch) =>
     SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes(sourceMatch.toLowerCase()));
-  const goodsMt    = placeholderRow('purchased goods')?.mt   ?? 0;
+  const goodsMt    = goodsMeasured   ? goodsLiveMt   : (placeholderRow('purchased goods')?.mt ?? 0);
   const diningMt   = placeholderRow('dining')?.mt            ?? 0;
   const upstreamMt = placeholderRow('upstream fuel')?.mt     ?? 0;
-  const commuteMt  = placeholderRow('commuting')?.mt         ?? 0;
+  const commuteMt  = commuteMeasured ? commuteLiveMt : (placeholderRow('commuting')?.mt ?? 0);
 
   const breakdown = [
     {
       source: 'Purchased goods (non-dining)',
       mt: Math.round(goodsMt),
-      provenance: 'estimated',
-      method: placeholderRow('purchased goods')?.method || '',
+      provenance: goodsMeasured ? 'measured' : 'estimated',
+      method: goodsMeasured
+        ? `${goods.length} purchased_goods row${goods.length === 1 ? '' : 's'} × spend × EEIO factor (per-row override or default ${PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD} kg/USD).`
+        : (placeholderRow('purchased goods')?.method || ''),
     },
     {
       source: 'Student travel (international + boarder)',
@@ -469,8 +548,10 @@ export function composeScope3FromRecords(records = {}) {
     {
       source: 'Commuting',
       mt: Math.round(commuteMt),
-      provenance: 'estimated',
-      method: placeholderRow('commuting')?.method || '',
+      provenance: commuteMeasured ? 'measured' : 'estimated',
+      method: commuteMeasured
+        ? `${commute.length} commuting row${commute.length === 1 ? '' : 's'} × per-mode factor × days/week × weeks/year × 2 RT (EPA passenger-vehicle + DEFRA mode factors).`
+        : (placeholderRow('commuting')?.method || ''),
     },
     {
       source: 'Waste',
@@ -483,7 +564,11 @@ export function composeScope3FromRecords(records = {}) {
   ];
 
   const totalMt = Math.round(breakdown.reduce((s, r) => s + r.mt, 0));
-  const measuredRowCount = (studentTravelMeasured ? 1 : 0) + (wasteMeasured ? 1 : 0);
+  const measuredRowCount =
+    (studentTravelMeasured ? 1 : 0) +
+    (wasteMeasured ? 1 : 0) +
+    (goodsMeasured ? 1 : 0) +
+    (commuteMeasured ? 1 : 0);
 
   // Per-cohort detail so the Scope 3 page (and Executive) can show day
   // / US boarder / international as separate sub-rows when measured.
@@ -538,7 +623,7 @@ export function composeScope3FromRecords(records = {}) {
     provenance: measuredRowCount > 0 ? 'measured' : 'estimated',
     cohortDetail,
     note: measuredRowCount > 0
-      ? `${measuredRowCount} Scope 3 component${measuredRowCount === 1 ? '' : 's'} composed from Supabase records. Dining, goods, upstream fuel, commuting still bottom-up until those tables ship.`
+      ? `${measuredRowCount} Scope 3 component${measuredRowCount === 1 ? '' : 's'} composed from Supabase records. Dining + upstream fuel still bottom-up.`
       : 'No Scope 3 records yet — bottom-up placeholder.',
   };
 }

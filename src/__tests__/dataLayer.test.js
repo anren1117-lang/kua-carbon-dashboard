@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeFleetMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, FLEET_FACTORS_KG_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
+import { composeCommutingMt, composeFleetMt, composePurchasedGoodsMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, COMMUTE_FACTORS_KG_PER_KM, FLEET_FACTORS_KG_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -984,5 +984,94 @@ describe('canonical scope-totals invariants', () => {
     const out = composeScope3();
     const sum = out.breakdown.reduce((s, r) => s + r.mt, 0);
     expect(Math.abs(sum - out.totalMt)).toBeLessThanOrEqual(2);
+  });
+});
+
+describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
+  it('composePurchasedGoodsMt: empty / null → 0 mt', () => {
+    expect(composePurchasedGoodsMt([])).toBe(0);
+    expect(composePurchasedGoodsMt(null)).toBe(0);
+  });
+
+  it('composePurchasedGoodsMt: spend × default EEIO', () => {
+    // $100,000 × 0.40 kg/USD = 40,000 kg = 40 mt
+    const mt = composePurchasedGoodsMt([{ spend_usd: 100000 }]);
+    expect(mt).toBeCloseTo(40, 1);
+  });
+
+  it('composePurchasedGoodsMt: per-row override beats default', () => {
+    // $100,000 × 0.10 kg/USD = 10,000 kg = 10 mt
+    const mt = composePurchasedGoodsMt([{ spend_usd: 100000, eeio_factor_override: 0.10 }]);
+    expect(mt).toBeCloseTo(10, 1);
+  });
+
+  it('composePurchasedGoodsMt: skips rows with non-numeric or negative spend', () => {
+    const mt = composePurchasedGoodsMt([
+      { spend_usd: 1000 },             // counted: 0.4 mt
+      { spend_usd: 'banana' },         // skipped
+      { spend_usd: -50 },              // skipped
+    ]);
+    expect(mt).toBeCloseTo(0.4, 1);
+  });
+
+  it('composeCommutingMt: empty / null → 0 mt', () => {
+    expect(composeCommutingMt([])).toBe(0);
+    expect(composeCommutingMt(null)).toBe(0);
+  });
+
+  it('composeCommutingMt: solo car commute math', () => {
+    // 12 mi one-way × 2 RT × 1.609 km/mi × 5 days × 36 weeks × 0.218 kg/km
+    //   ≈ 1515 kg ≈ 1.52 mt
+    const mt = composeCommutingMt([
+      { mode: 'car_solo', one_way_miles: 12, days_per_week: 5, weeks_per_year: 36 },
+    ]);
+    expect(mt).toBeCloseTo(1.52, 1);
+  });
+
+  it('composeCommutingMt: zero-emission modes', () => {
+    const mt = composeCommutingMt([
+      { mode: 'bike', one_way_miles: 5, days_per_week: 5, weeks_per_year: 36 },
+      { mode: 'walk', one_way_miles: 1, days_per_week: 5, weeks_per_year: 36 },
+    ]);
+    expect(mt).toBe(0);
+  });
+
+  it('composeCommutingMt: defaults days=5, weeks=36 when missing', () => {
+    const mt = composeCommutingMt([{ mode: 'car_solo', one_way_miles: 12 }]);
+    expect(mt).toBeCloseTo(1.52, 1);
+  });
+
+  it('composeCommutingMt: skips unknown mode', () => {
+    const mt = composeCommutingMt([
+      { mode: 'car_solo', one_way_miles: 12, days_per_week: 5, weeks_per_year: 36 },
+      { mode: 'spaceship', one_way_miles: 100, days_per_week: 5 },
+    ]);
+    expect(mt).toBeCloseTo(1.52, 1);
+  });
+
+  it('exposes the new factor tables', () => {
+    expect(PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD).toBe(0.40);
+    expect(COMMUTE_FACTORS_KG_PER_KM.car_solo).toBe(0.218);
+    expect(COMMUTE_FACTORS_KG_PER_KM.bike).toBe(0);
+  });
+
+  it('composeScope3FromRecords flips goods row to measured on purchased_goods rows', () => {
+    const r = composeScope3FromRecords({
+      purchasedGoods: [{ spend_usd: 1000000 }], // $1M × 0.40 = 400 mt
+    });
+    expect(r.provenance).toBe('measured');
+    const goods = r.breakdown.find((b) => b.source.toLowerCase().includes('purchased goods'));
+    expect(goods.provenance).toBe('measured');
+    expect(goods.mt).toBe(400);
+  });
+
+  it('composeScope3FromRecords flips commute row to measured on commuting rows', () => {
+    const r = composeScope3FromRecords({
+      commuting: [{ mode: 'car_solo', one_way_miles: 12, days_per_week: 5, weeks_per_year: 36 }],
+    });
+    expect(r.provenance).toBe('measured');
+    const commute = r.breakdown.find((b) => b.source.toLowerCase() === 'commuting');
+    expect(commute.provenance).toBe('measured');
+    expect(commute.mt).toBe(2); // 1.52 → round 2
   });
 });

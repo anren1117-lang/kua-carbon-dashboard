@@ -35,13 +35,24 @@ export function useMeasuredScope3() {
 
     async function load() {
       try {
-        const [day, us, intl, sa, fac, waste] = await cachedFetch('scope3', () => Promise.all([
+        const [day, us, intl, sa, fac, waste, goods, commute] = await cachedFetch('scope3', () => Promise.all([
           supabase.from('day_students').select('zip_code, school_year'),
           supabase.from('us_boarding_students').select('zip_code, state'),
           supabase.from('international_students').select('country'),
           supabase.from('study_abroad').select('destination_country, destination_city, departure_date, return_date'),
           supabase.from('faculty_travel').select('destination_country, destination_city, trip_purpose'),
           supabase.from('waste').select('waste_type, amount, unit'),
+          // Cat 1 + Cat 7 admin pages write to these. Tolerate "table
+          // doesn't exist" (migration not applied) by falling back
+          // to empty data — composer keeps the placeholder rows.
+          supabase.from('purchased_goods').select('spend_usd, eeio_factor_override').then(
+            (r) => r,
+            () => ({ data: [], error: null })
+          ),
+          supabase.from('commuting').select('mode, one_way_miles, days_per_week, weeks_per_year').then(
+            (r) => r,
+            () => ({ data: [], error: null })
+          ),
         ]));
         if (cancelled) return;
 
@@ -60,6 +71,8 @@ export function useMeasuredScope3() {
           studyAbroad: sa.data || [],
           facultyTravel: fac.data || [],
           wasteRecords: waste.data || [],
+          purchasedGoods: goods.data || [],
+          commuting: commute.data || [],
         });
         setState({
           ...composed,
