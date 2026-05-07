@@ -99,6 +99,48 @@ describe('useMeasuredScope1', () => {
     expect(result.current.totalMt).toBeLessThan(1100);
   });
 
+  it('flips to measured on scope1_heating_oil rows alone (per-scope admin path)', async () => {
+    // Phase 33: the per-scope admin form writes to scope1_heating_oil
+    // which doesn't have a fuel_type column. The hook tags each row
+    // before passing to composeScope1FromBills.
+    setNextResponses({
+      fuel_bills: { data: [], error: null },
+      scope1_heating_oil: { data: [{ gallons: 50000 }], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredScope1());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.measured).toBe(true);
+    // 50,000 gal × 10.16 kg/gal = 508,000 kg = 508 mt heating
+    // + fleet 54 + refrigerants 7 = ~569 mt
+    expect(result.current.totalMt).toBeGreaterThan(500);
+    expect(result.current.totalMt).toBeLessThan(600);
+  });
+
+  it('flips to measured on scope1_propane rows alone', async () => {
+    setNextResponses({
+      fuel_bills: { data: [], error: null },
+      scope1_propane: { data: [{ gallons: 1000 }], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredScope1());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.measured).toBe(true);
+    // 1,000 gal × 5.72 kg/gal = 5,720 kg = ~6 mt heating + 54 + 7 = ~67 mt
+    expect(result.current.totalMt).toBeGreaterThan(60);
+    expect(result.current.totalMt).toBeLessThan(75);
+  });
+
+  it('flips to measured on scope1_fleet rows (legacy lowercase fuel_type)', async () => {
+    setNextResponses({
+      fuel_bills: { data: [], error: null },
+      scope1_fleet: { data: [{ fuel_type: 'gasoline', gallons: 1000 }], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredScope1());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.measured).toBe(true);
+    // 1,000 gal × 8.89 kg/gal = 8.89 mt fleet + heating placeholder
+    expect(result.current.totalMt).toBeGreaterThan(1290); // heating placeholder
+  });
+
   it('surfaces a Supabase error as state.error', async () => {
     setNextResponses({ fuel_bills: { data: null, error: { message: 'rls denied' } } });
     const { result } = renderHook(() => useMeasuredScope1());

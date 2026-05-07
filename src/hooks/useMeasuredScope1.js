@@ -47,19 +47,27 @@ export function useMeasuredScope1() {
         // within 30s) reuses the in-flight or recent fetch instead
         // of firing duplicate Supabase round-trips.
         //
-        // Reads from THREE tables:
-        //   1. fuel_bills (legacy + admin-portal CRUD)         → heating
-        //   2. scope1_fleet (initial-schema, admin-form-driven) → fleet
-        //   3. scope1_refrigerants (initial-schema, admin-form) → refrigerants
+        // Reads from FIVE tables (heating × 3 + fleet + refrigerants):
+        //   - fuel_bills          (AdminPortal.js / legacy CRUD)        → heating
+        //   - scope1_heating_oil  (initial schema, /admin/scope-1/heating-oil) → heating
+        //   - scope1_propane      (initial schema, /admin/scope-1/propane)     → heating
+        //   - scope1_fleet        (initial schema, /admin/scope-1/fleet)       → fleet
+        //   - scope1_refrigerants (initial schema, /admin/scope-1/refrigerants) → refrigerants
         //
-        // Phase 11d created `scope1_fleet_records` and
-        // `scope1_refrigerant_logs` migrations as parallel schemas,
-        // but the existing admin pages always wrote to scope1_fleet /
-        // scope1_refrigerants — so the live hook needs to read from
-        // those to actually pick up admin-entered data. composeFleetMt
-        // / composeRefrigerantMt accept BOTH column-name conventions.
-        const [bills, fleet, refrig] = await cachedFetch('scope1', () => Promise.all([
+        // The per-fuel tables (heating_oil / propane) don't store a
+        // fuel_type column — we tag each row before passing to
+        // composeScope1FromBills so the factor lookup works. fuel_bills
+        // already has fuel_type so passes through unchanged.
+        const [bills, oil, propane, fleet, refrig] = await cachedFetch('scope1', () => Promise.all([
           supabase.from('fuel_bills').select('fuel_type, gallons'),
+          supabase.from('scope1_heating_oil').select('gallons').then(
+            (r) => r,
+            () => ({ data: [], error: null })
+          ),
+          supabase.from('scope1_propane').select('gallons').then(
+            (r) => r,
+            () => ({ data: [], error: null })
+          ),
           supabase.from('scope1_fleet').select('fuel_type, gallons').then(
             (r) => r,
             // Tolerate "table does not exist" — falls back to placeholder.
@@ -81,7 +89,17 @@ export function useMeasuredScope1() {
           return;
         }
 
-        const composed = composeScope1FromBills(bills?.data || [], {
+        // Tag the per-fuel tables with their fuel_type so
+        // composeScope1FromBills's factor lookup works on each row.
+        // The merged list is what the helper sees.
+        const taggedOil = (oil?.data || []).map((r) => ({ ...r, fuel_type: 'Heating Oil' }));
+        const taggedPropane = (propane?.data || []).map((r) => ({ ...r, fuel_type: 'Propane' }));
+        const allHeating = [
+          ...(bills?.data || []),
+          ...taggedOil,
+          ...taggedPropane,
+        ];
+        const composed = composeScope1FromBills(allHeating, {
           fleetRecords: fleet?.data || [],
           refrigerantLogs: refrig?.data || [],
         });
