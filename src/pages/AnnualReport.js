@@ -10,6 +10,7 @@ import { rankActions } from '../utils/hotspots.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Trustee / parent-facing annual summary. Designed to print cleanly:
 // no nav, no flashy interactions, every section uses 11pt body type
@@ -18,18 +19,36 @@ import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js'
 // "Print" button uses window.print() — browser handles paper size +
 // margins. The print CSS hides the nav and footer (see App.css).
 
-// Use ANNUAL Scope 2 (Year 1 projection), not YTD. Older code path
-// imported GRID_MIX_TOTAL_MTCO2E here which is the YTD figure — that
-// silently understated the annual report's gross by ~240 mt.
-const SCOPE_TOTALS = { scope1: SCOPE1_TOTAL_MT, scope2: GRID_MIX_ANNUAL_MTCO2E, scope3: SCOPE3_TOTAL_MT };
-const GROSS = SCOPE_TOTALS.scope1 + SCOPE_TOTALS.scope2 + SCOPE_TOTALS.scope3;
-const NET = GROSS - ANNUAL_SEQUESTRATION_MT;
+// First-paint fallback. The component picks up live measured data
+// inside via useMeasuredScopeTotals — these synchronous constants
+// are only used before the Supabase round-trip resolves.
+const SCOPE_TOTALS_FALLBACK = { scope1: SCOPE1_TOTAL_MT, scope2: GRID_MIX_ANNUAL_MTCO2E, scope3: SCOPE3_TOTAL_MT };
+const GROSS_FALLBACK = SCOPE_TOTALS_FALLBACK.scope1 + SCOPE_TOTALS_FALLBACK.scope2 + SCOPE_TOTALS_FALLBACK.scope3;
 
 export default function AnnualReport() {
+  const live = useMeasuredScopeTotals();
+  // Use live measured values everywhere they're available. Falls back
+  // to the synchronous module-level constants on first paint, before
+  // the Supabase fetch resolves. The numbers are identical when no
+  // measured records exist yet (the placeholders ARE the bottom-up
+  // cross-check centrals).
+  const SCOPE_TOTALS = {
+    scope1: live.scope1Mt || SCOPE_TOTALS_FALLBACK.scope1,
+    scope2: live.scope2Mt || SCOPE_TOTALS_FALLBACK.scope2,
+    scope3: live.scope3Mt || SCOPE_TOTALS_FALLBACK.scope3,
+  };
+  const GROSS = live.grossMt || GROSS_FALLBACK;
+  const SINKS = live.sinkMt || Math.round(ANNUAL_SEQUESTRATION_MT);
+  const NET = live.netMt ?? (GROSS_FALLBACK - ANNUAL_SEQUESTRATION_MT);
   const cEq = carbonEquivalents(GROSS);
   const topActions = rankActions(reductionActions).slice(0, 5);
   const targets = reductionTargets;
   const year = new Date().getFullYear();
+  // Provenance string for the AT-A-GLANCE caption + the methodology
+  // section. "{X}/4 measured" tells reviewers how much of the report
+  // is sourced from real records vs the bottom-up cross-check.
+  const measuredCount = live.measuredScopes;
+  const dataAsOf = new Date().toISOString().slice(0, 10);
 
   return (
     <div style={styles.page} className="annual-report">
@@ -50,12 +69,19 @@ export default function AnnualReport() {
         <div style={styles.atGlance}>
           <Headline label="Net annual emissions" value={Math.round(NET).toLocaleString()} unit="mtCO₂e" tone="primary" />
           <Headline label="Per student" value={(NET / TOTAL_STUDENTS).toFixed(2)} unit="mtCO₂e" tone="muted" />
-          <Headline label="Forest sequestration" value={Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} unit="mtCO₂e/yr" tone="good" />
+          <Headline label="Forest sequestration" value={Math.round(SINKS).toLocaleString()} unit="mtCO₂e/yr" tone="good" />
         </div>
+        <p style={styles.dataAsOf} className="data-as-of">
+          Data as of {dataAsOf} · {measuredCount}/4 scope rows composed from measured records
+          {' '}({live.scope1Measured ? 'Scope 1 ✓' : 'Scope 1 estimated'},
+          {' '}Scope 2 ✓ (BMS),
+          {' '}{live.scope3Measured ? 'Scope 3 ✓' : 'Scope 3 estimated'},
+          {' '}{live.sinksMeasured ? 'sinks ✓' : 'sinks estimated'})
+        </p>
         <p style={styles.lede}>
           KUA's gross emissions for {year - 1} are estimated at <strong>{Math.round(GROSS).toLocaleString()} mtCO₂e</strong>.
           The campus's roughly {TOTAL_FOREST_ACRES.toLocaleString()} acres of forest sequester an
-          estimated <strong>{Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e/yr</strong>, leaving a
+          estimated <strong>{Math.round(SINKS).toLocaleString()} mtCO₂e/yr</strong>, leaving a
           net annual figure of <strong>{Math.round(NET).toLocaleString()} mtCO₂e</strong> — roughly
           <strong> {(NET / TOTAL_STUDENTS).toFixed(1)} per enrolled student</strong>. Peer
           residential schools that report figures publicly cluster between 6 and 10
@@ -87,7 +113,7 @@ export default function AnnualReport() {
             <tr>
               <td style={{ ...styles.td, color: '#22c55e' }}>Sinks (forest)</td>
               <td style={styles.td}>~{TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest</td>
-              <td style={{ ...styles.td, textAlign: 'right', color: '#22c55e', fontVariantNumeric: 'tabular-nums' }}>−{Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()}</td>
+              <td style={{ ...styles.td, textAlign: 'right', color: '#22c55e', fontVariantNumeric: 'tabular-nums' }}>−{Math.round(SINKS).toLocaleString()}</td>
               <td style={{ ...styles.td, textAlign: 'right', color: '#22c55e' }}>—</td>
             </tr>
             <tr>
@@ -272,6 +298,7 @@ const styles = {
 
   body: { fontSize: 14, color: '#1f2937', margin: '0 0 12px' },
   lede: { fontSize: 15, color: '#1f2937', lineHeight: 1.7 },
+  dataAsOf: { fontSize: 11, color: '#64748b', marginBottom: 14, marginTop: -6, fontFamily: 'ui-monospace, monospace' },
 
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 13, marginTop: 8 },
   th: { textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #1f2937', fontSize: 11, color: '#1f2937', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, fontFamily: 'inherit' },
