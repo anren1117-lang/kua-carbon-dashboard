@@ -11,6 +11,7 @@
 // page can show an empty/error state.
 
 import { adminFetch } from './adminFetch.js';
+import { invalidate as invalidateMeasuredCache } from '../hooks/measuredCache.js';
 
 /**
  * Record an audit entry. Fire-and-forget — does not throw, does not
@@ -23,6 +24,11 @@ import { adminFetch } from './adminFetch.js';
  * @param {string} [entry.note]        Optional human-readable note
  */
 export function logAdminWrite(entry) {
+  // Wipe the live-data cache so the public dashboard re-fetches on
+  // the next mount. Without this, admins would see their own write
+  // reflected up to 30s late on Executive / Goals / NetEstimate /
+  // AdminDataQuality pages.
+  invalidateMeasuredCache();
   // Use Promise.resolve so the entire call is async-clean — we don't
   // want a synchronous throw from JSON serialization to bubble into
   // the admin's Save click handler.

@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { composeScope3, composeScope3FromRecords } from '../data/scopeTotals.js';
+import { cachedFetch } from './measuredCache.js';
 
 /**
  * @returns {{
@@ -34,14 +35,14 @@ export function useMeasuredScope3() {
 
     async function load() {
       try {
-        const [day, us, intl, sa, fac, waste] = await Promise.all([
+        const [day, us, intl, sa, fac, waste] = await cachedFetch('scope3', () => Promise.all([
           supabase.from('day_students').select('zip_code, school_year'),
           supabase.from('us_boarding_students').select('zip_code, state'),
           supabase.from('international_students').select('country'),
           supabase.from('study_abroad').select('destination_country, destination_city, departure_date, return_date'),
           supabase.from('faculty_travel').select('destination_country, destination_city, trip_purpose'),
           supabase.from('waste').select('waste_type, amount, unit'),
-        ]);
+        ]));
         if (cancelled) return;
 
         // Surface the first error if any one query fails — the

@@ -50,11 +50,16 @@ vi.mock('../supabaseClient.js', () => ({ supabase: makeQueryHarness() }));
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
+import { _resetCacheForTests } from '../hooks/measuredCache.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 
 beforeEach(() => {
   setNextResponses({});
+  // Wipe the dedupe cache so each test starts with a fresh fetch.
+  // Without this, the second test's hook would see the first test's
+  // cached "empty" response and never call our scripted mock.
+  _resetCacheForTests();
 });
 afterEach(() => {
   vi.restoreAllMocks();

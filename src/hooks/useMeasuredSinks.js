@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { composeSinksFromActuals } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES, forestStands } from '../data/sinks.js';
+import { cachedFetch } from './measuredCache.js';
 
 /**
  * @returns {{
@@ -50,10 +51,12 @@ export function useMeasuredSinks() {
         // — return empty data so the placeholder inventory stays in
         // place. Same posture as fleet/refrigerants in
         // useMeasuredScope1.
-        const { data, error } = await supabase
-          .from('forest_stand_actuals')
-          .select('stand_id, name, acres, mtco2e_acre_yr')
-          .then((r) => r, () => ({ data: [], error: null }));
+        const { data, error } = await cachedFetch('sinks', () =>
+          supabase
+            .from('forest_stand_actuals')
+            .select('stand_id, name, acres, mtco2e_acre_yr')
+            .then((r) => r, () => ({ data: [], error: null }))
+        );
         if (cancelled) return;
         if (error) {
           setState((prev) => ({ ...prev, loading: false, error: error.message || 'Supabase error' }));

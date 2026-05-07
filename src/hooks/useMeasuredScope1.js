@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { composeScope1, composeScope1FromBills } from '../data/scopeTotals.js';
+import { cachedFetch } from './measuredCache.js';
 
 /**
  * @returns {{
@@ -42,10 +43,10 @@ export function useMeasuredScope1() {
 
     async function load() {
       try {
-        // Three tables in parallel. Errors on one don't block the
-        // others — composeScope1FromBills falls back to placeholder
-        // for any component whose array is empty.
-        const [bills, fleet, refrig] = await Promise.all([
+        // Cached so a second consumer in the same render tree (or
+        // within 30s) reuses the in-flight or recent fetch instead
+        // of firing duplicate Supabase round-trips.
+        const [bills, fleet, refrig] = await cachedFetch('scope1', () => Promise.all([
           supabase.from('fuel_bills').select('fuel_type, gallons'),
           supabase.from('scope1_fleet_records').select('fuel_type, gallons').then(
             (r) => r,
@@ -58,7 +59,7 @@ export function useMeasuredScope1() {
             (r) => r,
             () => ({ data: [], error: null })
           ),
-        ]);
+        ]));
         if (cancelled) return;
 
         // Surface the FIRST hard error so the caller can show a
