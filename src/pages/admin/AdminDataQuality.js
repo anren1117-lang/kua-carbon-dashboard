@@ -21,17 +21,31 @@ import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 // Each entry maps a Supabase table to which scope component it
 // drives. The .scope label flips to 'measured' in the per-scope
 // progress block when this row count > 0.
+// One row per table the live measured-data hooks actually read from.
+// Phase 32-34 reconciliation: useMeasuredScope1 reads 5 tables and
+// useMeasuredScope3 reads 8, so the data-quality summary needs to
+// list all of them — otherwise admins entering data through the
+// per-scope pages would see "0 rows" on a dashboard that's actually
+// reading from the populated table elsewhere.
 const TABLE_SOURCES = [
-  { table: 'fuel_bills',                label: 'Fuel bills',                 scope: 'Scope 1', tsCol: 'date',           cta: '/admin/legacy' },
-  { table: 'scope1_fleet_records',      label: 'Fleet fuel-card records',    scope: 'Scope 1', tsCol: 'date',           cta: null },
-  { table: 'scope1_refrigerant_logs',   label: 'Refrigerant service logs',   scope: 'Scope 1', tsCol: 'date',           cta: null },
-  { table: 'day_students',              label: 'Day students',               scope: 'Scope 3', tsCol: 'created_at',     cta: '/admin/scope-3' },
-  { table: 'us_boarding_students',      label: 'US boarding students',       scope: 'Scope 3', tsCol: 'created_at',     cta: '/admin/scope-3' },
-  { table: 'international_students',    label: 'International students',     scope: 'Scope 3', tsCol: 'created_at',     cta: '/admin/scope-3' },
-  { table: 'study_abroad',              label: 'Study abroad trips',         scope: 'Scope 3', tsCol: 'departure_date', cta: '/admin/scope-3' },
-  { table: 'faculty_travel',            label: 'Faculty travel',             scope: 'Scope 3', tsCol: 'departure_date', cta: '/admin/scope-3' },
-  { table: 'waste',                     label: 'Waste records',              scope: 'Scope 3', tsCol: 'date',           cta: '/admin/scope-3' },
-  { table: 'forest_stand_actuals',      label: 'Forest stand inventory',     scope: 'Sinks',   tsCol: 'created_at',     cta: '/admin/sinks/stands' },
+  // ─── Scope 1 ──────────────────────────────────────────────────
+  { table: 'fuel_bills',                label: 'Fuel bills (legacy admin portal)', scope: 'Scope 1', tsCol: 'date',          cta: '/admin/legacy' },
+  { table: 'scope1_heating_oil',        label: 'Heating oil deliveries',           scope: 'Scope 1', tsCol: 'delivery_date', cta: '/admin/scope-1/heating-oil' },
+  { table: 'scope1_propane',            label: 'Propane deliveries',               scope: 'Scope 1', tsCol: 'delivery_date', cta: '/admin/scope-1/propane' },
+  { table: 'scope1_fleet',              label: 'Fleet fuel records',               scope: 'Scope 1', tsCol: 'period_end',    cta: '/admin/scope-1/fleet' },
+  { table: 'scope1_refrigerants',       label: 'Refrigerant service logs',         scope: 'Scope 1', tsCol: 'service_date',  cta: '/admin/scope-1/refrigerants' },
+  // ─── Scope 3 — cohorts ────────────────────────────────────────
+  { table: 'day_students',              label: 'Day students',                     scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3' },
+  { table: 'us_boarding_students',      label: 'US boarding students',             scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3' },
+  { table: 'international_students',    label: 'International students',           scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3' },
+  // ─── Scope 3 — trips + waste + spend + commute ────────────────
+  { table: 'study_abroad',              label: 'Study abroad trips',               scope: 'Scope 3', tsCol: 'departure_date',cta: '/admin/scope-3' },
+  { table: 'faculty_travel',            label: 'Faculty travel',                   scope: 'Scope 3', tsCol: 'departure_date',cta: '/admin/scope-3' },
+  { table: 'waste',                     label: 'Waste records',                    scope: 'Scope 3', tsCol: 'date',          cta: '/admin/scope-3' },
+  { table: 'purchased_goods',           label: 'Purchased goods (Cat 1 EEIO)',     scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3/cat1-purchased-goods' },
+  { table: 'commuting',                 label: 'Faculty/staff commute (Cat 7)',    scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3/cat7-commuting' },
+  // ─── Sinks ────────────────────────────────────────────────────
+  { table: 'forest_stand_actuals',      label: 'Forest stand inventory',           scope: 'Sinks',   tsCol: 'created_at',    cta: '/admin/sinks/stands' },
 ];
 
 export default function AdminDataQuality() {
@@ -81,7 +95,7 @@ export default function AdminDataQuality() {
       mt: live.scope1Mt,
       measuredMt: measuredScope1Mt,
       measured: live.scope1Measured,
-      tables: ['fuel_bills', 'scope1_fleet_records', 'scope1_refrigerant_logs'],
+      tables: ['fuel_bills', 'scope1_heating_oil', 'scope1_propane', 'scope1_fleet', 'scope1_refrigerants'],
     },
     {
       label: 'Scope 2 — Electricity (BMS-measured)',
@@ -96,7 +110,7 @@ export default function AdminDataQuality() {
       mt: live.scope3Mt,
       measuredMt: measuredScope3Mt,
       measured: live.scope3Measured,
-      tables: ['day_students', 'us_boarding_students', 'international_students', 'study_abroad', 'faculty_travel', 'waste'],
+      tables: ['day_students', 'us_boarding_students', 'international_students', 'study_abroad', 'faculty_travel', 'waste', 'purchased_goods', 'commuting'],
     },
     {
       label: 'Sinks — Forest sequestration',
