@@ -23,13 +23,23 @@ const QUICK_LINKS = [
 ];
 
 const tableMap = [
-  { table: 'fuel_bills',           label: 'Fuel bills' },
-  { table: 'day_students',         label: 'Day students' },
-  { table: 'us_boarding_students', label: 'US boarding' },
+  // Scope 1 — heating + fleet + refrigerants
+  { table: 'fuel_bills',             label: 'Fuel bills' },
+  { table: 'scope1_heating_oil',     label: 'Heating oil' },
+  { table: 'scope1_propane',         label: 'Propane' },
+  { table: 'scope1_fleet',           label: 'Fleet' },
+  { table: 'scope1_refrigerants',    label: 'Refrigerants' },
+  // Scope 3 — cohorts + travel + waste + spend + commute
+  { table: 'day_students',           label: 'Day students' },
+  { table: 'us_boarding_students',   label: 'US boarding' },
   { table: 'international_students', label: 'International' },
-  { table: 'study_abroad',         label: 'Study abroad' },
-  { table: 'faculty_travel',       label: 'Faculty travel' },
-  { table: 'waste',                label: 'Waste records' },
+  { table: 'study_abroad',           label: 'Study abroad' },
+  { table: 'faculty_travel',         label: 'Faculty travel' },
+  { table: 'waste',                  label: 'Waste' },
+  { table: 'purchased_goods',        label: 'Purchased goods' },
+  { table: 'commuting',              label: 'Commuting' },
+  // Sinks
+  { table: 'forest_stand_actuals',   label: 'Forest stands' },
 ];
 
 // Per-table specs for the unified activity feed. `tsCol` is the
@@ -71,6 +81,41 @@ const FEED_TABLES = [
     table: 'waste', label: 'Waste', tsCol: 'date',
     select: 'date, waste_type, amount, unit',
     summarize: (r) => `${r.amount || '?'} ${r.unit || 'tons'} ${r.waste_type || ''}`.trim(),
+  },
+  {
+    table: 'scope1_heating_oil', label: 'Heating oil', tsCol: 'delivery_date',
+    select: 'delivery_date, gallons, vendor, building_or_tank',
+    summarize: (r) => `${r.gallons || '?'} gal heating oil${r.vendor ? ` • ${r.vendor}` : ''}${r.building_or_tank ? ` • ${r.building_or_tank}` : ''}`.trim(),
+  },
+  {
+    table: 'scope1_propane', label: 'Propane', tsCol: 'delivery_date',
+    select: 'delivery_date, gallons, vendor, building_or_tank',
+    summarize: (r) => `${r.gallons || '?'} gal propane${r.vendor ? ` • ${r.vendor}` : ''}${r.building_or_tank ? ` • ${r.building_or_tank}` : ''}`.trim(),
+  },
+  {
+    table: 'scope1_fleet', label: 'Fleet', tsCol: 'period_end',
+    select: 'period_end, fuel_type, gallons, vehicle_id',
+    summarize: (r) => `${r.gallons || '?'} gal ${r.fuel_type || ''}${r.vehicle_id ? ` • ${r.vehicle_id}` : ''}`.trim(),
+  },
+  {
+    table: 'scope1_refrigerants', label: 'Refrigerants', tsCol: 'service_date',
+    select: 'service_date, refrigerant_type, recharge_lb, reclaim_lb, equipment_id',
+    summarize: (r) => `${r.refrigerant_type || '?'} • +${r.recharge_lb || 0} −${r.reclaim_lb || 0} lb${r.equipment_id ? ` • ${r.equipment_id}` : ''}`,
+  },
+  {
+    table: 'purchased_goods', label: 'Purchased goods', tsCol: 'created_at',
+    select: 'created_at, fiscal_year, purchasing_category, spend_usd',
+    summarize: (r) => `$${(Number(r.spend_usd) || 0).toLocaleString()} • ${r.purchasing_category || '?'}${r.fiscal_year ? ` • FY ${r.fiscal_year}` : ''}`,
+  },
+  {
+    table: 'commuting', label: 'Commute', tsCol: 'created_at',
+    select: 'created_at, employee_role, mode, one_way_miles',
+    summarize: (r) => `${r.employee_role || '?'} • ${r.mode || '?'} • ${r.one_way_miles || '?'} mi one-way`,
+  },
+  {
+    table: 'forest_stand_actuals', label: 'Forest stand', tsCol: 'created_at',
+    select: 'created_at, name, acres, mtco2e_acre_yr',
+    summarize: (r) => `${r.name || '?'} • ${r.acres || '?'} acres × ${r.mtco2e_acre_yr || '?'} mt/acre/yr`,
   },
 ];
 
