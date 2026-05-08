@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useTable, RecordsTable, formStyles as s, today, currentSchoolYear } from '../_shared';
-import { logAdminWrite } from '../../../utils/adminAudit.js';
 import { toCsv, downloadCsv } from '../../../utils/csv.js';
 import CsvImportPanel, { validateForestStandRow } from '../../../components/CsvImportPanel.js';
+
+// useTable now fires logAdminWrite() inside its insert / update / remove
+// (Phase 38), so this page no longer logs explicitly. Removing the
+// inline calls avoids duplicate audit-log entries per admin write.
 
 // Per-stand forest inventory entry. Drives forest_stand_actuals which
 // flips the Sinks page from the hardcoded 7-stand placeholder to the
@@ -82,11 +85,9 @@ function ForestStands() {
     try {
       if (editingId) {
         await update(editingId, payload);
-        logAdminWrite({ action: 'update', table: 'forest_stand_actuals', payload: { id: editingId, ...payload } });
         setMsg({ ok: true, text: `Updated "${payload.name}" (${payload.acres} acres × ${payload.mtco2e_acre_yr} mt/acre/yr = ${(payload.acres * payload.mtco2e_acre_yr).toFixed(1)} mt/yr).` });
       } else {
         await insert(payload);
-        logAdminWrite({ action: 'insert', table: 'forest_stand_actuals', payload });
         setMsg({ ok: true, text: `Saved "${payload.name}" (${payload.acres} acres × ${payload.mtco2e_acre_yr} mt/acre/yr = ${(payload.acres * payload.mtco2e_acre_yr).toFixed(1)} mt/yr).` });
       }
       setForm(empty());
@@ -121,7 +122,6 @@ function ForestStands() {
     if (!window.confirm('Delete this stand? The Sinks page will refresh on next visit.')) return;
     try {
       await remove(id);
-      logAdminWrite({ action: 'delete', table: 'forest_stand_actuals', payload: { id } });
       // If the row being deleted was loaded into the form, drop it.
       if (editingId === id) cancelEdit();
     } catch (err) {

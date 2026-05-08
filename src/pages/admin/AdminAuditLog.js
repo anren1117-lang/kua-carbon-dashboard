@@ -11,17 +11,27 @@ import { fetchAuditLog } from '../../utils/adminAudit.js';
 // this row" question.
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100, 500];
+// Filter options match every table the live measured-data hooks read
+// from. If admin writes ever touch a new table, add it here so the
+// reviewer can scope the audit log to it.
 const TABLE_FILTERS = [
   { value: '', label: 'All tables' },
+  // Scope 1
   { value: 'fuel_bills', label: 'fuel_bills' },
+  { value: 'scope1_heating_oil', label: 'scope1_heating_oil' },
+  { value: 'scope1_propane', label: 'scope1_propane' },
+  { value: 'scope1_fleet', label: 'scope1_fleet' },
+  { value: 'scope1_refrigerants', label: 'scope1_refrigerants' },
+  // Scope 3
   { value: 'day_students', label: 'day_students' },
   { value: 'us_boarding_students', label: 'us_boarding_students' },
   { value: 'international_students', label: 'international_students' },
   { value: 'study_abroad', label: 'study_abroad' },
   { value: 'faculty_travel', label: 'faculty_travel' },
   { value: 'waste', label: 'waste' },
-  { value: 'scope1_fleet_records', label: 'scope1_fleet_records' },
-  { value: 'scope1_refrigerant_logs', label: 'scope1_refrigerant_logs' },
+  { value: 'purchased_goods', label: 'purchased_goods' },
+  { value: 'commuting', label: 'commuting' },
+  // Sinks
   { value: 'forest_stand_actuals', label: 'forest_stand_actuals' },
 ];
 

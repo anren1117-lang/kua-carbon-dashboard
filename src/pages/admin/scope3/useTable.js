@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../supabaseClient';
+import { logAdminWrite } from '../../../utils/adminAudit.js';
 
 export function useTable(table, orderBy = 'created_at', { ascending = false } = {}) {
   const [rows, setRows] = useState([]);
@@ -39,21 +40,29 @@ export function useTable(table, orderBy = 'created_at', { ascending = false } = 
     return () => { requestSeq.current++; };
   }, [refresh]);
 
+  // Every insert/update/delete fires logAdminWrite() so the
+  // /admin/audit-log surface captures EVERY admin write, not just
+  // ones routed through AdminPortal.js. Fire-and-forget — a logging
+  // failure must not block the admin's save click. Same posture
+  // logAdminWrite already takes for invalidating the live-data cache.
   const insert = async (record) => {
     const { error } = await supabase.from(table).insert([record]);
     if (error) throw error;
+    logAdminWrite({ action: 'insert', table, payload: record });
     await refresh();
   };
 
   const update = async (id, record) => {
     const { error } = await supabase.from(table).update(record).eq('id', id);
     if (error) throw error;
+    logAdminWrite({ action: 'update', table, payload: { id, ...record } });
     await refresh();
   };
 
   const remove = async (id) => {
     const { error } = await supabase.from(table).delete().eq('id', id);
     if (error) throw error;
+    logAdminWrite({ action: 'delete', table, payload: { id } });
     await refresh();
   };
 
