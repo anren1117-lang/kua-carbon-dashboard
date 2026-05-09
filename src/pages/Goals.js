@@ -56,6 +56,19 @@ export default function Goals() {
     net: live.netMt ?? ACTUAL_BY_SCOPE_FALLBACK.net,
     energy_kwh: ACTUAL_BY_SCOPE_FALLBACK.energy_kwh,
   };
+  // Per-scope provenance for the current-value marker. Scope 2 +
+  // energy_kwh are always BMS-measured; everything else flips to
+  // 'measured' the moment its underlying admin tables fill in.
+  // gross + net are 'measured' only when ALL contributing scopes
+  // are — partial measurement still flags the row honestly.
+  const PROVENANCE_BY_SCOPE = {
+    gross: live.scope1Measured && live.scope3Measured ? 'measured' : 'estimated',
+    scope1: live.scope1Measured ? 'measured' : 'estimated',
+    scope2: 'measured', // BMS-driven
+    scope3: live.scope3Measured ? 'measured' : 'estimated',
+    net: live.scope1Measured && live.scope3Measured && live.sinksMeasured ? 'measured' : 'estimated',
+    energy_kwh: 'measured', // BMS-driven
+  };
 
   return (
     <ModulePage
@@ -76,6 +89,11 @@ export default function Goals() {
         const actualForTarget = target.id === 'tg_dining_2028'
           ? target.baselineValue
           : (ACTUAL_BY_SCOPE[target.scope] ?? target.baselineValue);
+        // Dining is pinned to baseline, so its current marker is
+        // explicitly estimated regardless of scope-level provenance.
+        const dataProvenance = target.id === 'tg_dining_2028'
+          ? 'estimated'
+          : (PROVENANCE_BY_SCOPE[target.scope] || 'estimated');
         const status = trajectoryStatus(target, actualForTarget, CURRENT_YEAR);
         const accent = SCOPE_ACCENT[target.scope] || '#22d3ee';
 
@@ -106,7 +124,12 @@ export default function Goals() {
                 <div style={styles.progressWrap}>
                   <div style={styles.progressLabel}>
                     <span>Progress: {reductionAchieved.toFixed(1)}% reduced of {reductionNeeded}% needed</span>
-                    <Pill kind={STATUS_KIND[status]}>{STATUS_LABEL[status]}</Pill>
+                    <span style={{ display: 'flex', gap: 6 }}>
+                      <Pill kind={dataProvenance === 'measured' ? 'good' : 'neutral'}>
+                        {dataProvenance === 'measured' ? '✓ Measured' : 'Estimated'}
+                      </Pill>
+                      <Pill kind={STATUS_KIND[status]}>{STATUS_LABEL[status]}</Pill>
+                    </span>
                   </div>
                   <div style={styles.progressTrack}>
                     <div style={{ ...styles.progressFill, width: `${progressPct}%`, background: accent }} />
