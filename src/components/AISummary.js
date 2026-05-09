@@ -79,18 +79,24 @@ export function AISummary() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const tables = {};
-      let total = 0;
-      for (const t of tablesToSurvey) {
-        try {
-          const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
-          tables[t] = count ?? 0;
-          total += count ?? 0;
-        } catch {
-          tables[t] = 0;
-        }
-      }
-      if (!cancelled) setRecords({ totalRecords: total, tables });
+      // Phase 53: parallel — 18 sequential round-trips on first
+      // paint became one batch. Each per-table promise tolerates
+      // "table doesn't exist" by returning 0 so a missing migration
+      // doesn't poison the whole survey.
+      const results = await Promise.all(
+        tablesToSurvey.map(async (t) => {
+          try {
+            const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
+            return [t, count ?? 0];
+          } catch {
+            return [t, 0];
+          }
+        })
+      );
+      if (cancelled) return;
+      const tables = Object.fromEntries(results);
+      const total = results.reduce((s, [, c]) => s + c, 0);
+      setRecords({ totalRecords: total, tables });
     })();
     return () => { cancelled = true; };
   }, []);
