@@ -35,9 +35,9 @@ const TABS = [
   { slug: 'students-intl', label: '✈️ International',         group: 'Student travel',  table: 'international_students', Component: StudentInternational, desc: 'Long-haul flights by home country.' },
   { slug: 'study-abroad',  label: '🌏 Study abroad',          group: 'Student travel',  table: 'study_abroad',           Component: StudyAbroad,          desc: 'School-organized international programs.' },
   { slug: 'faculty',       label: '👔 Faculty / staff travel', group: 'Cat 6 — Travel', table: 'faculty_travel',         Component: Cat6BusinessTravel,   desc: 'Conference / business trips.' },
-  { slug: 'commuting',     label: '🚙 Commuting',             group: 'Cat 7 — Commute', table: null,                    Component: Cat7Commuting,        desc: 'Faculty / staff daily commute, by mode.' },
+  { slug: 'commuting',     label: '🚙 Commuting',             group: 'Cat 7 — Commute', table: 'commuting',              Component: Cat7Commuting,        desc: 'Faculty / staff daily commute, by mode.' },
   { slug: 'waste',         label: '🗑️ Waste',                  group: 'Cat 5 — Waste',  table: 'waste',                  Component: Cat5Waste,            desc: 'Landfill, recycling, composting tonnage.' },
-  { slug: 'goods',         label: '📦 Purchased goods',       group: 'Cat 1 — Goods',   table: null,                    Component: Cat1PurchasedGoods,   desc: 'EEIO spend-based for paper, IT, cleaning, etc.' },
+  { slug: 'goods',         label: '📦 Purchased goods',       group: 'Cat 1 — Goods',   table: 'purchased_goods',        Component: Cat1PurchasedGoods,   desc: 'EEIO spend-based for paper, IT, cleaning, etc.' },
 ];
 
 const DEFAULT_SLUG = TABS[0].slug;
