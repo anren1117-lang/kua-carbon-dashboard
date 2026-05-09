@@ -278,7 +278,14 @@ export default function AnnualReport() {
           <li><strong>Source factors.</strong> Electricity uses ISO-NE 2024 generation mix with per-fuel output emission factors (~0.235 kg CO₂/kWh effective system rate, in eGRID NEWE 2022 published range). Heating fuel uses EPA Greenhouse Gas Emission Factors Hub. Food uses Poore & Nemecek (2018). Waste uses EPA WARM v15. Procurement uses US EPA EEIO v2.0 spend-based.</li>
           <li><strong>Forest sequestration</strong> uses stand-specific accumulation rates from Birdsey (1992) for closed-canopy and Nowak (2013) for open-grown trees.</li>
           <li><strong>This report is preliminary.</strong> Until the data ingestion pipeline is fully populated, Scope 1 and Scope 3 are bottom-up cross-check estimates: Scope 1 ~1,350 mt central (range 891–1,867), Scope 3 ~2,635 mt central (range 1,726–3,720), sinks ~2,650 mt central (range 2,100–2,650). Full per-component method-by-method breakdown at <em>/admin/methodology</em>.</li>
-          <li><strong>Audit trail.</strong> Every emission factor in the dashboard carries its citation and year. The full registry is at <em>/data-admin</em>.</li>
+          <li><strong>Live data sources active.</strong> {' '}
+            {live.scope1Measured ? 'Scope 1 reads live from the heating-oil + propane + fleet + refrigerant admin tables. ' : 'Scope 1 still on the bottom-up cross-check. '}
+            Scope 2 always reads live BMS-measured kWh × ISO-NE 2024 grid factors.
+            {' '}{live.scope3Measured ? 'Scope 3 reads live from the eight cohort + travel + waste + spend + commute tables. ' : 'Scope 3 still on the bottom-up cross-check. '}
+            {live.sinksMeasured ? 'Forest sequestration reads live from the per-stand inventory.' : 'Sinks still on the hardcoded 7-stand placeholder.'}
+            {' '}On-site renewables (solar / geothermal / wind) are reported separately at <em>/renewables</em>.
+          </li>
+          <li><strong>Audit trail.</strong> Every emission factor in the dashboard carries its citation and year. The full registry is at <em>/data-admin</em>; every admin write is captured in <em>/admin/audit-log</em> for accreditation review.</li>
         </ul>
       </Section>
 
