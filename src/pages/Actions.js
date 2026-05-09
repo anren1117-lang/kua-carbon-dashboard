@@ -203,6 +203,7 @@ export default function Actions() {
                     style={{ ...styles.cardBody, background: 'transparent', border: 'none', textAlign: 'left', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
                     onClick={() => setExpanded(isExpanded ? null : action.id)}
                     aria-expanded={isExpanded}
+                    aria-controls={`action-detail-${action.id}`}
                   >
                     <div style={{ flex: 1 }}>
                       <div style={styles.rankLine}>
