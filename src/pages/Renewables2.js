@@ -4,6 +4,7 @@ import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { solarSites, solarMonthly, SOLAR_ANNUAL_KWH, SOLAR_ANNUAL_EXPORT_KWH } from '../data/renewables.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
 import { getBuilding } from '../data/buildings.js';
+import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
 
 // Renewables OS module — solar generation, exports, avoided emissions.
 // Mirrors the "Solar" section of the Eclypse campus dashboard. Lives at
@@ -13,11 +14,21 @@ import { getBuilding } from '../data/buildings.js';
 const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
 export default function Renewables() {
+  const live = useMeasuredRenewables();
   const operational = solarSites.filter((s) => s.status === 'operational');
   const planned     = solarSites.filter((s) => s.status === 'planned');
 
-  const annualMt = (SOLAR_ANNUAL_KWH * KG_PER_KWH) / 1000;
-  const annualSelfConsumed = SOLAR_ANNUAL_KWH - SOLAR_ANNUAL_EXPORT_KWH;
+  // When admins have entered solar records, use those for the
+  // headline metrics; otherwise fall back to the model-anchored
+  // SOLAR_ANNUAL_KWH (April BMS-anchored × NREL PVWatts seasonal
+  // shape) and the cited grid factor.
+  const useMeasured = live.solarMeasured && live.solar.grossKwh > 0;
+  const annualKwh = useMeasured ? live.solar.grossKwh : SOLAR_ANNUAL_KWH;
+  const annualMt = useMeasured ? live.solar.totalAvoidedMt : (SOLAR_ANNUAL_KWH * KG_PER_KWH) / 1000;
+  const annualSelfConsumed = useMeasured
+    ? live.solar.selfKwh
+    : SOLAR_ANNUAL_KWH - SOLAR_ANNUAL_EXPORT_KWH;
+  const selfPct = annualKwh > 0 ? Math.round((annualSelfConsumed / annualKwh) * 100) : 0;
   const peak = solarMonthly.reduce((p, m) => Math.max(p, m.kwhGenerated), 0);
 
   return (
@@ -25,18 +36,43 @@ export default function Renewables() {
       title="Renewables"
       subtitle="On-campus solar, geothermal, and wind. Generation pulls inverter data through the same adapter pattern as electricity meters — currently mock for the Whittemore array, which goes live in 2026."
     >
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <Pill kind={useMeasured ? 'good' : 'neutral'}>
+          {useMeasured ? `✓ Measured · ${live.solar.periodCount} record${live.solar.periodCount === 1 ? '' : 's'}` : 'Model-anchored projection'}
+        </Pill>
+        {live.geothermalMeasured && (
+          <Pill kind="good">✓ Geothermal measured</Pill>
+        )}
+        {live.windMeasured && (
+          <Pill kind="neutral">Wind documented</Pill>
+        )}
+      </div>
+
       <MetricGrid metrics={[
-        { label: 'Annual generation',  value: SOLAR_ANNUAL_KWH.toLocaleString(),  unit: 'kWh', accent: '#22c55e' },
-        { label: 'Avoided emissions',  value: annualMt.toFixed(2),                unit: 'mtCO₂e/yr', accent: '#86efac' },
-        { label: 'Self-consumed',      value: `${Math.round(annualSelfConsumed / SOLAR_ANNUAL_KWH * 100)}%`, accent: '#fbbf24', note: 'On-site, no export' },
+        { label: 'Annual generation',  value: annualKwh.toLocaleString(),  unit: 'kWh', accent: '#22c55e' },
+        { label: 'Avoided emissions',  value: annualMt.toFixed(2),         unit: 'mtCO₂e/yr', accent: '#86efac' },
+        { label: 'Self-consumed',      value: `${selfPct}%`, accent: '#fbbf24', note: useMeasured ? `${annualSelfConsumed.toLocaleString()} kWh` : 'On-site, no export' },
         { label: 'Operational sites',  value: operational.length, accent: '#22d3ee', note: `${planned.length} more planned` },
       ]} />
+
+      {live.geothermalMeasured && live.geothermal.kwhInput > 0 && (
+        <ModuleSection
+          title="Geothermal — measured counterfactual"
+          hint="Avoided fossil emissions from heat pumps displacing heating oil + propane."
+        >
+          <MetricGrid metrics={[
+            { label: 'Electricity consumed', value: live.geothermal.kwhInput.toLocaleString(), unit: 'kWh', accent: '#22d3ee' },
+            { label: 'Thermal delivered',    value: live.geothermal.thermalMmbtu.toFixed(1),   unit: 'MMBtu', accent: '#fbbf24', note: 'kWh × COP × 3412 BTU/kWh' },
+            { label: 'Avoided fossil',       value: live.geothermal.avoidedFossilMt.toFixed(2), unit: 'mtCO₂e/yr', accent: '#86efac', note: `Heating oil ${live.geothermal.byFuel.heating_oil.toFixed(2)} · Propane ${live.geothermal.byFuel.propane.toFixed(2)}` },
+          ]} />
+        </ModuleSection>
+      )}
 
       <ModuleSection
         title="Annual generation as energy equivalents"
         hint="One way to read 'kWh generated': how many of these would the same energy run?"
       >
-        <EnergyEquivalents kwh={SOLAR_ANNUAL_KWH} label="A year of campus solar generates roughly" />
+        <EnergyEquivalents kwh={annualKwh} label={useMeasured ? 'A year of measured campus solar generates roughly' : 'A year of campus solar generates roughly'} />
       </ModuleSection>
 
       <ModuleSection

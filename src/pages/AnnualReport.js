@@ -126,6 +126,52 @@ export default function AnnualReport() {
         </table>
       </Section>
 
+      {live.scope3Measured && Array.isArray(live.scope3CohortDetail) && live.scope3CohortDetail.length > 0 && (
+        <Section title="Scope 3 breakdown by cohort">
+          <p style={styles.body}>
+            The Scope 3 figure above sums four cohort-level rows. Each is a live row count from the
+            admin tables × the cited per-cohort or per-trip factor cited in <em>/admin/methodology</em>.
+          </p>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Cohort</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Count</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Per-student</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>mtCO₂e/yr</th>
+                <th style={styles.th}>Provenance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {live.scope3CohortDetail.map((c) => (
+                <tr key={c.cohort}>
+                  <td style={styles.td}>
+                    <div style={{ fontWeight: 600 }}>{c.label}</div>
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 4, lineHeight: 1.4 }}>{c.method}</div>
+                  </td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{c.count.toLocaleString()}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: '#94a3b8' }}>
+                    {c.perStudentMt !== null ? `${c.perStudentMt} mt` : '—'}
+                  </td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{c.mt.toLocaleString()}</td>
+                  <td style={styles.td}>
+                    <span style={{
+                      fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 700,
+                      textTransform: 'uppercase', letterSpacing: 0.6,
+                      background: c.provenance === 'measured' ? '#0e3a1f' : '#1f2937',
+                      color: c.provenance === 'measured' ? '#86efac' : '#94a3b8',
+                      border: `1px solid ${c.provenance === 'measured' ? '#16a34a' : '#475569'}`,
+                    }}>
+                      {c.provenance === 'measured' ? '✓ measured' : 'estimated'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      )}
+
       <Section title="Electricity supply">
         <p style={styles.body}>
           KUA's ~{COMPOSED_ANNUAL_KWH.toLocaleString()} kWh of Year 1 projected annual electricity ({GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured YTD through {COMPOSED_YTD_AS_OF}, seasonally projected) comes through the ISO New England regional grid. The 2024 system mix was:
