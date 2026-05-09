@@ -246,6 +246,8 @@ export default function AdminAuditLog() {
                         <button
                           type="button"
                           style={styles.expandBtn}
+                          aria-expanded={isOpen}
+                          aria-controls={`audit-payload-${row.id}`}
                           onClick={() => setExpanded(isOpen ? null : row.id)}
                         >
                           {isOpen ? 'Hide' : 'Show'} payload
@@ -256,7 +258,7 @@ export default function AdminAuditLog() {
                   {isOpen && row.payload && (
                     <tr>
                       <td colSpan={5} style={styles.payloadCell}>
-                        <pre style={styles.payload}>{JSON.stringify(row.payload, null, 2)}</pre>
+                        <pre id={`audit-payload-${row.id}`} style={styles.payload}>{JSON.stringify(row.payload, null, 2)}</pre>
                       </td>
                     </tr>
                   )}
