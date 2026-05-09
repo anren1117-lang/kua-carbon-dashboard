@@ -343,11 +343,14 @@ function LessonEditorContent() {
 }
 
 function Field({ label, children }) {
+  // Real <label> element wraps the control so screen readers
+  // announce the label when the input gets focus. The visual
+  // styling stays the same — labels render block-level by default.
   return (
-    <div>
+    <label style={{ display: 'block' }}>
       <div style={styles.label}>{label}</div>
       {children}
-    </div>
+    </label>
   );
 }
 
