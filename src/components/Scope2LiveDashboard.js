@@ -480,7 +480,13 @@ export function Scope2LiveDashboard() {
 
           {buildingsWithEmissions.map((b, i) => (
             <div key={i} style={styles.card}>
-              <div style={styles.cardHeader} onClick={() => setExpandedBuilding(expandedBuilding === i ? null : i)}>
+              <button
+                type="button"
+                style={{ ...styles.cardHeader, background: 'transparent', border: 'none', textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+                aria-expanded={expandedBuilding === i}
+                aria-controls={`s2-building-${i}`}
+                onClick={() => setExpandedBuilding(expandedBuilding === i ? null : i)}
+              >
                 <div>
                   <p style={styles.cardName}>
                     <span style={{...styles.categoryDot, backgroundColor: b.category === 'Academic' ? '#ef4444' : b.category === 'Athletic' ? '#3b82f6' : b.category === 'Dorm' ? '#22c55e' : '#9ca3af'}}></span>
@@ -489,10 +495,10 @@ export function Scope2LiveDashboard() {
                   <p style={styles.cardStats}>{b.energyUsed.toLocaleString()} kW-hr | {b.emissions} mtCO2e | {b.percentOfTotal}%</p>
                 </div>
                 <span style={styles.arrow}>{expandedBuilding === i ? '▼' : '▶'}</span>
-              </div>
+              </button>
               <div style={styles.bar}><div style={{...styles.barFill, width: `${parseFloat(b.percentOfTotal) * 3}%`, backgroundColor: b.category === 'Academic' ? '#ef4444' : b.category === 'Athletic' ? '#3b82f6' : b.category === 'Dorm' ? '#22c55e' : '#9ca3af'}} /></div>
               {expandedBuilding === i && (
-                <div style={styles.details}>
+                <div id={`s2-building-${i}`} style={styles.details}>
                   <div style={styles.detailGrid}>
                     <div><strong>Category:</strong> {b.category}</div>
                     <div><strong>Energy Used:</strong> {b.energyUsed.toLocaleString()} kW-hr</div>
@@ -517,7 +523,13 @@ export function Scope2LiveDashboard() {
           
           {emissionsData.map((s, i) => (
             <div key={i} style={styles.sourceCard}>
-              <div style={styles.sourceHeader} onClick={() => setExpandedSource(expandedSource === i ? null : i)}>
+              <button
+                type="button"
+                style={{ ...styles.sourceHeader, background: 'transparent', border: 'none', textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+                aria-expanded={expandedSource === i}
+                aria-controls={`s2-source-${i}`}
+                onClick={() => setExpandedSource(expandedSource === i ? null : i)}
+              >
                 <div>
                   <p style={styles.sourceName}>{s.source}</p>
                   <p style={styles.sourceStats}>
@@ -525,11 +537,11 @@ export function Scope2LiveDashboard() {
                   </p>
                 </div>
                 <span style={styles.arrow}>{expandedSource === i ? '▼' : '▶'}</span>
-              </div>
+              </button>
               <div style={styles.bar}><div style={{...styles.barFill, width: `${s.mixPercent * 2}%`, backgroundColor: s.color}} /></div>
-              
+
               {expandedSource === i && (
-                <div style={styles.sourceDetails}>
+                <div id={`s2-source-${i}`} style={styles.sourceDetails}>
                   <div style={styles.detailBlock}>
                     <h4 style={styles.detailHeader}>⚡ How It Works</h4>
                     <p style={styles.detailText}>{s.howItWorks}</p>

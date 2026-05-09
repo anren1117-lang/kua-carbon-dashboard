@@ -140,7 +140,13 @@ function TeacherContent() {
             const isOpen = expanded === m.id;
             return (
               <div key={m.id} style={styles.lessonCard}>
-                <div style={styles.lessonHead} onClick={() => setExpanded(isOpen ? null : m.id)}>
+                <button
+                  type="button"
+                  style={{ ...styles.lessonHead, background: 'transparent', border: 'none', textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+                  aria-expanded={isOpen}
+                  aria-controls={`teacher-lesson-${m.id}`}
+                  onClick={() => setExpanded(isOpen ? null : m.id)}
+                >
                   <div style={{ flex: 1 }}>
                     <div style={styles.lessonTitle}>{m.title}</div>
                     <div style={styles.lessonMeta}>
@@ -149,9 +155,9 @@ function TeacherContent() {
                     </div>
                   </div>
                   <span style={styles.arrow}>{isOpen ? '▼' : '▶'}</span>
-                </div>
+                </button>
                 {isOpen && (
-                  <div style={styles.lessonBody}>
+                  <div id={`teacher-lesson-${m.id}`} style={styles.lessonBody}>
                     <p style={styles.lessonSummary}>{m.summary}</p>
                     <div style={styles.lessonLabel}>Learning goals</div>
                     <ul style={styles.lessonList}>
