@@ -25,25 +25,29 @@ const QUICK_LINKS = [
   { to: '/admin/actions',       icon: '✎',  label: 'Add a custom action', desc: 'Type an action; AI estimates carbon impact + cost.' },
 ];
 
-const tableMap = [
-  // Scope 1 — heating + fleet + refrigerants
-  { table: 'fuel_bills',             label: 'Fuel bills' },
-  { table: 'scope1_heating_oil',     label: 'Heating oil' },
-  { table: 'scope1_propane',         label: 'Propane' },
-  { table: 'scope1_fleet',           label: 'Fleet' },
-  { table: 'scope1_refrigerants',    label: 'Refrigerants' },
-  // Scope 3 — cohorts + travel + waste + spend + commute
-  { table: 'day_students',           label: 'Day students' },
-  { table: 'us_boarding_students',   label: 'US boarding' },
-  { table: 'international_students', label: 'International' },
-  { table: 'study_abroad',           label: 'Study abroad' },
-  { table: 'faculty_travel',         label: 'Faculty travel' },
-  { table: 'waste',                  label: 'Waste' },
-  { table: 'purchased_goods',        label: 'Purchased goods' },
-  { table: 'commuting',              label: 'Commuting' },
-  // Sinks
-  { table: 'forest_stand_actuals',   label: 'Forest stands' },
-];
+// Short labels for the bottom-of-page record-counts grid. The
+// canonical labels in ADMIN_TABLE_SOURCES are reviewer-friendly (e.g.
+// "Fuel bills (legacy admin portal)"); here we want the shortest
+// thing that fits in a 6-column grid.
+const SHORT_LABELS = {
+  fuel_bills: 'Fuel bills',
+  scope1_heating_oil: 'Heating oil',
+  scope1_propane: 'Propane',
+  scope1_fleet: 'Fleet',
+  scope1_refrigerants: 'Refrigerants',
+  day_students: 'Day students',
+  us_boarding_students: 'US boarding',
+  international_students: 'International',
+  study_abroad: 'Study abroad',
+  faculty_travel: 'Faculty travel',
+  waste: 'Waste',
+  purchased_goods: 'Purchased goods',
+  commuting: 'Commuting',
+  forest_stand_actuals: 'Forest stands',
+  renewables_solar: 'Solar',
+  renewables_geothermal: 'Geothermal',
+  renewables_wind: 'Wind',
+};
 
 // Per-table specs for the unified activity feed. `tsCol` is the
 // column we sort by (varies — fuel_bills uses `date`, students use
@@ -137,28 +141,10 @@ export default function AdminHome() {
   // inventory table to render here.
   const [freshness, setFreshness] = useState(null); // null | { fresh, aging, stale, empty, irregular, staleTables }
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const results = await Promise.all(
-          tableMap.map(({ table }) => supabase.from(table).select('*', { count: 'exact', head: true }))
-        );
-        if (cancelled) return;
-        const next = {};
-        results.forEach((r, i) => { next[tableMap[i].table] = r.count ?? '—'; });
-        setCounts(next);
-      } catch (err) {
-        if (!cancelled) setError(err.message);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // Freshness summary: per-table count + most-recent-timestamp,
-  // bucketed by cadence. Same data as AdminDataQuality's
-  // FreshnessSummary, but here we only render the aggregate counts +
-  // the names of the worst offenders.
+  // Combined count + freshness fetch. Both the bottom-of-page record
+  // counts grid and the top-of-page freshness alert read the same
+  // 17 tables, so we do it in one round-trip and split the result
+  // into the two state slices.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -172,23 +158,31 @@ export default function AdminHome() {
               ]);
               const lastUpdated = Array.isArray(data) && data.length > 0 ? data[0][src.tsCol] : null;
               return { src, count: count ?? 0, lastUpdated };
-            } catch {
+            } catch (err) {
               // Tolerate "table doesn't exist yet" the same way the
               // live-measured hooks do — empty stats, no error pill.
-              return { src, count: 0, lastUpdated: null };
+              return { src, count: 0, lastUpdated: null, error: err };
             }
           })
         );
         if (cancelled) return;
+        const nextCounts = {};
         const tally = { fresh: 0, aging: 0, stale: 0, empty: 0, irregular: 0, unknown: 0 };
         const staleTables = [];
+        let firstError = null;
         for (const r of results) {
+          nextCounts[r.src.table] = r.count;
+          if (r.error && !firstError) firstError = r.error;
           const bucket = freshnessBucket({ count: r.count, lastUpdated: r.lastUpdated }, r.src.cadence);
           tally[bucket] += 1;
           if (bucket === 'stale') staleTables.push(r.src.label);
         }
+        setCounts(nextCounts);
         setFreshness({ ...tally, staleTables });
-      } catch { /* non-critical; skip */ }
+        if (firstError) setError(firstError.message || 'fetch failed');
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -402,12 +396,12 @@ export default function AdminHome() {
         </Section>
       )}
 
-      <Section title="Supabase record counts" hint="Rows currently in each Supabase table. Falls back to '—' if the database isn't reachable.">
+      <Section title="Supabase record counts" hint="Rows currently in each Supabase table. Falls back to '…' while loading or '—' if the database isn't reachable.">
         {error && <div style={styles.error}>Error: {error}</div>}
         <div style={styles.recordGrid}>
-          {tableMap.map(({ table, label }) => (
+          {ADMIN_TABLE_SOURCES.map(({ table }) => (
             <div key={table} style={styles.recordCell}>
-              <div style={styles.recordLabel}>{label}</div>
+              <div style={styles.recordLabel}>{SHORT_LABELS[table] || table}</div>
               <div style={styles.recordValue}>{counts[table] ?? '…'}</div>
             </div>
           ))}
