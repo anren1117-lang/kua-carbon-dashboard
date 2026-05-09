@@ -6,6 +6,7 @@ import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
 import { adminFetch } from '../../utils/adminFetch.js';
+import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 
 // Admin-only AI-driven institutional plan. Three-step flow stored in
 // localStorage:
@@ -89,6 +90,11 @@ function contextIsComplete(c) {
 }
 
 export default function AdminPlanAgent() {
+  // Phase 61: pull live measured totals so the AI plan agent gets the
+  // most accurate possible context. Falls back to the synchronous
+  // module-level constants on first paint and when no admin records
+  // have been entered.
+  const live = useMeasuredScopeTotals();
   // Persist only the user-editable fields. Canonical KUA totals
   // (grossMt, sinksMt, enrollment) come fresh from the data layer
   // every time so a stale localStorage snapshot can't override an
@@ -104,6 +110,18 @@ export default function AdminPlanAgent() {
       enrollment: fresh.enrollment,
     };
   });
+
+  // When live totals resolve (or update), refresh the context's
+  // grossMt + sinksMt so the AI sees measured values instead of the
+  // placeholder. Doesn't overwrite user-editable fields.
+  useEffect(() => {
+    if (live.loading) return;
+    setContext((prev) => ({
+      ...prev,
+      grossMt: live.grossMt || prev.grossMt,
+      sinksMt: live.sinkMt   || prev.sinksMt,
+    }));
+  }, [live.loading, live.grossMt, live.sinkMt]);
   const [plan, setPlan] = useState(() => loadJson(PLAN_KEY, null));
   const [history, setHistory] = useState(() => loadJson(HISTORY_KEY, { completed: [], declined: [] }));
   const [loading, setLoading] = useState(false);
@@ -222,10 +240,14 @@ export default function AdminPlanAgent() {
           <summary style={styles.sourcesSummary}>Where do these numbers come from?</summary>
           <div style={styles.provenanceLegend}><ProvenanceLegend compact /></div>
           <div style={styles.contextProvList}>
-            <CtxRow provenance="estimated" label={`Scope 1 (${SCOPE1_TOTAL_MT.toLocaleString()} mt/yr)`}
-              today="Hand-set placeholder for heating fuel + refrigerants + fleet, sized to typical NH boarding-school footprints. KUA fuel deliveries and refrigerant logs have not been integrated."
+            <CtxRow
+              provenance={live.scope1Measured ? 'measured' : 'estimated'}
+              label={`Scope 1 (${(live.scope1Mt || SCOPE1_TOTAL_MT).toLocaleString()} mt/yr)`}
+              today={live.scope1Measured
+                ? 'Live across 5 admin tables: fuel_bills + scope1_heating_oil + scope1_propane + scope1_fleet + scope1_refrigerants. Replaces the bottom-up cross-check the moment any of those tables fill in.'
+                : 'Hand-set placeholder for heating fuel + refrigerants + fleet, sized to typical NH boarding-school footprints. KUA fuel deliveries and refrigerant logs have not been integrated.'}
               target="Annual fuel-delivery invoices (heating oil + propane) per building × EPA Stationary Combustion factors. HVAC technician service-report mass balance × IPCC AR6 GWP100 for refrigerants. Fleet fuel-card records × EPA gasoline/diesel factors. Flips estimated → measured."
-              sourcePath="src/pages/Executive.js SCOPE_TOTALS.scope1Mt" />
+              sourcePath="src/hooks/useMeasuredScope1.js" />
             <CtxRow provenance="measured" label={`Scope 2 kWh (${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh Year 1 / ${COMPOSED_YTD_KWH.toLocaleString()} kWh YTD)`}
               today="KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03 (123 days into 2026)."
               target="Already measured. Improvement: drop the seasonally-anchored ×2.5 annualization once a full year of BMS data is captured."
@@ -234,14 +256,22 @@ export default function AdminPlanAgent() {
               today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range."
               target="Already at target methodology. Refresh as eGRID NEWE 2024 publishes (expected late 2026)."
               sourcePath="src/data/gridMix.js" />
-            <CtxRow provenance="estimated" label={`Scope 3 (${SCOPE3_TOTAL_MT.toLocaleString()} mt/yr)`}
-              today="Hand-set order-of-magnitude figure for student travel + dining + waste + procurement + commuting + upstream fuel. No measured inventory of any of these categories exists yet."
+            <CtxRow
+              provenance={live.scope3Measured ? 'measured' : 'estimated'}
+              label={`Scope 3 (${(live.scope3Mt || SCOPE3_TOTAL_MT).toLocaleString()} mt/yr)`}
+              today={live.scope3Measured
+                ? 'Live across 8 admin tables: cohort counts (day / US / international), trip-level (study_abroad + faculty_travel), waste, purchased_goods (Cat 1), commuting (Cat 7).'
+                : 'Hand-set order-of-magnitude figure for student travel + dining + waste + procurement + commuting + upstream fuel. No measured inventory of any of these categories exists yet.'}
               target="Student travel: KUA travel office departure logs + ICAO calculator. Dining: Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream) × EPA WARM v15.1. Procurement: Business Office spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fuel-economy. Each subcategory ships independently → cited."
-              sourcePath="src/pages/Executive.js SCOPE_TOTALS.scope3Mt" />
-            <CtxRow provenance="estimated" label={`Sinks (${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt/yr)`}
-              today='7 named forest stands × per-acre sequestration rates (IPCC LULUCF defaults: mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2). Stand names ("North Hill", "Potato Patch", "Chellis Pond riparian", etc.) and per-stand acreages are placeholders.'
+              sourcePath="src/hooks/useMeasuredScope3.js" />
+            <CtxRow
+              provenance={live.sinksMeasured ? 'measured' : 'estimated'}
+              label={`Sinks (${(live.sinkMt || Math.round(ANNUAL_SEQUESTRATION_MT)).toLocaleString()} mt/yr)`}
+              today={live.sinksMeasured
+                ? 'Live from forest_stand_actuals — per-stand acres × cited mt/acre/yr rates. Replaces the hardcoded inventory the moment any stands are entered.'
+                : '7 named forest stands × per-acre sequestration rates (IPCC LULUCF defaults: mature mixed hardwood 2.4–2.8 mt/acre/yr; transitional 2.6–3.2; softwood 1.9; open-grown 4.2). Stand names ("North Hill", "Potato Patch", "Chellis Pond riparian", etc.) and per-stand acreages are placeholders.'}
               target="Commission a USFS Forest Inventory & Analysis-style stand survey of the actual KUA woodlot — species composition, age class, basal area, real per-stand acreage. IPCC per-acre rates stay; inputs become real. Flips estimated → cited."
-              sourcePath="src/data/sinks.js forestStands" />
+              sourcePath="src/hooks/useMeasuredSinks.js" />
             <CtxRow provenance="cited" label={`Total forest acres (~1,000)`}
               today='KUA disclosure ("campus is 1,300 acres total, ~1,000 forested") corroborated by Wikipedia. Real number.'
               target="No upgrade needed. The acres figure is solid; only the per-stand subdivision is the placeholder." />
