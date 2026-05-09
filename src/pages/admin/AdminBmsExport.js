@@ -153,13 +153,19 @@ function MeterRow({ meter, mappedTo, buildings, onMap }) {
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
           </select>
-          <button type="button" style={styles.expandBtn} onClick={() => setExpanded((v) => !v)}>
+          <button
+            type="button"
+            style={styles.expandBtn}
+            aria-expanded={expanded}
+            aria-controls={`bms-meter-detail-${meter.id}`}
+            onClick={() => setExpanded((v) => !v)}
+          >
             {expanded ? 'Hide' : 'Detail'}
           </button>
         </div>
       </div>
       {expanded && (
-        <div style={styles.detailGrid}>
+        <div id={`bms-meter-detail-${meter.id}`} style={styles.detailGrid}>
           <div>
             <div style={styles.detailTitle}>Hour-of-day load shape (mean kW)</div>
             <HourlyBars hourly={meter.hourly} />

@@ -115,19 +115,31 @@ export function AISummary() {
           <span style={styles.badge}>AI-generated · grounded</span>
           <span style={styles.title}>In plain English</span>
         </div>
-        <div style={styles.body}>
+        <div id="ai-summary-body" style={styles.body}>
           {visibleSentences.map((s, i) => <p key={i} style={{ margin: i === 0 ? 0 : '8px 0 0' }}>{s}</p>)}
         </div>
-        <button type="button" style={styles.toggle} onClick={() => setShowFull((v) => !v)}>
+        <button
+          type="button"
+          style={styles.toggle}
+          aria-expanded={showFull}
+          aria-controls="ai-summary-body"
+          onClick={() => setShowFull((v) => !v)}
+        >
           {showFull ? 'Show less' : 'Read full summary'}
         </button>
         {showFull && (
-          <button type="button" style={{ ...styles.toggle, marginLeft: 8 }} onClick={() => setShowCalc((v) => !v)}>
+          <button
+            type="button"
+            style={{ ...styles.toggle, marginLeft: 8 }}
+            aria-expanded={showCalc}
+            aria-controls="ai-summary-calc"
+            onClick={() => setShowCalc((v) => !v)}
+          >
             {showCalc ? 'Hide calculation' : 'Show calculation'}
           </button>
         )}
         {showCalc && (
-          <pre style={styles.calc}>
+          <pre id="ai-summary-calc" style={styles.calc}>
 {`gross = scope1 + scope2 + scope3
       = ${PRELIM.scope1} + ${PRELIM.scope2} + ${PRELIM.scope3}
       = ${gross.toLocaleString()} mtCO₂e/yr
