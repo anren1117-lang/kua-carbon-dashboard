@@ -28,29 +28,35 @@ import { freshnessBucket, daysSince, FRESHNESS_PILL_STYLES } from '../../utils/f
 // list all of them — otherwise admins entering data through the
 // per-scope pages would see "0 rows" on a dashboard that's actually
 // reading from the populated table elsewhere.
+// Cadence guides which freshness bucket thresholds apply per table.
+//   monthly:   fuel deliveries, waste haul-outs, BMS-period rollups
+//   quarterly: business-office spend rollups
+//   annual:    student rosters, commute survey
+//   irregular: event-driven (refrigerant service, trip-level travel,
+//              forest walk-throughs, wind asset status)
 const TABLE_SOURCES = [
   // ─── Scope 1 ──────────────────────────────────────────────────
-  { table: 'fuel_bills',                label: 'Fuel bills (legacy admin portal)', scope: 'Scope 1', tsCol: 'date',          cta: '/admin/legacy' },
-  { table: 'scope1_heating_oil',        label: 'Heating oil deliveries',           scope: 'Scope 1', tsCol: 'delivery_date', cta: '/admin/scope-1/heating-oil' },
-  { table: 'scope1_propane',            label: 'Propane deliveries',               scope: 'Scope 1', tsCol: 'delivery_date', cta: '/admin/scope-1/propane' },
-  { table: 'scope1_fleet',              label: 'Fleet fuel records',               scope: 'Scope 1', tsCol: 'period_end',    cta: '/admin/scope-1/fleet' },
-  { table: 'scope1_refrigerants',       label: 'Refrigerant service logs',         scope: 'Scope 1', tsCol: 'service_date',  cta: '/admin/scope-1/refrigerants' },
+  { table: 'fuel_bills',                label: 'Fuel bills (legacy admin portal)', scope: 'Scope 1', tsCol: 'date',          cadence: 'monthly',   cta: '/admin/legacy' },
+  { table: 'scope1_heating_oil',        label: 'Heating oil deliveries',           scope: 'Scope 1', tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/heating-oil' },
+  { table: 'scope1_propane',            label: 'Propane deliveries',               scope: 'Scope 1', tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/propane' },
+  { table: 'scope1_fleet',              label: 'Fleet fuel records',               scope: 'Scope 1', tsCol: 'period_end',    cadence: 'monthly',   cta: '/admin/scope-1/fleet' },
+  { table: 'scope1_refrigerants',       label: 'Refrigerant service logs',         scope: 'Scope 1', tsCol: 'service_date',  cadence: 'irregular', cta: '/admin/scope-1/refrigerants' },
   // ─── Scope 3 — cohorts ────────────────────────────────────────
-  { table: 'day_students',              label: 'Day students',                     scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3' },
-  { table: 'us_boarding_students',      label: 'US boarding students',             scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3' },
-  { table: 'international_students',    label: 'International students',           scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3' },
+  { table: 'day_students',              label: 'Day students',                     scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
+  { table: 'us_boarding_students',      label: 'US boarding students',             scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
+  { table: 'international_students',    label: 'International students',           scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
   // ─── Scope 3 — trips + waste + spend + commute ────────────────
-  { table: 'study_abroad',              label: 'Study abroad trips',               scope: 'Scope 3', tsCol: 'departure_date',cta: '/admin/scope-3' },
-  { table: 'faculty_travel',            label: 'Faculty travel',                   scope: 'Scope 3', tsCol: 'departure_date',cta: '/admin/scope-3' },
-  { table: 'waste',                     label: 'Waste records',                    scope: 'Scope 3', tsCol: 'date',          cta: '/admin/scope-3' },
-  { table: 'purchased_goods',           label: 'Purchased goods (Cat 1 EEIO)',     scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3/cat1-purchased-goods' },
-  { table: 'commuting',                 label: 'Faculty/staff commute (Cat 7)',    scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3/cat7-commuting' },
+  { table: 'study_abroad',              label: 'Study abroad trips',               scope: 'Scope 3', tsCol: 'departure_date',cadence: 'irregular', cta: '/admin/scope-3' },
+  { table: 'faculty_travel',            label: 'Faculty travel',                   scope: 'Scope 3', tsCol: 'departure_date',cadence: 'irregular', cta: '/admin/scope-3' },
+  { table: 'waste',                     label: 'Waste records',                    scope: 'Scope 3', tsCol: 'date',          cadence: 'monthly',   cta: '/admin/scope-3' },
+  { table: 'purchased_goods',           label: 'Purchased goods (Cat 1 EEIO)',     scope: 'Scope 3', tsCol: 'created_at',    cadence: 'quarterly', cta: '/admin/scope-3/cat1-purchased-goods' },
+  { table: 'commuting',                 label: 'Faculty/staff commute (Cat 7)',    scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3/cat7-commuting' },
   // ─── Sinks ────────────────────────────────────────────────────
-  { table: 'forest_stand_actuals',      label: 'Forest stand inventory',           scope: 'Sinks',   tsCol: 'created_at',    cta: '/admin/sinks/stands' },
+  { table: 'forest_stand_actuals',      label: 'Forest stand inventory',           scope: 'Sinks',   tsCol: 'created_at',    cadence: 'irregular', cta: '/admin/sinks/stands' },
   // ─── Renewables ───────────────────────────────────────────────
-  { table: 'renewables_solar',          label: 'Solar PV records',                 scope: 'Renewables', tsCol: 'period_end', cta: '/admin/renewables/solar' },
-  { table: 'renewables_geothermal',     label: 'Geothermal records',               scope: 'Renewables', tsCol: 'period_end', cta: '/admin/renewables/geothermal' },
-  { table: 'renewables_wind',           label: 'Wind asset documentation',         scope: 'Renewables', tsCol: 'as_of_date', cta: '/admin/renewables/wind' },
+  { table: 'renewables_solar',          label: 'Solar PV records',                 scope: 'Renewables', tsCol: 'period_end', cadence: 'monthly',   cta: '/admin/renewables/solar' },
+  { table: 'renewables_geothermal',     label: 'Geothermal records',               scope: 'Renewables', tsCol: 'period_end', cadence: 'monthly',   cta: '/admin/renewables/geothermal' },
+  { table: 'renewables_wind',           label: 'Wind asset documentation',         scope: 'Renewables', tsCol: 'as_of_date', cadence: 'irregular', cta: '/admin/renewables/wind' },
 ];
 
 export default function AdminDataQuality() {
@@ -215,13 +221,18 @@ export default function AdminDataQuality() {
               {TABLE_SOURCES.map((src) => {
                 const stats = tableStats[src.table] || { count: 0, lastUpdated: null };
                 const empty = stats.count === 0;
-                const bucket = freshnessBucket(stats);
+                const bucket = freshnessBucket(stats, src.cadence);
                 const days = daysSince(stats.lastUpdated);
                 return (
                   <tr key={src.table}>
                     <td style={styles.td}>
                       <div style={{ fontWeight: 600 }}>{src.label}</div>
                       <div style={styles.tableMono}>{src.table}</div>
+                      {src.cadence && (
+                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          cadence · {src.cadence}
+                        </div>
+                      )}
                     </td>
                     <td style={styles.td}>{src.scope}</td>
                     <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: empty ? '#64748b' : '#22d3ee' }}>
@@ -273,10 +284,10 @@ function FreshnessPill({ bucket }) {
 }
 
 function FreshnessSummary({ tableStats }) {
-  const counts = { fresh: 0, aging: 0, stale: 0, empty: 0, unknown: 0 };
+  const counts = { fresh: 0, aging: 0, stale: 0, empty: 0, irregular: 0, unknown: 0 };
   for (const src of TABLE_SOURCES) {
     const stats = tableStats[src.table] || { count: 0, lastUpdated: null };
-    counts[freshnessBucket(stats)] += 1;
+    counts[freshnessBucket(stats, src.cadence)] += 1;
   }
   const total = TABLE_SOURCES.length;
   const cells = [
@@ -284,6 +295,7 @@ function FreshnessSummary({ tableStats }) {
     { key: 'aging', label: `${counts.aging} aging` },
     { key: 'stale', label: `${counts.stale} stale` },
     { key: 'empty', label: `${counts.empty} empty` },
+    ...(counts.irregular > 0 ? [{ key: 'irregular', label: `${counts.irregular} irregular` }] : []),
   ];
   return (
     <div style={{
