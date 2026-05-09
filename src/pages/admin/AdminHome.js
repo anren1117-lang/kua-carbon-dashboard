@@ -6,6 +6,7 @@ import { GROSS_MT, SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { getCustomActions, getStagePlans } from '../../data/customActions.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
+import { useMeasuredRenewables } from '../../hooks/useMeasuredRenewables.js';
 
 // Admin dashboard. Mirrors NAV_GROUPS exactly so the home page and the
 // header dropdowns stay in sync — adding a new admin page in
@@ -128,6 +129,7 @@ export default function AdminHome() {
   const [error, setError] = useState('');
   const [tick] = useState(0);
   const live = useMeasuredScopeTotals();
+  const renewables = useMeasuredRenewables();
 
   useEffect(() => {
     let cancelled = false;
@@ -249,6 +251,14 @@ export default function AdminHome() {
         ? 'Per-stand inventory in forest_stand_actuals composes the headline live.'
         : 'A USFS Forest Inventory & Analysis-style walk-through, entered as forest_stand_actuals rows, flips this from the hardcoded 7-stand placeholder.',
       cta: live.sinksMeasured ? null : { to: '/admin/sinks', label: 'Enter forest inventory →' },
+    },
+    {
+      label: 'Renewables (solar + geothermal + wind)',
+      measured: renewables.measured,
+      detail: renewables.measured
+        ? `Live: ${renewables.solarMeasured ? `solar ${renewables.solar.grossKwh.toLocaleString()} kWh` : 'solar pending'} · ${renewables.geothermalMeasured ? `geothermal ${renewables.geothermal.kwhInput.toLocaleString()} kWh` : 'geothermal pending'} · ${renewables.windMeasured ? `wind ${renewables.wind.latest?.status || 'documented'}` : 'wind pending'}.`
+        : 'Solar/geothermal/wind admin entries flip the public Renewables page from static description → measured kWh + avoided emissions.',
+      cta: renewables.measured ? null : { to: '/admin/renewables', label: 'Log renewables data →' },
     },
   ];
   const measuredCount = ingestionRows.filter((r) => r.measured).length;

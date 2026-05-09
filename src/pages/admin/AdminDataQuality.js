@@ -47,6 +47,10 @@ const TABLE_SOURCES = [
   { table: 'commuting',                 label: 'Faculty/staff commute (Cat 7)',    scope: 'Scope 3', tsCol: 'created_at',    cta: '/admin/scope-3/cat7-commuting' },
   // ─── Sinks ────────────────────────────────────────────────────
   { table: 'forest_stand_actuals',      label: 'Forest stand inventory',           scope: 'Sinks',   tsCol: 'created_at',    cta: '/admin/sinks/stands' },
+  // ─── Renewables ───────────────────────────────────────────────
+  { table: 'renewables_solar',          label: 'Solar PV records',                 scope: 'Renewables', tsCol: 'period_end', cta: '/admin/renewables/solar' },
+  { table: 'renewables_geothermal',     label: 'Geothermal records',               scope: 'Renewables', tsCol: 'period_end', cta: '/admin/renewables/geothermal' },
+  { table: 'renewables_wind',           label: 'Wind asset documentation',         scope: 'Renewables', tsCol: 'as_of_date', cta: '/admin/renewables/wind' },
 ];
 
 export default function AdminDataQuality() {
