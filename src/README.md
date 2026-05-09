@@ -18,7 +18,7 @@ npm install
 npm run dev       # http://localhost:5173
 npm run build
 npm run preview
-npm test          # vitest — 83+ tests
+npm test          # vitest — 362 tests (15 files)
 ```
 
 Run the on-campus relay (separate process, talks to the BMS):
@@ -149,8 +149,31 @@ src/
 │   ├── TimeSeriesChart.js  Full SVG line chart with axes, grid, hover tooltip
 │   └── (existing)          Layout, NetEstimate, ScopeDonut, LearnAgent, etc.
 │
+├── hooks/                  Live measured-data hooks. All return placeholder synchronously, upgrade to Supabase rows on mount.
+│   ├── useMeasuredScope1.js     fuel_bills + scope1_heating_oil + scope1_propane + scope1_fleet + scope1_refrigerants
+│   ├── useMeasuredScope3.js     8 admin tables (cohorts + travel + waste + purchased_goods + commuting)
+│   ├── useMeasuredSinks.js      forest_stand_actuals
+│   ├── useMeasuredRenewables.js renewables_solar + renewables_geothermal + renewables_wind
+│   ├── useMeasuredScopeTotals.js Composer; folds the per-scope hooks together
+│   └── measuredCache.js         Module-level promise cache; admin writes invalidate
+│
 ├── pages/                  Route-level pages — see Module map.
-└── __tests__/              dataLayer.test.js + apiRoutes.test.js (83 cases total)
+└── __tests__/              15 test files, 362 cases:
+    ├── dataLayer.test.js      130 — composer math (Scope 1/3 + sinks + renewables)
+    ├── apiRoutes.test.js       91 — every /api/* handler incl. admin auth + audit-log
+    ├── useMeasuredScope.test.js 23 — render-hook tests for measured-data hooks
+    ├── freshness.test.js       21 — daysSince + cadence-aware buckets
+    ├── csv.test.js             16 — toCsv + parseCsv round-trip + RFC-4180
+    ├── adminFetch.test.js      13 — token-expiry detection
+    ├── csvValidators.test.js   33 — the 7 CsvImportPanel validators
+    ├── auditLogPaging.test.js   6 — fetchAllAuditLog with progress + maxRows
+    ├── measuredCache.test.js    6 — promise-cache dedupe + invalidate
+    ├── FreshnessAlert.test.js   9 — banner severity + grammar + link
+    ├── Renewables.test.js       4 — public /renewables measured-flip behavior
+    ├── Goals.test.js            3 — provenance pill flip on Goals
+    ├── Executive.test.js        3 — cohort row + ScopeRow pills
+    ├── ErrorBoundary.test.js    3 — fallback rendering
+    └── App.test.js              1 — top-level smoke
 ```
 
 ---
@@ -245,7 +268,7 @@ Every user-linked record stores `*_id_hash`, never a name or SIS ID.
 - **Rate limit** on `/api/chatbot`: token bucket, 12 req/min per IP, returns 429 with `Retry-After`.
 - **Cron auth**: `/api/cron/sync-bms` refuses every request unless `CRON_SECRET` is set and matches.
 - **JWT verification**: `/api/auth/session` uses Node's built-in crypto to verify RS256 against Google's published JWKs (cached 6h).
-- **Bundle guardrail**: GitHub Actions CI fails the build if the initial bundle exceeds 600 KB (today's value: ~416 KB).
+- **Bundle guardrail**: GitHub Actions CI fails the build if the initial bundle exceeds 600 KB (today's value: ~285 KB).
 - **CI**: `.github/workflows/ci.yml` runs vitest + build on every push and PR.
 
 ---
@@ -280,4 +303,46 @@ Every user-linked record stores `*_id_hash`, never a name or SIS ID.
 - Stand up the on-campus relay against the real Eclypse REST endpoints. Cloud Vercel is wired; just needs the relay tunnel + env vars.
 - Replace `matchQuery()` keyword retrieval with vector-similarity over embedded knowledge content for better long-tail chatbot accuracy.
 - Wire cookie-based auth + Supabase session rows; today the session hash lives in `sessionStorage` only.
-- Refactor the legacy `/scope-1`, `/scope-2`, `/scope-3` pages onto the OS data layer (currently still inline).
+
+---
+
+## Live measured-data path (Phases 1-57)
+
+Every scope component + renewables flips estimated → measured automatically as
+admins enter data through `/admin/scope-1`, `/admin/scope-2`, `/admin/scope-3`,
+`/admin/sinks`, `/admin/renewables/*`. The pattern is consistent:
+
+1. **Pure composer** in `src/data/scopeTotals.js` — takes Supabase rows, returns
+   `{ totalMt, breakdown, provenance, ... }`. Empty input → safe placeholder.
+2. **Per-component hook** in `src/hooks/useMeasured*.js` — fetches from Supabase
+   on mount via `cachedFetch`, applies the composer. Tolerates "table doesn't
+   exist" so the page renders before migrations are applied.
+3. **Composer hook** `useMeasuredScopeTotals` — folds them together for the
+   summary pages (Executive, AnnualReport, Goals, NetEstimate, AdminHome,
+   AdminDataQuality).
+
+Pages already wired:
+`Scope1`, `Scope2`, `Scope3`, `Sinks`, `Sinks2`, `Renewables`, `Renewables2`,
+`Drawdown`, `Executive`, `Goals`, `NetEstimate`, `AdminHome`, `AdminMethodology`,
+`AdminDataQuality`, `AnnualReport`, `Buildings`, `Hotspots`.
+
+---
+
+## Admin portal
+
+- **Auth**: `POST /api/admin/login` with timing-safe compare against
+  `ADMIN_PASSWORD`. Returns HMAC-signed token (8h TTL) via `ADMIN_TOKEN_SECRET`.
+  Both env vars have public fallbacks so login Just Works on a fresh deploy.
+- **CRUD**: insert + update + delete + duplicate + CSV import + CSV export on
+  every canonical admin table (17 tables). Edits flow through `AdminPortal.js`
+  for the legacy table-by-table view, or through the per-scope pages
+  `AdminScope1` / `AdminScope3` / `AdminSinks` / `AdminRenewables`.
+- **Audit log**: every admin write captured in `admin_audit_log`. Viewer at
+  `/admin/audit-log` with date filter, pagination, refresh, CSV export of
+  visible page, and "Export all filtered" with paged progress + 50K-row ceiling.
+- **Data quality**: `/admin/data-quality` summarizes measured-vs-estimated
+  state per scope component, plus per-table cadence-aware freshness pills
+  (fresh / aging / stale / empty / irregular). Cadence buckets are
+  monthly 60/120d, quarterly 120/365d, annual 540/720d, irregular = no check.
+- **AdminHome**: top-of-page freshness alert when any table is stale/aging/empty,
+  plus "Data ingestion status" panel covering all 6 scope rows incl. renewables.
