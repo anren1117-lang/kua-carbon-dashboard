@@ -14,7 +14,7 @@ cd src
 npm install
 npm run dev       # Vite dev server on http://localhost:5173
 npm run build     # production build → src/dist/
-npm test          # vitest (188+ tests)
+npm test          # vitest (362 tests across 15 files)
 ```
 
 The root `/package.json` is stale CRA scaffolding — its only durable role
@@ -79,11 +79,16 @@ git push origin main
   `src/data/geographicEstimates.js`: Scope 1 = 1,350 mt, Scope 2 = 385 mt,
   Scope 3 = 2,635 mt, sinks = 2,650 mt → gross 4,370 / net 1,720 / per-student 5.0.
 
-- **Live measured-data hooks** (`src/hooks/useMeasuredScope1.js`,
-  `useMeasuredScope3.js`, `useMeasuredScopeTotals.js`) upgrade the headline
-  numbers from "estimated" to "measured" the moment admins enter rows into
-  the corresponding Supabase tables. Pages already wired: Scope1, Scope3,
-  Executive, Goals, NetEstimate (homepage hero), AdminHome.
+- **Live measured-data hooks** (`src/hooks/useMeasured{Scope1,Scope3,Sinks,Renewables}.js`
+  + composer `useMeasuredScopeTotals.js`) upgrade the headline numbers from
+  "estimated" to "measured" the moment admins enter rows into the corresponding
+  Supabase tables. Pages already wired: Scope1, Scope2, Scope3, Sinks, Sinks2,
+  Renewables, Renewables2, Drawdown, Executive, Goals, AnnualReport,
+  NetEstimate (homepage hero), AdminHome, AdminMethodology, AdminDataQuality,
+  Buildings, Hotspots. Each component flips estimated → measured independently.
+  A module-level promise cache in `src/hooks/measuredCache.js` dedupes
+  Supabase round-trips across pages; admin writes invalidate it via
+  `logAdminWrite()`.
 
 - **Admin auth** is server-checked: `/api/admin/login` validates against
   `ADMIN_PASSWORD` and returns an HMAC-signed session token. Client uses
@@ -92,12 +97,28 @@ git push origin main
   emit a `kua-admin-auth-expired` event so the AdminLayout can re-prompt
   for login.
 
-- **Supabase** tables that drive the live dashboard:
-  `fuel_bills`, `day_students`, `us_boarding_students`,
-  `international_students`, `study_abroad`, `faculty_travel`, `waste`.
+- **Supabase** tables that drive the live dashboard (17 canonical):
+  - **Scope 1**: `fuel_bills`, `scope1_heating_oil`, `scope1_propane`,
+    `scope1_fleet`, `scope1_refrigerants`
+  - **Scope 3**: `day_students`, `us_boarding_students`, `international_students`,
+    `study_abroad`, `faculty_travel`, `waste`, `purchased_goods`, `commuting`
+  - **Sinks**: `forest_stand_actuals`
+  - **Renewables**: `renewables_solar`, `renewables_geothermal`, `renewables_wind`
+  - **Audit trail**: `admin_audit_log` (every admin write)
+
   Read/written through the publishable anon key client in
-  `src/supabaseClient.js`. RLS policies live in
-  `supabase/migrations/*.sql`.
+  `src/supabaseClient.js`. The bearer-token gate at `/api/admin/login` IS the
+  auth boundary — there's no service-role key in the client. RLS policies +
+  schemas live in `supabase/migrations/*.sql`.
+
+- **Data quality dashboard** at `/admin/data-quality` shows per-table row
+  counts, last-entry timestamps, and cadence-aware freshness pills (fresh /
+  aging / stale / empty / irregular). AdminHome surfaces the same as a
+  top-of-page alert when any table is stale.
+
+- **Audit log** at `/admin/audit-log` lists every admin write with date
+  filtering, pagination, refresh button, CSV export of the visible page, and
+  "Export all filtered" with paged progress (50K-row ceiling).
 
 For deeper context (data flow, conventions, where to make which kind of
 edit), see [CLAUDE.md](CLAUDE.md).
