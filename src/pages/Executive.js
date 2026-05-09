@@ -157,6 +157,7 @@ export default function Executive() {
             share={(SCOPE_TOTALS.scope1Mt / GROSS_MT) * 100}
             color="#fbbf24"
             scopeKey="scope1"
+            measured={live.scope1Measured}
           />
           <ScopeRow
             to="/scope-2"
@@ -165,6 +166,7 @@ export default function Executive() {
             share={(SCOPE_TOTALS.scope2Mt / GROSS_MT) * 100}
             color="#22d3ee"
             scopeKey="scope2"
+            measured={true}
           />
           <ScopeRow
             to="/scope-3"
@@ -173,6 +175,7 @@ export default function Executive() {
             share={(SCOPE_TOTALS.scope3Mt / GROSS_MT) * 100}
             color="#ef4444"
             scopeKey="scope3"
+            measured={live.scope3Measured}
           />
           {live.scope3Measured && live.scope3CohortDetail.length > 0 && (
             <Scope3CohortMicroRow detail={live.scope3CohortDetail} />
@@ -184,6 +187,7 @@ export default function Executive() {
             share={(ANNUAL_SEQUESTRATION_MT / GROSS_MT) * 100}
             color="#22c55e"
             sinks
+            measured={live.sinksMeasured}
           />
         </div>
       </ModuleSection>
@@ -378,12 +382,25 @@ function scopeMonthlySeries(scopeKey, total) {
   return shape.map((v) => (v / sum) * total);
 }
 
-function ScopeRow({ to, label, mt, share, color, sinks, scopeKey }) {
+function ScopeRow({ to, label, mt, share, color, sinks, scopeKey, measured }) {
   const series = scopeKey ? scopeMonthlySeries(scopeKey, Math.abs(mt)) : null;
   return (
     <Link to={to} style={{ ...styles.scopeRow, borderLeftColor: color }}>
       <div style={{ flex: 1 }}>
-        <div style={styles.scopeLabel}>{label}</div>
+        <div style={styles.scopeLabel}>
+          {label}
+          {measured !== undefined && (
+            <span style={{
+              marginLeft: 10, fontSize: 10, padding: '2px 6px', borderRadius: 4,
+              fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6,
+              background: measured ? '#0e3a1f' : '#1f2937',
+              color: measured ? '#86efac' : '#94a3b8',
+              border: `1px solid ${measured ? '#16a34a' : '#475569'}`,
+            }}>
+              {measured ? '✓ measured' : 'estimated'}
+            </span>
+          )}
+        </div>
         <div style={styles.scopeBar}>
           <div style={{ ...styles.scopeFill, width: `${Math.min(100, share)}%`, background: color }} />
         </div>
