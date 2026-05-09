@@ -53,6 +53,10 @@ export default function AdminDataQuality() {
   const live = useMeasuredScopeTotals();
   const [tableStats, setTableStats] = useState({});
   const [loading, setLoading] = useState(true);
+  // Bumped by the manual "Refresh" button so the table stats re-fetch
+  // without a full page reload — useful after admins add data in
+  // another tab and want to see the freshness pills update.
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +83,7 @@ export default function AdminDataQuality() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshTick]);
 
   // Compose the four scope-level rollups.
   const grossTotal = live.grossMt || GROSS_MT;
@@ -172,7 +176,22 @@ export default function AdminDataQuality() {
         })}
       </div>
 
-      <h2 style={styles.h2}>Per-table inventory</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 28, marginBottom: 8 }}>
+        <h2 style={{ ...styles.h2, marginTop: 0, marginBottom: 0 }}>Per-table inventory</h2>
+        <button
+          type="button"
+          onClick={() => setRefreshTick((n) => n + 1)}
+          disabled={loading}
+          style={{
+            padding: '6px 12px', background: 'transparent', color: '#22d3ee',
+            border: '1px solid #155e75', borderRadius: 6, fontSize: 12,
+            cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit', fontWeight: 700,
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
+          {loading ? 'Refreshing…' : '↻ Refresh'}
+        </button>
+      </div>
       {loading && <div style={styles.placeholder}>Loading row counts…</div>}
       {!loading && (
         <>

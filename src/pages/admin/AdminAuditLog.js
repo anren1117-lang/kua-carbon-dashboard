@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAuditLog } from '../../utils/adminAudit.js';
+import { toCsv, downloadCsv } from '../../utils/csv.js';
 
 // /admin/audit-log — read-only viewer over admin_audit_log.
 //
@@ -157,6 +158,35 @@ export default function AdminAuditLog() {
         >
           {loading ? 'Loading…' : '↻ Refresh'}
         </button>
+        <button
+          type="button"
+          style={styles.csvBtn}
+          onClick={() => {
+            // Export the rows currently visible on the page (post-
+            // filter, post-pagination) — same posture as the per-table
+            // CSV exporters elsewhere in admin. Admins who want the
+            // whole dataset can bump page size to 500 first.
+            if (rows.length === 0) return;
+            const csv = toCsv(
+              rows.map((r) => ({
+                created_at: r.created_at,
+                action: r.action,
+                table_name: r.table_name,
+                row_id: r.row_id ?? '',
+                note: r.note ?? '',
+                payload: r.payload ? JSON.stringify(r.payload) : '',
+              })),
+              ['created_at', 'action', 'table_name', 'row_id', 'note', 'payload'],
+            );
+            const filterTag = tableFilter ? `_${tableFilter}` : '';
+            const dateTag = dateFrom || dateTo ? `_${dateFrom || 'start'}_to_${dateTo || 'now'}` : '';
+            downloadCsv(`admin_audit_log${filterTag}${dateTag}.csv`, csv);
+          }}
+          disabled={loading || rows.length === 0}
+          title={rows.length === 0 ? 'Nothing to export' : `Download ${rows.length} visible row${rows.length === 1 ? '' : 's'} as CSV`}
+        >
+          ↓ Export CSV
+        </button>
       </div>
 
       {loading && <div style={styles.placeholder}>Loading…</div>}
@@ -288,6 +318,7 @@ const styles = {
   dateInput: { padding: '6px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontSize: 13, marginLeft: 4, fontFamily: 'inherit', minWidth: 130 },
   clearBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 },
   refreshBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, marginLeft: 'auto' },
+  csvBtn: { padding: '6px 12px', background: 'transparent', color: '#86efac', border: '1px solid #14532d', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 },
 
   pager: { marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
   pagerInfo: { fontSize: 12, color: '#94a3b8' },
