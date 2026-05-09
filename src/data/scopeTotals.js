@@ -630,6 +630,142 @@ export function composeScope3FromRecords(records = {}) {
 
 export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 
+// ─── Renewables composers ─────────────────────────────────────────
+// Solar / geothermal / wind admin tables (renewables_solar,
+// renewables_geothermal, renewables_wind) are pure pass-throughs
+// for the public Renewables page. Self-consumed solar already shows
+// up at the BMS as reduced grid pull, so we do NOT subtract it from
+// Scope 2 here — that would double-count. Avoided-emission lines
+// are reported separately as informational.
+
+// ISO-NE 2024 grid factor — same value as emission_factors row
+// `iso_ne_grid_co2_lb_per_mwh`. Hard-coded here so the composer is
+// pure (no Supabase fetch). Update both places if the cited factor
+// changes.
+export const GRID_FACTOR_LB_PER_MWH = 643.0;
+export const GRID_FACTOR_KG_PER_KWH = +(GRID_FACTOR_LB_PER_MWH * KG_PER_LB / 1000).toFixed(6);
+
+// Heating-fuel BTU content per gallon — used by the geothermal
+// counterfactual (kWh × COP × 3412.14 → BTU → gallons of fuel that
+// would have delivered the same heat × per-gallon emission factor).
+// Values from EPA Stationary Combustion Hub.
+export const FUEL_BTU_PER_GAL = {
+  heating_oil: 138500,
+  propane:      91500,
+};
+const BTU_PER_KWH = 3412.14;
+
+/**
+ * Sum a renewables_solar table to kWh + avoided-emission mt.
+ * Treats null self_consumed_kwh / exported_kwh as 0 (the gross
+ * value still counts toward the total).
+ *
+ * Returns {
+ *   periodCount, grossKwh, selfKwh, exportKwh,
+ *   avoidedSelfMt, avoidedExportMt, totalAvoidedMt,
+ *   gridKgPerKwh
+ * }
+ */
+export function composeSolarFromRecords(rows) {
+  const valid = (Array.isArray(rows) ? rows : []).filter((r) => {
+    const g = Number(r?.gross_kwh);
+    return Number.isFinite(g) && g >= 0;
+  });
+  let grossKwh = 0;
+  let selfKwh = 0;
+  let exportKwh = 0;
+  for (const r of valid) {
+    grossKwh += Number(r.gross_kwh);
+    const self = Number(r.self_consumed_kwh);
+    if (Number.isFinite(self) && self >= 0) selfKwh += self;
+    const exp = Number(r.exported_kwh);
+    if (Number.isFinite(exp) && exp >= 0) exportKwh += exp;
+  }
+  const avoidedSelfMt = +((selfKwh * GRID_FACTOR_KG_PER_KWH) / 1000).toFixed(2);
+  const avoidedExportMt = +((exportKwh * GRID_FACTOR_KG_PER_KWH) / 1000).toFixed(2);
+  return {
+    periodCount: valid.length,
+    grossKwh: Math.round(grossKwh),
+    selfKwh: Math.round(selfKwh),
+    exportKwh: Math.round(exportKwh),
+    avoidedSelfMt,
+    avoidedExportMt,
+    totalAvoidedMt: +(avoidedSelfMt + avoidedExportMt).toFixed(2),
+    gridKgPerKwh: GRID_FACTOR_KG_PER_KWH,
+  };
+}
+
+/**
+ * Sum a renewables_geothermal table to avoided-fossil mt.
+ * thermal_btu = kwh_input × cop × 3412.14
+ * gallons      = thermal_btu / FUEL_BTU_PER_GAL[avoided_fuel_type]
+ * avoided_mt   = gallons × FUEL_FACTORS_KG_PER_GAL[fuel] / 1000
+ * Rows with avoided_fuel_type == 'none' (or unknown) skip the avoided
+ * calc but still count toward kwhInput / thermalMmbtu totals.
+ *
+ * @param {Array<{kwh_input: number|string, cop?: number|string, avoided_fuel_type?: string}>} rows
+ * @param {{ defaultCop?: number }} [opts]
+ */
+export function composeGeothermalFromRecords(rows, opts = {}) {
+  const defaultCop = Number.isFinite(opts.defaultCop) ? opts.defaultCop : 3.5;
+  const valid = (Array.isArray(rows) ? rows : []).filter((r) => {
+    const k = Number(r?.kwh_input);
+    return Number.isFinite(k) && k >= 0;
+  });
+  let kwhInput = 0;
+  let thermalBtu = 0;
+  const byFuel = { heating_oil: 0, propane: 0 };
+  for (const r of valid) {
+    const kwh = Number(r.kwh_input);
+    const cop = Number(r.cop);
+    const usedCop = Number.isFinite(cop) && cop > 0 ? cop : defaultCop;
+    const btu = kwh * usedCop * BTU_PER_KWH;
+    kwhInput += kwh;
+    thermalBtu += btu;
+    const fuel = r.avoided_fuel_type;
+    if (fuel === 'heating_oil' || fuel === 'propane') {
+      const gallons = btu / FUEL_BTU_PER_GAL[fuel];
+      const factor = FUEL_FACTORS_KG_PER_GAL[fuel === 'heating_oil' ? 'Heating Oil' : 'Propane'];
+      byFuel[fuel] += (gallons * factor) / 1000;
+    }
+  }
+  const avoidedFossilMt = +(byFuel.heating_oil + byFuel.propane).toFixed(2);
+  return {
+    periodCount: valid.length,
+    kwhInput: Math.round(kwhInput),
+    thermalMmbtu: +(thermalBtu / 1_000_000).toFixed(1),
+    avoidedFossilMt,
+    byFuel: {
+      heating_oil: +byFuel.heating_oil.toFixed(2),
+      propane:     +byFuel.propane.toFixed(2),
+    },
+  };
+}
+
+/**
+ * Pick the latest renewables_wind row by as_of_date. Wind is
+ * offline-asset documentation rather than time-series — most recent
+ * row IS the current status. Returns null when there are no rows.
+ *
+ * @param {Array<{as_of_date: string, status: string, rated_kw?: number, last_operational_date?: string, historical_kwh?: number}>} rows
+ */
+export function composeWindFromRecords(rows) {
+  const arr = Array.isArray(rows) ? rows : [];
+  if (arr.length === 0) return { latest: null, recordCount: 0 };
+  const sorted = [...arr].sort((a, b) => String(b.as_of_date || '').localeCompare(String(a.as_of_date || '')));
+  const top = sorted[0];
+  return {
+    latest: {
+      status: top.status || 'unknown',
+      asOfDate: top.as_of_date || null,
+      ratedKw: Number.isFinite(Number(top.rated_kw)) ? Number(top.rated_kw) : null,
+      lastOperationalDate: top.last_operational_date || null,
+      historicalKwh: Number.isFinite(Number(top.historical_kwh)) ? Number(top.historical_kwh) : null,
+    },
+    recordCount: arr.length,
+  };
+}
+
 // ─── Combined / convenience exports ───────────────────────────────
 export const SCOPE2_TOTAL_MT = GRID_MIX_ANNUAL_MTCO2E;
 

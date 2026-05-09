@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeCommutingMt, composeFleetMt, composePurchasedGoodsMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, COMMUTE_FACTORS_KG_PER_KM, FLEET_FACTORS_KG_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GROSS_MT, PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
+import { composeCommutingMt, composeFleetMt, composeGeothermalFromRecords, composePurchasedGoodsMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, composeSolarFromRecords, composeWindFromRecords, COMMUTE_FACTORS_KG_PER_KM, FLEET_FACTORS_KG_PER_GAL, FUEL_BTU_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GRID_FACTOR_KG_PER_KWH, GRID_FACTOR_LB_PER_MWH, GROSS_MT, PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -1073,5 +1073,130 @@ describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
     const commute = r.breakdown.find((b) => b.source.toLowerCase() === 'commuting');
     expect(commute.provenance).toBe('measured');
     expect(commute.mt).toBe(2); // 1.52 → round 2
+  });
+});
+
+describe('renewables composers (composeSolarFromRecords / Geothermal / Wind)', () => {
+  it('exposes the cited grid factor + fuel BTU table', () => {
+    expect(GRID_FACTOR_LB_PER_MWH).toBe(643.0);
+    // 643 × 0.45359237 / 1000 ≈ 0.29166
+    expect(GRID_FACTOR_KG_PER_KWH).toBeCloseTo(0.29166, 4);
+    expect(FUEL_BTU_PER_GAL.heating_oil).toBe(138500);
+    expect(FUEL_BTU_PER_GAL.propane).toBe(91500);
+  });
+
+  it('composeSolarFromRecords: empty input → zeroed result', () => {
+    const r = composeSolarFromRecords([]);
+    expect(r.periodCount).toBe(0);
+    expect(r.grossKwh).toBe(0);
+    expect(r.totalAvoidedMt).toBe(0);
+    expect(r.gridKgPerKwh).toBe(GRID_FACTOR_KG_PER_KWH);
+  });
+
+  it('composeSolarFromRecords: null/undefined inputs are tolerated', () => {
+    expect(composeSolarFromRecords(null).grossKwh).toBe(0);
+    expect(composeSolarFromRecords(undefined).grossKwh).toBe(0);
+  });
+
+  it('composeSolarFromRecords: sums kWh across rows + applies grid factor for avoided', () => {
+    const r = composeSolarFromRecords([
+      { gross_kwh: 60000, self_consumed_kwh: 50000, exported_kwh: 10000 },
+      { gross_kwh: 50000, self_consumed_kwh: 50000, exported_kwh: 0 },
+    ]);
+    expect(r.periodCount).toBe(2);
+    expect(r.grossKwh).toBe(110000);
+    expect(r.selfKwh).toBe(100000);
+    expect(r.exportKwh).toBe(10000);
+    // 100000 × 0.29166 / 1000 ≈ 29.17 mt
+    expect(r.avoidedSelfMt).toBeCloseTo(29.17, 1);
+    expect(r.avoidedExportMt).toBeCloseTo(2.92, 1);
+    expect(r.totalAvoidedMt).toBeCloseTo(32.09, 1);
+  });
+
+  it('composeSolarFromRecords: null self/export are treated as 0 (gross still counts)', () => {
+    const r = composeSolarFromRecords([
+      { gross_kwh: 1000, self_consumed_kwh: null, exported_kwh: null },
+    ]);
+    expect(r.grossKwh).toBe(1000);
+    expect(r.selfKwh).toBe(0);
+    expect(r.exportKwh).toBe(0);
+    expect(r.totalAvoidedMt).toBe(0);
+  });
+
+  it('composeSolarFromRecords: skips rows with non-numeric / negative gross_kwh', () => {
+    const r = composeSolarFromRecords([
+      { gross_kwh: 'NaN', self_consumed_kwh: 100 },
+      { gross_kwh: -5, self_consumed_kwh: 100 },
+      { gross_kwh: 1000, self_consumed_kwh: 1000 },
+    ]);
+    expect(r.periodCount).toBe(1);
+    expect(r.grossKwh).toBe(1000);
+    expect(r.selfKwh).toBe(1000);
+  });
+
+  it('composeGeothermalFromRecords: empty → zeroed result', () => {
+    const r = composeGeothermalFromRecords([]);
+    expect(r.kwhInput).toBe(0);
+    expect(r.thermalMmbtu).toBe(0);
+    expect(r.avoidedFossilMt).toBe(0);
+    expect(r.byFuel).toEqual({ heating_oil: 0, propane: 0 });
+  });
+
+  it('composeGeothermalFromRecords: heating-oil counterfactual math', () => {
+    // 1000 kWh × 3.5 COP × 3412.14 BTU/kWh = 11,942,490 BTU
+    // / 138500 BTU/gal = 86.23 gal of heating oil
+    // × 10.16 kg/gal = 876 kg = 0.88 mt avoided
+    const r = composeGeothermalFromRecords([
+      { kwh_input: 1000, cop: 3.5, avoided_fuel_type: 'heating_oil' },
+    ]);
+    expect(r.kwhInput).toBe(1000);
+    expect(r.thermalMmbtu).toBeCloseTo(11.9, 1);
+    expect(r.avoidedFossilMt).toBeCloseTo(0.88, 2);
+    expect(r.byFuel.heating_oil).toBeCloseTo(0.88, 2);
+    expect(r.byFuel.propane).toBe(0);
+  });
+
+  it('composeGeothermalFromRecords: propane fuel + null cop uses default 3.5', () => {
+    const r = composeGeothermalFromRecords([
+      { kwh_input: 1000, cop: null, avoided_fuel_type: 'propane' },
+    ]);
+    expect(r.byFuel.propane).toBeCloseTo(0.75, 2);
+    expect(r.byFuel.heating_oil).toBe(0);
+  });
+
+  it('composeGeothermalFromRecords: avoided_fuel_type=none counts kWh but not avoided', () => {
+    const r = composeGeothermalFromRecords([
+      { kwh_input: 500, cop: 3.5, avoided_fuel_type: 'none' },
+    ]);
+    expect(r.kwhInput).toBe(500);
+    expect(r.avoidedFossilMt).toBe(0);
+  });
+
+  it('composeGeothermalFromRecords: skips rows with invalid kwh_input', () => {
+    const r = composeGeothermalFromRecords([
+      { kwh_input: -10, cop: 3, avoided_fuel_type: 'heating_oil' },
+      { kwh_input: 'foo', cop: 3, avoided_fuel_type: 'heating_oil' },
+      { kwh_input: 100, cop: 3, avoided_fuel_type: 'heating_oil' },
+    ]);
+    expect(r.periodCount).toBe(1);
+    expect(r.kwhInput).toBe(100);
+  });
+
+  it('composeWindFromRecords: empty → null latest', () => {
+    const r = composeWindFromRecords([]);
+    expect(r.latest).toBeNull();
+    expect(r.recordCount).toBe(0);
+  });
+
+  it('composeWindFromRecords: picks latest by as_of_date', () => {
+    const r = composeWindFromRecords([
+      { as_of_date: '2024-01-01', status: 'offline', rated_kw: 10, last_operational_date: '2018-06-01', historical_kwh: 20000 },
+      { as_of_date: '2026-01-01', status: 'offline', rated_kw: 12 },
+      { as_of_date: '2025-06-01', status: 'offline', rated_kw: 11 },
+    ]);
+    expect(r.recordCount).toBe(3);
+    expect(r.latest.asOfDate).toBe('2026-01-01');
+    expect(r.latest.ratedKw).toBe(12);
+    expect(r.latest.historicalKwh).toBeNull(); // not present on the latest row
   });
 });

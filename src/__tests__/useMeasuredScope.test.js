@@ -50,6 +50,7 @@ vi.mock('../supabaseClient.js', () => ({ supabase: makeQueryHarness() }));
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
+import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
 import { _resetCacheForTests } from '../hooks/measuredCache.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
@@ -267,6 +268,79 @@ describe('useMeasuredSinks', () => {
   it('surfaces a Supabase error as state.error', async () => {
     setNextResponses({ forest_stand_actuals: { data: null, error: { message: 'rls denied' } } });
     const { result } = renderHook(() => useMeasuredSinks());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toMatch(/rls/i);
+    expect(result.current.measured).toBe(false);
+  });
+});
+
+describe('useMeasuredRenewables', () => {
+  it('returns zeroed result on first paint with loading=true', () => {
+    const { result } = renderHook(() => useMeasuredRenewables());
+    expect(result.current.loading).toBe(true);
+    expect(result.current.measured).toBe(false);
+    expect(result.current.solar.grossKwh).toBe(0);
+    expect(result.current.geothermal.kwhInput).toBe(0);
+    expect(result.current.wind.latest).toBeNull();
+  });
+
+  it('keeps zeroed result when all three tables are empty', async () => {
+    setNextResponses({
+      renewables_solar: { data: [], error: null },
+      renewables_geothermal: { data: [], error: null },
+      renewables_wind: { data: [], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredRenewables());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.measured).toBe(false);
+    expect(result.current.solarMeasured).toBe(false);
+    expect(result.current.solar.totalAvoidedMt).toBe(0);
+    expect(result.current.wind.latest).toBeNull();
+  });
+
+  it('flips solar to measured when renewables_solar has rows; geothermal stays empty', async () => {
+    setNextResponses({
+      renewables_solar: {
+        data: [{ gross_kwh: 110000, self_consumed_kwh: 100000, exported_kwh: 10000 }],
+        error: null,
+      },
+      renewables_geothermal: { data: [], error: null },
+      renewables_wind: { data: [], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredRenewables());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.solarMeasured).toBe(true);
+    expect(result.current.geothermalMeasured).toBe(false);
+    expect(result.current.measured).toBe(true);
+    expect(result.current.solar.grossKwh).toBe(110000);
+    expect(result.current.solar.totalAvoidedMt).toBeCloseTo(32.09, 1);
+  });
+
+  it('flips wind to measured when renewables_wind has rows', async () => {
+    setNextResponses({
+      renewables_solar: { data: [], error: null },
+      renewables_geothermal: { data: [], error: null },
+      renewables_wind: {
+        data: [
+          { as_of_date: '2026-01-01', status: 'offline', rated_kw: 10, last_operational_date: '2018-06-01' },
+        ],
+        error: null,
+      },
+    });
+    const { result } = renderHook(() => useMeasuredRenewables());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.windMeasured).toBe(true);
+    expect(result.current.wind.latest.status).toBe('offline');
+    expect(result.current.wind.latest.ratedKw).toBe(10);
+  });
+
+  it('surfaces a Supabase error as state.error', async () => {
+    setNextResponses({
+      renewables_solar: { data: null, error: { message: 'rls denied' } },
+      renewables_geothermal: { data: [], error: null },
+      renewables_wind: { data: [], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredRenewables());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toMatch(/rls/i);
     expect(result.current.measured).toBe(false);
