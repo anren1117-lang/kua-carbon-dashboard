@@ -123,9 +123,12 @@ export default function AdminScope3() {
             return (
               <button
                 key={t.slug}
+                id={`scope3-tab-${t.slug}`}
                 type="button"
                 role="tab"
                 aria-selected={isActive}
+                aria-controls={`scope3-panel-${t.slug}`}
+                tabIndex={isActive ? 0 : -1}
                 onClick={() => pickTab(t.slug)}
                 style={{
                   ...styles.tab,
@@ -152,7 +155,12 @@ export default function AdminScope3() {
         title={active.label}
         hint={`${active.group} · ${active.desc}`}
       >
-        <div style={styles.formWrap} role="tabpanel">
+        <div
+          id={`scope3-panel-${active.slug}`}
+          role="tabpanel"
+          aria-labelledby={`scope3-tab-${active.slug}`}
+          style={styles.formWrap}
+        >
           <Suspense fallback={<div style={styles.loading}>Loading form…</div>}>
             <active.Component />
           </Suspense>

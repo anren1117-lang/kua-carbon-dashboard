@@ -13,27 +13,33 @@ export default function Drawdown() {
   return (
     <div>
       <div style={styles.tabs} role="tablist" aria-label="Drawdown sections">
-        <Tab active={tab === 'renewables'} onClick={() => setTab('renewables')} id="renewables">
+        <Tab active={tab === 'renewables'} onClick={() => setTab('renewables')} id="drawdown-tab-renewables" controlsId="drawdown-panel-renewables">
           Renewables (solar, geothermal)
         </Tab>
-        <Tab active={tab === 'sinks'} onClick={() => setTab('sinks')} id="sinks">
+        <Tab active={tab === 'sinks'} onClick={() => setTab('sinks')} id="drawdown-tab-sinks" controlsId="drawdown-panel-sinks">
           Sinks (forest, soil)
         </Tab>
       </div>
-      <div role="tabpanel" aria-labelledby={tab}>
+      <div
+        id={`drawdown-panel-${tab}`}
+        role="tabpanel"
+        aria-labelledby={`drawdown-tab-${tab}`}
+      >
         {tab === 'renewables' ? <Renewables /> : <Sinks />}
       </div>
     </div>
   );
 }
 
-function Tab({ active, onClick, id, children }) {
+function Tab({ active, onClick, id, controlsId, children }) {
   return (
     <button
       type="button"
       role="tab"
       id={id}
       aria-selected={active}
+      aria-controls={controlsId}
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
       style={{
         padding: '10px 18px',

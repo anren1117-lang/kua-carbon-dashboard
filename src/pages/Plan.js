@@ -13,27 +13,33 @@ export default function Plan() {
   return (
     <div>
       <div style={styles.tabs} role="tablist" aria-label="Plan sections">
-        <Tab active={tab === 'goals'} onClick={() => setTab('goals')} id="goals">
+        <Tab active={tab === 'goals'} onClick={() => setTab('goals')} id="plan-tab-goals" controlsId="plan-panel-goals">
           Goals & Targets
         </Tab>
-        <Tab active={tab === 'actions'} onClick={() => setTab('actions')} id="actions">
+        <Tab active={tab === 'actions'} onClick={() => setTab('actions')} id="plan-tab-actions" controlsId="plan-panel-actions">
           Reduction Actions
         </Tab>
       </div>
-      <div role="tabpanel" aria-labelledby={tab}>
+      <div
+        id={`plan-panel-${tab}`}
+        role="tabpanel"
+        aria-labelledby={`plan-tab-${tab}`}
+      >
         {tab === 'goals' ? <Goals /> : <Actions />}
       </div>
     </div>
   );
 }
 
-function Tab({ active, onClick, id, children }) {
+function Tab({ active, onClick, id, controlsId, children }) {
   return (
     <button
       type="button"
       role="tab"
       id={id}
       aria-selected={active}
+      aria-controls={controlsId}
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
       style={{
         padding: '10px 18px',
