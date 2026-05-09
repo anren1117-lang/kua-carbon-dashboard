@@ -4,6 +4,7 @@ import { supabase } from '../../supabaseClient';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { GROSS_MT, SCOPE2_TOTAL_MT } from '../../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
+import { freshnessBucket, daysSince, FRESHNESS_PILL_STYLES } from '../../utils/freshness.js';
 
 // /admin/data-quality
 //
@@ -174,46 +175,108 @@ export default function AdminDataQuality() {
       <h2 style={styles.h2}>Per-table inventory</h2>
       {loading && <div style={styles.placeholder}>Loading row counts…</div>}
       {!loading && (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Table</th>
-              <th style={styles.th}>Scope</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Rows</th>
-              <th style={styles.th}>Last entry</th>
-              <th style={styles.th}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {TABLE_SOURCES.map((src) => {
-              const stats = tableStats[src.table] || { count: 0, lastUpdated: null };
-              const empty = stats.count === 0;
-              return (
-                <tr key={src.table}>
-                  <td style={styles.td}>
-                    <div style={{ fontWeight: 600 }}>{src.label}</div>
-                    <div style={styles.tableMono}>{src.table}</div>
-                  </td>
-                  <td style={styles.td}>{src.scope}</td>
-                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: empty ? '#64748b' : '#22d3ee' }}>
-                    {stats.count.toLocaleString()}
-                  </td>
-                  <td style={styles.td}>
-                    {stats.lastUpdated
-                      ? <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12 }}>{String(stats.lastUpdated).slice(0, 10)}</span>
-                      : <span style={{ color: '#475569' }}>—</span>}
-                  </td>
-                  <td style={styles.td}>
-                    {empty && src.cta && (
-                      <Link to={src.cta} style={styles.cta}>Enter data →</Link>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <>
+          <FreshnessSummary tableStats={tableStats} />
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Table</th>
+                <th style={styles.th}>Scope</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Rows</th>
+                <th style={styles.th}>Last entry</th>
+                <th style={styles.th}>Freshness</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {TABLE_SOURCES.map((src) => {
+                const stats = tableStats[src.table] || { count: 0, lastUpdated: null };
+                const empty = stats.count === 0;
+                const bucket = freshnessBucket(stats);
+                const days = daysSince(stats.lastUpdated);
+                return (
+                  <tr key={src.table}>
+                    <td style={styles.td}>
+                      <div style={{ fontWeight: 600 }}>{src.label}</div>
+                      <div style={styles.tableMono}>{src.table}</div>
+                    </td>
+                    <td style={styles.td}>{src.scope}</td>
+                    <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: empty ? '#64748b' : '#22d3ee' }}>
+                      {stats.count.toLocaleString()}
+                    </td>
+                    <td style={styles.td}>
+                      {stats.lastUpdated
+                        ? (
+                          <>
+                            <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12 }}>{String(stats.lastUpdated).slice(0, 10)}</span>
+                            {days != null && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{days === 0 ? 'today' : `${days} day${days === 1 ? '' : 's'} ago`}</div>}
+                          </>
+                        )
+                        : <span style={{ color: '#475569' }}>—</span>}
+                    </td>
+                    <td style={styles.td}>
+                      <FreshnessPill bucket={bucket} />
+                    </td>
+                    <td style={styles.td}>
+                      {empty && src.cta && (
+                        <Link to={src.cta} style={styles.cta}>Enter data →</Link>
+                      )}
+                      {!empty && bucket === 'stale' && src.cta && (
+                        <Link to={src.cta} style={{ ...styles.cta, color: '#fca5a5' }}>Refresh →</Link>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </>
       )}
+    </div>
+  );
+}
+
+function FreshnessPill({ bucket }) {
+  const s = FRESHNESS_PILL_STYLES[bucket] || FRESHNESS_PILL_STYLES.unknown;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6,
+      padding: '2px 8px', borderRadius: 4, border: `1px solid ${s.border}`,
+      background: s.bg, color: s.fg, display: 'inline-block',
+    }}>
+      {s.label}
+    </span>
+  );
+}
+
+function FreshnessSummary({ tableStats }) {
+  const counts = { fresh: 0, aging: 0, stale: 0, empty: 0, unknown: 0 };
+  for (const src of TABLE_SOURCES) {
+    const stats = tableStats[src.table] || { count: 0, lastUpdated: null };
+    counts[freshnessBucket(stats)] += 1;
+  }
+  const total = TABLE_SOURCES.length;
+  const cells = [
+    { key: 'fresh', label: `${counts.fresh}/${total} fresh` },
+    { key: 'aging', label: `${counts.aging} aging` },
+    { key: 'stale', label: `${counts.stale} stale` },
+    { key: 'empty', label: `${counts.empty} empty` },
+  ];
+  return (
+    <div style={{
+      display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12,
+      padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8,
+    }}>
+      <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginRight: 4, alignSelf: 'center' }}>Freshness</div>
+      {cells.map((c) => {
+        const s = FRESHNESS_PILL_STYLES[c.key];
+        return (
+          <span key={c.key} style={{
+            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+            border: `1px solid ${s.border}`, background: s.bg, color: s.fg,
+          }}>{c.label}</span>
+        );
+      })}
     </div>
   );
 }
