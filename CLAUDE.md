@@ -53,27 +53,50 @@ When you change a placeholder, recheck: targets.js baselines, LearnAgent narrati
 
 The dashboard upgrades from "estimated" to "measured" automatically as admins enter data. The pattern:
 
-1. **Pure helper** in `scopeTotals.js`: `composeScope1FromBills(bills, opts?)`, `composeScope3FromRecords(records)`, `composeSinksFromActuals(rows)` — take Supabase rows, return same shape as the placeholder composer with `provenance: 'measured'` when rows are present, fallback to placeholder when empty. Also: `composeFleetMt`, `composeRefrigerantMt` for the Scope 1 sub-components.
-2. **Per-scope hook** in `src/hooks/`: `useMeasuredScope1()`, `useMeasuredScope3()`, `useMeasuredSinks()` — fetch from Supabase on mount, apply helper, return `{ totalMt, breakdown, provenance, loading, error, measured }`. Each tolerates "table doesn't exist" by falling back to the placeholder so the dashboard still renders before the migrations are applied.
-3. **Composer hook**: `useMeasuredScopeTotals()` returns measured-or-fallback for ALL scopes + sinks + gross/net so consumers (Executive, Goals, NetEstimate, AdminHome, AdminDataQuality) read one consistent measured-aware view.
+1. **Pure helpers** in `scopeTotals.js`: `composeScope1FromBills(bills, opts?)`, `composeScope3FromRecords(records)`, `composeSinksFromActuals(rows)`, plus per-component helpers `composeFleetMt`, `composeRefrigerantMt`, `composePurchasedGoodsMt`, `composeCommutingMt`, `composeSolarFromRecords`, `composeGeothermalFromRecords`, `composeWindFromRecords`. Each takes Supabase rows, returns same shape as the placeholder composer with `provenance: 'measured'` when rows are present, fallback to placeholder when empty.
+2. **Per-scope hook** in `src/hooks/`: `useMeasuredScope1()`, `useMeasuredScope3()`, `useMeasuredSinks()`, `useMeasuredRenewables()` — fetch from Supabase on mount, apply helper, return `{ totalMt, breakdown, provenance, loading, error, measured }` (or component-specific shape for renewables). Each tolerates "table doesn't exist" by falling back to the placeholder so the dashboard still renders before the migrations are applied.
+3. **Composer hook**: `useMeasuredScopeTotals()` returns measured-or-fallback for ALL scopes + sinks + gross/net + `scope3CohortDetail` so consumers (Executive, Goals, NetEstimate, AdminHome, AdminDataQuality, AnnualReport) read one consistent measured-aware view.
+4. **Promise cache**: `src/hooks/measuredCache.js` dedupes Supabase round-trips across pages. Admin writes invalidate via `logAdminWrite()` so the next read re-fetches.
 
 Pages already wired to live data:
 - `Scope1.js` → `useMeasuredScope1()`
 - `Scope3.js` → `useMeasuredScope3()`
 - `Sinks.js`, `Sinks2.js` → `useMeasuredSinks()`
-- `Executive.js`, `Goals.js`, `NetEstimate.js`, `AdminHome.js`, `AdminDataQuality.js` → `useMeasuredScopeTotals()`
+- `Renewables.js`, `Renewables2.js` (+ `Drawdown.js` tab wrapper) → `useMeasuredRenewables()`
+- `Executive.js`, `Goals.js`, `NetEstimate.js`, `AdminHome.js`, `AdminDataQuality.js`, `AdminMethodology.js`, `AnnualReport.js` → `useMeasuredScopeTotals()`
 
 When adding a new measured-data table to Supabase, follow the same pattern: helper in scopeTotals.js, hook in src/hooks/, wire to the page that displays it. Each component flips estimated → measured independently — it's fine to have heating measured + fleet still estimated, etc.
 
 ### Supabase tables (canonical)
 
-`fuel_bills`, `day_students`, `us_boarding_students`, `international_students`, `study_abroad`, `faculty_travel`, `waste`, `scope1_fleet_records`, `scope1_refrigerant_logs`, `forest_stand_actuals`, `admin_audit_log`. Migrations in `supabase/migrations/`. `AdminPortal.fetchAllData` pulls the original 7; the live-measured hooks pull the rest as needed.
+17 tables drive the live dashboard. The canonical list lives in `src/data/adminTableSources.js` (used by both AdminHome and AdminDataQuality):
+
+- **Scope 1**: `fuel_bills`, `scope1_heating_oil`, `scope1_propane`, `scope1_fleet`, `scope1_refrigerants`
+- **Scope 3**: `day_students`, `us_boarding_students`, `international_students`, `study_abroad`, `faculty_travel`, `waste`, `purchased_goods`, `commuting`
+- **Sinks**: `forest_stand_actuals`
+- **Renewables**: `renewables_solar`, `renewables_geothermal`, `renewables_wind`
+- **Audit trail**: `admin_audit_log`
+
+Migrations in `supabase/migrations/`. The legacy `AdminPortal.fetchAllData` pulls the original 7; the live-measured hooks pull the rest as needed.
+
+### Data quality + freshness
+
+`/admin/data-quality` shows per-table row counts, last-entry dates, and cadence-aware freshness pills (fresh / aging / stale / empty / irregular). Cadence buckets in `src/utils/freshness.js`:
+
+- `monthly`:    fresh < 60d,   aging 60–120d,   stale > 120d
+- `quarterly`:  fresh < 120d,  aging 120–365d,  stale > 365d
+- `annual`:     fresh < 540d,  aging 540–720d,  stale > 720d
+- `irregular`:  no staleness check (event-driven tables — refrigerant service, faculty trips, forest walks, wind asset status)
+
+AdminHome surfaces a top-of-page freshness alert when any table is stale/aging/empty. Both pages import the cadence map from `adminTableSources.js`.
 
 ### Admin audit log + CSV export/import
 
 Every successful admin write through `AdminPortal.js` fires `logAdminWrite()` (`src/utils/adminAudit.js`) → `POST /api/admin/audit-log`. Reads via `GET /api/admin/audit-log` (paginated, optional `table` + `dateFrom` / `dateTo` filters) surface in the `/admin/audit-log` viewer page. The endpoint passes through to the same anon Supabase client the rest of the dashboard uses; the bearer-token gate IS the auth boundary, not RLS. No service-role key required.
 
-CSV utilities live in `src/utils/csv.js`: `toCsv(rows, columns?)` for export (RFC-4180 escaping, JSON-stringifies jsonb), `parseCsv(text)` for import (single-pass tokenizer; returns `{ rows, columns, errors }`). Bulk-import UIs are wired into the fuel + waste tabs of `AdminPortal.js` — paste CSV → preview + per-row validation → batch insert + audit log entry.
+CSV utilities live in `src/utils/csv.js`: `toCsv(rows, columns?)` for export (RFC-4180 escaping, JSON-stringifies jsonb), `parseCsv(text)` for import (single-pass tokenizer; returns `{ rows, columns, errors }`). Bulk-import UIs are wired into every canonical admin table via the shared `<CsvImportPanel>` component — paste CSV → preview + per-row validation → batch insert + audit log entry. The 7 validators are tested in `csvValidators.test.js`.
+
+Audit-log paging: `fetchAuditLog(opts)` pulls a single page; `fetchAllAuditLog(opts)` walks offsets until the announced total is reached or a short page signals end-of-data, with optional `onProgress(fetched, total)` and a `maxRows` ceiling (default 50,000). The audit-log viewer uses the second for "Export all filtered".
 
 ### Admin auth (server-checked)
 
@@ -96,14 +119,23 @@ Login Just Works on a fresh deploy without setting either — the fallbacks ship
 
 ## Tests
 
-Vitest. ~240 tests across:
-- `src/__tests__/dataLayer.test.js` — pure data-layer + composer helpers (composeScope1FromBills, composeScope3FromRecords, composeSinksFromActuals, composeFleetMt, composeRefrigerantMt, geographic estimates, hotspots, canonical-arithmetic invariants).
-- `src/__tests__/apiRoutes.test.js` — all `/api/*` handlers including admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
-- `src/__tests__/useMeasuredScope.test.js` — render-hook tests for useMeasuredScope1/3/Sinks with mocked Supabase.
-- `src/__tests__/adminFetch.test.js` — token-expiry detection in the browser fetch wrapper.
-- `src/__tests__/ErrorBoundary.test.js` — fallback rendering on caught errors.
-- `src/__tests__/csv.test.js` — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
-- `src/App.test.js` — top-level smoke test.
+Vitest. 362 tests across 15 files:
+
+- `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
+- `src/__tests__/apiRoutes.test.js` (91) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
+- `src/__tests__/useMeasuredScope.test.js` (23) — render-hook tests for useMeasuredScope1/3/Sinks/Renewables + scope3CohortDetail passthrough.
+- `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
+- `src/__tests__/csv.test.js` (16) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
+- `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
+- `src/__tests__/csvValidators.test.js` (33) — the 7 CsvImportPanel validators.
+- `src/__tests__/auditLogPaging.test.js` (6) — fetchAllAuditLog progress + maxRows ceiling + error short-circuit.
+- `src/__tests__/measuredCache.test.js` (6) — promise-cache dedupe + invalidate.
+- `src/__tests__/FreshnessAlert.test.js` (9) — AdminHome banner severity + grammar + link target.
+- `src/__tests__/Renewables.test.js` (4) — public /renewables measured-flip rendering.
+- `src/__tests__/Goals.test.js` (3) — provenance pill flip on Goals.
+- `src/__tests__/Executive.test.js` (3) — cohort row + ScopeRow pills.
+- `src/__tests__/ErrorBoundary.test.js` (3) — fallback rendering on caught errors.
+- `src/App.test.js` (1) — top-level smoke test.
 
 When adding a measured-data path, mirror the existing test shape: empty/null fallback, math sanity, skip-invalid-row, factor-table exposure, round-trip with the placeholder version.
 
