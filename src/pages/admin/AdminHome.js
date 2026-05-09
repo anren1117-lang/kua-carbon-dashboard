@@ -7,6 +7,8 @@ import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { getCustomActions, getStagePlans } from '../../data/customActions.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { useMeasuredRenewables } from '../../hooks/useMeasuredRenewables.js';
+import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
+import { freshnessBucket } from '../../utils/freshness.js';
 
 // Admin dashboard. Mirrors NAV_GROUPS exactly so the home page and the
 // header dropdowns stay in sync — adding a new admin page in
@@ -130,6 +132,10 @@ export default function AdminHome() {
   const [tick] = useState(0);
   const live = useMeasuredScopeTotals();
   const renewables = useMeasuredRenewables();
+  // Per-table count + lastUpdated for the freshness alert. Mirrors
+  // AdminDataQuality but only computes the summary stats — no full
+  // inventory table to render here.
+  const [freshness, setFreshness] = useState(null); // null | { fresh, aging, stale, empty, irregular, staleTables }
 
   useEffect(() => {
     let cancelled = false;
@@ -145,6 +151,44 @@ export default function AdminHome() {
       } catch (err) {
         if (!cancelled) setError(err.message);
       }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Freshness summary: per-table count + most-recent-timestamp,
+  // bucketed by cadence. Same data as AdminDataQuality's
+  // FreshnessSummary, but here we only render the aggregate counts +
+  // the names of the worst offenders.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          ADMIN_TABLE_SOURCES.map(async (src) => {
+            try {
+              const [{ count }, { data }] = await Promise.all([
+                supabase.from(src.table).select('*', { count: 'exact', head: true }),
+                supabase.from(src.table).select(src.tsCol).order(src.tsCol, { ascending: false }).limit(1),
+              ]);
+              const lastUpdated = Array.isArray(data) && data.length > 0 ? data[0][src.tsCol] : null;
+              return { src, count: count ?? 0, lastUpdated };
+            } catch {
+              // Tolerate "table doesn't exist yet" the same way the
+              // live-measured hooks do — empty stats, no error pill.
+              return { src, count: 0, lastUpdated: null };
+            }
+          })
+        );
+        if (cancelled) return;
+        const tally = { fresh: 0, aging: 0, stale: 0, empty: 0, irregular: 0, unknown: 0 };
+        const staleTables = [];
+        for (const r of results) {
+          const bucket = freshnessBucket({ count: r.count, lastUpdated: r.lastUpdated }, r.src.cadence);
+          tally[bucket] += 1;
+          if (bucket === 'stale') staleTables.push(r.src.label);
+        }
+        setFreshness({ ...tally, staleTables });
+      } catch { /* non-critical; skip */ }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -282,6 +326,8 @@ export default function AdminHome() {
         <Stat label="Stage plans"           value={stagePlanCount}                              unit={stagePlanCount === 1 ? 'in your library' : 'in your library'} accent="#22c55e" />
       </div>
 
+      <FreshnessAlert freshness={freshness} />
+
       <Section
         title="Data ingestion status"
         hint={`${measuredCount} of ${totalCount} scope components are now sourced from measured data. The rest fall back to the published-method bottom-up estimate until the corresponding records land.`}
@@ -376,6 +422,48 @@ function formatFeedDate(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return String(iso);
   return d.toISOString().slice(0, 10);
+}
+
+function FreshnessAlert({ freshness }) {
+  if (!freshness) return null;
+  const { stale, aging, empty, fresh, irregular, staleTables = [] } = freshness;
+  const total = stale + aging + empty + fresh + irregular + (freshness.unknown ?? 0);
+  // No alert when nothing's wrong AND nothing's empty — in that
+  // case, we don't bother adding noise above the ingestion-status
+  // section.
+  const anyConcern = stale > 0 || aging > 0 || empty > 0;
+  if (!anyConcern) return null;
+  const accent = stale > 0 ? '#7f1d1d' : aging > 0 ? '#92400e' : '#475569';
+  const fg = stale > 0 ? '#fca5a5' : aging > 0 ? '#fcd34d' : '#94a3b8';
+  const bg = stale > 0 ? '#3a0d0d' : aging > 0 ? '#3a2a0e' : '#0b1220';
+  const headline = stale > 0
+    ? `${stale} table${stale === 1 ? '' : 's'} stale`
+    : aging > 0
+      ? `${aging} table${aging === 1 ? '' : 's'} aging`
+      : `${empty} table${empty === 1 ? '' : 's'} empty`;
+  return (
+    <div style={{
+      marginTop: 16, padding: '14px 18px', background: bg, border: `1px solid ${accent}`,
+      borderLeft: `4px solid ${accent}`, borderRadius: 10, display: 'grid', gap: 6,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: fg }}>
+          {stale > 0 ? '⚠ ' : ''}Data freshness · {headline}
+        </div>
+        <Link to="/admin/data-quality" style={{ fontSize: 12, color: '#86efac', textDecoration: 'none', fontWeight: 700 }}>
+          Review on Data Quality →
+        </Link>
+      </div>
+      <div style={{ fontSize: 12, color: '#94a3b8' }}>
+        {fresh}/{total} fresh · {aging} aging · {stale} stale · {empty} empty{irregular > 0 ? ` · ${irregular} irregular` : ''}
+      </div>
+      {staleTables.length > 0 && (
+        <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 4 }}>
+          Stale: {staleTables.slice(0, 5).join(' · ')}{staleTables.length > 5 ? ` · +${staleTables.length - 5} more` : ''}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Section({ title, hint, accent, children }) {

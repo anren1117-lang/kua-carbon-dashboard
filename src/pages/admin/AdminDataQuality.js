@@ -5,6 +5,7 @@ import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { GROSS_MT, SCOPE2_TOTAL_MT } from '../../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { freshnessBucket, daysSince, FRESHNESS_PILL_STYLES } from '../../utils/freshness.js';
+import { ADMIN_TABLE_SOURCES as TABLE_SOURCES } from '../../data/adminTableSources.js';
 
 // /admin/data-quality
 //
@@ -28,36 +29,8 @@ import { freshnessBucket, daysSince, FRESHNESS_PILL_STYLES } from '../../utils/f
 // list all of them — otherwise admins entering data through the
 // per-scope pages would see "0 rows" on a dashboard that's actually
 // reading from the populated table elsewhere.
-// Cadence guides which freshness bucket thresholds apply per table.
-//   monthly:   fuel deliveries, waste haul-outs, BMS-period rollups
-//   quarterly: business-office spend rollups
-//   annual:    student rosters, commute survey
-//   irregular: event-driven (refrigerant service, trip-level travel,
-//              forest walk-throughs, wind asset status)
-const TABLE_SOURCES = [
-  // ─── Scope 1 ──────────────────────────────────────────────────
-  { table: 'fuel_bills',                label: 'Fuel bills (legacy admin portal)', scope: 'Scope 1', tsCol: 'date',          cadence: 'monthly',   cta: '/admin/legacy' },
-  { table: 'scope1_heating_oil',        label: 'Heating oil deliveries',           scope: 'Scope 1', tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/heating-oil' },
-  { table: 'scope1_propane',            label: 'Propane deliveries',               scope: 'Scope 1', tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/propane' },
-  { table: 'scope1_fleet',              label: 'Fleet fuel records',               scope: 'Scope 1', tsCol: 'period_end',    cadence: 'monthly',   cta: '/admin/scope-1/fleet' },
-  { table: 'scope1_refrigerants',       label: 'Refrigerant service logs',         scope: 'Scope 1', tsCol: 'service_date',  cadence: 'irregular', cta: '/admin/scope-1/refrigerants' },
-  // ─── Scope 3 — cohorts ────────────────────────────────────────
-  { table: 'day_students',              label: 'Day students',                     scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
-  { table: 'us_boarding_students',      label: 'US boarding students',             scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
-  { table: 'international_students',    label: 'International students',           scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
-  // ─── Scope 3 — trips + waste + spend + commute ────────────────
-  { table: 'study_abroad',              label: 'Study abroad trips',               scope: 'Scope 3', tsCol: 'departure_date',cadence: 'irregular', cta: '/admin/scope-3' },
-  { table: 'faculty_travel',            label: 'Faculty travel',                   scope: 'Scope 3', tsCol: 'departure_date',cadence: 'irregular', cta: '/admin/scope-3' },
-  { table: 'waste',                     label: 'Waste records',                    scope: 'Scope 3', tsCol: 'date',          cadence: 'monthly',   cta: '/admin/scope-3' },
-  { table: 'purchased_goods',           label: 'Purchased goods (Cat 1 EEIO)',     scope: 'Scope 3', tsCol: 'created_at',    cadence: 'quarterly', cta: '/admin/scope-3/cat1-purchased-goods' },
-  { table: 'commuting',                 label: 'Faculty/staff commute (Cat 7)',    scope: 'Scope 3', tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3/cat7-commuting' },
-  // ─── Sinks ────────────────────────────────────────────────────
-  { table: 'forest_stand_actuals',      label: 'Forest stand inventory',           scope: 'Sinks',   tsCol: 'created_at',    cadence: 'irregular', cta: '/admin/sinks/stands' },
-  // ─── Renewables ───────────────────────────────────────────────
-  { table: 'renewables_solar',          label: 'Solar PV records',                 scope: 'Renewables', tsCol: 'period_end', cadence: 'monthly',   cta: '/admin/renewables/solar' },
-  { table: 'renewables_geothermal',     label: 'Geothermal records',               scope: 'Renewables', tsCol: 'period_end', cadence: 'monthly',   cta: '/admin/renewables/geothermal' },
-  { table: 'renewables_wind',           label: 'Wind asset documentation',         scope: 'Renewables', tsCol: 'as_of_date', cadence: 'irregular', cta: '/admin/renewables/wind' },
-];
+// Canonical admin-table list lives in src/data/adminTableSources.js
+// (shared with AdminHome). See that file for cadence semantics.
 
 export default function AdminDataQuality() {
   const live = useMeasuredScopeTotals();
