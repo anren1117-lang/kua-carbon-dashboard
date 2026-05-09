@@ -418,7 +418,7 @@ function formatFeedDate(iso) {
   return d.toISOString().slice(0, 10);
 }
 
-function FreshnessAlert({ freshness }) {
+export function FreshnessAlert({ freshness }) {
   if (!freshness) return null;
   const { stale, aging, empty, fresh, irregular, staleTables = [] } = freshness;
   const total = stale + aging + empty + fresh + irregular + (freshness.unknown ?? 0);
