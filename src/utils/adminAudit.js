@@ -88,3 +88,49 @@ export async function fetchAuditLog(opts = {}) {
     return { rows: [], total: null, offset: 0, limit: 0, error: err?.message || 'fetch failed' };
   }
 }
+
+/**
+ * Page through fetchAuditLog to gather ALL rows for the supplied
+ * filter (table / dateFrom / dateTo). The audit-log API caps each
+ * request at 500 rows, so for archives we walk offsets until either
+ * we've fetched the announced total or a page comes back short.
+ *
+ * The optional `onProgress(fetched, total)` callback fires after
+ * each successful page so callers can render "Exporting X of Y…".
+ *
+ * Stops early on error — returns whatever rows were collected so
+ * far plus the error so callers can decide whether to use the
+ * partial export or surface the failure.
+ *
+ * @param {{ table?: string, dateFrom?: string, dateTo?: string, pageSize?: number, onProgress?: (fetched: number, total: number|null) => void, maxRows?: number }} [opts]
+ * @returns {Promise<{ rows: object[], total: number|null, error: string | null }>}
+ */
+export async function fetchAllAuditLog(opts = {}) {
+  const pageSize = Math.max(1, Math.min(opts.pageSize || 500, 500));
+  // Hard ceiling so a runaway loop or a server bug can't pin the
+  // browser. 50,000 rows × 500/page = 100 round-trips, plenty.
+  const maxRows = Math.max(0, opts.maxRows ?? 50_000);
+  const all = [];
+  let total = null;
+  let offset = 0;
+  while (offset < maxRows) {
+    const page = await fetchAuditLog({
+      limit: pageSize,
+      offset,
+      table: opts.table,
+      dateFrom: opts.dateFrom,
+      dateTo: opts.dateTo,
+    });
+    if (page.error) return { rows: all, total, error: page.error };
+    if (page.total !== null) total = page.total;
+    if (page.rows.length === 0) break;
+    all.push(...page.rows);
+    if (typeof opts.onProgress === 'function') opts.onProgress(all.length, total);
+    // If we've reached the announced total, or the server returned a
+    // short page (signaling no more data), we're done.
+    if (total !== null && all.length >= total) break;
+    if (page.rows.length < pageSize) break;
+    offset += pageSize;
+  }
+  return { rows: all, total, error: null };
+}
