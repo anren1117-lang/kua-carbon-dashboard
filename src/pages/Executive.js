@@ -174,6 +174,9 @@ export default function Executive() {
             color="#ef4444"
             scopeKey="scope3"
           />
+          {live.scope3Measured && live.scope3CohortDetail.length > 0 && (
+            <Scope3CohortMicroRow detail={live.scope3CohortDetail} />
+          )}
           <ScopeRow
             to="/sinks-os"
             label="Sinks — forest sequestration (subtracts)"
@@ -415,6 +418,49 @@ function ScopeRow({ to, label, mt, share, color, sinks, scopeKey }) {
     </Link>
   );
 }
+
+// Inline Scope 3 cohort breakdown shown only when the live hook flips
+// to measured. Compact one-line summary so it doesn't compete with the
+// adjacent ScopeRow visually but still surfaces the structure (day vs
+// boarder vs international vs trips) that's otherwise only on /scope-3.
+function Scope3CohortMicroRow({ detail }) {
+  return (
+    <div style={cohortMicroStyles.row}>
+      <div style={cohortMicroStyles.label}>Scope 3 breakdown · live</div>
+      <div style={cohortMicroStyles.cells}>
+        {detail.map((c) => (
+          <div key={c.cohort} style={cohortMicroStyles.cell}>
+            <div style={cohortMicroStyles.cellLabel}>{c.label}</div>
+            <div style={cohortMicroStyles.cellMt}>
+              {Math.round(c.mt).toLocaleString()} <span style={cohortMicroStyles.cellUnit}>mt</span>
+            </div>
+            <div style={{
+              ...cohortMicroStyles.cellPill,
+              background: c.provenance === 'measured' ? '#0e3a1f' : '#1f2937',
+              color: c.provenance === 'measured' ? '#86efac' : '#94a3b8',
+              borderColor: c.provenance === 'measured' ? '#16a34a' : '#475569',
+            }}>
+              {c.provenance === 'measured' ? `${c.count} rec` : 'est.'}
+            </div>
+          </div>
+        ))}
+      </div>
+      <Link to="/scope-3" style={cohortMicroStyles.link}>method-by-method →</Link>
+    </div>
+  );
+}
+
+const cohortMicroStyles = {
+  row: { padding: '10px 14px', marginLeft: 18, background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #ef4444', borderRadius: 8, display: 'grid', gap: 8 },
+  label: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6 },
+  cells: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 },
+  cell: { padding: '8px 10px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
+  cellLabel: { fontSize: 12, color: '#cbd5e1' },
+  cellMt: { fontSize: 16, fontWeight: 700, color: '#e5e7eb', marginTop: 2, fontVariantNumeric: 'tabular-nums' },
+  cellUnit: { fontSize: 11, fontWeight: 500, color: '#94a3b8' },
+  cellPill: { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4, padding: '1px 6px', borderRadius: 3, border: '1px solid', display: 'inline-block' },
+  link: { fontSize: 12, color: '#86efac', textDecoration: 'none', justifySelf: 'end' },
+};
 
 function LinkGroup({ label, links }) {
   return (

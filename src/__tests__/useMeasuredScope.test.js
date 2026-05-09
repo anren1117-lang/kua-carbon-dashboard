@@ -51,6 +51,7 @@ import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { _resetCacheForTests } from '../hooks/measuredCache.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
@@ -344,5 +345,40 @@ describe('useMeasuredRenewables', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toMatch(/rls/i);
     expect(result.current.measured).toBe(false);
+  });
+});
+
+describe('useMeasuredScopeTotals — scope3CohortDetail passthrough', () => {
+  it('exposes empty scope3CohortDetail when scope 3 is empty', async () => {
+    // All Scope 3 source tables empty — composer keeps placeholder
+    // shape (no cohortDetail property); composer hook coerces to [].
+    const { result } = renderHook(() => useMeasuredScopeTotals());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(Array.isArray(result.current.scope3CohortDetail)).toBe(true);
+    expect(result.current.scope3CohortDetail).toHaveLength(0);
+    expect(result.current.scope3Measured).toBe(false);
+  });
+
+  it('passes through cohortDetail when measured scope 3 lands', async () => {
+    setNextResponses({
+      day_students: { data: [{ zip_code: '03777', school_year: '2025-2026' }, { zip_code: '03777', school_year: '2025-2026' }], error: null },
+      us_boarding_students: { data: [], error: null },
+      international_students: { data: [], error: null },
+      study_abroad: { data: [], error: null },
+      faculty_travel: { data: [], error: null },
+      waste: { data: [], error: null },
+      purchased_goods: { data: [], error: null },
+      commuting: { data: [], error: null },
+    });
+    const { result } = renderHook(() => useMeasuredScopeTotals());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.scope3Measured).toBe(true);
+    // cohortDetail should now be populated with the four canonical cohort rows.
+    expect(result.current.scope3CohortDetail.length).toBe(4);
+    const day = result.current.scope3CohortDetail.find((c) => c.cohort === 'day');
+    expect(day.count).toBe(2);
+    expect(day.provenance).toBe('measured');
+    // 2 day students × 1.4 mt/student = 2.8 → rounds to 3
+    expect(day.mt).toBe(3);
   });
 });

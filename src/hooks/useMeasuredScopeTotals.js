@@ -25,6 +25,7 @@ import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
  *   scope1Measured: boolean,
  *   scope3Measured: boolean,
  *   sinksMeasured: boolean,
+ *   scope3CohortDetail: Array<{ cohort: string, label: string, count: number, mt: number, perStudentMt: number|null, provenance: string, method: string }>,
  * }}
  */
 export function useMeasuredScopeTotals() {
@@ -56,5 +57,10 @@ export function useMeasuredScopeTotals() {
     scope1Measured: s1.measured,
     scope3Measured: s3.measured,
     sinksMeasured: sinks.measured,
+    // Expose Scope 3's per-cohort breakdown so non-Scope3 pages
+    // (Executive, AnnualReport) can render the same measured table
+    // without re-fetching. Will be the placeholder array when s3 is
+    // estimated and the composed array when measured.
+    scope3CohortDetail: Array.isArray(s3.cohortDetail) ? s3.cohortDetail : [],
   };
 }
