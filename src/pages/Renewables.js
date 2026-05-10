@@ -89,7 +89,7 @@ function Renewables() {
         {/* Solar */}
         <div style={styles.card}>
           <div style={styles.head}>
-            <div style={styles.name}>Solar PV Array</div>
+            <h2 style={{ ...styles.name, margin: 0 }}>Solar PV Array</h2>
             <div style={{ display: 'flex', gap: 8 }}>
               <ProvenancePill measured={r.solarMeasured} />
               <StatusPill state="Operational" />
@@ -119,7 +119,7 @@ function Renewables() {
         {/* Geothermal */}
         <div style={styles.card}>
           <div style={styles.head}>
-            <div style={styles.name}>Geothermal Ground-Source Heat Pump</div>
+            <h2 style={{ ...styles.name, margin: 0 }}>Geothermal Ground-Source Heat Pump</h2>
             <div style={{ display: 'flex', gap: 8 }}>
               <ProvenancePill measured={r.geothermalMeasured} />
               <StatusPill state="Operational" />
@@ -148,7 +148,7 @@ function Renewables() {
         {/* Wind */}
         <div style={styles.card}>
           <div style={styles.head}>
-            <div style={styles.name}>Wind Turbine</div>
+            <h2 style={{ ...styles.name, margin: 0 }}>Wind Turbine</h2>
             <div style={{ display: 'flex', gap: 8 }}>
               <ProvenancePill measured={r.windMeasured} />
               <StatusPill state={windStatus} />
