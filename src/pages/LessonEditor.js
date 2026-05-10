@@ -300,7 +300,7 @@ function LessonEditorContent() {
           </button>
         </div>
 
-        {error && <div style={styles.error}>Error: {error}</div>}
+        {error && <div role="alert" style={styles.error}>Error: {error}</div>}
       </ModuleSection>
 
       {draft && (

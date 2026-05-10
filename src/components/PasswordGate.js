@@ -127,7 +127,7 @@ export function PasswordGate({ title, subtitle, envKey, storageKey, defaultPassw
               autoComplete="current-password"
               autoFocus
             />
-            {error && <div style={styles.error}>{error}</div>}
+            {error && <div role="alert" style={styles.error}>{error}</div>}
             <button type="submit" style={{ ...styles.submit, background: accent }} disabled={!pw || submitting}>
               {submitting ? 'Checking…' : 'Unlock'}
             </button>

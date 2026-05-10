@@ -221,7 +221,7 @@ export function EnvironmentalAgent() {
         )}
 
         {error && error.kind !== 'setup' && (
-          <div style={styles.error}>
+          <div role="alert" style={styles.error}>
             <strong>Couldn't reach the assistant.</strong> {error.message}
           </div>
         )}

@@ -303,7 +303,7 @@ export default function AdminPlanAgent() {
             </button>
           )}
         </div>
-        {error && <div style={styles.error}>{error}</div>}
+        {error && <div role="alert" style={styles.error}>{error}</div>}
       </ModuleSection>
 
       {hasPlan && (

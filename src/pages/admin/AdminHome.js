@@ -397,7 +397,7 @@ export default function AdminHome() {
       )}
 
       <Section title="Supabase record counts" hint="Rows currently in each Supabase table. Falls back to '…' while loading or '—' if the database isn't reachable.">
-        {error && <div style={styles.error}>Error: {error}</div>}
+        {error && <div role="alert" style={styles.error}>Error: {error}</div>}
         <div style={styles.recordGrid}>
           {ADMIN_TABLE_SOURCES.map(({ table }) => (
             <div key={table} style={styles.recordCell}>
