@@ -175,7 +175,7 @@ export default function AdminDataQuality() {
           {loading ? 'Refreshing…' : '↻ Refresh'}
         </button>
       </div>
-      {loading && <div style={styles.placeholder}>Loading row counts…</div>}
+      {loading && <div role="status" style={styles.placeholder}>Loading row counts…</div>}
       {!loading && (
         <>
           <FreshnessSummary tableStats={tableStats} />

@@ -207,7 +207,7 @@ export default function AdminAuditLog() {
         </button>
       </div>
 
-      {loading && <div style={styles.placeholder}>Loading…</div>}
+      {loading && <div role="status" style={styles.placeholder}>Loading…</div>}
       {error && <div role="alert" style={styles.error}>{error}</div>}
       {!loading && !error && rows.length === 0 && (
         <div style={styles.placeholder}>

@@ -741,8 +741,8 @@ function LivePanel({ buildingId }) {
       </div>
       {enabled && (
         <div style={styles.liveBody}>
-          {loading && <div style={styles.liveStatus}>Loading from /api/buildings/{buildingId}/energy …</div>}
-          {error && <div style={{ ...styles.liveStatus, color: '#fca5a5' }}>Error: {error}</div>}
+          {loading && <div role="status" style={styles.liveStatus}>Loading from /api/buildings/{buildingId}/energy …</div>}
+          {error && <div role="alert" style={{ ...styles.liveStatus, color: '#fca5a5' }}>Error: {error}</div>}
           {data && (
             <div style={styles.liveGrid}>
               <Field label="Live total (30d)" value={`${data.totalKwh.toLocaleString()} kWh`} />
