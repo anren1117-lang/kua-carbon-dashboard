@@ -303,6 +303,7 @@ function AdminLayout() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
+            aria-label="Admin password"
             style={styles.input}
             autoFocus
             disabled={submitting}
@@ -310,7 +311,7 @@ function AdminLayout() {
           <button type="submit" style={styles.loginBtn} disabled={submitting || !password}>
             {submitting ? 'Checking…' : 'Sign in'}
           </button>
-          {error && <div style={styles.err}>{error}</div>}
+          {error && <div role="alert" style={styles.err}>{error}</div>}
         </form>
       </div>
     );
