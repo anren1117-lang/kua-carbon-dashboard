@@ -436,10 +436,14 @@ export function FreshnessAlert({ freshness }) {
       ? `${aging} table${aging === 1 ? '' : 's'} aging`
       : `${empty} table${empty === 1 ? '' : 's'} empty`;
   return (
-    <div style={{
-      marginTop: 16, padding: '14px 18px', background: bg, border: `1px solid ${accent}`,
-      borderLeft: `4px solid ${accent}`, borderRadius: 10, display: 'grid', gap: 6,
-    }}>
+    <div
+      role="region"
+      aria-label={stale > 0 ? `Data freshness — ${stale} stale tables` : 'Data freshness'}
+      style={{
+        marginTop: 16, padding: '14px 18px', background: bg, border: `1px solid ${accent}`,
+        borderLeft: `4px solid ${accent}`, borderRadius: 10, display: 'grid', gap: 6,
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: fg }}>
           {stale > 0 ? '⚠ ' : ''}Data freshness · {headline}
