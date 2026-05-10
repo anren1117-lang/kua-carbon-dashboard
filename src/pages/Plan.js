@@ -10,9 +10,22 @@ import Actions from './Actions.js';
 export default function Plan() {
   const [tab, setTab] = useState('goals');
 
+  // Arrow-key tablist navigation per WAI-ARIA — automatic activation.
+  function onKey(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const next = tab === 'goals' ? 'actions' : 'goals';
+    setTab(e.key === 'Home' ? 'goals' : e.key === 'End' ? 'actions' : next);
+    requestAnimationFrame(() => {
+      const target = e.key === 'Home' ? 'goals' : e.key === 'End' ? 'actions' : next;
+      const el = document.getElementById(`plan-tab-${target}`);
+      if (el) el.focus();
+    });
+  }
+
   return (
     <div>
-      <div style={styles.tabs} role="tablist" aria-label="Plan sections">
+      <div style={styles.tabs} role="tablist" aria-label="Plan sections" onKeyDown={onKey}>
         <Tab active={tab === 'goals'} onClick={() => setTab('goals')} id="plan-tab-goals" controlsId="plan-panel-goals">
           Goals & Targets
         </Tab>

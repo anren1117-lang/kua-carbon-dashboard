@@ -84,6 +84,27 @@ export default function AdminScope3() {
     setParams(next, { replace: false });
   }
 
+  // WAI-ARIA tab keyboard navigation. Arrow keys move focus +
+  // activate (automatic-activation pattern). Home/End jump to ends.
+  // Wraps at boundaries. Only fires for keys we handle so default
+  // keyboard behavior (Tab to next focusable, Enter on button) stays.
+  function onTabKeyDown(e) {
+    const idx = TABS.findIndex((t) => t.slug === activeSlug);
+    let nextIdx = -1;
+    if (e.key === 'ArrowRight')      nextIdx = (idx + 1) % TABS.length;
+    else if (e.key === 'ArrowLeft')  nextIdx = (idx - 1 + TABS.length) % TABS.length;
+    else if (e.key === 'Home')       nextIdx = 0;
+    else if (e.key === 'End')        nextIdx = TABS.length - 1;
+    else return;
+    e.preventDefault();
+    pickTab(TABS[nextIdx].slug);
+    // Move focus to the newly active tab so the screen reader follows.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`scope3-tab-${TABS[nextIdx].slug}`);
+      if (el) el.focus();
+    });
+  }
+
   // Quick metric strip — total rows across the Supabase-backed tabs.
   const totalRows = TABS.reduce(
     (s, t) => s + (typeof counts[t.table] === 'number' ? counts[t.table] : 0),
@@ -116,7 +137,7 @@ export default function AdminScope3() {
         title="Pick a category"
         hint="Click any tab to switch the form below. Numbers in parentheses are current row counts in Supabase."
       >
-        <div style={styles.tabBar} role="tablist" aria-label="Scope 3 categories">
+        <div style={styles.tabBar} role="tablist" aria-label="Scope 3 categories" onKeyDown={onTabKeyDown}>
           {TABS.map((t) => {
             const isActive = t.slug === activeSlug;
             const count = typeof counts[t.table] === 'number' ? counts[t.table] : null;

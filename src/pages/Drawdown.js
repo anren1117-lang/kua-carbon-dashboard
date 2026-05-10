@@ -10,9 +10,22 @@ import Sinks from './Sinks2.js';
 export default function Drawdown() {
   const [tab, setTab] = useState('renewables');
 
+  // Arrow-key tablist navigation per WAI-ARIA — automatic activation.
+  function onKey(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const next = tab === 'renewables' ? 'sinks' : 'renewables';
+    const target = e.key === 'Home' ? 'renewables' : e.key === 'End' ? 'sinks' : next;
+    setTab(target);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`drawdown-tab-${target}`);
+      if (el) el.focus();
+    });
+  }
+
   return (
     <div>
-      <div style={styles.tabs} role="tablist" aria-label="Drawdown sections">
+      <div style={styles.tabs} role="tablist" aria-label="Drawdown sections" onKeyDown={onKey}>
         <Tab active={tab === 'renewables'} onClick={() => setTab('renewables')} id="drawdown-tab-renewables" controlsId="drawdown-panel-renewables">
           Renewables (solar, geothermal)
         </Tab>
