@@ -99,8 +99,11 @@ button {
   border-radius: 4px;
 }
 
-/* Skip-to-content link — visually hidden until focused via Tab. */
-a[href="#main"]:focus {
+/* Skip-to-content link — visually hidden until focused via Tab.
+   Both the public Layout (#main) and the AdminLayout (#admin-main)
+   render a skip link with the same off-screen-then-fixed pattern. */
+a[href="#main"]:focus,
+a[href="#admin-main"]:focus {
   left: 8px !important;
   top: 8px !important;
   position: fixed !important;

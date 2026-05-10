@@ -73,6 +73,10 @@ export const NAV_GROUPS = [
 
 const styles = {
   shell: { minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: '#0b1220', color: '#e5e7eb' },
+  // Off-screen until focused — same pattern as Layout.js. The :focus-visible
+  // rule in App.css gives it a visible outline when the keyboard user
+  // tabs to it as the first focusable element on the page.
+  skipLink: { position: 'absolute', left: -9999, top: 8, padding: '8px 12px', background: '#22d3ee', color: '#0b1220', textDecoration: 'none', borderRadius: 4, fontWeight: 700, zIndex: 100 },
   header: { borderBottom: '1px solid #1f2937', background: '#0f172a', position: 'sticky', top: 0, zIndex: 10 },
   headerInner: { maxWidth: 1200, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' },
   brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap' },
@@ -319,6 +323,7 @@ function AdminLayout() {
 
   return (
     <div style={styles.shell}>
+      <a href="#admin-main" style={styles.skipLink}>Skip to main content</a>
       <header style={styles.header}>
         <div style={styles.headerInner}>
           <NavLink to="/admin" style={styles.brand}>
@@ -332,7 +337,7 @@ function AdminLayout() {
           <button type="button" onClick={handleLogout} style={styles.logoutBtn}>Sign out</button>
         </div>
       </header>
-      <main style={styles.main}>
+      <main id="admin-main" tabIndex="-1" style={styles.main}>
         <Breadcrumb />
         <ErrorBoundary>
           <Outlet />
