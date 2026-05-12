@@ -87,6 +87,21 @@ describe('FreshnessAlert (AdminHome banner)', () => {
     expect(screen.queryByText('T7')).toBeNull();
   });
 
+  it('renders empty + aging tables as their own deep-link chip rows', () => {
+    wrap(<FreshnessAlert freshness={{
+      fresh: 10, aging: 1, stale: 1, empty: 1, irregular: 0, unknown: 0,
+      staleTables: [{ label: 'Propane deliveries', cta: '/admin/scope-1/propane' }],
+      emptyTables: [{ label: 'Solar PV records', cta: '/admin/renewables/solar' }],
+      agingTables: [{ label: 'Faculty travel', cta: '/admin/scope-3' }],
+    }} />);
+    expect(screen.getByRole('link', { name: /Solar PV records/i }).getAttribute('href')).toBe('/admin/renewables/solar');
+    expect(screen.getByRole('link', { name: /Propane deliveries/i }).getAttribute('href')).toBe('/admin/scope-1/propane');
+    expect(screen.getByRole('link', { name: /Faculty travel/i }).getAttribute('href')).toBe('/admin/scope-3');
+    expect(screen.getByText('Empty:')).toBeTruthy();
+    expect(screen.getByText('Stale:')).toBeTruthy();
+    expect(screen.getByText('Aging:')).toBeTruthy();
+  });
+
   it('renders each stale table as a deep link when staleTables carries {label, cta}', () => {
     wrap(<FreshnessAlert freshness={{
       fresh: 14, aging: 0, stale: 2, empty: 0, irregular: 0, unknown: 0,

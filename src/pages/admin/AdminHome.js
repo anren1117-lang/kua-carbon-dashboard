@@ -199,6 +199,8 @@ export default function AdminHome() {
         const nextCounts = {};
         const tally = { fresh: 0, aging: 0, stale: 0, empty: 0, irregular: 0, unknown: 0 };
         const staleTables = [];
+        const emptyTables = [];
+        const agingTables = [];
         let firstError = null;
         for (const r of results) {
           nextCounts[r.src.table] = r.count;
@@ -206,9 +208,11 @@ export default function AdminHome() {
           const bucket = freshnessBucket({ count: r.count, lastUpdated: r.lastUpdated }, r.src.cadence);
           tally[bucket] += 1;
           if (bucket === 'stale') staleTables.push({ label: r.src.label, cta: r.src.cta });
+          else if (bucket === 'empty') emptyTables.push({ label: r.src.label, cta: r.src.cta });
+          else if (bucket === 'aging') agingTables.push({ label: r.src.label, cta: r.src.cta });
         }
         setCounts(nextCounts);
-        setFreshness({ ...tally, staleTables });
+        setFreshness({ ...tally, staleTables, emptyTables, agingTables });
         if (firstError) setError(firstError.message || 'fetch failed');
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -617,9 +621,34 @@ const briefStyles = {
   followup: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 },
 };
 
+function ChipRow({ label, tables, color, link }) {
+  if (!tables || tables.length === 0) return null;
+  return (
+    <div style={{ fontSize: 12, color, marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline' }}>
+      <span style={{ marginRight: 2 }}>{label}:</span>
+      {tables.slice(0, 5).map((t, i) => {
+        const txt = typeof t === 'string' ? t : t.label;
+        const cta = typeof t === 'string' ? null : t.cta;
+        return cta ? (
+          <Link
+            key={txt + i}
+            to={cta}
+            style={{ color: link, textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 2 }}
+          >
+            {txt}
+          </Link>
+        ) : (
+          <span key={txt + i}>{txt}</span>
+        );
+      })}
+      {tables.length > 5 && <span style={{ color: '#94a3b8' }}>+{tables.length - 5} more</span>}
+    </div>
+  );
+}
+
 export function FreshnessAlert({ freshness }) {
   if (!freshness) return null;
-  const { stale, aging, empty, fresh, irregular, staleTables = [] } = freshness;
+  const { stale, aging, empty, fresh, irregular, staleTables = [], emptyTables = [], agingTables = [] } = freshness;
   const total = stale + aging + empty + fresh + irregular + (freshness.unknown ?? 0);
   // No alert when nothing's wrong AND nothing's empty — in that
   // case, we don't bother adding noise above the ingestion-status
@@ -654,27 +683,9 @@ export function FreshnessAlert({ freshness }) {
       <div style={{ fontSize: 12, color: '#94a3b8' }}>
         {fresh}/{total} fresh · {aging} aging · {stale} stale · {empty} empty{irregular > 0 ? ` · ${irregular} irregular` : ''}
       </div>
-      {staleTables.length > 0 && (
-        <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline' }}>
-          <span style={{ marginRight: 2 }}>Stale:</span>
-          {staleTables.slice(0, 5).map((t, i) => {
-            const label = typeof t === 'string' ? t : t.label;
-            const cta = typeof t === 'string' ? null : t.cta;
-            return cta ? (
-              <Link
-                key={label + i}
-                to={cta}
-                style={{ color: '#fecaca', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 2 }}
-              >
-                {label}
-              </Link>
-            ) : (
-              <span key={label + i}>{label}</span>
-            );
-          })}
-          {staleTables.length > 5 && <span style={{ color: '#94a3b8' }}>+{staleTables.length - 5} more</span>}
-        </div>
-      )}
+      <ChipRow label="Empty" tables={emptyTables} color="#fcd34d" link="#fde68a" />
+      <ChipRow label="Stale" tables={staleTables} color="#fca5a5" link="#fecaca" />
+      <ChipRow label="Aging" tables={agingTables} color="#fbbf24" link="#fde68a" />
     </div>
   );
 }
