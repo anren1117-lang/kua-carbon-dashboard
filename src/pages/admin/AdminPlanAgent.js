@@ -153,14 +153,25 @@ export default function AdminPlanAgent() {
   }, [context, history]);
 
   const completeItem = (item) => {
-    const note = window.prompt('Optional: any actual mt saved or notes for the record?');
+    // Two-step prompt — first capture the actual mt saved (defaults
+    // to the estimate); then optional notes. Skip-friendly: blank
+    // submission keeps the estimate.
+    const raw = window.prompt(
+      `Actual mt saved (annual) — defaults to estimate ${item.expectedMtPerYear} mt:`,
+      String(item.expectedMtPerYear)
+    );
+    if (raw === null) return; // user cancelled
+    const parsed = Number(raw);
+    const actualMt = Number.isFinite(parsed) && parsed >= 0 ? parsed : item.expectedMtPerYear;
+    const note = window.prompt('Optional note (cost actuals, completion date, surprises):') || '';
     setHistory((h) => ({
       completed: [...h.completed, {
         id: item.id,
         title: item.title,
         when: new Date().toISOString(),
-        mtSaved: item.expectedMtPerYear,
-        note: note || '',
+        expectedMt: item.expectedMtPerYear,
+        mtSaved: actualMt,
+        note,
       }],
       declined: h.declined,
     }));
@@ -336,17 +347,44 @@ export default function AdminPlanAgent() {
       {(history.completed.length > 0 || history.declined.length > 0) && (
         <ModuleSection title="Plan history" hint="Re-generate the plan to bake this history into the next round.">
           {history.completed.length > 0 && (
+            <CumulativeReductionChart
+              completed={history.completed}
+              grossMt={context.grossMt}
+            />
+          )}
+          {history.completed.length > 0 && (
             <div style={styles.historyBlock}>
               <div style={styles.historyTitle}>Shipped ({history.completed.length}) · {Math.round(mtAlreadySaved).toLocaleString()} mt/yr</div>
               <ul style={styles.historyList}>
-                {history.completed.map((c, i) => (
-                  <li key={i} style={styles.historyItem}>
-                    <span style={styles.historyCheck}>✓</span>
-                    <span style={{ flex: 1 }}>{c.title}{c.note && <span style={styles.historyReason}> — {c.note}</span>}</span>
-                    {c.mtSaved ? <span style={styles.historyMt}>-{c.mtSaved} mt/yr</span> : null}
-                    <span style={styles.historyWhen}>{new Date(c.when).toLocaleDateString()}</span>
-                  </li>
-                ))}
+                {history.completed.map((c, i) => {
+                  // Show variance vs estimate when both are available.
+                  // Beat-the-estimate (actual > expected) renders green;
+                  // missed (< expected) renders amber.
+                  const expected = Number(c.expectedMt);
+                  const actual = Number(c.mtSaved);
+                  const hasBoth = Number.isFinite(expected) && expected > 0 && Number.isFinite(actual);
+                  const variancePct = hasBoth ? Math.round(((actual - expected) / expected) * 100) : null;
+                  const varianceColor = variancePct == null ? '#94a3b8'
+                    : variancePct >= 5 ? '#86efac'
+                    : variancePct <= -5 ? '#fbbf24'
+                    : '#94a3b8';
+                  return (
+                    <li key={i} style={styles.historyItem}>
+                      <span style={styles.historyCheck}>✓</span>
+                      <span style={{ flex: 1 }}>
+                        {c.title}
+                        {c.note && <span style={styles.historyReason}> — {c.note}</span>}
+                      </span>
+                      {c.mtSaved ? <span style={styles.historyMt}>-{Math.round(c.mtSaved)} mt/yr</span> : null}
+                      {hasBoth && (
+                        <span style={{ ...styles.historyVariance, color: varianceColor }}>
+                          (est {Math.round(expected)}, {variancePct >= 0 ? '+' : ''}{variancePct}%)
+                        </span>
+                      )}
+                      <span style={styles.historyWhen}>{new Date(c.when).toLocaleDateString()}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -657,6 +695,133 @@ function ImplementationMemo({ memo, generatedAt }) {
   );
 }
 
+// Cumulative reduction chart — plots running total of mt saved as
+// items have been marked shipped, against the gross-emissions
+// baseline. Pure inline SVG so it renders without a chart library.
+function CumulativeReductionChart({ completed, grossMt }) {
+  if (!completed || completed.length === 0) return null;
+
+  const W = 720;
+  const H = 200;
+  const pad = { t: 14, r: 80, b: 28, l: 60 };
+
+  // Sort by shipped date, build cumulative series.
+  const sorted = [...completed]
+    .map((c) => ({ ...c, ts: new Date(c.when).getTime() }))
+    .sort((a, b) => a.ts - b.ts);
+  let running = 0;
+  const points = sorted.map((c) => {
+    running += Number(c.mtSaved) || 0;
+    return { ts: c.ts, cumul: running, title: c.title };
+  });
+  const totalSaved = points[points.length - 1].cumul;
+  const baseline = grossMt || 0;
+  const tMin = points[0].ts;
+  const tMax = points[points.length - 1].ts;
+  const tSpan = Math.max(tMax - tMin, 24 * 60 * 60 * 1000);
+  // Y axis: 0 → max(totalSaved, 25% of baseline) so the early-stage
+  // chart looks meaningful instead of compressing into the bottom row.
+  const yMax = Math.max(totalSaved, baseline > 0 ? baseline * 0.25 : 50, 10);
+  const x = (t) => pad.l + ((t - tMin) / tSpan) * (W - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - v / yMax) * (H - pad.t - pad.b);
+
+  // Build the cumulative-line path. Use step-after so each shipped
+  // item shows as a vertical jump.
+  let d = `M ${x(points[0].ts).toFixed(1)} ${y(0).toFixed(1)}`;
+  let prev = 0;
+  for (const p of points) {
+    d += ` L ${x(p.ts).toFixed(1)} ${y(prev).toFixed(1)}`;
+    d += ` L ${x(p.ts).toFixed(1)} ${y(p.cumul).toFixed(1)}`;
+    prev = p.cumul;
+  }
+  d += ` L ${(W - pad.r).toFixed(1)} ${y(prev).toFixed(1)}`;
+
+  // Gridlines at quarter intervals.
+  const yTicks = [0, yMax * 0.25, yMax * 0.5, yMax * 0.75, yMax].map((v) => ({
+    value: v,
+    y: y(v),
+  }));
+
+  // Target reference: 50% of baseline (the most-common KUA target).
+  // Only draw if baseline is known.
+  const targetMt = baseline > 0 ? baseline * 0.5 : null;
+  const targetY = targetMt != null ? y(targetMt) : null;
+  const pctOfBaseline = baseline > 0 ? (totalSaved / baseline) * 100 : null;
+
+  return (
+    <div style={chartStyles.wrap}>
+      <div style={chartStyles.head}>
+        <div>
+          <div style={chartStyles.headLabel}>Cumulative shipped reductions</div>
+          <div style={chartStyles.headValue}>
+            {Math.round(totalSaved).toLocaleString()}<span style={chartStyles.headUnit}> mtCO₂e/yr</span>
+            {pctOfBaseline != null && (
+              <span style={chartStyles.headPct}> · {pctOfBaseline.toFixed(1)}% of gross</span>
+            )}
+          </div>
+        </div>
+      </div>
+      <svg
+        width="100%"
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={`Cumulative reductions chart: ${Math.round(totalSaved)} mt across ${points.length} shipped items`}
+        style={{ display: 'block', maxWidth: '100%' }}
+      >
+        {/* Y axis gridlines + labels */}
+        {yTicks.map((t, i) => (
+          <g key={i}>
+            <line x1={pad.l} x2={W - pad.r} y1={t.y} y2={t.y} stroke="#1f2937" strokeWidth="1" strokeDasharray={i === 0 ? '0' : '2 4'} />
+            <text x={pad.l - 8} y={t.y + 4} fill="#64748b" fontSize="11" textAnchor="end" fontFamily="ui-monospace, monospace">
+              {Math.round(t.value)}
+            </text>
+          </g>
+        ))}
+        {/* Target line @ 50% of baseline */}
+        {targetY != null && targetY > pad.t && targetY < H - pad.b && (
+          <g>
+            <line x1={pad.l} x2={W - pad.r} y1={targetY} y2={targetY} stroke="#16a34a" strokeWidth="1.5" strokeDasharray="6 4" />
+            <text x={W - pad.r + 6} y={targetY + 4} fill="#86efac" fontSize="11" fontWeight="700">
+              50% target
+            </text>
+          </g>
+        )}
+        {/* Cumulative line */}
+        <path d={d} stroke="#22d3ee" strokeWidth="2" fill="none" />
+        {/* Points */}
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={x(p.ts)} cy={y(p.cumul)} r="4" fill="#22d3ee" stroke="#0b1220" strokeWidth="2">
+              <title>{p.title} — cumulative {Math.round(p.cumul)} mt</title>
+            </circle>
+          </g>
+        ))}
+        {/* X axis endpoints */}
+        <text x={pad.l} y={H - 8} fill="#64748b" fontSize="11" fontFamily="ui-monospace, monospace">
+          {new Date(tMin).toLocaleDateString()}
+        </text>
+        <text x={W - pad.r} y={H - 8} fill="#64748b" fontSize="11" textAnchor="end" fontFamily="ui-monospace, monospace">
+          {new Date(tMax).toLocaleDateString()}
+        </text>
+        {/* Y axis label */}
+        <text x={pad.l - 50} y={pad.t + (H - pad.t - pad.b) / 2} fill="#64748b" fontSize="11"
+              transform={`rotate(-90 ${pad.l - 50} ${pad.t + (H - pad.t - pad.b) / 2})`} textAnchor="middle">
+          mtCO₂e/yr
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+const chartStyles = {
+  wrap: { marginBottom: 16, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 8 },
+  head: { marginBottom: 10 },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6 },
+  headValue: { fontSize: 22, fontWeight: 800, color: '#86efac', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+  headUnit: { fontSize: 11, fontWeight: 600, color: '#94a3b8' },
+  headPct: { fontSize: 13, fontWeight: 600, color: '#64748b' },
+};
+
 function MemoSection({ title, children }) {
   return (
     <div style={memoStyles.section}>
@@ -795,6 +960,7 @@ const styles = {
   historyCheck: { color: '#86efac', fontWeight: 800 },
   historyX:     { color: '#94a3b8', fontWeight: 800 },
   historyMt:    { color: '#86efac', fontVariantNumeric: 'tabular-nums', fontSize: 12, fontWeight: 600 },
+  historyVariance: { fontSize: 11, fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
   historyWhen:  { fontSize: 11, color: '#64748b' },
   historyReason:{ color: '#94a3b8', fontStyle: 'italic' },
 };

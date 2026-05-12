@@ -118,7 +118,18 @@ function buildUserMessage(context, history) {
   if (history && (history.completed?.length || history.declined?.length)) {
     lines.push('', 'Plan history:');
     if (history.completed?.length) {
-      lines.push(`- Completed: ${history.completed.map((c) => c.title + (c.mtSaved ? ` (-${c.mtSaved} mt/yr)` : '')).join('; ')}`);
+      lines.push(`- Completed: ${history.completed.map((c) => {
+        const actual = c.mtSaved;
+        const expected = c.expectedMt;
+        let tag = '';
+        if (typeof actual === 'number' && typeof expected === 'number' && expected > 0) {
+          const pct = Math.round(((actual - expected) / expected) * 100);
+          tag = ` (-${Math.round(actual)} mt actual; est ${Math.round(expected)}, ${pct >= 0 ? '+' : ''}${pct}%)`;
+        } else if (typeof actual === 'number') {
+          tag = ` (-${Math.round(actual)} mt/yr)`;
+        }
+        return c.title + tag;
+      }).join('; ')}`);
     }
     if (history.declined?.length) {
       lines.push(`- Declined / vetoed: ${history.declined.map((d) => d.title + (d.reason ? ` — ${d.reason}` : '')).join('; ')}`);
