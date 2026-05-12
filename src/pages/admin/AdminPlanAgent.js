@@ -135,9 +135,28 @@ export default function AdminPlanAgent() {
     setLoading(true);
     setError('');
     try {
+      // Phase 93: send a richer measuredState block so the agent can
+      // recommend "go after Scope 1 first because it's still on
+      // bottom-up cross-check" or "Scope 3 already measured — focus
+      // on the dominant cohort" etc.
+      const measuredState = {
+        scope1Measured: !!live.scope1Measured,
+        scope2Measured: true,
+        scope3Measured: !!live.scope3Measured,
+        sinksMeasured:  !!live.sinksMeasured,
+        scope3CohortDetail: Array.isArray(live.scope3CohortDetail)
+          ? live.scope3CohortDetail.map((c) => ({
+              cohort: c.cohort,
+              label: c.label,
+              count: c.count,
+              mt: c.mt,
+              provenance: c.provenance,
+            }))
+          : [],
+      };
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        body: JSON.stringify({ context, history }),
+        body: JSON.stringify({ context, history, measuredState }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -150,7 +169,7 @@ export default function AdminPlanAgent() {
     } finally {
       setLoading(false);
     }
-  }, [context, history]);
+  }, [context, history, live]);
 
   const completeItem = (item) => {
     // Two-step prompt — first capture the actual mt saved (defaults

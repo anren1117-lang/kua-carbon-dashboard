@@ -57,6 +57,23 @@ const SYSTEM_PROMPT = `You are KUA's institutional carbon-strategy planner. You 
 
 KUA is a 340-student boarding secondary school in Plainfield/Meriden NH (climate zone 6A, ~7,500 HDD), 19 buildings totaling ~290K sqft (11 dorms ~105K, 3 academic ~78K, 3 athletic ~98K, 2 other ~10K). Heating dominates Scope 1 (~1,350 mt central, range 891–1,867 — from ~111K gal heating oil + ~19K gal propane); the school is on the ISO-NE grid for Scope 2 (~385 mt measured ±5%); Scope 3 (~2,635 mt central, range 1,726–3,720) is led by purchased goods (EEIO Cat 1 ~1,315) followed by student travel ~760 (East-Asia-heavy international + Northeast US boarders × 3-4 RTs/yr), dining ~235, upstream fuel ~230. ~1,000 acres of campus forest sequester ~2,650 mt/yr (range 2,100–2,650 across Birdsey 1992 / NH FIA / Nowak 2013).
 
+KUA peer benchmarks (use as comparison anchors when relevant — do NOT cite specific dollar figures or page numbers as fact, just reference the program name):
+- Phillips Academy Andover: 100% renewable electricity via PPA + Boston-area heat-pump pilot in classroom buildings.
+- Phillips Exeter Academy: Geothermal field under the playing fields (Phelps Science Center conversion); composting program with >70% diversion.
+- Hotchkiss School: Biomass-fueled heating plant (wood chips from regional supply) — replaced fuel oil in 2012, signature decarbonization move.
+- St. Paul's School (NH): Has set a "carbon neutral by 2030" pledge; uses Renewable Energy Credits + on-site solar; published an annual sustainability dashboard public-facing.
+- Loomis Chaffee: Plant-rich dining shift (Sodexo collaboration), Solar PV + LEED platinum dorm renovations.
+- Deerfield Academy: Multi-MW solar field; geothermal in newer dorm builds.
+- Northfield Mount Hermon: Biomass + extensive on-site woodlot management as legitimate sink.
+- These are NESCAC/Eight Schools comparisons — the board cares about peer positioning.
+
+Plan-building principles:
+1. Match the dominant emissions cluster to the leverage that's both biggest and feasible NOW. Don't over-index on Scope 1 if capital appetite is low; surface a feasibility-study stepping stone instead.
+2. Honor measurement gaps. If a scope is still "estimated" (not yet flipped to measured), one of your top items should be "instrument the data path" so future plans can be calibrated against real numbers, not bottom-up modeling.
+3. Include at least one no-cost or low-cost behavioral item every cycle — momentum matters.
+4. Include at least one capital-heavy multi-year item even at "low" capital appetite — as a feasibility study deliverable, not a green-light. Boards appreciate seeing the long-arc options.
+5. For dominant-Scope-3 cohorts, recommend cohort-specific levers (e.g. "international" → travel offsetting + bundle flights; "day students" → carpool incentives; "US boarders" → bus-share for break trips).
+
 Output STRICT JSON only — no prose before or after — matching this shape exactly:
 {
   "summary": "3-5 sentence framing of why this plan fits the current fiscal context, what the dominant lever cluster is, and how the next 12 months hand off to the years 2-5",
@@ -102,7 +119,7 @@ Rules:
 6. No filler. Every item must have realistic mt + $ numbers that justify the priority order.
 7. The "why" line is 1-3 sentences, reads like a memo to the Sustainability Committee — specific to KUA's context (mention the fuel mix, climate, enrollment, forest, budget appetite where relevant).`;
 
-function buildUserMessage(context, history) {
+function buildUserMessage(context, history, measuredState) {
   const lines = [
     'KUA institutional context:',
     `- Fiscal year: ${context.fiscalYear || 'unspecified'}`,
@@ -115,6 +132,24 @@ function buildUserMessage(context, history) {
   ];
   if (context.regulatoryDriver) lines.push(`- Regulatory driver: ${context.regulatoryDriver}`);
   if (context.notes)            lines.push(`- Notes from leadership: "${context.notes}"`);
+
+  // Phase 93: measurement state. Tells the agent which scope rows
+  // are already measured (so it doesn't propose "instrument that")
+  // and which are still on the bottom-up cross-check (so it CAN).
+  if (measuredState) {
+    lines.push('', 'Measurement state per scope (use this to recommend instrumentation gaps as plan items):');
+    lines.push(`- Scope 1: ${measuredState.scope1Measured ? 'MEASURED (live from admin tables)' : 'still on bottom-up cross-check — propose data instrumentation'}`);
+    lines.push(`- Scope 2: MEASURED (BMS) — no instrumentation work needed`);
+    lines.push(`- Scope 3: ${measuredState.scope3Measured ? 'MEASURED (live from 8 admin tables)' : 'still on bottom-up cross-check — propose data instrumentation'}`);
+    lines.push(`- Sinks: ${measuredState.sinksMeasured ? 'MEASURED (forest_stand_actuals)' : 'placeholder forest inventory — propose USFS FIA-style walk-through'}`);
+    if (Array.isArray(measuredState.scope3CohortDetail) && measuredState.scope3CohortDetail.length > 0) {
+      lines.push('', 'Scope 3 cohort breakdown (use this to target the dominant cohort):');
+      for (const c of measuredState.scope3CohortDetail) {
+        const provTag = c.provenance === 'measured' ? '✓ measured' : 'estimated';
+        lines.push(`  · ${c.label}: ${c.mt} mt (${c.count} records, ${provTag})`);
+      }
+    }
+  }
   if (history && (history.completed?.length || history.declined?.length)) {
     lines.push('', 'Plan history:');
     if (history.completed?.length) {
@@ -253,7 +288,7 @@ export default async function handler(req, res) {
     res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
-  const { context, history } = req.body || {};
+  const { context, history, measuredState } = req.body || {};
   if (!context || typeof context !== 'object') {
     res.status(400).json({ error: 'context (object) is required' });
     return;
@@ -302,11 +337,18 @@ export default async function handler(req, res) {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 6000,
+        // Phase 93: upgrade plan generation to Opus 4.7. The plan
+        // endpoint produces the most-load-bearing output in the app
+        // (8-12 detailed items × 5 detail blocks each = ~40 distinct
+        // structured fields) and the extra capability pays for itself
+        // on coherent multi-item prioritization + KUA-specific
+        // tailoring. Other endpoints (memo, chat, ingestion) stay on
+        // Sonnet — those are narrower tasks where Sonnet matches.
+        model: 'claude-opus-4-7',
+        max_tokens: 8000,
         system: SYSTEM_PROMPT,
         messages: [
-          { role: 'user', content: buildUserMessage(context, history) },
+          { role: 'user', content: buildUserMessage(context, history, measuredState) },
         ],
       }),
     });
