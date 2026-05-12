@@ -22,6 +22,81 @@ import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
 const CONTEXT_KEY = 'kua_admin_plan_context';
 const PLAN_KEY    = 'kua_admin_plan';
+
+// Browser-only download helper. Builds a blob URL, clicks an anchor,
+// revokes. Same pattern src/utils/csv.js uses.
+function triggerDownload(filename, text, mime) {
+  if (typeof window === 'undefined') return;
+  const blob = new Blob([text], { type: mime || 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportPlanMarkdown(plan, context) {
+  if (!plan || !Array.isArray(plan.plan)) return;
+  const date = new Date().toISOString().slice(0, 10);
+  const lines = [
+    `# KUA Decarbonization Plan — ${context.fiscalYear || date}`,
+    '',
+    plan.summary || '',
+    '',
+    `**Context.** Capital appetite: ${context.capitalAppetite || '—'}. Top priority: ${context.topPriority || '—'}. Horizon: ${context.timeHorizonYears || '—'} year(s). Current gross: ${context.grossMt?.toLocaleString() || '—'} mtCO₂e/yr. Forest sequestration: ${context.sinksMt?.toLocaleString() || '—'} mtCO₂e/yr.`,
+    '',
+    `**Plan totals.** ${plan.plan.length} items · ${Math.round(plan.totalExpectedMtPerYear || 0).toLocaleString()} mtCO₂e/yr expected reduction · ${(plan.percentOfGross ?? 0).toFixed(1)}% of current gross.`,
+    '',
+    '---',
+    '',
+  ];
+  plan.plan.forEach((it, i) => {
+    lines.push(`## #${i + 1}. ${it.title}`);
+    lines.push('');
+    lines.push(`- **${Math.round(it.expectedMtPerYear).toLocaleString()} mtCO₂e/yr** · ${it.estimatedCostUsd === 0 ? 'no capex' : `$${it.estimatedCostUsd.toLocaleString()}`}${it.paybackYears > 0 && it.estimatedCostUsd > 0 ? ` · ${it.paybackYears.toFixed(0)}yr payback` : ''}`);
+    lines.push(`- **Owner:** ${it.ownerRole} · **Timeline:** ${it.timeline} · **Category:** ${it.category} · **Difficulty:** ${it.difficulty} · **Provenance:** ${it.provenance}`);
+    if (it.why)          lines.push('', it.why);
+    if (Array.isArray(it.firstSteps) && it.firstSteps.length) {
+      lines.push('', '**First steps:**');
+      it.firstSteps.forEach((s) => lines.push(`1. ${s}`));
+    }
+    if (it.dependencies && it.dependencies !== 'none') lines.push('', `**Dependencies:** ${it.dependencies}`);
+    if (Array.isArray(it.milestones) && it.milestones.length) {
+      lines.push('', '**Milestones:**');
+      it.milestones.forEach((m) => lines.push(`- ${m}`));
+    }
+    if (Array.isArray(it.risks) && it.risks.length) {
+      lines.push('', '**Risks:**');
+      it.risks.forEach((r) => lines.push(`- ${r}`));
+    }
+    if (Array.isArray(it.kpis) && it.kpis.length) {
+      lines.push('', '**KPIs:**');
+      it.kpis.forEach((k) => lines.push(`- ${k}`));
+    }
+    if (it.dataSource) lines.push('', `_Data source: ${it.dataSource}_`);
+    lines.push('', '---', '');
+  });
+  triggerDownload(`kua-plan-${date}.md`, lines.join('\n'), 'text/markdown');
+}
+
+function exportPlanCsv(plan) {
+  if (!plan || !Array.isArray(plan.plan)) return;
+  const cols = ['rank', 'title', 'category', 'difficulty', 'timeline', 'ownerRole', 'expectedMtPerYear', 'estimatedCostUsd', 'paybackYears', 'provenance', 'dataSource', 'why', 'firstSteps', 'dependencies', 'milestones', 'risks', 'kpis'];
+  const esc = (v) => {
+    if (v === null || v === undefined) return '';
+    const s = Array.isArray(v) ? v.join(' · ') : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const rows = [cols.join(',')];
+  plan.plan.forEach((it, i) => {
+    rows.push(cols.map((c) => esc(c === 'rank' ? i + 1 : it[c])).join(','));
+  });
+  const date = new Date().toISOString().slice(0, 10);
+  triggerDownload(`kua-plan-${date}.csv`, rows.join('\n'), 'text/csv');
+}
 const SNAPSHOTS_KEY = 'kua_admin_plan_snapshots'; // [{ id, name, savedAt, plan, context }]
 const MAX_SNAPSHOTS = 10;
 const HISTORY_KEY = 'kua_admin_plan_history';
@@ -550,6 +625,12 @@ export default function AdminPlanAgent() {
           <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
             <button type="button" onClick={saveSnapshot} style={styles.snapshotBtn}>
               💾 Save as snapshot
+            </button>
+            <button type="button" onClick={() => exportPlanMarkdown(plan, context)} style={styles.exportBtn} title="Download the plan as a Markdown file — paste into Notion / Slack / Linear / email.">
+              📥 Markdown
+            </button>
+            <button type="button" onClick={() => exportPlanCsv(plan)} style={styles.exportBtn} title="Download the plan as a CSV — open in Excel / Google Sheets.">
+              📥 CSV
             </button>
             <button
               type="button"
@@ -2526,6 +2607,7 @@ const styles = {
   memoBtn:     { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   chatToggleBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   snapshotBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  exportBtn:   { padding: '6px 12px', background: 'transparent', color: '#86efac', border: '1px solid #14532d', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   planChatBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   narrativeBtn: { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   altsBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
