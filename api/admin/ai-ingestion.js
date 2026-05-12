@@ -70,7 +70,7 @@ Per-table field shapes (use these exact field names — case-sensitive):
 
 Output STRICT JSON only — no prose before or after — matching this shape:
 {
-  "summary": "1-2 sentence description of what the document is",
+  "summary": "1-2 sentence description of what the document(s) cover",
   "extractedRows": [
     {
       "table": "scope1_heating_oil",
@@ -78,7 +78,8 @@ Output STRICT JSON only — no prose before or after — matching this shape:
       "confidence": "high",
       "fields": { "delivery_date": "2026-02-14", "gallons": 1850, "vendor": "FW Webb", "cost_usd": 5550 },
       "provenance": "measured",
-      "sourceQuote": "verbatim snippet from the document that supports this row"
+      "sourceQuote": "verbatim snippet from the document that supports this row",
+      "sourceDocument": "name of the file or section the row came from (use the '--- filename ---' marker when present)"
     }
   ],
   "flags": [
@@ -94,8 +95,10 @@ Rules:
 5. Dates: emit ISO 'YYYY-MM-DD'. If the year is ambiguous (e.g. "2/14" with no year), assume the most-recent past occurrence and flag it.
 6. Numbers: extract as raw numerics (no commas, no units in the value). Units go in the dedicated unit fields where they exist.
 7. If a single document covers multiple periods (e.g. annual statement with 12 monthly rows), emit one row per period — don't collapse.
-8. If the document doesn't contain any emissions-relevant data, return { summary, extractedRows: [], flags: ["No emissions-relevant data detected — likely a different document type."] }.
-9. NEVER write to a table not in the list above. If a document references something else (e.g. building permits, payroll), skip it.`;
+8. If MULTIPLE documents are provided (separated by '--- filename ---' markers), emit rows for each and tag every row with sourceDocument so the admin can see which file each row came from.
+9. If the document doesn't contain any emissions-relevant data, return { summary, extractedRows: [], flags: ["No emissions-relevant data detected — likely a different document type."] }.
+10. NEVER write to a table not in the list above. If a document references something else (e.g. building permits, payroll), skip it.
+11. Cross-row inference: if you see one row clearly (e.g. month 3 of a year) and the others use the same template, emit the implied rows but mark them medium confidence + flag the inference. Don't fabricate values that aren't on the page in some form.`;
 
 function buildUserMessage(text, hint) {
   const lines = [
@@ -203,8 +206,14 @@ export default async function handler(req, res) {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
+        // Phase 95: bump ingestion to Opus 4.7 too. Document
+        // extraction often hinges on vision + handwriting OCR +
+        // multi-page reasoning where Opus's extra capability
+        // materially reduces error rate. Cost is bearable because
+        // ingestion is admin-initiated (not user-facing) + each
+        // run is a single call.
+        model: 'claude-opus-4-7',
+        max_tokens: 6000,
         system: SYSTEM_PROMPT,
         messages: [
           { role: 'user', content },
@@ -238,14 +247,15 @@ export default async function handler(req, res) {
     const extractedRows = Array.isArray(parsed.extractedRows)
       ? parsed.extractedRows
           .filter((r) => r && typeof r === 'object' && ALLOWED_TABLES.has(r.table))
-          .slice(0, 50)
+          .slice(0, 100) // Opus + bigger token budget can emit more rows
           .map((r) => ({
-            table:       String(r.table),
-            scope:       String(r.scope || '').slice(0, 30),
-            confidence:  ['high','medium','low'].includes(r.confidence) ? r.confidence : 'low',
-            fields:      (r.fields && typeof r.fields === 'object') ? r.fields : {},
-            provenance:  ['measured','cited','estimated'].includes(r.provenance) ? r.provenance : 'estimated',
-            sourceQuote: String(r.sourceQuote || '').slice(0, 400),
+            table:          String(r.table),
+            scope:          String(r.scope || '').slice(0, 30),
+            confidence:     ['high','medium','low'].includes(r.confidence) ? r.confidence : 'low',
+            fields:         (r.fields && typeof r.fields === 'object') ? r.fields : {},
+            provenance:     ['measured','cited','estimated'].includes(r.provenance) ? r.provenance : 'estimated',
+            sourceQuote:    String(r.sourceQuote || '').slice(0, 400),
+            sourceDocument: String(r.sourceDocument || '').slice(0, 200),
           }))
       : [];
 

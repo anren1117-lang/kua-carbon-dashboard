@@ -40,6 +40,7 @@ const styles = {
   rowTable: { fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#22d3ee', fontWeight: 700 },
   rowScope: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6 },
   pillHigh:   { fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  sourceDocPill: { fontSize: 10, padding: '2px 8px', borderRadius: 3, background: '#0f172a', color: '#94a3b8', border: '1px solid #334155', fontFamily: 'ui-monospace, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 },
   pillMedium: { fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#3a2a0e', color: '#fbbf24', border: '1px solid #ca8a04', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
   pillLow:    { fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#3a0d0d', color: '#fca5a5', border: '1px solid #7f1d1d', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
   fields: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 },
@@ -423,6 +424,11 @@ function AdminAIIngestion() {
                   <span style={styles.rowTable}>{row.table}</span>
                   <span style={styles.rowScope}>· {row.scope}</span>
                   <ConfidencePill level={row.confidence} />
+                  {row.sourceDocument && (
+                    <span style={styles.sourceDocPill} title={`Extracted from ${row.sourceDocument}`}>
+                      📄 {row.sourceDocument}
+                    </span>
+                  )}
                   {state === 'idle' && (
                     <button type="button" onClick={() => toggleEdit(i)} style={styles.editToggleBtn}>
                       {editing ? '✓ Done editing' : '✎ Edit fields'}
