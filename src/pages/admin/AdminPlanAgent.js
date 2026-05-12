@@ -532,6 +532,7 @@ export default function AdminPlanAgent() {
             />
           )}
           <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
+          <ProjectionChart items={plan.plan} grossMt={context.grossMt} alreadyShippedMt={mtAlreadySaved} />
           <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
           <EfficiencyLeaderboard items={plan.plan} />
           <BudgetOptimizer items={plan.plan} />
@@ -1781,6 +1782,142 @@ const chartStyles = {
   headValue: { fontSize: 22, fontWeight: 800, color: '#86efac', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
   headUnit: { fontSize: 11, fontWeight: 600, color: '#94a3b8' },
   headPct: { fontSize: 13, fontWeight: 600, color: '#64748b' },
+};
+
+// Plan-level 5-year projection chart. Combines per-item yearByYearMt
+// arrays into a forecast: where does gross emissions land in each
+// of the next N years if every plan item ships on its expected
+// timeline? Plots:
+//   - Dashed gray "baseline" line at current gross (flat)
+//   - Solid cyan "projected gross" line (baseline − cumulative item
+//     mt by year)
+//   - Green dashed "50% target" reference line at gross × 0.5
+//   - Each year-end point labeled
+function ProjectionChart({ items, grossMt, alreadyShippedMt }) {
+  if (!Array.isArray(items) || items.length === 0 || !grossMt) return null;
+
+  // How many years to project? Take the longest yearByYearMt array
+  // among the items, default to 4.
+  const horizon = Math.max(
+    4,
+    ...items.map((it) => Array.isArray(it.yearByYearMt) ? it.yearByYearMt.length : 0)
+  );
+  // Year-by-year cumulative reduction from the plan. yearMtSum[y] is
+  // the SUM of all items' yearByYearMt[y] (i.e. total annual mt
+  // reduction in year y once items have ramped to that year).
+  const yearMtSum = [];
+  for (let y = 0; y < horizon; y++) {
+    let sum = 0;
+    for (const it of items) {
+      const arr = Array.isArray(it.yearByYearMt) ? it.yearByYearMt : [];
+      // For years past the array length, use the steady-state (last value).
+      sum += y < arr.length ? (Number(arr[y]) || 0) : (Number(arr[arr.length - 1]) || it.expectedMtPerYear || 0);
+    }
+    yearMtSum.push(sum);
+  }
+  // Projected gross at each year: baseline − cumulative reductions.
+  // Cumulative here means: by year Y, every item has been ramping
+  // for Y years, so yearMtSum[Y-1] is the annual reduction in year Y.
+  const baseline = grossMt;
+  const projected = yearMtSum.map((annualReduction, y) => {
+    // Subtract steady-state plan reduction; treat alreadyShipped as
+    // already-baked-in (counts from year 0).
+    return Math.max(0, baseline - annualReduction - alreadyShippedMt);
+  });
+
+  const W = 720;
+  const H = 220;
+  const pad = { t: 16, r: 80, b: 30, l: 60 };
+  const target = baseline * 0.5;
+  const yMax = baseline * 1.05;
+  const yMin = Math.min(target * 0.7, ...projected) * 0.95;
+  const x = (i) => pad.l + (i / Math.max(1, horizon - 1)) * (W - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - (v - yMin) / Math.max(1, yMax - yMin)) * (H - pad.t - pad.b);
+
+  const projectedPath = `M ${x(0).toFixed(1)} ${y(projected[0]).toFixed(1)} ` +
+    projected.slice(1).map((v, i) => `L ${x(i + 1).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+
+  const yTicks = [yMin, (yMin + yMax) / 2, yMax];
+
+  const finalGross = projected[projected.length - 1];
+  const totalReduction = baseline - finalGross;
+  const reductionPct = baseline > 0 ? (totalReduction / baseline) * 100 : 0;
+
+  return (
+    <div style={projStyles.wrap}>
+      <div style={projStyles.head}>
+        <div>
+          <div style={projStyles.headLabel}>5-year projected gross · if every plan item ships</div>
+          <div style={projStyles.headValue}>
+            <span style={{ color: '#fca5a5' }}>{Math.round(baseline).toLocaleString()}</span>
+            <span style={projStyles.arrow}> → </span>
+            <span style={{ color: '#86efac' }}>{Math.round(finalGross).toLocaleString()}</span>
+            <span style={projStyles.headUnit}> mtCO₂e/yr · −{reductionPct.toFixed(1)}%</span>
+          </div>
+        </div>
+      </div>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} role="img"
+        aria-label={`Projected gross emissions over ${horizon} years: ${projected.map((v) => Math.round(v)).join(', ')} mt`}
+        style={{ display: 'block', maxWidth: '100%' }}
+      >
+        {/* Y axis gridlines */}
+        {yTicks.map((t, i) => (
+          <g key={i}>
+            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#1f2937" strokeWidth="1" strokeDasharray="2 4" />
+            <text x={pad.l - 8} y={y(t) + 4} fill="#64748b" fontSize="11" textAnchor="end" fontFamily="ui-monospace, monospace">
+              {Math.round(t)}
+            </text>
+          </g>
+        ))}
+        {/* Baseline horizontal */}
+        <line x1={pad.l} x2={W - pad.r} y1={y(baseline)} y2={y(baseline)} stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 4" />
+        <text x={W - pad.r + 6} y={y(baseline) + 4} fill="#94a3b8" fontSize="11" fontWeight="700">baseline</text>
+        {/* 50% target horizontal */}
+        {target >= yMin && target <= yMax && (
+          <g>
+            <line x1={pad.l} x2={W - pad.r} y1={y(target)} y2={y(target)} stroke="#16a34a" strokeWidth="1.5" strokeDasharray="6 4" />
+            <text x={W - pad.r + 6} y={y(target) + 4} fill="#86efac" fontSize="11" fontWeight="700">50% target</text>
+          </g>
+        )}
+        {/* Projected line */}
+        <path d={projectedPath} fill="none" stroke="#22d3ee" strokeWidth="2.5" />
+        {/* Points + year labels */}
+        {projected.map((v, i) => (
+          <g key={i}>
+            <circle cx={x(i)} cy={y(v)} r="3.5" fill="#22d3ee" stroke="#0b1220" strokeWidth="1.5">
+              <title>Year {i + 1}: {Math.round(v)} mt</title>
+            </circle>
+            <text x={x(i)} y={H - 8} fill="#64748b" fontSize="11" textAnchor="middle" fontFamily="ui-monospace, monospace">
+              Y{i + 1}
+            </text>
+            {(i === 0 || i === projected.length - 1) && (
+              <text x={x(i)} y={y(v) - 8} fill="#22d3ee" fontSize="11" textAnchor="middle" fontWeight="700">
+                {Math.round(v)}
+              </text>
+            )}
+          </g>
+        ))}
+        {/* Y axis label */}
+        <text x={pad.l - 50} y={pad.t + (H - pad.t - pad.b) / 2} fill="#64748b" fontSize="11"
+              transform={`rotate(-90 ${pad.l - 50} ${pad.t + (H - pad.t - pad.b) / 2})`} textAnchor="middle">
+          mtCO₂e/yr
+        </text>
+      </svg>
+      <div style={projStyles.foot}>
+        Projection assumes every item lands on its expected ramp + no new emissions sources appear. Compare to the 50% target line to see if the plan closes the gap by Year {horizon}.
+      </div>
+    </div>
+  );
+}
+
+const projStyles = {
+  wrap: { marginTop: 12, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 8 },
+  head: { marginBottom: 10 },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6 },
+  headValue: { fontSize: 22, fontWeight: 800, marginTop: 4, fontVariantNumeric: 'tabular-nums', color: '#e5e7eb' },
+  arrow: { color: '#64748b', margin: '0 8px' },
+  headUnit: { fontSize: 12, fontWeight: 600, color: '#94a3b8', marginLeft: 8 },
+  foot: { marginTop: 8, fontSize: 11, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.5 },
 };
 
 // Given a budget cap, picks the subset of plan items that maximizes
