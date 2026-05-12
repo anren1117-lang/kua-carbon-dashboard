@@ -276,9 +276,23 @@ export default function AdminPlanAgent() {
             }))
           : [],
       };
+      // Phase 117: pass priorPlan so the agent can preserve continuity
+      // for items the admin hasn't yet shipped or declined. The history
+      // already covers shipped/declined; priorPlan covers the pending
+      // middle ground.
+      const priorPlan = plan && Array.isArray(plan.plan)
+        ? plan.plan.map((it) => ({
+            id: it.id,
+            title: it.title,
+            expectedMtPerYear: it.expectedMtPerYear,
+            estimatedCostUsd: it.estimatedCostUsd,
+            category: it.category,
+            timeline: it.timeline,
+          }))
+        : null;
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        body: JSON.stringify({ context, history, measuredState }),
+        body: JSON.stringify({ context, history, measuredState, priorPlan }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));

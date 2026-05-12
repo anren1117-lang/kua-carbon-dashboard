@@ -126,7 +126,7 @@ Rules:
 6. No filler. Every item must have realistic mt + $ numbers that justify the priority order.
 7. The "why" line is 1-3 sentences, reads like a memo to the Sustainability Committee — specific to KUA's context (mention the fuel mix, climate, enrollment, forest, budget appetite where relevant).`;
 
-function buildUserMessage(context, history, measuredState) {
+function buildUserMessage(context, history, measuredState, priorPlan) {
   const lines = [
     'KUA institutional context:',
     `- Fiscal year: ${context.fiscalYear || 'unspecified'}`,
@@ -179,6 +179,18 @@ function buildUserMessage(context, history, measuredState) {
     lines.push('Generate a NEW 8-12 step plan that excludes completed and declined items. Priorities should reflect what\'s left, not the original full slate. Each item carries firstSteps, dependencies, milestones, risks, and kpis as documented in the schema.');
   } else {
     lines.push('', 'No prior plan history. Generate the highest-impact 8-12 starting institutional levers for this fiscal year. Each item carries firstSteps, dependencies, milestones, risks, and kpis as documented in the schema.');
+  }
+
+  // Phase 117: continuity context. If the admin already has a plan
+  // in state and they're regenerating it, surface the pending items
+  // so the new plan preserves stable items where they still make
+  // sense + only adds/replaces where the context has actually
+  // shifted. This avoids churning the plan unnecessarily.
+  if (Array.isArray(priorPlan) && priorPlan.length > 0) {
+    lines.push('', `Prior plan (${priorPlan.length} items, not yet shipped or declined). PRESERVE continuity where these items still make sense; rename, drop, or evolve them only when the institutional context has materially shifted (capital appetite changed, new regulatory driver, shipped items obsoleted a peer item, etc.). Do NOT pointlessly rephrase titles — admins lose trust when the same lever keeps re-naming.`);
+    for (const p of priorPlan) {
+      lines.push(`- ${p.title} (${p.expectedMtPerYear} mt, ${p.estimatedCostUsd === 0 ? 'no capex' : '$' + Number(p.estimatedCostUsd).toLocaleString()}, ${p.timeline}, ${p.category})`);
+    }
   }
   return lines.join('\n');
 }
@@ -298,7 +310,7 @@ export default async function handler(req, res) {
     res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
-  const { context, history, measuredState } = req.body || {};
+  const { context, history, measuredState, priorPlan } = req.body || {};
   if (!context || typeof context !== 'object') {
     res.status(400).json({ error: 'context (object) is required' });
     return;
@@ -368,7 +380,7 @@ export default async function handler(req, res) {
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
         ],
         messages: [
-          { role: 'user', content: buildUserMessage(context, history, measuredState) },
+          { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan) },
         ],
       }),
     });
