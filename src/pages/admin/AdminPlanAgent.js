@@ -526,8 +526,21 @@ export default function AdminPlanAgent() {
                 item={item}
                 rank={i + 1}
                 context={context}
+                otherItems={plan.plan}
                 onComplete={() => completeItem(item)}
                 onDecline={() => declineItem(item)}
+                onReplace={(alt) => {
+                  // Swap this slot for the alternative; recompute total.
+                  setPlan((cur) => {
+                    if (!cur) return cur;
+                    const nextItems = cur.plan.map((it, idx) => idx === i ? { ...alt, id: it.id } : it);
+                    return {
+                      ...cur,
+                      plan: nextItems,
+                      totalExpectedMtPerYear: nextItems.reduce((s, x) => s + (x.expectedMtPerYear || 0), 0),
+                    };
+                  });
+                }}
               />
             ))}
           </div>
@@ -1138,7 +1151,7 @@ const tlStyles = {
   legendSwatch: { width: 10, height: 10, borderRadius: 2, display: 'inline-block' },
 };
 
-function PlanCard({ item, rank, context, onComplete, onDecline }) {
+function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, otherItems }) {
   const [memo, setMemo] = useState(null);     // { mode, memo, generatedAt } | null
   const [memoBusy, setMemoBusy] = useState(false);
   const [memoErr, setMemoErr] = useState(null);
@@ -1150,6 +1163,34 @@ function PlanCard({ item, rank, context, onComplete, onDecline }) {
   const [chatInput, setChatInput] = useState('');
   const [chatBusy, setChatBusy] = useState(false);
   const [chatErr, setChatErr] = useState(null);
+  // Alternative-generation state.
+  const [alts, setAlts] = useState(null);  // { alternatives: [...] } | null
+  const [altsBusy, setAltsBusy] = useState(false);
+  const [altsErr, setAltsErr] = useState(null);
+
+  async function generateAlternatives() {
+    const reason = window.prompt(
+      `What\'s wrong with this item? Tell the agent so it can tune the alternatives.\n\n(e.g. "Too aggressive — board won\'t fund $300K this year", "Already declined this in Q1", "Need something faster — 90-day timeline")`,
+      ''
+    );
+    if (reason === null) return;
+    setAltsBusy(true);
+    setAltsErr(null);
+    try {
+      const r = await adminFetch('/api/admin/plan-item-alternatives', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ item, context, otherItems, reason: reason || '' }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setAlts(body);
+    } catch (err) {
+      setAltsErr(err.message);
+    } finally {
+      setAltsBusy(false);
+    }
+  }
 
   async function generateMemo() {
     setMemoBusy(true);
@@ -1284,7 +1325,34 @@ function PlanCard({ item, rank, context, onComplete, onDecline }) {
         <button type="button" onClick={() => setChatOpen((v) => !v)} style={styles.chatToggleBtn}>
           {chatOpen ? '✕ Close chat' : `💬 Ask follow-up${chatMessages.length > 0 ? ` (${chatMessages.length})` : ''}`}
         </button>
+        <button type="button" onClick={generateAlternatives} disabled={altsBusy} style={styles.altsBtn}>
+          {altsBusy ? 'Finding alternatives…' : '↻ Find alternatives'}
+        </button>
       </div>
+      {altsErr && <div role="alert" style={styles.memoErr}>Alternatives error: {altsErr}</div>}
+      {alts && alts.alternatives && alts.alternatives.length > 0 && (
+        <div style={altsStyles.wrap}>
+          <div style={altsStyles.head}>
+            <span style={altsStyles.headLabel}>Alternatives proposed for #{rank}</span>
+            <button type="button" onClick={() => setAlts(null)} style={altsStyles.hide}>✕ Hide</button>
+          </div>
+          {alts.alternatives.map((a, i) => (
+            <div key={i} style={altsStyles.card}>
+              <div style={altsStyles.cardHead}>
+                <span style={altsStyles.cardTitle}>{a.title}</span>
+                <span style={altsStyles.cardMt}>{Math.round(a.expectedMtPerYear)} mt/yr</span>
+                <span style={altsStyles.cardCost}>{a.estimatedCostUsd === 0 ? 'no capex' : `$${a.estimatedCostUsd.toLocaleString()}`}</span>
+              </div>
+              <div style={altsStyles.cardWhy}>{a.why}</div>
+              {onReplace && (
+                <button type="button" onClick={() => { if (window.confirm(`Replace #${rank} "${item.title}" with "${a.title}"?`)) { onReplace(a); setAlts(null); } }} style={altsStyles.swapBtn}>
+                  ⇄ Swap into #{rank}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {memoErr && <div role="alert" style={styles.memoErr}>Memo error: {memoErr}</div>}
       {memo && memo.mode === 'unavailable' && (
         <div style={styles.memoUnavail}>{memo.message || 'LLM not configured.'}</div>
@@ -1715,6 +1783,20 @@ const memoStyles = {
   commMsg: { color: '#cbd5e1', lineHeight: 1.5 },
 };
 
+const altsStyles = {
+  wrap: { marginTop: 12, padding: '12px 14px', background: '#3a2a0e', border: '1px solid #ca8a04', borderLeft: '3px solid #fbbf24', borderRadius: 8 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#fcd34d', textTransform: 'uppercase', letterSpacing: 0.6 },
+  hide: { background: 'transparent', color: '#fcd34d', border: '1px solid #ca8a04', borderRadius: 4, fontSize: 11, padding: '2px 8px', cursor: 'pointer' },
+  card: { marginTop: 8, padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  cardHead: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
+  cardTitle: { flex: 1, minWidth: 200, fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
+  cardMt: { fontSize: 12, color: '#86efac', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+  cardCost: { fontSize: 12, color: '#94a3b8', fontVariantNumeric: 'tabular-nums' },
+  cardWhy: { marginTop: 6, fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 },
+  swapBtn: { marginTop: 8, padding: '4px 12px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+};
+
 const detailListStyles = {
   ol: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 },
   ul: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 },
@@ -1792,6 +1874,7 @@ const styles = {
   snapshotBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   planChatBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   narrativeBtn: { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  altsBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   snapshotList: { display: 'grid', gap: 8 },
   snapshotRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #fbbf24', borderRadius: 6 },
   snapshotName: { fontSize: 14, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
