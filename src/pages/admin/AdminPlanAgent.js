@@ -22,6 +22,8 @@ import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
 const CONTEXT_KEY = 'kua_admin_plan_context';
 const PLAN_KEY    = 'kua_admin_plan';
+const SNAPSHOTS_KEY = 'kua_admin_plan_snapshots'; // [{ id, name, savedAt, plan, context }]
+const MAX_SNAPSHOTS = 10;
 const HISTORY_KEY = 'kua_admin_plan_history';
 
 // Single source of truth — these flow through automatically when
@@ -125,12 +127,43 @@ export default function AdminPlanAgent() {
   }, [live.loading, live.grossMt, live.sinkMt]);
   const [plan, setPlan] = useState(() => loadJson(PLAN_KEY, null));
   const [history, setHistory] = useState(() => loadJson(HISTORY_KEY, { completed: [], declined: [] }));
+  const [snapshots, setSnapshots] = useState(() => loadJson(SNAPSHOTS_KEY, []));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => { saveJson(CONTEXT_KEY, context); }, [context]);
   useEffect(() => { saveJson(HISTORY_KEY, history); }, [history]);
   useEffect(() => { if (plan) saveJson(PLAN_KEY, plan); }, [plan]);
+  useEffect(() => { saveJson(SNAPSHOTS_KEY, snapshots); }, [snapshots]);
+
+  function saveSnapshot() {
+    if (!plan) return;
+    const name = window.prompt('Snapshot name (e.g. "Pre-board-meeting Q3", "Tight-budget scenario"):', `Plan ${new Date().toLocaleDateString()}`);
+    if (!name) return;
+    setSnapshots((prev) => [
+      { id: `snap-${Date.now()}`, name: name.slice(0, 80), savedAt: new Date().toISOString(), plan, context },
+      ...prev,
+    ].slice(0, MAX_SNAPSHOTS));
+  }
+
+  function restoreSnapshot(snap) {
+    if (!window.confirm(`Restore snapshot "${snap.name}"? The current plan will be replaced (save it first if you want to keep it).`)) return;
+    setPlan(snap.plan);
+    if (snap.context) {
+      setContext((prev) => ({
+        ...prev,
+        ...snap.context,
+        grossMt: prev.grossMt, // keep live data
+        sinksMt: prev.sinksMt,
+        enrollment: prev.enrollment,
+      }));
+    }
+  }
+
+  function deleteSnapshot(id) {
+    if (!window.confirm('Delete this snapshot?')) return;
+    setSnapshots((prev) => prev.filter((s) => s.id !== id));
+  }
 
   const generatePlan = useCallback(async () => {
     setLoading(true);
@@ -372,6 +405,11 @@ export default function AdminPlanAgent() {
             <Hero label="Already shipped"           value={`${Math.round(mtAlreadySaved).toLocaleString()}`} unit={`mt · ${totalCompleted} actions`} accent="#22d3ee" />
             <Hero label="Suggested next check-in"   value={`${plan.nextCheckInDays} days`}             unit=""           accent="#a855f7" />
           </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+            <button type="button" onClick={saveSnapshot} style={styles.snapshotBtn}>
+              💾 Save as snapshot
+            </button>
+          </div>
           <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
           <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
           <EfficiencyLeaderboard items={plan.plan} />
@@ -386,6 +424,33 @@ export default function AdminPlanAgent() {
                 onComplete={() => completeItem(item)}
                 onDecline={() => declineItem(item)}
               />
+            ))}
+          </div>
+        </ModuleSection>
+      )}
+
+      {snapshots.length > 0 && (
+        <ModuleSection title="Saved plan snapshots" hint={`Up to ${MAX_SNAPSHOTS} versioned plans. Restore any snapshot to compare scenarios, then save the current plan again before regenerating.`}>
+          <div style={styles.snapshotList}>
+            {snapshots.map((s) => (
+              <div key={s.id} style={styles.snapshotRow}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={styles.snapshotName}>{s.name}</div>
+                  <div style={styles.snapshotMeta}>
+                    {new Date(s.savedAt).toLocaleString()} ·
+                    {' '}{(s.plan?.plan?.length ?? 0)} items ·
+                    {' '}{Math.round(s.plan?.totalExpectedMtPerYear ?? 0).toLocaleString()} mt/yr ·
+                    {' '}capital {s.context?.capitalAppetite || '—'} ·
+                    {' '}priority {s.context?.topPriority || '—'}
+                  </div>
+                </div>
+                <button type="button" onClick={() => restoreSnapshot(s)} style={styles.snapshotRestore}>
+                  Restore
+                </button>
+                <button type="button" onClick={() => deleteSnapshot(s.id)} style={styles.snapshotDelete} aria-label={`Delete snapshot "${s.name}"`}>
+                  ×
+                </button>
+              </div>
             ))}
           </div>
         </ModuleSection>
@@ -1576,6 +1641,13 @@ const styles = {
   declineBtn:  { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
   memoBtn:     { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   chatToggleBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+  snapshotBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  snapshotList: { display: 'grid', gap: 8 },
+  snapshotRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #fbbf24', borderRadius: 6 },
+  snapshotName: { fontSize: 14, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  snapshotMeta: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  snapshotRestore: { padding: '4px 10px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  snapshotDelete: { width: 26, height: 26, borderRadius: 13, background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', fontSize: 14, lineHeight: '24px', textAlign: 'center', cursor: 'pointer', fontWeight: 700, padding: 0 },
   memoErr:     { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 13 },
   memoUnavail: { marginTop: 8, padding: '8px 12px', background: '#3a2a0e', border: '1px solid #92400e', borderRadius: 6, color: '#fcd34d', fontSize: 13 },
 
