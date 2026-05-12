@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../../components/ModuleShell.js';
 import { ProvenancePill, ProvenanceLegend } from '../../components/ProvenancePill.js';
 import { GRID_MIX_TOTAL_MTCO2E } from '../../data/gridMix.js';
@@ -523,6 +523,7 @@ export default function AdminPlanAgent() {
           <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
           <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
           <EfficiencyLeaderboard items={plan.plan} />
+          <BudgetOptimizer items={plan.plan} />
           <TimelineStrip items={plan.plan} />
           <div style={styles.planList}>
             {plan.plan.map((item, i) => (
@@ -1696,6 +1697,158 @@ const chartStyles = {
   headValue: { fontSize: 22, fontWeight: 800, color: '#86efac', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
   headUnit: { fontSize: 11, fontWeight: 600, color: '#94a3b8' },
   headPct: { fontSize: 13, fontWeight: 600, color: '#64748b' },
+};
+
+// Given a budget cap, picks the subset of plan items that maximizes
+// mt within that budget. 0/1 knapsack with integer dollars; with 8-
+// 12 items the DP table is small enough to run instantly even in
+// browser. Free items (cost === 0) get included unconditionally.
+function knapsackOptimize(items, budgetUsd) {
+  if (!Array.isArray(items) || items.length === 0) return { picked: [], totalMt: 0, totalCost: 0 };
+  const free = items.filter((it) => (it.estimatedCostUsd || 0) === 0);
+  const paid = items.filter((it) => (it.estimatedCostUsd || 0) > 0);
+  const cap = Math.max(0, Math.floor(budgetUsd / 1000)); // scale to $K
+  const n = paid.length;
+  // dp[i][w] = max mt using first i items with total cost ≤ w (in $K).
+  const dp = Array.from({ length: n + 1 }, () => new Float64Array(cap + 1));
+  for (let i = 1; i <= n; i++) {
+    const cost = Math.ceil(paid[i - 1].estimatedCostUsd / 1000);
+    const mt = paid[i - 1].expectedMtPerYear || 0;
+    for (let w = 0; w <= cap; w++) {
+      dp[i][w] = dp[i - 1][w];
+      if (cost <= w) {
+        const alt = dp[i - 1][w - cost] + mt;
+        if (alt > dp[i][w]) dp[i][w] = alt;
+      }
+    }
+  }
+  // Back-trace to find which items were picked.
+  const picked = [];
+  let w = cap;
+  for (let i = n; i >= 1; i--) {
+    if (dp[i][w] !== dp[i - 1][w]) {
+      picked.push(paid[i - 1]);
+      w -= Math.ceil(paid[i - 1].estimatedCostUsd / 1000);
+    }
+  }
+  picked.reverse();
+  const finalPicked = [...free, ...picked];
+  const totalMt = finalPicked.reduce((s, x) => s + (x.expectedMtPerYear || 0), 0);
+  const totalCost = finalPicked.reduce((s, x) => s + (x.estimatedCostUsd || 0), 0);
+  return { picked: finalPicked, totalMt, totalCost };
+}
+
+function BudgetOptimizer({ items }) {
+  // Default budget = sum of all "this-year" item costs, capped to a
+  // round number so the slider has a useful initial position.
+  const thisYearCost = items
+    .filter((it) => it.timeline === 'this-year')
+    .reduce((s, x) => s + (x.estimatedCostUsd || 0), 0);
+  const totalCost = items.reduce((s, x) => s + (x.estimatedCostUsd || 0), 0);
+  const defaultBudget = Math.max(50_000, Math.round(thisYearCost / 50_000) * 50_000) || 100_000;
+  const [budget, setBudget] = useState(defaultBudget);
+  // Slider range: 0 → 1.5× total cost (so admin can model overshoot).
+  const maxBudget = Math.max(totalCost * 1.5, 250_000);
+
+  const { picked, totalMt, totalCost: pickedCost } = useMemo(
+    () => knapsackOptimize(items, budget),
+    [items, budget]
+  );
+  const pickedIds = new Set(picked.map((p) => p.id));
+  const dropped = items.filter((it) => !pickedIds.has(it.id) && (it.expectedMtPerYear || 0) > 0);
+
+  return (
+    <div style={optStyles.wrap}>
+      <div style={optStyles.head}>
+        <span style={optStyles.headLabel}>Budget optimizer · "with $X, what's the best mix?"</span>
+        <span style={optStyles.headValue}>${budget.toLocaleString()}</span>
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={maxBudget}
+        step={Math.max(1000, Math.round(maxBudget / 200))}
+        value={budget}
+        onChange={(e) => setBudget(Number(e.target.value))}
+        style={optStyles.slider}
+        aria-label="Available capital budget for this cycle"
+      />
+      <div style={optStyles.scale}>
+        <span>$0</span>
+        <span>${Math.round(maxBudget / 2).toLocaleString()}</span>
+        <span>${maxBudget.toLocaleString()}</span>
+      </div>
+
+      <div style={optStyles.result}>
+        <div style={optStyles.resultRow}>
+          <div style={optStyles.resultLabel}>Optimal subset</div>
+          <div style={optStyles.resultVal}>
+            {picked.length} item{picked.length === 1 ? '' : 's'} ·
+            <span style={{ color: '#86efac', marginLeft: 6 }}>{Math.round(totalMt).toLocaleString()} mt/yr</span> ·
+            <span style={{ color: '#94a3b8', marginLeft: 6 }}>${pickedCost.toLocaleString()} of ${budget.toLocaleString()}</span>
+          </div>
+        </div>
+        {dropped.length > 0 && (
+          <div style={optStyles.resultRow}>
+            <div style={optStyles.resultLabel}>Excluded</div>
+            <div style={optStyles.resultVal}>
+              {dropped.length} item{dropped.length === 1 ? '' : 's'} ·
+              <span style={{ color: '#fca5a5', marginLeft: 6 }}>
+                {Math.round(dropped.reduce((s, x) => s + (x.expectedMtPerYear || 0), 0)).toLocaleString()} mt/yr unaddressed
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={optStyles.lists}>
+        <div style={optStyles.list}>
+          <div style={{ ...optStyles.listLabel, color: '#86efac' }}>✓ In the optimal mix</div>
+          {picked.length === 0 ? <div style={optStyles.empty}>(budget too small)</div> : picked.map((p) => (
+            <div key={p.id} style={optStyles.row}>
+              <span style={optStyles.rowTitle}>{p.title}</span>
+              <span style={optStyles.rowMeta}>
+                {Math.round(p.expectedMtPerYear)} mt · {p.estimatedCostUsd === 0 ? 'free' : `$${p.estimatedCostUsd.toLocaleString()}`}
+              </span>
+            </div>
+          ))}
+        </div>
+        {dropped.length > 0 && (
+          <div style={optStyles.list}>
+            <div style={{ ...optStyles.listLabel, color: '#fca5a5' }}>✕ Excluded at this budget</div>
+            {dropped.map((p) => (
+              <div key={p.id} style={{ ...optStyles.row, opacity: 0.7 }}>
+                <span style={optStyles.rowTitle}>{p.title}</span>
+                <span style={optStyles.rowMeta}>
+                  {Math.round(p.expectedMtPerYear)} mt · ${p.estimatedCostUsd.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const optStyles = {
+  wrap: { marginTop: 12, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6 },
+  headValue: { fontSize: 18, fontWeight: 800, color: '#22d3ee', fontVariantNumeric: 'tabular-nums' },
+  slider: { width: '100%', cursor: 'pointer' },
+  scale: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', fontFamily: 'ui-monospace, monospace', marginTop: 2 },
+  result: { marginTop: 10, padding: '8px 12px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
+  resultRow: { display: 'flex', gap: 12, fontSize: 13, padding: '4px 0' },
+  resultLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, minWidth: 130 },
+  resultVal: { color: '#e5e7eb', fontVariantNumeric: 'tabular-nums' },
+  lists: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 },
+  list: { padding: '10px 12px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
+  listLabel: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  row: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, padding: '4px 0', borderTop: '1px solid #1f2937', fontSize: 12, alignItems: 'baseline' },
+  rowTitle: { color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  rowMeta: { fontSize: 11, color: '#94a3b8', fontVariantNumeric: 'tabular-nums' },
+  empty: { fontSize: 12, color: '#64748b', fontStyle: 'italic', padding: '4px 0' },
 };
 
 // Side-by-side diff between a saved snapshot and the current plan.
