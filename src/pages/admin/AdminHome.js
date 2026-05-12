@@ -322,31 +322,6 @@ export default function AdminHome() {
 
       <FreshnessAlert freshness={freshness} />
 
-      <Section
-        title="Data ingestion status"
-        hint={`${measuredCount} of ${totalCount} scope components are now sourced from measured data. The rest fall back to the published-method bottom-up estimate until the corresponding records land.`}
-        accent="#22d3ee"
-      >
-        <div style={styles.ingestionGrid}>
-          {ingestionRows.map((row, i) => (
-            <div key={i} style={{ ...styles.ingestionCell, borderLeftColor: row.measured ? '#22c55e' : '#475569' }}>
-              <div style={styles.ingestionHead}>
-                <span style={{ ...styles.ingestionPill, background: row.measured ? '#0e3a1f' : '#1f2937', color: row.measured ? '#86efac' : '#94a3b8', borderColor: row.measured ? '#16a34a' : '#475569' }}>
-                  {row.measured ? '✓ measured' : 'estimated'}
-                </span>
-                <span style={styles.ingestionLabel}>{row.label}</span>
-              </div>
-              <div style={styles.ingestionDetail}>{row.detail}</div>
-              {row.cta && (
-                <Link to={row.cta.to} style={styles.ingestionCta}>
-                  {row.cta.label}
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      </Section>
-
       <Section title="Quick actions" hint="The four most-used admin starting points.">
         <div style={styles.quickGrid}>
           {QUICK_LINKS.map((q) => (
@@ -359,54 +334,76 @@ export default function AdminHome() {
         </div>
       </Section>
 
-      {NAV_GROUPS.map((group) => (
+      {/* 2-column on wide screens: ingestion status (the actionable
+          "what's measured" status) on the left, recent activity (the
+          "what got done" feed) on the right. Stacks on narrow screens. */}
+      <div style={styles.twoCol}>
         <Section
-          key={group.key}
-          title={group.label}
-          hint={group.blurb}
-          accent={group.accent}
+          title="Data ingestion status"
+          hint={`${measuredCount} of ${totalCount} scope components measured. Click any "Estimated" row to start logging.`}
+          accent="#22d3ee"
         >
-          <div style={styles.groupGrid}>
-            {group.items.map((item) => (
-              <Link key={item.to} to={item.to} style={{ ...styles.groupCard, borderLeftColor: group.accent }}>
-                <div style={styles.groupCardLabel}>{item.label}</div>
-                <div style={styles.groupCardDesc}>{item.desc}</div>
-                <div style={styles.groupCardLink}>Open →</div>
-              </Link>
-            ))}
-          </div>
-        </Section>
-      ))}
-
-      {feed.length > 0 && (
-        <Section
-          title="Recent activity"
-          hint={`Last ${feed.length} record${feed.length === 1 ? '' : 's'} entered across all canonical tables, newest first.`}
-          accent="#22c55e"
-        >
-          <div style={styles.feedList}>
-            {feed.map((item, i) => (
-              <div key={i} style={styles.feedRow}>
-                <div style={styles.feedDate}>{formatFeedDate(item.ts)}</div>
-                <div style={styles.feedLabel}>{item.label}</div>
-                <div style={styles.feedSummary}>{item.summary}</div>
+          <div style={styles.ingestionList}>
+            {ingestionRows.map((row, i) => (
+              <div key={i} style={{ ...styles.ingestionCell, borderLeftColor: row.measured ? '#22c55e' : '#475569' }}>
+                <div style={styles.ingestionHead}>
+                  <span style={{ ...styles.ingestionPill, background: row.measured ? '#0e3a1f' : '#1f2937', color: row.measured ? '#86efac' : '#94a3b8', borderColor: row.measured ? '#16a34a' : '#475569' }}>
+                    {row.measured ? '✓ measured' : 'estimated'}
+                  </span>
+                  <span style={styles.ingestionLabel}>{row.label}</span>
+                  {row.cta && (
+                    <Link to={row.cta.to} style={styles.ingestionCtaSmall}>
+                      {row.cta.label}
+                    </Link>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </Section>
-      )}
 
-      <Section title="Supabase record counts" hint="Rows currently in each Supabase table. Falls back to '…' while loading or '—' if the database isn't reachable.">
-        {error && <div role="alert" style={styles.error}>Error: {error}</div>}
-        <div style={styles.recordGrid}>
-          {ADMIN_TABLE_SOURCES.map(({ table }) => (
-            <div key={table} style={styles.recordCell}>
-              <div style={styles.recordLabel}>{SHORT_LABELS[table] || table}</div>
-              <div style={styles.recordValue}>{counts[table] ?? '…'}</div>
+        {feed.length > 0 && (
+          <Section
+            title="Recent activity"
+            hint={`Last ${feed.length} record${feed.length === 1 ? '' : 's'} entered, newest first.`}
+            accent="#22c55e"
+          >
+            <div style={styles.feedListCompact}>
+              {feed.map((item, i) => (
+                <div key={i} style={styles.feedRowCompact}>
+                  <div style={styles.feedDate}>{formatFeedDate(item.ts)}</div>
+                  <div>
+                    <div style={styles.feedLabel}>{item.label}</div>
+                    <div style={styles.feedSummary}>{item.summary}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+      </div>
+
+      {/* All admin pages — single compact navigator instead of one
+          Section per NAV_GROUP. Header dropdowns cover the same ground,
+          but this keeps the in-page map for users who landed via search. */}
+      <Section title="All admin pages" hint="Compact navigator. Same links as the dropdowns in the top bar.">
+        <div style={styles.navGroupRow}>
+          {NAV_GROUPS.map((group) => (
+            <div key={group.key} style={{ ...styles.navGroup, borderTopColor: group.accent }}>
+              <div style={{ ...styles.navGroupHead, color: group.accent }}>{group.label}</div>
+              <div style={styles.navGroupLinks}>
+                {group.items.map((item) => (
+                  <Link key={item.to} to={item.to} style={styles.navGroupLink}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </Section>
+
+      {error && <div role="alert" style={styles.error}>Error loading admin counts: {error}</div>}
     </div>
   );
 }
@@ -508,30 +505,33 @@ const styles = {
   quickLabel: { fontSize: 16, color: '#e5e7eb', fontWeight: 700 },
   quickDesc: { fontSize: 13, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 },
 
-  groupGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 },
-  groupCard: { display: 'block', padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 8, color: 'inherit', textDecoration: 'none' },
-  groupCardLabel: { fontSize: 15, color: '#e5e7eb', fontWeight: 700 },
-  groupCardDesc: { fontSize: 13, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 },
-  groupCardLink: { fontSize: 11, color: '#22d3ee', marginTop: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase' },
+  // Two-column layout for ingestion status + recent activity. Stacks
+  // on narrow screens (< 900px-ish) thanks to grid-template-columns
+  // auto-flow + minmax.
+  twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 20, marginTop: 0, alignItems: 'start' },
 
-  recordGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 },
-  recordCell: { padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
-  recordLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6 },
-  recordValue: { marginTop: 6, fontSize: 20, color: '#cbd5e1', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
-
-  ingestionGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 },
-  ingestionCell: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
-  ingestionHead: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' },
+  ingestionList: { display: 'flex', flexDirection: 'column', gap: 6 },
+  ingestionCell: { padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 6 },
+  ingestionHead: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
   ingestionPill: { fontSize: 10, padding: '2px 8px', border: '1px solid', borderRadius: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 },
-  ingestionLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
-  ingestionDetail: { fontSize: 12, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 },
-  ingestionCta: { display: 'inline-block', marginTop: 10, padding: '4px 10px', background: '#0f172a', border: '1px solid #f59e0b', borderRadius: 4, color: '#fbbf24', textDecoration: 'none', fontSize: 12, fontWeight: 700, letterSpacing: 0.4 },
+  ingestionLabel: { fontSize: 13, color: '#e5e7eb', fontWeight: 600, flex: 1, minWidth: 140 },
+  ingestionCtaSmall: { padding: '2px 8px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: 4, color: '#fbbf24', textDecoration: 'none', fontSize: 11, fontWeight: 700, letterSpacing: 0.4 },
 
-  feedList: { display: 'flex', flexDirection: 'column', gap: 4 },
-  feedRow: { display: 'grid', gridTemplateColumns: '110px 130px 1fr', gap: 12, padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, alignItems: 'baseline' },
-  feedDate: { color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: 12 },
-  feedLabel: { color: '#22d3ee', fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.4 },
-  feedSummary: { color: '#cbd5e1' },
+  feedListCompact: { display: 'flex', flexDirection: 'column', gap: 4 },
+  feedRowCompact: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 13, alignItems: 'baseline' },
+  feedDate: { color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: 11 },
+  feedLabel: { color: '#22d3ee', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 2 },
+  feedSummary: { color: '#cbd5e1', fontSize: 13 },
 
-  error: { marginBottom: 10, color: '#fca5a5', fontSize: 13 },
+  // Compact admin-page navigator: four columns side-by-side instead
+  // of one Section per NAV_GROUP. Each group becomes a labelled
+  // mini-list of links — much less vertical space than full card
+  // grids per group.
+  navGroupRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 },
+  navGroup: { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderTop: '3px solid #22d3ee', borderRadius: 8 },
+  navGroupHead: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
+  navGroupLinks: { display: 'flex', flexDirection: 'column', gap: 2 },
+  navGroupLink: { padding: '4px 6px', borderRadius: 4, color: '#cbd5e1', textDecoration: 'none', fontSize: 13 },
+
+  error: { marginTop: 16, marginBottom: 10, padding: '8px 12px', color: '#fca5a5', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 13 },
 };
