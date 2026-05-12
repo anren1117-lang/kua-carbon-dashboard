@@ -160,6 +160,20 @@ function CategoriesMenu() {
   );
 }
 
+// Best-effort page title lookup. Most routes have an explicit
+// label in topItems/categoryItems/portalItems; the few that don't
+// (e.g. /lessons/:id, /admin/*) fall back to the static base title.
+function pageTitleFor(pathname) {
+  const all = [...topItems, ...categoryItems, ...portalItems];
+  // Exact match first; then deepest prefix match for nested routes.
+  const exact = all.find((it) => it.to === pathname);
+  if (exact) return exact.label;
+  const prefix = all
+    .filter((it) => it.to !== '/' && pathname.startsWith(it.to + '/'))
+    .sort((a, b) => b.to.length - a.to.length)[0];
+  return prefix ? prefix.label : null;
+}
+
 function Layout() {
   const mainRef = useRef(null);
   const { pathname } = useLocation();
@@ -168,6 +182,15 @@ function Layout() {
   // the just-clicked nav link and the new page is silent.
   useEffect(() => {
     if (mainRef.current) mainRef.current.focus({ preventScroll: true });
+  }, [pathname]);
+
+  // Sync document.title on route change so the browser tab + screen-
+  // reader announcement reflect the page the user is on.
+  useEffect(() => {
+    const label = pageTitleFor(pathname);
+    document.title = label
+      ? `${label} · KUA Carbon Dashboard`
+      : 'KUA Carbon Dashboard';
   }, [pathname]);
 
   return (

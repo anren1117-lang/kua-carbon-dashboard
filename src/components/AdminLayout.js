@@ -241,6 +241,24 @@ function AdminLayout() {
   useEffect(() => {
     if (mainRef.current) mainRef.current.focus({ preventScroll: true });
   }, [pathname]);
+
+  // Sync document.title on route change. Walks the admin NAV_GROUPS
+  // to find the matching item label; fall back to "Admin" so the tab
+  // never goes back to the public-site title.
+  useEffect(() => {
+    let label = null;
+    if (pathname === '/admin' || pathname === '/admin/') {
+      label = 'Dashboard';
+    } else {
+      for (const group of NAV_GROUPS) {
+        const item = group.items.find(({ to }) => pathname === to || pathname.startsWith(to + '/'));
+        if (item) { label = item.label; break; }
+      }
+    }
+    document.title = label
+      ? `${label} · KUA Admin`
+      : 'KUA Admin';
+  }, [pathname]);
   // Banner shown when a previous session expired mid-use (adminFetch
   // detected a 401 and dispatched the event). Cleared as soon as the
   // user successfully logs in again.
