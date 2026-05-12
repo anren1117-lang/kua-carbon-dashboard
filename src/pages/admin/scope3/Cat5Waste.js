@@ -55,34 +55,34 @@ function Cat5Waste() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>Add waste record</h2>
         <div style={s.formGrid}>
-          <div style={s.field}>
-            <label style={s.label}>Date</label>
+          <label style={s.field}>
+            <span style={s.label}>Date</span>
             <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Type</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Type</span>
             <select value={form.waste_type} onChange={(e) => setForm({ ...form, waste_type: e.target.value })} style={s.input}>
               {wasteTypes.map((t) => <option key={t}>{t}</option>)}
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Amount</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Amount</span>
             <input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Unit</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Unit</span>
             <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} style={s.input}>
               {units.map((u) => <option key={u}>{u}</option>)}
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>School year</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>School year</span>
             <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} />
-          </div>
-          <div style={{ ...s.field, ...s.full }}>
-            <label style={s.label}>Notes</label>
+          </label>
+          <label style={{ ...s.field, ...s.full }}>
+            <span style={s.label}>Notes</span>
             <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} placeholder="optional" />
-          </div>
+          </label>
         </div>
         <button type="submit" style={s.submit}>Add record</button>
       </form>

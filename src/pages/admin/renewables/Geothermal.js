@@ -92,22 +92,22 @@ function Geothermal() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit period' : 'Add period'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Period start</label><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Period end</label><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>kWh input</label><input type="number" step="0.01" min="0" value={form.kwh_input} onChange={(e) => setForm({ ...form, kwh_input: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>COP</label><input type="number" step="0.01" min="0" value={form.cop} onChange={(e) => setForm({ ...form, cop: e.target.value })} style={s.input} placeholder="design or measured" /></div>
-          <div style={s.field}><label style={s.label}>Avoided fuel</label>
+          <label style={s.field}><span style={s.label}>Period start</span><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Period end</span><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>kWh input</span><input type="number" step="0.01" min="0" value={form.kwh_input} onChange={(e) => setForm({ ...form, kwh_input: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>COP</span><input type="number" step="0.01" min="0" value={form.cop} onChange={(e) => setForm({ ...form, cop: e.target.value })} style={s.input} placeholder="design or measured" /></label>
+          <label style={s.field}><span style={s.label}>Avoided fuel</span>
             <select value={form.avoided_fuel_type} onChange={(e) => setForm({ ...form, avoided_fuel_type: e.target.value })} style={s.input}>
               <option value="heating_oil">heating oil</option><option value="propane">propane</option><option value="none">none</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>System ID</label><input type="text" value={form.system_id} onChange={(e) => setForm({ ...form, system_id: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}><span style={s.label}>System ID</span><input type="text" value={form.system_id} onChange={(e) => setForm({ ...form, system_id: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 8, border: '1px solid #14532d', background: '#052e1a', color: '#86efac', fontSize: 14, display: 'grid', gap: 4 }}>
           <div>Thermal output: <strong>{(thermalBtu / 1e6).toFixed(2)} MMBtu</strong></div>

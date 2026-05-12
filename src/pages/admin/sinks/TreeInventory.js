@@ -110,30 +110,30 @@ function TreeInventory() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit tree' : 'Add tree'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Survey date</label><input type="date" value={form.survey_date} onChange={(e) => setForm({ ...form, survey_date: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Tree ID</label><input type="text" value={form.tree_id} onChange={(e) => setForm({ ...form, tree_id: e.target.value })} style={s.input} placeholder="optional tag" /></div>
-          <div style={s.field}><label style={s.label}>DBH (cm)</label><input type="number" step="0.1" min="0" value={form.dbh_cm} onChange={(e) => setForm({ ...form, dbh_cm: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Height (m)</label><input type="number" step="0.1" min="0" value={form.height_m} onChange={(e) => setForm({ ...form, height_m: e.target.value })} style={s.input} placeholder="optional" /></div>
-          <div style={s.field}><label style={s.label}>Common name</label><input type="text" value={form.species_common} onChange={(e) => setForm({ ...form, species_common: e.target.value })} style={s.input} placeholder="e.g. Sugar maple" /></div>
-          <div style={s.field}><label style={s.label}>Scientific name</label><input type="text" value={form.species_scientific} onChange={(e) => setForm({ ...form, species_scientific: e.target.value })} style={s.input} placeholder="Acer saccharum" /></div>
-          <div style={s.field}><label style={s.label}>Health</label>
+          <label style={s.field}><span style={s.label}>Survey date</span><input type="date" value={form.survey_date} onChange={(e) => setForm({ ...form, survey_date: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Tree ID</span><input type="text" value={form.tree_id} onChange={(e) => setForm({ ...form, tree_id: e.target.value })} style={s.input} placeholder="optional tag" /></label>
+          <label style={s.field}><span style={s.label}>DBH (cm)</span><input type="number" step="0.1" min="0" value={form.dbh_cm} onChange={(e) => setForm({ ...form, dbh_cm: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Height (m)</span><input type="number" step="0.1" min="0" value={form.height_m} onChange={(e) => setForm({ ...form, height_m: e.target.value })} style={s.input} placeholder="optional" /></label>
+          <label style={s.field}><span style={s.label}>Common name</span><input type="text" value={form.species_common} onChange={(e) => setForm({ ...form, species_common: e.target.value })} style={s.input} placeholder="e.g. Sugar maple" /></label>
+          <label style={s.field}><span style={s.label}>Scientific name</span><input type="text" value={form.species_scientific} onChange={(e) => setForm({ ...form, species_scientific: e.target.value })} style={s.input} placeholder="Acer saccharum" /></label>
+          <label style={s.field}><span style={s.label}>Health</span>
             <select value={form.health_condition} onChange={(e) => setForm({ ...form, health_condition: e.target.value })} style={s.input}>
               <option>good</option><option>fair</option><option>poor</option><option>dead</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Land class</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Land class</span>
             <select value={form.land_class} onChange={(e) => setForm({ ...form, land_class: e.target.value })} style={s.input}>
               <option>forest</option><option>lawn</option><option>athletic</option><option>garden</option><option>hardscape</option><option>other</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Latitude</label><input type="number" step="0.000001" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Longitude</label><input type="number" step="0.000001" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Latitude</span><input type="number" step="0.000001" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Longitude</span><input type="number" step="0.000001" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         {co2eKg != null && (
           <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 8, border: '1px solid #14532d', background: '#052e1a', color: '#86efac', fontSize: 14, display: 'grid', gap: 4 }}>

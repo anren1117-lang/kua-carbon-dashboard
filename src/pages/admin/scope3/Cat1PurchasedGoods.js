@@ -100,38 +100,38 @@ function Cat1PurchasedGoods() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit purchase row' : 'Add purchase row'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}>
-            <label style={s.label}>Fiscal year</label>
+          <label style={s.field}>
+            <span style={s.label}>Fiscal year</span>
             <input type="text" value={form.fiscal_year} onChange={(e) => setForm({ ...form, fiscal_year: e.target.value })} style={s.input} required placeholder="e.g. 2025-2026" />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Category</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Category</span>
             <select value={form.purchasing_category} onChange={(e) => setForm({ ...form, purchasing_category: e.target.value })} style={s.input}>
               {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Spend (USD)</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Spend (USD)</span>
             <input type="number" step="0.01" min="0" value={form.spend_usd} onChange={(e) => setForm({ ...form, spend_usd: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>EEIO factor override</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>EEIO factor override</span>
             <input type="number" step="0.001" min="0" value={form.eeio_factor_override} onChange={(e) => setForm({ ...form, eeio_factor_override: e.target.value })} style={s.input} placeholder={factor ? `default ${factor.value}` : 'optional'} />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}>
-            <label style={s.label}>Source pointer</label>
+          </label>
+          <label style={{ ...s.field, ...s.full }}>
+            <span style={s.label}>Source pointer</span>
             <input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="GL export, AP report, ledger reference" />
-          </div>
-          <div style={{ ...s.field, ...s.full }}>
-            <label style={s.label}>Notes</label>
+          </label>
+          <label style={{ ...s.field, ...s.full }}>
+            <span style={s.label}>Notes</span>
             <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} />
-          </div>
+          </label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

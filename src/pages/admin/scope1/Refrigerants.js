@@ -101,23 +101,23 @@ function Refrigerants() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit service entry' : 'Add service entry'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Service date</label><input type="date" value={form.service_date} onChange={(e) => setForm({ ...form, service_date: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Refrigerant</label>
+          <label style={s.field}><span style={s.label}>Service date</span><input type="date" value={form.service_date} onChange={(e) => setForm({ ...form, service_date: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Refrigerant</span>
             <select value={form.refrigerant_type} onChange={(e) => setForm({ ...form, refrigerant_type: e.target.value })} style={s.input}>
               {refrigerantOptions.map((o) => <option key={o.value}>{o.value}</option>)}
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Recharge (lb)</label><input type="number" step="0.01" min="0" value={form.recharge_lb} onChange={(e) => setForm({ ...form, recharge_lb: e.target.value })} style={s.input} placeholder="0" /></div>
-          <div style={s.field}><label style={s.label}>Reclaim (lb)</label><input type="number" step="0.01" min="0" value={form.reclaim_lb} onChange={(e) => setForm({ ...form, reclaim_lb: e.target.value })} style={s.input} placeholder="0" /></div>
-          <div style={s.field}><label style={s.label}>Equipment ID</label><input type="text" value={form.equipment_id} onChange={(e) => setForm({ ...form, equipment_id: e.target.value })} style={s.input} placeholder="e.g. RTU-3 Whittemore" /></div>
-          <div style={s.field}><label style={s.label}>Service company</label><input type="text" value={form.service_company} onChange={(e) => setForm({ ...form, service_company: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Service report #</label><input type="text" value={form.service_report_number} onChange={(e) => setForm({ ...form, service_report_number: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Recharge (lb)</span><input type="number" step="0.01" min="0" value={form.recharge_lb} onChange={(e) => setForm({ ...form, recharge_lb: e.target.value })} style={s.input} placeholder="0" /></label>
+          <label style={s.field}><span style={s.label}>Reclaim (lb)</span><input type="number" step="0.01" min="0" value={form.reclaim_lb} onChange={(e) => setForm({ ...form, reclaim_lb: e.target.value })} style={s.input} placeholder="0" /></label>
+          <label style={s.field}><span style={s.label}>Equipment ID</span><input type="text" value={form.equipment_id} onChange={(e) => setForm({ ...form, equipment_id: e.target.value })} style={s.input} placeholder="e.g. RTU-3 Whittemore" /></label>
+          <label style={s.field}><span style={s.label}>Service company</span><input type="text" value={form.service_company} onChange={(e) => setForm({ ...form, service_company: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Service report #</span><input type="text" value={form.service_report_number} onChange={(e) => setForm({ ...form, service_report_number: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} label="Net leakage emissions" />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

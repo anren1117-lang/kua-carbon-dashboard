@@ -42,28 +42,28 @@ function Cat6BusinessTravel() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>Add trip</h2>
         <div style={s.formGrid}>
-          <div style={s.field}>
-            <label style={s.label}>Country</label>
+          <label style={s.field}>
+            <span style={s.label}>Country</span>
             <input type="text" value={form.destination_country} onChange={(e) => setForm({ ...form, destination_country: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>City</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>City</span>
             <input type="text" value={form.destination_city} onChange={(e) => setForm({ ...form, destination_city: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Purpose</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Purpose</span>
             <select value={form.trip_purpose} onChange={(e) => setForm({ ...form, trip_purpose: e.target.value })} style={s.input}>
               {purposes.map((p) => <option key={p}>{p}</option>)}
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Departure</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Departure</span>
             <input type="date" value={form.departure_date} onChange={(e) => setForm({ ...form, departure_date: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Return</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Return</span>
             <input type="date" value={form.return_date} onChange={(e) => setForm({ ...form, return_date: e.target.value })} style={s.input} required />
-          </div>
+          </label>
         </div>
         <button type="submit" style={s.submit}>Add trip</button>
       </form>

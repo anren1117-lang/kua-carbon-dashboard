@@ -90,23 +90,23 @@ function Fleet() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit period' : 'Add period'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Period start</label><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Period end</label><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Vehicle ID</label><input type="text" value={form.vehicle_id} onChange={(e) => setForm({ ...form, vehicle_id: e.target.value })} style={s.input} placeholder="e.g. Van-1" /></div>
-          <div style={s.field}><label style={s.label}>Fuel type</label>
+          <label style={s.field}><span style={s.label}>Period start</span><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Period end</span><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Vehicle ID</span><input type="text" value={form.vehicle_id} onChange={(e) => setForm({ ...form, vehicle_id: e.target.value })} style={s.input} placeholder="e.g. Van-1" /></label>
+          <label style={s.field}><span style={s.label}>Fuel type</span>
             <select value={form.fuel_type} onChange={(e) => setForm({ ...form, fuel_type: e.target.value })} style={s.input}>
               <option value="gasoline">gasoline</option><option value="diesel">diesel</option><option value="other">other</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Gallons</label><input type="number" step="0.01" min="0" value={form.gallons} onChange={(e) => setForm({ ...form, gallons: e.target.value })} style={s.input} placeholder="preferred" /></div>
-          <div style={s.field}><label style={s.label}>Miles</label><input type="number" step="0.1" min="0" value={form.miles} onChange={(e) => setForm({ ...form, miles: e.target.value })} style={s.input} placeholder="alternate" /></div>
-          <div style={s.field}><label style={s.label}>Cost (USD)</label><input type="number" step="0.01" min="0" value={form.cost_usd} onChange={(e) => setForm({ ...form, cost_usd: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Gallons</span><input type="number" step="0.01" min="0" value={form.gallons} onChange={(e) => setForm({ ...form, gallons: e.target.value })} style={s.input} placeholder="preferred" /></label>
+          <label style={s.field}><span style={s.label}>Miles</span><input type="number" step="0.1" min="0" value={form.miles} onChange={(e) => setForm({ ...form, miles: e.target.value })} style={s.input} placeholder="alternate" /></label>
+          <label style={s.field}><span style={s.label}>Cost (USD)</span><input type="number" step="0.01" min="0" value={form.cost_usd} onChange={(e) => setForm({ ...form, cost_usd: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

@@ -111,46 +111,46 @@ function AdminFramework() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>New entry</h2>
         <div style={s.formGrid}>
-          <div style={s.field}>
-            <label style={s.label}>Scope</label>
+          <label style={s.field}>
+            <span style={s.label}>Scope</span>
             <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value })} style={s.input}>
               {scopes.map((sc) => <option key={sc}>{sc}</option>)}
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Category</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Category</span>
             <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={s.input} placeholder="e.g. Heating Fuel · Cat 6 · Trees" />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Label</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Label</span>
             <input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} style={s.input} placeholder="What this row records" required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Value</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Value</span>
             <input type="number" step="any" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} style={s.input} placeholder="numeric, optional" />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Unit</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Unit</span>
             <input type="text" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} style={s.input} placeholder="kWh · gal · lb · m² · ..." />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Date</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Date</span>
             <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} style={s.input} />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               {dataQualities.map((q) => <option key={q}>{q}</option>)}
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}>
-            <label style={s.label}>Source</label>
+          </label>
+          <label style={{ ...s.field, ...s.full }}>
+            <span style={s.label}>Source</span>
             <input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="Invoice #, meter export, survey, etc." />
-          </div>
-          <div style={{ ...s.field, ...s.full }}>
-            <label style={s.label}>Notes</label>
+          </label>
+          <label style={{ ...s.field, ...s.full }}>
+            <span style={s.label}>Notes</span>
             <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} placeholder="optional" />
-          </div>
+          </label>
         </div>
         <button type="submit" style={s.submit}>Save draft</button>
       </form>

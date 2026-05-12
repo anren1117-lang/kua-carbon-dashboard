@@ -105,32 +105,32 @@ function SoilSample() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit sample' : 'Add sample'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Sample date</label><input type="date" value={form.sample_date} onChange={(e) => setForm({ ...form, sample_date: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Sample ID</label><input type="text" value={form.sample_id} onChange={(e) => setForm({ ...form, sample_id: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Land use</label>
+          <label style={s.field}><span style={s.label}>Sample date</span><input type="date" value={form.sample_date} onChange={(e) => setForm({ ...form, sample_date: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Sample ID</span><input type="text" value={form.sample_id} onChange={(e) => setForm({ ...form, sample_id: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Land use</span>
             <select value={form.land_use_class} onChange={(e) => setForm({ ...form, land_use_class: e.target.value })} style={s.input}>
               <option>forest</option><option>lawn</option><option>athletic</option><option>garden</option><option>hardscape</option><option>other</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Depth top (cm)</label><input type="number" step="0.1" min="0" value={form.depth_cm_top} onChange={(e) => setForm({ ...form, depth_cm_top: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Depth bottom (cm)</label><input type="number" step="0.1" min="0" value={form.depth_cm_bottom} onChange={(e) => setForm({ ...form, depth_cm_bottom: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Bulk density (g/cm³)</label><input type="number" step="0.01" min="0" value={form.bulk_density_g_cm3} onChange={(e) => setForm({ ...form, bulk_density_g_cm3: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Organic C (%)</label><input type="number" step="0.01" min="0" max="100" value={form.oc_percent} onChange={(e) => setForm({ ...form, oc_percent: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Lab method</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Depth top (cm)</span><input type="number" step="0.1" min="0" value={form.depth_cm_top} onChange={(e) => setForm({ ...form, depth_cm_top: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Depth bottom (cm)</span><input type="number" step="0.1" min="0" value={form.depth_cm_bottom} onChange={(e) => setForm({ ...form, depth_cm_bottom: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Bulk density (g/cm³)</span><input type="number" step="0.01" min="0" value={form.bulk_density_g_cm3} onChange={(e) => setForm({ ...form, bulk_density_g_cm3: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Organic C (%)</span><input type="number" step="0.01" min="0" max="100" value={form.oc_percent} onChange={(e) => setForm({ ...form, oc_percent: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Lab method</span>
             <select value={form.lab_method} onChange={(e) => setForm({ ...form, lab_method: e.target.value })} style={s.input}>
               <option value="dry_combustion">dry combustion</option>
               <option value="loss_on_ignition">loss on ignition</option>
               <option value="other">other</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Latitude</label><input type="number" step="0.000001" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Longitude</label><input type="number" step="0.000001" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Latitude</span><input type="number" step="0.000001" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Longitude</span><input type="number" step="0.000001" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         {stockMgPerHa != null && (
           <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 8, border: '1px solid #14532d', background: '#052e1a', color: '#86efac', fontSize: 14 }}>

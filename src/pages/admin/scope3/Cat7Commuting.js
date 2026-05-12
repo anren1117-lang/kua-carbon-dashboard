@@ -110,52 +110,52 @@ function Cat7Commuting() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit commute' : 'Add commute'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}>
-            <label style={s.label}>School year</label>
+          <label style={s.field}>
+            <span style={s.label}>School year</span>
             <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Role</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Role</span>
             <select value={form.employee_role} onChange={(e) => setForm({ ...form, employee_role: e.target.value })} style={s.input}>
               <option>faculty</option><option>staff</option><option>student</option><option>other</option>
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Home ZIP</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Home ZIP</span>
             <input type="text" value={form.home_zip} onChange={(e) => setForm({ ...form, home_zip: e.target.value })} style={s.input} placeholder="optional" />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>One-way miles</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>One-way miles</span>
             <input type="number" step="0.1" min="0" value={form.one_way_miles} onChange={(e) => setForm({ ...form, one_way_miles: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Mode</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Mode</span>
             <select value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value })} style={s.input}>
               {modes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Days / week</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Days / week</span>
             <input type="number" step="0.1" min="0" max="7" value={form.days_per_week} onChange={(e) => setForm({ ...form, days_per_week: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Weeks / year</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Weeks / year</span>
             <input type="number" step="0.1" min="0" max="52" value={form.weeks_per_year} onChange={(e) => setForm({ ...form, weeks_per_year: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Survey date</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Survey date</span>
             <input type="date" value={form.survey_date} onChange={(e) => setForm({ ...form, survey_date: e.target.value })} style={s.input} />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}>
-            <label style={s.label}>Notes</label>
+          </label>
+          <label style={{ ...s.field, ...s.full }}>
+            <span style={s.label}>Notes</span>
             <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} />
-          </div>
+          </label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} label="Annual round-trip emissions" />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

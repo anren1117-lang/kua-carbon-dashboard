@@ -74,18 +74,18 @@ function MeterReading() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit reading' : 'Add reading'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Period start</label><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Period end</label><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>kWh</label><input type="number" step="0.01" min="0" value={form.kwh} onChange={(e) => setForm({ ...form, kwh: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Meter ID</label><input type="text" value={form.meter_id} onChange={(e) => setForm({ ...form, meter_id: e.target.value })} style={s.input} placeholder="optional" /></div>
-          <div style={s.field}><label style={s.label}>Building</label><input type="text" value={form.building} onChange={(e) => setForm({ ...form, building: e.target.value })} style={s.input} placeholder="campus-wide if blank" /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          <label style={s.field}><span style={s.label}>Period start</span><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Period end</span><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>kWh</span><input type="number" step="0.01" min="0" value={form.kwh} onChange={(e) => setForm({ ...form, kwh: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Meter ID</span><input type="text" value={form.meter_id} onChange={(e) => setForm({ ...form, meter_id: e.target.value })} style={s.input} placeholder="optional" /></label>
+          <label style={s.field}><span style={s.label}>Building</span><input type="text" value={form.building} onChange={(e) => setForm({ ...form, building: e.target.value })} style={s.input} placeholder="campus-wide if blank" /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Source pointer</label><input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="campus_meter / Envysion export ref" /></div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Source pointer</span><input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="campus_meter / Envysion export ref" /></label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

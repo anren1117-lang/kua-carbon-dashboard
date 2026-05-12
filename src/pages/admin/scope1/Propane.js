@@ -75,15 +75,15 @@ function Propane() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit delivery' : 'Add delivery'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Delivery date</label><input type="date" value={form.delivery_date} onChange={(e) => setForm({ ...form, delivery_date: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Gallons</label><input type="number" step="0.01" min="0" value={form.gallons} onChange={(e) => setForm({ ...form, gallons: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Cost (USD)</label><input type="number" step="0.01" min="0" value={form.cost_usd} onChange={(e) => setForm({ ...form, cost_usd: e.target.value })} style={s.input} placeholder="optional" /></div>
-          <div style={s.field}><label style={s.label}>Building / tank</label><input type="text" value={form.building_or_tank} onChange={(e) => setForm({ ...form, building_or_tank: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Vendor</label><input type="text" value={form.vendor} onChange={(e) => setForm({ ...form, vendor: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Invoice #</label><input type="text" value={form.invoice_number} onChange={(e) => setForm({ ...form, invoice_number: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label><select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}><option>measured</option><option>estimated</option><option>modeled</option></select></div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Source pointer</label><input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="invoice scan filename" /></div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          <label style={s.field}><span style={s.label}>Delivery date</span><input type="date" value={form.delivery_date} onChange={(e) => setForm({ ...form, delivery_date: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Gallons</span><input type="number" step="0.01" min="0" value={form.gallons} onChange={(e) => setForm({ ...form, gallons: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Cost (USD)</span><input type="number" step="0.01" min="0" value={form.cost_usd} onChange={(e) => setForm({ ...form, cost_usd: e.target.value })} style={s.input} placeholder="optional" /></label>
+          <label style={s.field}><span style={s.label}>Building / tank</span><input type="text" value={form.building_or_tank} onChange={(e) => setForm({ ...form, building_or_tank: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Vendor</span><input type="text" value={form.vendor} onChange={(e) => setForm({ ...form, vendor: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Invoice #</span><input type="text" value={form.invoice_number} onChange={(e) => setForm({ ...form, invoice_number: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span><select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}><option>measured</option><option>estimated</option><option>modeled</option></select></label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Source pointer</span><input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="invoice scan filename" /></label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

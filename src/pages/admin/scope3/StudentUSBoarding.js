@@ -66,22 +66,22 @@ function StudentUSBoarding() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>Add US boarding student</h2>
         <div style={s.formGrid}>
-          <div style={s.field}>
-            <label style={s.label}>ZIP</label>
+          <label style={s.field}>
+            <span style={s.label}>ZIP</span>
             <input type="text" value={form.zip_code} onChange={(e) => setForm({ ...form, zip_code: e.target.value })} style={s.input} placeholder="e.g. 90210" required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>State</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>State</span>
             <input type="text" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} style={s.input} placeholder="e.g. CA" required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Graduation year</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>Graduation year</span>
             <input type="text" value={form.graduation_year} onChange={(e) => setForm({ ...form, graduation_year: e.target.value })} style={s.input} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>School year</label>
+          </label>
+          <label style={s.field}>
+            <span style={s.label}>School year</span>
             <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} required />
-          </div>
+          </label>
         </div>
         <button type="submit" style={s.submit}>Add</button>
       </form>

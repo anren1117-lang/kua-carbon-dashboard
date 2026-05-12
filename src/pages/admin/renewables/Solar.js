@@ -94,19 +94,19 @@ function Solar() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit period' : 'Add period'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>Period start</label><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Period end</label><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Gross kWh</label><input type="number" step="0.01" min="0" value={form.gross_kwh} onChange={(e) => setForm({ ...form, gross_kwh: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Self-consumed kWh</label><input type="number" step="0.01" min="0" value={form.self_consumed_kwh} onChange={(e) => setForm({ ...form, self_consumed_kwh: e.target.value })} style={s.input} placeholder="reduces Scope 2" /></div>
-          <div style={s.field}><label style={s.label}>Exported kWh</label><input type="number" step="0.01" min="0" value={form.exported_kwh} onChange={(e) => setForm({ ...form, exported_kwh: e.target.value })} style={s.input} placeholder="net-metered to grid" /></div>
-          <div style={s.field}><label style={s.label}>Inverter ID</label><input type="text" value={form.inverter_id} onChange={(e) => setForm({ ...form, inverter_id: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          <label style={s.field}><span style={s.label}>Period start</span><input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Period end</span><input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Gross kWh</span><input type="number" step="0.01" min="0" value={form.gross_kwh} onChange={(e) => setForm({ ...form, gross_kwh: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Self-consumed kWh</span><input type="number" step="0.01" min="0" value={form.self_consumed_kwh} onChange={(e) => setForm({ ...form, self_consumed_kwh: e.target.value })} style={s.input} placeholder="reduces Scope 2" /></label>
+          <label style={s.field}><span style={s.label}>Exported kWh</span><input type="number" step="0.01" min="0" value={form.exported_kwh} onChange={(e) => setForm({ ...form, exported_kwh: e.target.value })} style={s.input} placeholder="net-metered to grid" /></label>
+          <label style={s.field}><span style={s.label}>Inverter ID</span><input type="text" value={form.inverter_id} onChange={(e) => setForm({ ...form, inverter_id: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Source pointer</label><input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="inverter export filename" /></div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Source pointer</span><input type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={s.input} placeholder="inverter export filename" /></label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 8, border: `1px solid ${mismatch ? '#7f1d1d' : '#14532d'}`, background: mismatch ? '#3a0d0d' : '#052e1a', color: mismatch ? '#fca5a5' : '#86efac', fontSize: 14, display: 'grid', gap: 4 }}>
           {mismatch && <div>⚠ Self-consumed + exported = {total.toFixed(0)} kWh, gross = {gross.toFixed(0)} kWh — &gt;5% mismatch.</div>}

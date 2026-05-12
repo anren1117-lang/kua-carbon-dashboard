@@ -78,22 +78,22 @@ function Wind() {
       <form style={s.card} onSubmit={submit}>
         <h2 style={s.h2}>{editingId ? 'Edit snapshot' : 'Add snapshot'}</h2>
         <div style={s.formGrid}>
-          <div style={s.field}><label style={s.label}>As of</label><input type="date" value={form.as_of_date} onChange={(e) => setForm({ ...form, as_of_date: e.target.value })} style={s.input} required /></div>
-          <div style={s.field}><label style={s.label}>Status</label>
+          <label style={s.field}><span style={s.label}>As of</span><input type="date" value={form.as_of_date} onChange={(e) => setForm({ ...form, as_of_date: e.target.value })} style={s.input} required /></label>
+          <label style={s.field}><span style={s.label}>Status</span>
             <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} style={s.input}>
               <option>online</option><option>offline</option><option>decommissioned</option>
             </select>
-          </div>
-          <div style={s.field}><label style={s.label}>Last operational date</label><input type="date" value={form.last_operational_date} onChange={(e) => setForm({ ...form, last_operational_date: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Rated kW</label><input type="number" step="0.01" min="0" value={form.rated_kw} onChange={(e) => setForm({ ...form, rated_kw: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Hub height (m)</label><input type="number" step="0.1" min="0" value={form.hub_height_m} onChange={(e) => setForm({ ...form, hub_height_m: e.target.value })} style={s.input} /></div>
-          <div style={s.field}><label style={s.label}>Historical kWh</label><input type="number" step="0.01" min="0" value={form.historical_kwh} onChange={(e) => setForm({ ...form, historical_kwh: e.target.value })} style={s.input} placeholder="while operational" /></div>
-          <div style={s.field}><label style={s.label}>Data quality</label>
+          </label>
+          <label style={s.field}><span style={s.label}>Last operational date</span><input type="date" value={form.last_operational_date} onChange={(e) => setForm({ ...form, last_operational_date: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Rated kW</span><input type="number" step="0.01" min="0" value={form.rated_kw} onChange={(e) => setForm({ ...form, rated_kw: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Hub height (m)</span><input type="number" step="0.1" min="0" value={form.hub_height_m} onChange={(e) => setForm({ ...form, hub_height_m: e.target.value })} style={s.input} /></label>
+          <label style={s.field}><span style={s.label}>Historical kWh</span><input type="number" step="0.01" min="0" value={form.historical_kwh} onChange={(e) => setForm({ ...form, historical_kwh: e.target.value })} style={s.input} placeholder="while operational" /></label>
+          <label style={s.field}><span style={s.label}>Data quality</span>
             <select value={form.data_quality} onChange={(e) => setForm({ ...form, data_quality: e.target.value })} style={s.input}>
               <option>measured</option><option>estimated</option><option>modeled</option>
             </select>
-          </div>
-          <div style={{ ...s.field, ...s.full }}><label style={s.label}>Notes</label><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} placeholder="What records exist? Last service notes? Restoration plan?" /></div>
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} placeholder="What records exist? Last service notes? Restoration plan?" /></label>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
           <button type="submit" style={s.submit}>{editingId ? 'Save changes' : 'Add snapshot'}</button>
