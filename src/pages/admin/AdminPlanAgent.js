@@ -368,6 +368,8 @@ export default function AdminPlanAgent() {
             <Hero label="Already shipped"           value={`${Math.round(mtAlreadySaved).toLocaleString()}`} unit={`mt · ${totalCompleted} actions`} accent="#22d3ee" />
             <Hero label="Suggested next check-in"   value={`${plan.nextCheckInDays} days`}             unit=""           accent="#a855f7" />
           </div>
+          <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
+          <TimelineStrip items={plan.plan} />
           <div style={styles.planList}>
             {plan.plan.map((item, i) => (
               <PlanCard
@@ -497,6 +499,157 @@ function Hero({ label, value, unit, accent }) {
     </div>
   );
 }
+
+// Roll-up of the plan into actionable buckets. Sighted-only summary
+// designed to answer "what can I do this quarter vs this year vs
+// multi-year, and how much $ does each tier cost".
+function PlanAtAGlance({ items, grossMt }) {
+  const buckets = { 'this-quarter': [], 'this-year': [], 'this-3-years': [] };
+  for (const it of items) {
+    const t = ['this-quarter','this-year','this-3-years'].includes(it.timeline) ? it.timeline : 'this-year';
+    buckets[t].push(it);
+  }
+  const tier = (key, label, accent) => {
+    const arr = buckets[key];
+    const mt = arr.reduce((s, x) => s + (x.expectedMtPerYear || 0), 0);
+    const cost = arr.reduce((s, x) => s + (x.estimatedCostUsd || 0), 0);
+    const noCostCount = arr.filter((x) => (x.estimatedCostUsd || 0) === 0).length;
+    return { key, label, accent, count: arr.length, mt, cost, noCostCount };
+  };
+  const tiers = [
+    tier('this-quarter', 'Quick wins (≤ 90 days)', '#86efac'),
+    tier('this-year',    'This fiscal year',        '#22d3ee'),
+    tier('this-3-years', 'Multi-year capital arc',  '#a855f7'),
+  ];
+  const totalMt = items.reduce((s, x) => s + (x.expectedMtPerYear || 0), 0);
+  const totalCost = items.reduce((s, x) => s + (x.estimatedCostUsd || 0), 0);
+  return (
+    <div style={glanceStyles.wrap}>
+      <div style={glanceStyles.label}>Plan at a glance · by timeline tier</div>
+      <div style={glanceStyles.grid}>
+        {tiers.map((t) => {
+          const sharePct = totalMt > 0 ? (t.mt / totalMt) * 100 : 0;
+          return (
+            <div key={t.key} style={{ ...glanceStyles.tier, borderLeftColor: t.accent }}>
+              <div style={glanceStyles.tierLabel}>{t.label}</div>
+              <div style={glanceStyles.tierNums}>
+                <span style={{ ...glanceStyles.tierMt, color: t.accent }}>
+                  {Math.round(t.mt).toLocaleString()}<span style={glanceStyles.tierUnit}> mt/yr</span>
+                </span>
+                <span style={glanceStyles.tierShare}>{sharePct.toFixed(0)}% of plan</span>
+              </div>
+              <div style={glanceStyles.tierMeta}>
+                {t.count} item{t.count === 1 ? '' : 's'} · {t.cost === 0 ? 'no capex' : `$${t.cost.toLocaleString()} capex`}
+                {t.noCostCount > 0 && t.cost > 0 && ` · ${t.noCostCount} no-cost`}
+              </div>
+              <div style={glanceStyles.bar}>
+                <div style={{ ...glanceStyles.barFill, width: `${Math.min(100, sharePct)}%`, background: t.accent }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={glanceStyles.foot}>
+        Total plan: <strong>{Math.round(totalMt).toLocaleString()} mt/yr</strong>
+        {' · '}
+        <strong>${totalCost.toLocaleString()}</strong> capex
+        {grossMt > 0 && ` · ${((totalMt / grossMt) * 100).toFixed(1)}% of current gross (${grossMt.toLocaleString()} mt)`}
+      </div>
+    </div>
+  );
+}
+
+// Horizontal timeline placing each plan item on a quarter row. Pure
+// inline blocks — works in print, no canvas / svg complexity.
+function TimelineStrip({ items }) {
+  const order = ['this-quarter', 'this-year', 'this-3-years'];
+  const rowLabel = {
+    'this-quarter': 'Q1',
+    'this-year':    'FY',
+    'this-3-years': '3yr',
+  };
+  const categoryColor = {
+    scope1:      '#fbbf24',
+    scope2:      '#22d3ee',
+    scope3:      '#ef4444',
+    sinks:       '#22c55e',
+    engagement:  '#a855f7',
+  };
+  // Group items by timeline.
+  const grouped = order.map((key) => ({
+    key,
+    label: rowLabel[key],
+    items: items.filter((it) => (['this-quarter','this-year','this-3-years'].includes(it.timeline) ? it.timeline : 'this-year') === key),
+  }));
+  if (grouped.every((g) => g.items.length === 0)) return null;
+  return (
+    <div style={tlStyles.wrap}>
+      <div style={tlStyles.label}>Items laid out by horizon · color = scope</div>
+      {grouped.map((g) => (
+        <div key={g.key} style={tlStyles.row}>
+          <div style={tlStyles.rowLabel}>{g.label}</div>
+          <div style={tlStyles.rowItems}>
+            {g.items.length === 0 ? (
+              <div style={tlStyles.empty}>(none in this horizon)</div>
+            ) : (
+              g.items.map((it, i) => (
+                <div
+                  key={it.id || i}
+                  style={{ ...tlStyles.chip, borderLeftColor: categoryColor[it.category] || '#475569' }}
+                  title={`${it.title} — ${it.expectedMtPerYear} mt/yr · ${it.estimatedCostUsd === 0 ? 'no capex' : '$' + it.estimatedCostUsd.toLocaleString()}`}
+                >
+                  <div style={tlStyles.chipTitle}>{it.title}</div>
+                  <div style={tlStyles.chipMeta}>
+                    {it.expectedMtPerYear} mt · {it.estimatedCostUsd === 0 ? 'no capex' : '$' + Math.round(it.estimatedCostUsd / 1000) + 'K'}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      ))}
+      <div style={tlStyles.legend}>
+        {Object.entries(categoryColor).map(([cat, color]) => (
+          <span key={cat} style={tlStyles.legendItem}>
+            <span style={{ ...tlStyles.legendSwatch, background: color }} />
+            {cat}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const glanceStyles = {
+  wrap: { marginTop: 16, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 },
+  tier: { padding: '10px 12px', background: '#0f172a', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 6 },
+  tierLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 },
+  tierNums: { display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 6 },
+  tierMt: { fontSize: 20, fontWeight: 800, fontVariantNumeric: 'tabular-nums' },
+  tierUnit: { fontSize: 11, fontWeight: 600, color: '#94a3b8' },
+  tierShare: { fontSize: 12, color: '#64748b' },
+  tierMeta: { marginTop: 6, fontSize: 12, color: '#cbd5e1' },
+  bar: { marginTop: 8, height: 4, background: '#1f2937', borderRadius: 2, overflow: 'hidden' },
+  barFill: { height: '100%' },
+  foot: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #1f2937', fontSize: 12, color: '#94a3b8', fontVariantNumeric: 'tabular-nums' },
+};
+
+const tlStyles = {
+  wrap: { marginTop: 12, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 },
+  row: { display: 'grid', gridTemplateColumns: '50px 1fr', gap: 10, alignItems: 'flex-start', marginTop: 6 },
+  rowLabel: { fontSize: 11, fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 0.5, padding: '4px 6px', background: '#0f172a', borderRadius: 4, textAlign: 'center', alignSelf: 'flex-start' },
+  rowItems: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  empty: { fontSize: 12, color: '#64748b', fontStyle: 'italic', padding: '4px 0' },
+  chip: { padding: '6px 10px', background: '#0f172a', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 4, minWidth: 140, maxWidth: 260 },
+  chipTitle: { fontSize: 12, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  chipMeta: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontVariantNumeric: 'tabular-nums' },
+  legend: { marginTop: 12, display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, paddingTop: 8, borderTop: '1px solid #1f2937' },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 4 },
+  legendSwatch: { width: 10, height: 10, borderRadius: 2, display: 'inline-block' },
+};
 
 function PlanCard({ item, rank, context, onComplete, onDecline }) {
   const [memo, setMemo] = useState(null);     // { mode, memo, generatedAt } | null
