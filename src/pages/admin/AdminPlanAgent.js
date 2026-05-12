@@ -371,6 +371,7 @@ export default function AdminPlanAgent() {
           </div>
           <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
           <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
+          <EfficiencyLeaderboard items={plan.plan} />
           <TimelineStrip items={plan.plan} />
           <div style={styles.planList}>
             {plan.plan.map((item, i) => (
@@ -501,6 +502,80 @@ function Hero({ label, value, unit, accent }) {
     </div>
   );
 }
+
+// Ranks plan items by mt-per-$1000-of-capex. Surfaces the most
+// cost-effective items separately from the priority-ordered list so
+// admins making capital-allocation tradeoffs can see efficiency at a
+// glance. No-cost items go in a separate "free" column.
+function EfficiencyLeaderboard({ items }) {
+  if (!Array.isArray(items) || items.length === 0) return null;
+
+  // Free items (no capex). Sorted by raw mt impact descending.
+  const free = items
+    .filter((it) => (it.estimatedCostUsd || 0) === 0 && (it.expectedMtPerYear || 0) > 0)
+    .map((it) => ({ ...it, mtPer1k: Infinity }))
+    .sort((a, b) => (b.expectedMtPerYear || 0) - (a.expectedMtPerYear || 0))
+    .slice(0, 3);
+
+  // Paid items, ranked by mt per $1000 capex.
+  const paid = items
+    .filter((it) => (it.estimatedCostUsd || 0) > 0 && (it.expectedMtPerYear || 0) > 0)
+    .map((it) => ({ ...it, mtPer1k: (it.expectedMtPerYear * 1000) / it.estimatedCostUsd }))
+    .sort((a, b) => b.mtPer1k - a.mtPer1k)
+    .slice(0, 3);
+
+  if (free.length === 0 && paid.length === 0) return null;
+
+  return (
+    <div style={effStyles.wrap}>
+      <div style={effStyles.label}>Cost-effectiveness leaderboard · top mt per dollar</div>
+      <div style={effStyles.grid}>
+        {free.length > 0 && (
+          <div style={{ ...effStyles.column, borderLeftColor: '#86efac' }}>
+            <div style={effStyles.colHead}>No-capex levers</div>
+            {free.map((it, i) => (
+              <div key={it.id || i} style={effStyles.entry}>
+                <div style={effStyles.entryRank}>#{i + 1}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={effStyles.entryTitle}>{it.title}</div>
+                  <div style={effStyles.entryMeta}>{Math.round(it.expectedMtPerYear).toLocaleString()} mt/yr · operational</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {paid.length > 0 && (
+          <div style={{ ...effStyles.column, borderLeftColor: '#22d3ee' }}>
+            <div style={effStyles.colHead}>Best mt per $1K capex</div>
+            {paid.map((it, i) => (
+              <div key={it.id || i} style={effStyles.entry}>
+                <div style={effStyles.entryRank}>#{i + 1}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={effStyles.entryTitle}>{it.title}</div>
+                  <div style={effStyles.entryMeta}>
+                    {it.mtPer1k >= 0.1 ? it.mtPer1k.toFixed(2) : it.mtPer1k.toExponential(1)} mt / $1K · {Math.round(it.expectedMtPerYear)} mt for ${it.estimatedCostUsd.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const effStyles = {
+  wrap: { marginTop: 12, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 },
+  column: { padding: '10px 12px', background: '#0f172a', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 6 },
+  colHead: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 },
+  entry: { display: 'flex', gap: 10, padding: '6px 0', borderTop: '1px solid #1f2937', alignItems: 'baseline' },
+  entryRank: { fontSize: 13, color: '#94a3b8', fontWeight: 800, fontVariantNumeric: 'tabular-nums', minWidth: 28 },
+  entryTitle: { fontSize: 13, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  entryMeta: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontVariantNumeric: 'tabular-nums' },
+};
 
 // For each board-tracked reduction target, project where the plan
 // lands us vs the linear trajectory expectation. Connects the AI's
