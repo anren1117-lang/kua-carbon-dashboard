@@ -137,6 +137,35 @@ export default function AdminPlanAgent() {
   const [planChatInput, setPlanChatInput] = useState('');
   const [planChatBusy, setPlanChatBusy] = useState(false);
   const [planChatErr, setPlanChatErr] = useState(null);
+  // Board narrative — full 2-page strategic brief.
+  const [narrative, setNarrative] = useState(null); // { narrative: {...}, generatedAt } | null
+  const [narrativeBusy, setNarrativeBusy] = useState(false);
+  const [narrativeErr, setNarrativeErr] = useState(null);
+
+  async function generateNarrative() {
+    if (!plan) return;
+    setNarrativeBusy(true);
+    setNarrativeErr(null);
+    try {
+      const measuredState = {
+        scope1Measured: !!live.scope1Measured,
+        scope3Measured: !!live.scope3Measured,
+        sinksMeasured:  !!live.sinksMeasured,
+      };
+      const r = await adminFetch('/api/admin/plan-narrative', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plan, context, history, measuredState }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setNarrative(body);
+    } catch (err) {
+      setNarrativeErr(err.message);
+    } finally {
+      setNarrativeBusy(false);
+    }
+  }
 
   async function sendPlanChat() {
     const trimmed = planChatInput.trim();
@@ -459,7 +488,21 @@ export default function AdminPlanAgent() {
             >
               {planChatOpen ? '✕ Close plan chat' : `💬 Ask about the plan${planChatMessages.length > 0 ? ` (${planChatMessages.length})` : ''}`}
             </button>
+            {!narrative && (
+              <button type="button" onClick={generateNarrative} disabled={narrativeBusy} style={styles.narrativeBtn}>
+                {narrativeBusy ? 'Drafting board brief…' : '📄 Board narrative'}
+              </button>
+            )}
+            {narrative && (
+              <button type="button" onClick={() => setNarrative(null)} style={styles.narrativeBtn}>
+                ✕ Hide narrative
+              </button>
+            )}
           </div>
+          {narrativeErr && <div role="alert" style={styles.memoErr}>Narrative error: {narrativeErr}</div>}
+          {narrative && narrative.narrative && (
+            <BoardNarrative narrative={narrative.narrative} generatedAt={narrative.generatedAt} />
+          )}
 
           {planChatOpen && (
             <ChatThread
@@ -1574,6 +1617,49 @@ const chartStyles = {
   headPct: { fontSize: 13, fontWeight: 600, color: '#64748b' },
 };
 
+// 8-section board brief from /api/admin/plan-narrative. Reads like
+// a Head-of-School cover memo to the Trustees — strategic framing
+// for the meeting BEFORE the line-item plan review.
+function BoardNarrative({ narrative, generatedAt }) {
+  const sections = [
+    { key: 'openingFrame',    label: 'Why this plan, why now',    text: narrative.openingFrame },
+    { key: 'whereWeStand',    label: 'Where KUA stands today',    text: narrative.whereWeStand },
+    { key: 'strategicChoice', label: 'The strategic choice',      text: narrative.strategicChoice },
+    { key: 'financialCase',   label: 'Financial case',            text: narrative.financialCase },
+    { key: 'riskNarrative',   label: 'Risks named honestly',      text: narrative.riskNarrative },
+    { key: 'successScenario', label: 'If everything works',       text: narrative.successScenario },
+    { key: 'boardAsk',        label: 'Board asks this meeting',   text: narrative.boardAsk, accent: '#fbbf24' },
+  ];
+  return (
+    <div style={narrativeStyles.wrap}>
+      <div style={narrativeStyles.head}>
+        <span style={narrativeStyles.headLabel}>Board narrative · 2-page brief</span>
+        <span style={narrativeStyles.headDate}>generated {new Date(generatedAt).toLocaleString()}</span>
+      </div>
+      <h2 style={narrativeStyles.title}>{narrative.title}</h2>
+      {sections.map((s) => (
+        s.text ? (
+          <section key={s.key} style={{ ...narrativeStyles.section, borderLeftColor: s.accent || '#a5b4fc' }}>
+            <div style={{ ...narrativeStyles.sectionLabel, color: s.accent || '#a5b4fc' }}>{s.label}</div>
+            <p style={narrativeStyles.sectionText}>{s.text}</p>
+          </section>
+        ) : null
+      ))}
+    </div>
+  );
+}
+
+const narrativeStyles = {
+  wrap: { marginTop: 14, padding: '18px 22px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 10 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid #1f2937' },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.7 },
+  headDate: { fontSize: 11, color: '#64748b' },
+  title: { fontSize: 20, fontWeight: 800, color: '#e5e7eb', margin: '0 0 14px' },
+  section: { padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #a5b4fc', borderRadius: 6, marginTop: 10 },
+  sectionLabel: { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 6 },
+  sectionText: { margin: 0, fontSize: 14, color: '#cbd5e1', lineHeight: 1.7, whiteSpace: 'pre-wrap' },
+};
+
 function MemoSection({ title, children }) {
   return (
     <div style={memoStyles.section}>
@@ -1705,6 +1791,7 @@ const styles = {
   chatToggleBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   snapshotBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   planChatBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  narrativeBtn: { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   snapshotList: { display: 'grid', gap: 8 },
   snapshotRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #fbbf24', borderRadius: 6 },
   snapshotName: { fontSize: 14, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
