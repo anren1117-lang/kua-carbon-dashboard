@@ -237,6 +237,11 @@ export default function AdminPlanAgent() {
     setSnapshots((prev) => prev.filter((s) => s.id !== id));
   }
 
+  const [comparingSnapId, setComparingSnapId] = useState(null);
+  function toggleCompare(id) {
+    setComparingSnapId((cur) => cur === id ? null : id);
+  }
+
   const generatePlan = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -551,7 +556,8 @@ export default function AdminPlanAgent() {
         <ModuleSection title="Saved plan snapshots" hint={`Up to ${MAX_SNAPSHOTS} versioned plans. Restore any snapshot to compare scenarios, then save the current plan again before regenerating.`}>
           <div style={styles.snapshotList}>
             {snapshots.map((s) => (
-              <div key={s.id} style={styles.snapshotRow}>
+              <React.Fragment key={s.id}>
+              <div style={styles.snapshotRow}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={styles.snapshotName}>{s.name}</div>
                   <div style={styles.snapshotMeta}>
@@ -562,6 +568,9 @@ export default function AdminPlanAgent() {
                     {' '}priority {s.context?.topPriority || '—'}
                   </div>
                 </div>
+                <button type="button" onClick={() => toggleCompare(s.id)} style={styles.snapshotCompare}>
+                  {comparingSnapId === s.id ? 'Hide diff' : 'Compare'}
+                </button>
                 <button type="button" onClick={() => restoreSnapshot(s)} style={styles.snapshotRestore}>
                   Restore
                 </button>
@@ -569,6 +578,10 @@ export default function AdminPlanAgent() {
                   ×
                 </button>
               </div>
+              {comparingSnapId === s.id && plan && (
+                <SnapshotDiff snapshot={s} currentPlan={plan} currentContext={context} />
+              )}
+              </React.Fragment>
             ))}
           </div>
         </ModuleSection>
@@ -1685,6 +1698,137 @@ const chartStyles = {
   headPct: { fontSize: 13, fontWeight: 600, color: '#64748b' },
 };
 
+// Side-by-side diff between a saved snapshot and the current plan.
+// Items match by title (case-insensitive), since LLM regeneration
+// often produces slightly different IDs for the same lever.
+function SnapshotDiff({ snapshot, currentPlan, currentContext }) {
+  const snapItems = snapshot.plan?.plan || [];
+  const curItems  = currentPlan?.plan   || [];
+  const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const snapByTitle = new Map(snapItems.map((it) => [norm(it.title), it]));
+  const curByTitle  = new Map(curItems.map((it) => [norm(it.title), it]));
+
+  const inBoth = [];
+  const onlyInSnap = [];
+  const onlyInCur = [];
+  for (const [t, sIt] of snapByTitle) {
+    const cIt = curByTitle.get(t);
+    if (cIt) inBoth.push({ snap: sIt, cur: cIt });
+    else onlyInSnap.push(sIt);
+  }
+  for (const [t, cIt] of curByTitle) {
+    if (!snapByTitle.has(t)) onlyInCur.push(cIt);
+  }
+
+  const snapTotalMt = snapItems.reduce((s, x) => s + (Number(x.expectedMtPerYear) || 0), 0);
+  const curTotalMt  = curItems.reduce ((s, x) => s + (Number(x.expectedMtPerYear) || 0), 0);
+  const snapTotalCost = snapItems.reduce((s, x) => s + (Number(x.estimatedCostUsd) || 0), 0);
+  const curTotalCost  = curItems.reduce ((s, x) => s + (Number(x.estimatedCostUsd) || 0), 0);
+
+  return (
+    <div style={diffStyles.wrap}>
+      <div style={diffStyles.head}>
+        <span style={diffStyles.headLabel}>Diff · {snapshot.name} vs current plan</span>
+      </div>
+      <div style={diffStyles.totals}>
+        <div style={diffStyles.totalRow}>
+          <div style={diffStyles.totalLabel}>Snapshot</div>
+          <div style={diffStyles.totalVal}>{snapItems.length} items · {Math.round(snapTotalMt)} mt · ${snapTotalCost.toLocaleString()}</div>
+          <div style={diffStyles.totalCtx}>cap. {snapshot.context?.capitalAppetite || '—'} · {snapshot.context?.topPriority || '—'}</div>
+        </div>
+        <div style={diffStyles.totalRow}>
+          <div style={diffStyles.totalLabel}>Current</div>
+          <div style={diffStyles.totalVal}>{curItems.length} items · {Math.round(curTotalMt)} mt · ${curTotalCost.toLocaleString()}</div>
+          <div style={diffStyles.totalCtx}>cap. {currentContext?.capitalAppetite || '—'} · {currentContext?.topPriority || '—'}</div>
+        </div>
+        <div style={diffStyles.deltaRow}>
+          <div style={diffStyles.totalLabel}>Δ</div>
+          <div style={{ ...diffStyles.totalVal, color: curTotalMt > snapTotalMt ? '#86efac' : '#fca5a5' }}>
+            {curTotalMt > snapTotalMt ? '+' : ''}{Math.round(curTotalMt - snapTotalMt)} mt
+            {' · '}
+            {curTotalCost > snapTotalCost ? '+$' : '-$'}{Math.abs(curTotalCost - snapTotalCost).toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      {onlyInSnap.length > 0 && (
+        <div style={diffStyles.section}>
+          <div style={diffStyles.sectionLabel}>Removed in current ({onlyInSnap.length})</div>
+          {onlyInSnap.map((it, i) => (
+            <div key={i} style={{ ...diffStyles.item, ...diffStyles.removed }}>
+              <span style={diffStyles.itemSign}>−</span>
+              <span style={diffStyles.itemTitle}>{it.title}</span>
+              <span style={diffStyles.itemMeta}>{Math.round(it.expectedMtPerYear)} mt · ${(it.estimatedCostUsd || 0).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {onlyInCur.length > 0 && (
+        <div style={diffStyles.section}>
+          <div style={diffStyles.sectionLabel}>Added in current ({onlyInCur.length})</div>
+          {onlyInCur.map((it, i) => (
+            <div key={i} style={{ ...diffStyles.item, ...diffStyles.added }}>
+              <span style={diffStyles.itemSign}>+</span>
+              <span style={diffStyles.itemTitle}>{it.title}</span>
+              <span style={diffStyles.itemMeta}>{Math.round(it.expectedMtPerYear)} mt · ${(it.estimatedCostUsd || 0).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {inBoth.length > 0 && (
+        <div style={diffStyles.section}>
+          <div style={diffStyles.sectionLabel}>Common items ({inBoth.length})</div>
+          {inBoth.map(({ snap, cur }, i) => {
+            const mtChanged = Number(snap.expectedMtPerYear) !== Number(cur.expectedMtPerYear);
+            const costChanged = Number(snap.estimatedCostUsd) !== Number(cur.estimatedCostUsd);
+            const unchanged = !mtChanged && !costChanged;
+            return (
+              <div key={i} style={{ ...diffStyles.item, ...(unchanged ? diffStyles.unchanged : diffStyles.changed) }}>
+                <span style={diffStyles.itemSign}>{unchanged ? '=' : '~'}</span>
+                <span style={diffStyles.itemTitle}>{cur.title}</span>
+                <span style={diffStyles.itemMeta}>
+                  {mtChanged
+                    ? <span><span style={diffStyles.was}>{Math.round(snap.expectedMtPerYear)}</span> → {Math.round(cur.expectedMtPerYear)} mt</span>
+                    : <span>{Math.round(cur.expectedMtPerYear)} mt</span>}
+                  {' · '}
+                  {costChanged
+                    ? <span><span style={diffStyles.was}>${(snap.estimatedCostUsd || 0).toLocaleString()}</span> → ${(cur.estimatedCostUsd || 0).toLocaleString()}</span>
+                    : <span>${(cur.estimatedCostUsd || 0).toLocaleString()}</span>}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const diffStyles = {
+  wrap: { marginTop: 6, marginBottom: 4, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #94a3b8', borderRadius: 8 },
+  head: { marginBottom: 8 },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6 },
+  totals: { display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 8, padding: '8px 10px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6, marginBottom: 10 },
+  totalRow: { display: 'contents' },
+  deltaRow: { display: 'contents' },
+  totalLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, alignSelf: 'center' },
+  totalVal: { fontSize: 13, color: '#e5e7eb', fontVariantNumeric: 'tabular-nums', alignSelf: 'center' },
+  totalCtx: { fontSize: 11, color: '#64748b', alignSelf: 'center', textAlign: 'right' },
+  section: { marginTop: 10 },
+  sectionLabel: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
+  item: { display: 'grid', gridTemplateColumns: '24px 1fr auto', gap: 8, padding: '6px 8px', borderRadius: 4, marginTop: 4, fontSize: 13, alignItems: 'baseline' },
+  itemSign: { fontFamily: 'ui-monospace, monospace', fontWeight: 700 },
+  itemTitle: { color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  itemMeta: { fontSize: 11, color: '#94a3b8', fontVariantNumeric: 'tabular-nums' },
+  added:     { background: '#0e3a1f', color: '#86efac' },
+  removed:   { background: '#3a0d0d', color: '#fca5a5' },
+  changed:   { background: '#3a2a0e', color: '#fcd34d' },
+  unchanged: { background: '#0f172a', color: '#cbd5e1', opacity: 0.7 },
+  was: { textDecoration: 'line-through', color: '#64748b', marginRight: 4 },
+};
+
 // 8-section board brief from /api/admin/plan-narrative. Reads like
 // a Head-of-School cover memo to the Trustees — strategic framing
 // for the meeting BEFORE the line-item plan review.
@@ -1880,6 +2024,7 @@ const styles = {
   snapshotName: { fontSize: 14, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   snapshotMeta: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
   snapshotRestore: { padding: '4px 10px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  snapshotCompare: { padding: '4px 10px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   snapshotDelete: { width: 26, height: 26, borderRadius: 13, background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', fontSize: 14, lineHeight: '24px', textAlign: 'center', cursor: 'pointer', fontWeight: 700, padding: 0 },
   memoErr:     { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 13 },
   memoUnavail: { marginTop: 8, padding: '8px 12px', background: '#3a2a0e', border: '1px solid #92400e', borderRadius: 6, color: '#fcd34d', fontSize: 13 },
