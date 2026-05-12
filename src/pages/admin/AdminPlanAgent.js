@@ -130,6 +130,9 @@ export default function AdminPlanAgent() {
   const [snapshots, setSnapshots] = useState(() => loadJson(SNAPSHOTS_KEY, []));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Phase 119: streaming-progress state. charCount ticks while the
+  // plan is generating. Shown as "Drafting plan… 1,245 chars so far".
+  const [streamChars, setStreamChars] = useState(0);
   // Plan-level chat — separate from per-item chats. Scoped to the
   // whole plan + context + history + measurement state.
   const [planChatOpen, setPlanChatOpen] = useState(false);
@@ -290,16 +293,49 @@ export default function AdminPlanAgent() {
             timeline: it.timeline,
           }))
         : null;
+      setStreamChars(0);
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        body: JSON.stringify({ context, history, measuredState, priorPlan }),
+        body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `Server returned ${res.status}`);
       }
-      const data = await res.json();
-      setPlan(data);
+      // Streaming SSE response: events of shape
+      //   event: progress\ndata: {"charCount": 200}\n\n
+      //   event: done\ndata: {<plan>}\n\n
+      //   event: error\ndata: {"message": "..."}\n\n
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalPlan = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) >= 0) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const eventLine = chunk.split('\n').find((l) => l.startsWith('event: '));
+          const dataLine  = chunk.split('\n').find((l) => l.startsWith('data: '));
+          if (!eventLine || !dataLine) continue;
+          const event = eventLine.slice(7).trim();
+          let payload = null;
+          try { payload = JSON.parse(dataLine.slice(6)); } catch {}
+          if (!payload) continue;
+          if (event === 'progress') {
+            setStreamChars(payload.charCount || 0);
+          } else if (event === 'done') {
+            finalPlan = payload;
+          } else if (event === 'error') {
+            throw new Error(payload.message || 'stream error');
+          }
+        }
+      }
+      if (!finalPlan) throw new Error('Stream ended without a plan');
+      setPlan(finalPlan);
     } catch (err) {
       setError(err.message || 'Could not generate the plan.');
     } finally {
@@ -484,7 +520,11 @@ export default function AdminPlanAgent() {
             disabled={!contextIsComplete(context) || loading}
             style={{ ...styles.primaryBtn, opacity: (!contextIsComplete(context) || loading) ? 0.5 : 1 }}
           >
-            {loading ? 'Generating…' : hasPlan ? 'Re-generate plan' : 'Generate plan'}
+            {loading
+              ? (streamChars > 0
+                ? `Drafting plan… ${streamChars.toLocaleString()} chars`
+                : 'Starting up…')
+              : hasPlan ? 'Re-generate plan' : 'Generate plan'}
           </button>
           {hasPlan && (
             <button type="button" onClick={resetEverything} style={styles.dangerBtn}>

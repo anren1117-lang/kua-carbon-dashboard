@@ -300,6 +300,159 @@ function tryParseJson(text) {
   try { return JSON.parse(match[0]); } catch { return null; }
 }
 
+// Coerce a raw LLM plan-item object into the same shape the non-
+// streaming path returns. Pulled out so both paths share the
+// post-parse cleanup.
+function cleanPlanItem(p, i, fallbackCategory) {
+  const cleanArr = (a, maxLen, maxItems) => Array.isArray(a)
+    ? a.slice(0, maxItems).map((s) => String(s || '').slice(0, maxLen)).filter(Boolean)
+    : [];
+  const steady = Number(p.expectedMtPerYear) || 0;
+  const yby = (() => {
+    if (Array.isArray(p.yearByYearMt) && p.yearByYearMt.length > 0) {
+      return p.yearByYearMt.slice(0, 6).map((v) => Math.max(0, Number(v) || 0));
+    }
+    if (p.timeline === 'this-quarter') return [steady, steady, steady];
+    if (p.timeline === 'this-year')    return [steady * 0.5, steady, steady];
+    return [steady * 0.2, steady * 0.6, steady, steady];
+  })();
+  return {
+    id: p.id || `p${i + 1}`,
+    title: String(p.title || '').slice(0, 140),
+    why: String(p.why || '').slice(0, 800),
+    expectedMtPerYear: steady,
+    estimatedCostUsd: Number(p.estimatedCostUsd) || 0,
+    ownerRole: String(p.ownerRole || 'Sustainability Committee').slice(0, 60),
+    timeline: ['this-quarter','this-year','this-3-years'].includes(p.timeline) ? p.timeline : 'this-year',
+    category: ['scope1','scope2','scope3','sinks','engagement'].includes(p.category) ? p.category : (fallbackCategory || 'scope1'),
+    difficulty: ['easy','medium','hard'].includes(p.difficulty) ? p.difficulty : 'medium',
+    paybackYears: Number(p.paybackYears) || 0,
+    firstSteps: cleanArr(p.firstSteps, 200, 5),
+    dependencies: String(p.dependencies || '').slice(0, 280),
+    yearByYearMt: yby,
+    milestones: cleanArr(p.milestones, 200, 4),
+    risks: cleanArr(p.risks, 200, 3),
+    kpis: cleanArr(p.kpis, 140, 3),
+    dataSource: String(p.dataSource || 'AI estimate (no specific source provided)').slice(0, 280),
+    provenance: ['measured','cited','estimated'].includes(p.provenance) ? p.provenance : 'estimated',
+  };
+}
+
+async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan }) {
+  // Open the SSE connection back to the client.
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // some proxies (nginx) need this
+  function send(event, payload) {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+  }
+
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-7',
+        max_tokens: 8000,
+        stream: true,
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+        ],
+        messages: [
+          { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan) },
+        ],
+      }),
+    });
+
+    if (!apiRes.ok || !apiRes.body) {
+      let detail = '';
+      try { const b = await apiRes.json(); detail = b?.error?.message || JSON.stringify(b); } catch {}
+      send('error', { message: `Anthropic API ${apiRes.status}${detail ? ` — ${detail}` : ''}` });
+      res.end();
+      return;
+    }
+
+    // Parse Anthropic's SSE stream: each event has a `type` and
+    // `delta` for content_block_delta. We accumulate text + emit
+    // simpler delta events to our client.
+    const reader = apiRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+    let charCount = 0;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // Anthropic SSE chunks are separated by \n\n. Each chunk has
+      // event: <type> and data: <json> lines.
+      let idx;
+      while ((idx = buffer.indexOf('\n\n')) >= 0) {
+        const chunk = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        const dataLine = chunk.split('\n').find((l) => l.startsWith('data: '));
+        if (!dataLine) continue;
+        try {
+          const ev = JSON.parse(dataLine.slice(6));
+          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            const t = ev.delta.text || '';
+            fullText += t;
+            charCount += t.length;
+            // Don't flood: send progress pings every ~200 chars.
+            if (charCount >= 200) {
+              send('progress', { charCount: fullText.length });
+              charCount = 0;
+            }
+          } else if (ev.type === 'message_stop') {
+            // End of stream — we'll handle parse below.
+            break;
+          }
+        } catch { /* ignore malformed event lines */ }
+      }
+    }
+
+    // Done streaming. Parse the accumulated text + emit the final
+    // structured plan as a 'done' event.
+    const parsed = tryParseJson(fullText);
+    if (!parsed || !Array.isArray(parsed.plan) || parsed.plan.length === 0) {
+      // LLM returned garbage; emit a rule-based plan via 'done'.
+      const rulePlan = ruleBasedPlan(context, history);
+      const totalMt = rulePlan.reduce((s, p) => s + (p.expectedMtPerYear || 0), 0);
+      send('done', {
+        mode: 'rule',
+        summary: summaryFromContext(context),
+        plan: rulePlan,
+        totalExpectedMtPerYear: totalMt,
+        percentOfGross: context.grossMt > 0 ? (totalMt / context.grossMt) * 100 : 0,
+        generatedAt: new Date().toISOString(),
+        nextCheckInDays: 90,
+      });
+      res.end();
+      return;
+    }
+    const plan = parsed.plan.slice(0, 12).map((p, i) => cleanPlanItem(p, i));
+    const totalExpectedMtPerYear = plan.reduce((s, p) => s + p.expectedMtPerYear, 0);
+    send('done', {
+      mode: 'llm',
+      summary: String(parsed.summary || summaryFromContext(context)).slice(0, 500),
+      plan,
+      totalExpectedMtPerYear,
+      percentOfGross: context.grossMt > 0 ? (totalExpectedMtPerYear / context.grossMt) * 100 : 0,
+      generatedAt: new Date().toISOString(),
+      nextCheckInDays: 90,
+    });
+    res.end();
+  } catch (err) {
+    send('error', { message: String(err?.message || 'stream failed') });
+    res.end();
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -310,7 +463,7 @@ export default async function handler(req, res) {
     res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
-  const { context, history, measuredState, priorPlan } = req.body || {};
+  const { context, history, measuredState, priorPlan, stream: wantStream } = req.body || {};
   if (!context || typeof context !== 'object') {
     res.status(400).json({ error: 'context (object) is required' });
     return;
@@ -349,6 +502,16 @@ export default async function handler(req, res) {
   };
 
   if (!apiKey) { fallback(); return; }
+
+  // Phase 119: streaming path. When the client requests stream:true,
+  // we open Anthropic's stream + pipe text deltas back to the client
+  // as simple SSE events so the UI can show the plan typing in. At
+  // the end of the stream we parse + clean the final JSON and emit
+  // it as a 'done' event with the same shape the non-streaming path
+  // returns. Errors mid-stream surface as 'error' events.
+  if (wantStream) {
+    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan });
+  }
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
