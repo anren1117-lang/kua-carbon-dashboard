@@ -229,10 +229,18 @@ function Breadcrumb() {
 
 function AdminLayout() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const mainRef = useRef(null);
   const [isLoggedIn, setIsLoggedIn] = useState(() => readStoredAdminSession() !== null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Move focus to <main> on route change so screen readers + keyboard
+  // users get a fresh reading position. Mirrors the public Layout.
+  useEffect(() => {
+    if (mainRef.current) mainRef.current.focus({ preventScroll: true });
+  }, [pathname]);
   // Banner shown when a previous session expired mid-use (adminFetch
   // detected a 401 and dispatched the event). Cleared as soon as the
   // user successfully logs in again.
@@ -337,7 +345,7 @@ function AdminLayout() {
           <button type="button" onClick={handleLogout} style={styles.logoutBtn}>Sign out</button>
         </div>
       </header>
-      <main id="admin-main" tabIndex="-1" style={styles.main}>
+      <main id="admin-main" ref={mainRef} tabIndex="-1" style={styles.main}>
         <Breadcrumb />
         <ErrorBoundary>
           <Outlet />

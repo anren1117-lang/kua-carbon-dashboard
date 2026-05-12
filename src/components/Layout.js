@@ -161,6 +161,15 @@ function CategoriesMenu() {
 }
 
 function Layout() {
+  const mainRef = useRef(null);
+  const { pathname } = useLocation();
+  // Move focus to <main> on route change so screen readers + keyboard
+  // users get a fresh reading position. Without this, focus stays on
+  // the just-clicked nav link and the new page is silent.
+  useEffect(() => {
+    if (mainRef.current) mainRef.current.focus({ preventScroll: true });
+  }, [pathname]);
+
   return (
     <div style={styles.shell}>
       <a href="#main" style={styles.skipLink}>Skip to main content</a>
@@ -184,7 +193,7 @@ function Layout() {
           </div>
         </div>
       </header>
-      <main id="main" style={styles.main} tabIndex="-1">
+      <main id="main" ref={mainRef} style={styles.main} tabIndex="-1">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
