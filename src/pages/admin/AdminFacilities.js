@@ -294,7 +294,7 @@ function RecordForm({ schema, initial, onCancel, onSubmit, mode }) {
           </label>
         ))}
       </div>
-      {error && <div style={styles.formError}>{error}</div>}
+      {error && <div role="alert" style={styles.formError}>{error}</div>}
       <div style={styles.formActions}>
         <button type="submit" style={styles.saveBtn}>{mode === 'add' ? 'Add' : 'Save changes'}</button>
         <button type="button" style={styles.cancelBtn} onClick={onCancel}>Cancel</button>

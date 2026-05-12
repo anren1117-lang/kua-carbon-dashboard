@@ -80,7 +80,7 @@ function AdminAIIngestion() {
       <div style={styles.card}>
         <h2 style={{ margin: 0, fontSize: 18 }}>Drop documents to ingest</h2>
         <div style={{ ...styles.upload, marginTop: 14 }}>
-          <input type="file" multiple onChange={onPick} style={{ display: 'block', margin: '0 auto' }} />
+          <input type="file" multiple onChange={onPick} aria-label="Select documents to ingest" style={{ display: 'block', margin: '0 auto' }} />
           <div style={{ marginTop: 10 }}>PDFs, spreadsheets, images. Files are recorded but not yet processed — the LLM extraction stage is wired up in Phase 3.</div>
         </div>
         {pendingFiles.length > 0 && (
