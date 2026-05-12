@@ -141,6 +141,17 @@ export default function AdminPlanAgent() {
   const [narrative, setNarrative] = useState(null); // { narrative: {...}, generatedAt } | null
   const [narrativeBusy, setNarrativeBusy] = useState(false);
   const [narrativeErr, setNarrativeErr] = useState(null);
+  // Plan item view mode: 'compact' (1-row summary per item) or
+  // 'detailed' (full per-item card with all detail blocks). Defaults
+  // to compact for 8+ item plans so admins don't have to scroll a
+  // wall of cards on first render.
+  const [planItemMode, setPlanItemMode] = useState(() => (plan?.plan?.length ?? 0) >= 8 ? 'compact' : 'detailed');
+  // Re-apply the default when a fresh plan lands (after Generate).
+  useEffect(() => {
+    if (plan?.plan?.length) {
+      setPlanItemMode(plan.plan.length >= 8 ? 'compact' : 'detailed');
+    }
+  }, [plan?.plan?.length]);
 
   async function generateNarrative() {
     if (!plan) return;
@@ -525,6 +536,11 @@ export default function AdminPlanAgent() {
           <EfficiencyLeaderboard items={plan.plan} />
           <BudgetOptimizer items={plan.plan} />
           <TimelineStrip items={plan.plan} />
+          <PlanItemViewToggle
+            count={plan.plan.length}
+            mode={planItemMode}
+            onChange={setPlanItemMode}
+          />
           <div style={styles.planList}>
             {plan.plan.map((item, i) => (
               <PlanCard
@@ -533,6 +549,7 @@ export default function AdminPlanAgent() {
                 rank={i + 1}
                 context={context}
                 otherItems={plan.plan}
+                compact={planItemMode === 'compact'}
                 onComplete={() => completeItem(item)}
                 onDecline={() => declineItem(item)}
                 onReplace={(alt) => {
@@ -1165,7 +1182,41 @@ const tlStyles = {
   legendSwatch: { width: 10, height: 10, borderRadius: 2, display: 'inline-block' },
 };
 
-function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, otherItems }) {
+// Toggle bar — Compact ↔ Detailed view for the plan-item list.
+function PlanItemViewToggle({ count, mode, onChange }) {
+  return (
+    <div style={toggleStyles.wrap}>
+      <div style={toggleStyles.label}>
+        Item view ({count}):
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange('compact')}
+        style={mode === 'compact' ? toggleStyles.btnActive : toggleStyles.btn}
+        aria-pressed={mode === 'compact'}
+      >
+        Compact
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange('detailed')}
+        style={mode === 'detailed' ? toggleStyles.btnActive : toggleStyles.btn}
+        aria-pressed={mode === 'detailed'}
+      >
+        Detailed
+      </button>
+    </div>
+  );
+}
+
+const toggleStyles = {
+  wrap: { display: 'flex', gap: 8, alignItems: 'center', marginTop: 16, marginBottom: 8 },
+  label: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  btn: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
+  btnActive: { padding: '4px 10px', background: '#0e3a5f', color: '#22d3ee', border: '1px solid #22d3ee', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+};
+
+function PlanCard({ item, rank, context, compact, onComplete, onDecline, onReplace, otherItems }) {
   const [memo, setMemo] = useState(null);     // { mode, memo, generatedAt } | null
   const [memoBusy, setMemoBusy] = useState(false);
   const [memoErr, setMemoErr] = useState(null);
@@ -1278,9 +1329,9 @@ function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, other
           </div>
         </div>
       </div>
-      <div style={styles.planWhy}>{item.why}</div>
+      {!compact && <div style={styles.planWhy}>{item.why}</div>}
 
-      {Array.isArray(item.firstSteps) && item.firstSteps.length > 0 && (
+      {!compact && Array.isArray(item.firstSteps) && item.firstSteps.length > 0 && (
         <DetailBlock title="First steps" accent="#22d3ee">
           <ol style={detailListStyles.ol}>
             {item.firstSteps.map((s, i) => <li key={i} style={detailListStyles.li}>{s}</li>)}
@@ -1288,13 +1339,13 @@ function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, other
         </DetailBlock>
       )}
 
-      {item.dependencies && item.dependencies !== 'none' && (
+      {!compact && item.dependencies && item.dependencies !== 'none' && (
         <DetailBlock title="Dependencies" accent="#fbbf24">
           <div style={styles.planListProse}>{item.dependencies}</div>
         </DetailBlock>
       )}
 
-      {Array.isArray(item.milestones) && item.milestones.length > 0 && (
+      {!compact && Array.isArray(item.milestones) && item.milestones.length > 0 && (
         <DetailBlock title="Milestones" accent="#86efac">
           <ul style={detailListStyles.ul}>
             {item.milestones.map((m, i) => <li key={i} style={detailListStyles.li}>{m}</li>)}
@@ -1302,7 +1353,7 @@ function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, other
         </DetailBlock>
       )}
 
-      {Array.isArray(item.risks) && item.risks.length > 0 && (
+      {!compact && Array.isArray(item.risks) && item.risks.length > 0 && (
         <DetailBlock title="Risks" accent="#fca5a5">
           <ul style={detailListStyles.ul}>
             {item.risks.map((r, i) => <li key={i} style={detailListStyles.li}>{r}</li>)}
@@ -1310,7 +1361,7 @@ function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, other
         </DetailBlock>
       )}
 
-      {Array.isArray(item.kpis) && item.kpis.length > 0 && (
+      {!compact && Array.isArray(item.kpis) && item.kpis.length > 0 && (
         <DetailBlock title="KPIs" accent="#a855f7">
           <ul style={detailListStyles.ul}>
             {item.kpis.map((k, i) => <li key={i} style={detailListStyles.li}>{k}</li>)}
@@ -1318,7 +1369,7 @@ function PlanCard({ item, rank, context, onComplete, onDecline, onReplace, other
         </DetailBlock>
       )}
 
-      {item.dataSource && (
+      {!compact && item.dataSource && (
         <div style={styles.planSource}>
           <span style={styles.planSourceLabel}>Data source:</span> {item.dataSource}
         </div>
