@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
+import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 
 // /admin/ai-ingestion
 //
@@ -46,6 +47,8 @@ const styles = {
   autoWriteToggle: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, color: '#cbd5e1', cursor: 'pointer', userSelect: 'none' },
   confReason: { marginTop: 8, padding: '6px 10px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 4, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 },
   confReasonLabel: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginRight: 6 },
+  tablePicker: { padding: '2px 6px', background: '#0f172a', border: '1px solid #155e75', borderRadius: 3, color: '#22d3ee', fontSize: 12, fontFamily: 'ui-monospace, monospace', fontWeight: 700, cursor: 'pointer' },
+  reclassifiedBadge: { color: '#fbbf24', fontSize: 10, fontWeight: 600, fontFamily: 'inherit', textTransform: 'none', letterSpacing: 0, marginLeft: 4 },
   row: { marginTop: 10, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
   rowHead: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
   rowTable: { fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#22d3ee', fontWeight: 700 },
@@ -93,6 +96,7 @@ function AdminAIIngestion() {
   const [rowStates, setRowStates] = useState({}); // index → 'idle'|'sending'|'inserted'|'drafted'|'rejected'|`error:<msg>`
   const [rowFields, setRowFields] = useState({}); // index → { ...editable copy of fields }
   const [editMode, setEditMode] = useState({});   // index → boolean (true = field inputs, false = read-only)
+  const [tableOverride, setTableOverride] = useState({}); // index → table name when admin re-classified the row
   const [fileName, setFileName] = useState(null);
   // images: [{ name, media_type, data: base64 }, ...]. Either text or
   // images (or both) feeds the extraction; for scanned invoices /
@@ -393,21 +397,23 @@ function AdminAIIngestion() {
     return rowFields[i] !== undefined ? normaliseFields(rowFields[i]) : (row.fields || {});
   }
 
+  function activeTable(i, row) {
+    return tableOverride[i] || row.table;
+  }
+
   async function acceptRow(i, row) {
     setRowStates((s) => ({ ...s, [i]: 'sending' }));
     try {
       const fields = activeFields(i, row);
-      const { error: insErr } = await supabase.from(row.table).insert(fields);
+      const targetTable = activeTable(i, row);
+      const { error: insErr } = await supabase.from(targetTable).insert(fields);
       if (insErr) throw new Error(insErr.message);
-      // Phase 118: tag every AI-ingested write in the audit log so
-      // reviewers can see which rows came from the agent vs manual
-      // entry. Note carries the confidence + source doc for
-      // traceability.
+      const reclassified = targetTable !== row.table;
       logAdminWrite({
         action: 'insert',
-        table: row.table,
+        table: targetTable,
         payload: fields,
-        note: `AI ingestion · ${row.confidence}-confidence${row.sourceDocument ? ` · ${row.sourceDocument}` : ''}`,
+        note: `AI ingestion · ${row.confidence}-confidence${row.sourceDocument ? ` · ${row.sourceDocument}` : ''}${reclassified ? ` · re-classified from ${row.table}` : ''}`,
       });
       setRowStates((s) => ({ ...s, [i]: 'inserted' }));
       setEditMode((m) => ({ ...m, [i]: false }));
@@ -420,10 +426,11 @@ function AdminAIIngestion() {
     setRowStates((s) => ({ ...s, [i]: 'sending' }));
     try {
       const fields = activeFields(i, row);
+      const targetTable = activeTable(i, row);
       const draft = {
         scope: row.scope,
-        category: row.table,
-        label: `AI: ${row.table} row`,
+        category: targetTable,
+        label: `AI: ${targetTable} row${targetTable !== row.table ? ` (re-classified from ${row.table})` : ''}`,
         value: typeof fields?.gallons === 'number' ? fields.gallons
              : typeof fields?.gross_kwh === 'number' ? fields.gross_kwh
              : typeof fields?.amount === 'number' ? fields.amount
@@ -695,7 +702,32 @@ function AdminAIIngestion() {
             return (
               <div key={i} style={{ ...styles.row, borderLeftColor: accentColor }}>
                 <div style={styles.rowHead}>
-                  <span style={styles.rowTable}>{row.table}</span>
+                  {editing ? (
+                    <select
+                      value={tableOverride[i] || row.table}
+                      onChange={(e) => setTableOverride((m) => {
+                        const next = { ...m };
+                        if (e.target.value === row.table) delete next[i];
+                        else next[i] = e.target.value;
+                        return next;
+                      })}
+                      style={styles.tablePicker}
+                      title="Re-classify this row to a different admin table"
+                    >
+                      {ADMIN_TABLE_SOURCES.map((src) => (
+                        <option key={src.table} value={src.table}>
+                          {src.table} ({src.scope})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span style={styles.rowTable}>
+                      {tableOverride[i] || row.table}
+                      {tableOverride[i] && tableOverride[i] !== row.table && (
+                        <span style={styles.reclassifiedBadge}> · re-classified from {row.table}</span>
+                      )}
+                    </span>
+                  )}
                   <span style={styles.rowScope}>· {row.scope}</span>
                   <ConfidencePill level={row.confidence} reason={row.confidenceReason} />
                   {row.sourceDocument && (
@@ -762,7 +794,7 @@ function AdminAIIngestion() {
                   {state === 'idle' && (
                     <>
                       <button type="button" style={styles.acceptBtn} onClick={() => acceptRow(i, row)}>
-                        ✓ Send to {row.table}
+                        ✓ Send to {tableOverride[i] || row.table}
                       </button>
                       <button type="button" style={styles.draftBtn} onClick={() => draftRow(i, row)}>
                         → Review queue
@@ -774,7 +806,7 @@ function AdminAIIngestion() {
                   )}
                   {state === 'sending' && <span style={{ fontSize: 12, color: '#fbbf24' }}>Sending…</span>}
                 </div>
-                {state === 'inserted' && <div style={styles.accepted}>✓ Inserted into {row.table}.</div>}
+                {state === 'inserted' && <div style={styles.accepted}>✓ Inserted into {tableOverride[i] || row.table}.</div>}
                 {state === 'drafted' && <div style={styles.accepted}>✓ Sent to framework_drafts review queue.</div>}
                 {state === 'rejected' && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Rejected — won't be sent.</div>}
                 {typeof state === 'string' && state.startsWith('error:') && (
