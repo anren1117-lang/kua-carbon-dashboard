@@ -18,7 +18,8 @@ const styles = {
   title: { margin: 0, fontSize: 32, fontWeight: 700 },
   subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 760 },
   card: { marginTop: 24, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 12, padding: 20 },
-  upload: { padding: 24, border: '2px dashed #334155', borderRadius: 8, textAlign: 'center', color: '#94a3b8' },
+  upload: { padding: 24, border: '2px dashed #334155', borderRadius: 8, textAlign: 'center', color: '#94a3b8', transition: 'border-color 0.15s ease, background 0.15s ease' },
+  uploadDragOver: { borderColor: '#22d3ee', background: '#0c2a3a', color: '#22d3ee' },
   imageStrip: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #a855f7', borderRadius: 8 },
   imageStripLabel: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 10 },
   imageGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 },
@@ -168,8 +169,7 @@ function AdminAIIngestion() {
     return `Source: ${cleaned}`.slice(0, 200);
   }
 
-  async function onFile(e) {
-    const files = Array.from(e.target.files || []);
+  async function processFiles(files) {
     if (files.length === 0) return;
     setError(null);
     setBusy(true);
@@ -201,6 +201,7 @@ function AdminAIIngestion() {
       }
       if (files.length === 1) setFileName(files[0].name);
       else setFileName(`${files.length} files`);
+      // Apply auto-hint to whatever filenames came in.
       // Auto-populate the hint from filenames if the admin hasn't
       // typed one yet. Joins multiple filenames so multi-file
       // uploads still get a useful hint.
@@ -224,6 +225,35 @@ function AdminAIIngestion() {
 
   function removeImage(idx) {
     setImages((arr) => arr.filter((_, i) => i !== idx));
+  }
+
+  // Bridge for the <input type="file"> change event.
+  async function onFile(e) {
+    const files = Array.from(e.target.files || []);
+    await processFiles(files);
+    // Reset the input so re-selecting the same file fires a change.
+    e.target.value = '';
+  }
+
+  // Drag-and-drop. Tracks dragOver state so the drop zone gives
+  // visual feedback when files hover over it.
+  const [dragOver, setDragOver] = useState(false);
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setDragOver(true);
+  }
+  function onDragLeave(e) {
+    e.preventDefault();
+    setDragOver(false);
+  }
+  async function onDrop(e) {
+    e.preventDefault();
+    setDragOver(false);
+    if (busy) return;
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length === 0) return;
+    await processFiles(files);
   }
 
   async function submit() {
@@ -412,7 +442,19 @@ function AdminAIIngestion() {
 
       <div style={styles.card}>
         <h2 style={{ margin: 0, fontSize: 18 }}>Source document</h2>
-        <div style={{ ...styles.upload, marginTop: 14 }}>
+        <div
+          style={{
+            ...styles.upload,
+            marginTop: 14,
+            ...(dragOver ? styles.uploadDragOver : null),
+          }}
+          onDragOver={onDragOver}
+          onDragEnter={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          role="region"
+          aria-label="File drop zone"
+        >
           <input
             type="file"
             accept=".txt,.md,.csv,.json,.pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
@@ -423,7 +465,9 @@ function AdminAIIngestion() {
             style={{ display: 'block', margin: '0 auto' }}
           />
           <div style={{ marginTop: 10, fontSize: 13 }}>
-            {fileName ? `Loaded: ${fileName}` : 'PDF, .txt, .md, .csv, .json, or image (PNG/JPG/GIF/WebP) — or paste below.'}
+            {dragOver
+              ? '⬇ Release to upload'
+              : (fileName ? `Loaded: ${fileName}` : 'PDF, .txt, .md, .csv, .json, or image (PNG/JPG/GIF/WebP) — drag & drop or click above.')}
           </div>
         </div>
 
