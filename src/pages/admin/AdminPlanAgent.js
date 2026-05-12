@@ -531,12 +531,12 @@ export default function AdminPlanAgent() {
               itemTitle="the whole plan"
             />
           )}
-          <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
-          <ProjectionChart items={plan.plan} grossMt={context.grossMt} alreadyShippedMt={mtAlreadySaved} />
-          <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
-          <EfficiencyLeaderboard items={plan.plan} />
-          <BudgetOptimizer items={plan.plan} />
-          <TimelineStrip items={plan.plan} />
+          <PlanOverview
+            items={plan.plan}
+            grossMt={context.grossMt}
+            live={live}
+            alreadyShippedMt={mtAlreadySaved}
+          />
           <PlanItemViewToggle
             count={plan.plan.length}
             mode={planItemMode}
@@ -1782,6 +1782,88 @@ const chartStyles = {
   headValue: { fontSize: 22, fontWeight: 800, color: '#86efac', marginTop: 4, fontVariantNumeric: 'tabular-nums' },
   headUnit: { fontSize: 11, fontWeight: 600, color: '#94a3b8' },
   headPct: { fontSize: 13, fontWeight: 600, color: '#64748b' },
+};
+
+// Wraps the six plan-overview components in collapsible panels so
+// admins can hide the ones they don't care about. Default-open state
+// persists in localStorage per-section so admin's collapse preferences
+// stick across sessions. "Show all" / "Hide all" buttons toggle every
+// panel at once.
+const OVERVIEW_PREFS_KEY = 'kua_admin_plan_overview_prefs';
+const OVERVIEW_SECTIONS = [
+  { key: 'glance',     label: 'Plan at a glance',         defaultOpen: true,  Component: PlanAtAGlance },
+  { key: 'projection', label: '5-year projection',        defaultOpen: true,  Component: ProjectionChart },
+  { key: 'targets',    label: 'vs reduction targets',     defaultOpen: true,  Component: TargetProgress },
+  { key: 'efficiency', label: 'Cost-effectiveness',       defaultOpen: false, Component: EfficiencyLeaderboard },
+  { key: 'budget',     label: 'Budget optimizer',         defaultOpen: false, Component: BudgetOptimizer },
+  { key: 'timeline',   label: 'Timeline strip',           defaultOpen: false, Component: TimelineStrip },
+];
+
+function PlanOverview({ items, grossMt, live, alreadyShippedMt }) {
+  const [openMap, setOpenMap] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(OVERVIEW_PREFS_KEY) || 'null');
+      if (stored && typeof stored === 'object') return stored;
+    } catch {}
+    const seed = {};
+    for (const s of OVERVIEW_SECTIONS) seed[s.key] = s.defaultOpen;
+    return seed;
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(OVERVIEW_PREFS_KEY, JSON.stringify(openMap)); } catch {}
+  }, [openMap]);
+
+  const allOpen = OVERVIEW_SECTIONS.every((s) => openMap[s.key]);
+  const noneOpen = OVERVIEW_SECTIONS.every((s) => !openMap[s.key]);
+
+  function toggleAll(open) {
+    const next = {};
+    for (const s of OVERVIEW_SECTIONS) next[s.key] = open;
+    setOpenMap(next);
+  }
+
+  return (
+    <div>
+      <div style={overviewStyles.bar}>
+        <div style={overviewStyles.barLabel}>Overview sections</div>
+        <button type="button" onClick={() => toggleAll(true)}  disabled={allOpen}  style={overviewStyles.barBtn}>Show all</button>
+        <button type="button" onClick={() => toggleAll(false)} disabled={noneOpen} style={overviewStyles.barBtn}>Hide all</button>
+      </div>
+      {OVERVIEW_SECTIONS.map(({ key, label, Component }) => {
+        const open = !!openMap[key];
+        return (
+          <div key={key} style={overviewStyles.panel}>
+            <button
+              type="button"
+              onClick={() => setOpenMap((m) => ({ ...m, [key]: !m[key] }))}
+              aria-expanded={open}
+              aria-controls={`overview-${key}`}
+              style={overviewStyles.toggle}
+            >
+              <span style={overviewStyles.toggleArrow}>{open ? '▼' : '▶'}</span>
+              <span style={overviewStyles.toggleLabel}>{label}</span>
+            </button>
+            {open && (
+              <div id={`overview-${key}`}>
+                <Component items={items} grossMt={grossMt} live={live} alreadyShippedMt={alreadyShippedMt} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const overviewStyles = {
+  bar: { display: 'flex', gap: 8, alignItems: 'center', marginTop: 14, marginBottom: 8 },
+  barLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  barBtn: { padding: '3px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 11, cursor: 'pointer' },
+  panel: { marginTop: 2 },
+  toggle: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', font: 'inherit', width: '100%', textAlign: 'left' },
+  toggleArrow: { fontSize: 10, color: '#64748b', width: 12 },
+  toggleLabel: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
 };
 
 // Plan-level 5-year projection chart. Combines per-item yearByYearMt
