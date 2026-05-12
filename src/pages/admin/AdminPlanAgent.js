@@ -1182,6 +1182,36 @@ const tlStyles = {
   legendSwatch: { width: 10, height: 10, borderRadius: 2, display: 'inline-block' },
 };
 
+// Tiny inline sparkline showing the year-by-year mt ramp for a plan
+// item. Used to communicate "this isn't instant — heat-pump conversion
+// hits steady-state in Y3" vs "LED retrofit is full-impact by Q2".
+function RampSparkline({ yearByYear, color = '#22d3ee' }) {
+  if (!Array.isArray(yearByYear) || yearByYear.length < 2) return null;
+  const w = 90;
+  const h = 22;
+  const padX = 2;
+  const padY = 2;
+  const max = Math.max(...yearByYear, 1);
+  const step = (w - padX * 2) / (yearByYear.length - 1);
+  const y = (v) => padY + (1 - v / max) * (h - padY * 2);
+  const points = yearByYear.map((v, i) => `${(padX + i * step).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const lastX = (padX + (yearByYear.length - 1) * step).toFixed(1);
+  const lastY = y(yearByYear[yearByYear.length - 1]).toFixed(1);
+  return (
+    <div style={{ marginTop: 6, textAlign: 'right' }}>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Year-by-year ramp: ${yearByYear.map((v) => Math.round(v)).join(', ')} mt/yr`} style={{ display: 'inline-block' }}>
+        <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" />
+        <circle cx={padX} cy={y(yearByYear[0])} r="2" fill={color} opacity="0.6" />
+        <circle cx={lastX} cy={lastY} r="2.5" fill={color} />
+        <title>Y1 → Y{yearByYear.length} ramp: {yearByYear.map((v) => Math.round(v)).join(' → ')} mt/yr</title>
+      </svg>
+      <div style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 1 }}>
+        Y1 → Y{yearByYear.length} ramp
+      </div>
+    </div>
+  );
+}
+
 // Toggle bar — Compact ↔ Detailed view for the plan-item list.
 function PlanItemViewToggle({ count, mode, onChange }) {
   return (
@@ -1327,6 +1357,9 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
               <span style={styles.planPayback}> · {item.paybackYears.toFixed(0)}yr payback</span>
             )}
           </div>
+          {Array.isArray(item.yearByYearMt) && item.yearByYearMt.length > 1 && (
+            <RampSparkline yearByYear={item.yearByYearMt} color={color} />
+          )}
         </div>
       </div>
       {!compact && <div style={styles.planWhy}>{item.why}</div>}

@@ -91,6 +91,13 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
       "paybackYears": 0,
       "firstSteps": ["3-5 short concrete actions, each starting with a verb. Examples: 'Pull last 24 months of heating-oil delivery invoices from Facilities', 'Survey current T8 fluorescent count by building'."],
       "dependencies": "What must be in place before this can start. 1-2 sentences. Use 'none' if no blockers.",
+      "yearByYearMt": [0, 15, 45, 60, 60, 60],
+      // ^ Array of length 1-6 (one entry per year over the planning
+      // horizon). Models the realistic ramp: heat-pump conversion
+      // hits steady-state by Y3; LED retrofits land mostly in Y1;
+      // behavioral campaigns hit immediately. Each value is annual
+      // mt for that year. The LAST value should equal expectedMtPerYear
+      // (the steady-state). Use a smooth ramp, not a step function.
       "milestones": ["2-4 dated checkpoints to verify the plan is on track. Each: 'YYYY-Qn: <observable outcome>'."],
       "risks": ["1-3 short failure modes specific to KUA. Each is a single sentence."],
       "kpis": ["1-3 measurable success metrics. Each: 'metric_name (unit): target'."],
@@ -251,6 +258,9 @@ function ruleBasedPlan(context, history) {
     milestones:        [],
     risks:             [],
     kpis:              [],
+    yearByYearMt:      r.timeline === 'this-quarter' ? [r.mt, r.mt, r.mt]
+                      : r.timeline === 'this-year'    ? [r.mt * 0.5, r.mt, r.mt]
+                      : [r.mt * 0.2, r.mt * 0.6, r.mt, r.mt],
     dataSource:        r.source,
     provenance:        r.provenance || 'estimated',
   }));
@@ -407,6 +417,19 @@ export default async function handler(req, res) {
       // milestones, risks, kpis) or a short prose string (dependencies).
       firstSteps:        cleanArr(p.firstSteps, 200, 5),
       dependencies:      String(p.dependencies || '').slice(0, 280),
+      // yearByYearMt: cap at 6 entries (typical max horizon). Coerce
+      // non-numeric to 0. If the agent didn't emit it, build a
+      // sensible default — step from 0 to steady-state at Y2 for
+      // "this-year" / "this-3-years"; immediate for "this-quarter".
+      yearByYearMt: (() => {
+        const steady = Number(p.expectedMtPerYear) || 0;
+        if (Array.isArray(p.yearByYearMt) && p.yearByYearMt.length > 0) {
+          return p.yearByYearMt.slice(0, 6).map((v) => Math.max(0, Number(v) || 0));
+        }
+        if (p.timeline === 'this-quarter') return [steady, steady, steady];
+        if (p.timeline === 'this-year')    return [steady * 0.5, steady, steady];
+        return [steady * 0.2, steady * 0.6, steady, steady]; // 3-year ramp
+      })(),
       milestones:        cleanArr(p.milestones, 200, 4),
       risks:             cleanArr(p.risks, 200, 3),
       kpis:              cleanArr(p.kpis, 140, 3),
