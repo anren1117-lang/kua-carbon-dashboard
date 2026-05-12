@@ -7,6 +7,7 @@ import { TOTAL_STUDENTS } from '../../data/students.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
+import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
 // Admin-only AI-driven institutional plan. Three-step flow stored in
 // localStorage:
@@ -369,6 +370,7 @@ export default function AdminPlanAgent() {
             <Hero label="Suggested next check-in"   value={`${plan.nextCheckInDays} days`}             unit=""           accent="#a855f7" />
           </div>
           <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
+          <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
           <TimelineStrip items={plan.plan} />
           <div style={styles.planList}>
             {plan.plan.map((item, i) => (
@@ -499,6 +501,125 @@ function Hero({ label, value, unit, accent }) {
     </div>
   );
 }
+
+// For each board-tracked reduction target, project where the plan
+// lands us vs the linear trajectory expectation. Connects the AI's
+// 8-12 items to the actual institutional commitments in
+// reductionTargets.js so the plan stops being abstract.
+function TargetProgress({ items, live, alreadyShippedMt }) {
+  // Sum plan-item annual mt by category (scope1/2/3/sinks). The plan
+  // items use category=scope1/scope2/scope3/sinks/engagement;
+  // engagement items don't map to a single scope so we omit them.
+  const planMtByScope = { scope1: 0, scope2: 0, scope3: 0, sinks: 0 };
+  for (const it of items) {
+    if (planMtByScope[it.category] != null) {
+      planMtByScope[it.category] += Number(it.expectedMtPerYear) || 0;
+    }
+  }
+  // Energy targets are denominated in kWh, not mt — out of this
+  // view's scope. Filter to mt-based targets only.
+  const tracked = reductionTargets.filter((t) => t.scope !== 'energy_kwh');
+  if (tracked.length === 0) return null;
+
+  const currentYear = new Date().getFullYear();
+  return (
+    <div style={targetStyles.wrap}>
+      <div style={targetStyles.label}>
+        Plan vs board-tracked reduction targets
+      </div>
+      <div style={targetStyles.grid}>
+        {tracked.map((t) => {
+          // Current value for this target's scope:
+          const current =
+            t.scope === 'gross'  ? (live?.grossMt ?? t.baselineValue) :
+            t.scope === 'scope1' ? (live?.scope1Mt ?? t.baselineValue) :
+            t.scope === 'scope2' ? (live?.scope2Mt ?? t.baselineValue) :
+            t.scope === 'scope3' ? (live?.scope3Mt ?? t.baselineValue) :
+            t.scope === 'net'    ? (live?.netMt ?? t.baselineValue) :
+            t.baselineValue;
+
+          // Plan's contribution to this scope (annual mt at full rollout).
+          const planContribution =
+            t.scope === 'gross' ? Object.values(planMtByScope).reduce((s, v) => s + v, 0)
+            : t.scope === 'net'   ? Object.values(planMtByScope).reduce((s, v) => s + v, 0)
+            : (planMtByScope[t.scope] || 0);
+
+          const targetValue = t.baselineValue * (1 - t.percentReduction / 100);
+          const expectedByTargetYear = targetTrajectoryAt(t, currentYear);
+          // Project: current - plan contribution - already-shipped (for
+          // 'gross' / 'net' targets only — shipped items already affect
+          // scope-specific lines via their underlying admin tables).
+          const includeShipped = (t.scope === 'gross' || t.scope === 'net');
+          const projected = Math.max(0, current - planContribution - (includeShipped ? alreadyShippedMt : 0));
+          const gapToTarget = projected - targetValue;
+          const ahead = gapToTarget <= 0;
+          const closurePct = current > targetValue
+            ? Math.min(100, ((current - projected) / (current - targetValue)) * 100)
+            : 100;
+
+          return (
+            <div key={t.id} style={{ ...targetStyles.card, borderLeftColor: ahead ? '#22c55e' : '#fbbf24' }}>
+              <div style={targetStyles.cardTitle}>{t.title}</div>
+              <div style={targetStyles.cardMeta}>
+                Baseline {t.baselineYear} · {Math.round(t.baselineValue).toLocaleString()} mt
+                {' → '}
+                Target {t.targetYear} · {Math.round(targetValue).toLocaleString()} mt
+                ({t.percentReduction}% reduction)
+              </div>
+              <div style={targetStyles.numbersRow}>
+                <div>
+                  <div style={targetStyles.numLabel}>Current</div>
+                  <div style={targetStyles.numVal}>{Math.round(current).toLocaleString()} mt</div>
+                </div>
+                <div>
+                  <div style={targetStyles.numLabel}>Plan adds</div>
+                  <div style={{ ...targetStyles.numVal, color: '#86efac' }}>−{Math.round(planContribution).toLocaleString()} mt</div>
+                </div>
+                <div>
+                  <div style={targetStyles.numLabel}>Projected {t.targetYear}</div>
+                  <div style={{ ...targetStyles.numVal, color: ahead ? '#86efac' : '#fbbf24' }}>{Math.round(projected).toLocaleString()} mt</div>
+                </div>
+                <div>
+                  <div style={targetStyles.numLabel}>{ahead ? 'Surplus' : 'Gap to target'}</div>
+                  <div style={{ ...targetStyles.numVal, color: ahead ? '#86efac' : '#fca5a5' }}>
+                    {ahead ? '−' : '+'}{Math.round(Math.abs(gapToTarget)).toLocaleString()} mt
+                  </div>
+                </div>
+              </div>
+              <div style={targetStyles.bar}>
+                <div style={{ ...targetStyles.barFill, width: `${closurePct}%`, background: ahead ? '#22c55e' : '#fbbf24' }} />
+                <div style={targetStyles.barTarget} title={`Target ${Math.round(targetValue)} mt`} />
+              </div>
+              <div style={targetStyles.cardFoot}>
+                {ahead ? 'Plan + shipped items overshoot the target — surplus available for stretch goals.'
+                       : `Plan closes ${closurePct.toFixed(0)}% of the gap to target. Add ${Math.round(gapToTarget).toLocaleString()} more mt/yr to close the rest.`}
+                {t.scope !== 'gross' && t.scope !== 'net' && !ahead && (
+                  <span style={{ color: '#94a3b8' }}> Plan items in category={t.scope}: {items.filter((i) => i.category === t.scope).length}.</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const targetStyles = {
+  wrap: { marginTop: 12, padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 },
+  grid: { display: 'grid', gap: 10 },
+  card: { padding: '12px 14px', background: '#0f172a', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
+  cardTitle: { fontSize: 14, fontWeight: 700, color: '#e5e7eb' },
+  cardMeta: { fontSize: 11, color: '#94a3b8', marginTop: 4 },
+  numbersRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginTop: 10 },
+  numLabel: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 },
+  numVal: { fontSize: 16, color: '#e5e7eb', fontWeight: 700, marginTop: 2, fontVariantNumeric: 'tabular-nums' },
+  bar: { position: 'relative', marginTop: 10, height: 6, background: '#1f2937', borderRadius: 3, overflow: 'hidden' },
+  barFill: { height: '100%' },
+  barTarget: { position: 'absolute', right: 0, top: -2, bottom: -2, width: 2, background: '#86efac' },
+  cardFoot: { marginTop: 8, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 },
+};
 
 // Roll-up of the plan into actionable buckets. Sighted-only summary
 // designed to answer "what can I do this quarter vs this year vs
