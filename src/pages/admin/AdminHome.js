@@ -130,11 +130,35 @@ const FEED_TABLES = [
 const FEED_LIMIT_PER_TABLE = 5;
 const FEED_DISPLAY_LIMIT = 10;
 
+// Read the saved AI plan + history from localStorage so AdminHome can
+// surface a quick summary card. Returns null if no plan has been
+// generated yet.
+function loadPlanSummary() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const plan = JSON.parse(localStorage.getItem('kua_admin_plan') || 'null');
+    const history = JSON.parse(localStorage.getItem('kua_admin_plan_history') || 'null') || { completed: [], declined: [] };
+    if (!plan || !Array.isArray(plan.plan)) return null;
+    const totalExpected = plan.plan.reduce((s, x) => s + (x.expectedMtPerYear || 0), 0);
+    const shipped = (history.completed || []).reduce((s, x) => s + (Number(x.mtSaved) || 0), 0);
+    return {
+      itemCount: plan.plan.length,
+      totalExpectedMt: totalExpected,
+      shippedCount: (history.completed || []).length,
+      shippedMt: shipped,
+      declinedCount: (history.declined || []).length,
+      generatedAt: plan.generatedAt,
+      summary: plan.summary || '',
+    };
+  } catch { return null; }
+}
+
 export default function AdminHome() {
   const [counts, setCounts] = useState({});
   const [feed, setFeed] = useState([]);
   const [error, setError] = useState('');
   const [tick] = useState(0);
+  const planSummary = loadPlanSummary();
   const live = useMeasuredScopeTotals();
   const renewables = useMeasuredRenewables();
   // Per-table count + lastUpdated for the freshness alert. Mirrors
@@ -384,6 +408,7 @@ export default function AdminHome() {
       </div>
 
       <AdminHomeBrief brief={brief} busy={briefBusy} onRefresh={() => setBriefRefreshTick((n) => n + 1)} />
+      {planSummary && <PlanSummaryCard summary={planSummary} grossMt={grossEffective} />}
       <FreshnessAlert freshness={freshness} />
 
       <Section title="Quick actions" hint="The four most-used admin starting points.">
@@ -483,6 +508,67 @@ function formatFeedDate(iso) {
 // on" + 3-5 next-actions. Shown above the FreshnessAlert on the
 // admin home. Sessionstorage-cached for 10 min so it doesn't re-run
 // on every nav back to /admin.
+function PlanSummaryCard({ summary, grossMt }) {
+  const halfTarget = grossMt > 0 ? grossMt * 0.5 : 0;
+  const gapToHalf = grossMt > 0 ? Math.max(0, grossMt - summary.totalExpectedMt - summary.shippedMt - halfTarget) : 0;
+  const closurePct = grossMt > halfTarget
+    ? Math.min(100, ((summary.totalExpectedMt + summary.shippedMt) / (grossMt - halfTarget)) * 100)
+    : 100;
+  return (
+    <div style={planSummaryStyles.wrap}>
+      <div style={planSummaryStyles.head}>
+        <span style={planSummaryStyles.label}>🧭 Current plan</span>
+        <span style={planSummaryStyles.date}>
+          generated {summary.generatedAt ? new Date(summary.generatedAt).toLocaleDateString() : '—'}
+        </span>
+      </div>
+      <div style={planSummaryStyles.numbers}>
+        <div style={planSummaryStyles.stat}>
+          <div style={planSummaryStyles.statLabel}>Items in plan</div>
+          <div style={planSummaryStyles.statVal}>{summary.itemCount}</div>
+        </div>
+        <div style={planSummaryStyles.stat}>
+          <div style={planSummaryStyles.statLabel}>Expected reduction</div>
+          <div style={{ ...planSummaryStyles.statVal, color: '#86efac' }}>{Math.round(summary.totalExpectedMt).toLocaleString()}<span style={planSummaryStyles.statUnit}> mt/yr</span></div>
+        </div>
+        <div style={planSummaryStyles.stat}>
+          <div style={planSummaryStyles.statLabel}>Already shipped</div>
+          <div style={{ ...planSummaryStyles.statVal, color: '#22d3ee' }}>{Math.round(summary.shippedMt).toLocaleString()}<span style={planSummaryStyles.statUnit}> mt · {summary.shippedCount} item{summary.shippedCount === 1 ? '' : 's'}</span></div>
+        </div>
+        {grossMt > 0 && (
+          <div style={planSummaryStyles.stat}>
+            <div style={planSummaryStyles.statLabel}>Closure to 50%</div>
+            <div style={{ ...planSummaryStyles.statVal, color: closurePct >= 100 ? '#86efac' : '#fbbf24' }}>{closurePct.toFixed(0)}<span style={planSummaryStyles.statUnit}>%</span></div>
+          </div>
+        )}
+      </div>
+      <div style={planSummaryStyles.foot}>
+        <Link to="/admin/plan-agent" style={planSummaryStyles.link}>Open plan agent →</Link>
+        {gapToHalf > 0 && (
+          <span style={planSummaryStyles.gap}>
+            · {Math.round(gapToHalf).toLocaleString()} mt/yr still needed to hit the 50% target
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const planSummaryStyles = {
+  wrap: { marginTop: 14, padding: '14px 18px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 10 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 },
+  label: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6 },
+  date: { fontSize: 11, color: '#64748b' },
+  numbers: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 },
+  stat: { padding: '8px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  statLabel: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 },
+  statVal: { fontSize: 22, color: '#e5e7eb', fontWeight: 800, marginTop: 4, fontVariantNumeric: 'tabular-nums' },
+  statUnit: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginLeft: 4 },
+  foot: { marginTop: 10, fontSize: 12, color: '#94a3b8' },
+  link: { color: '#86efac', textDecoration: 'none', fontWeight: 700 },
+  gap: { marginLeft: 8 },
+};
+
 function AdminHomeBrief({ brief, busy, onRefresh }) {
   if (!brief && !busy) return null;
   if (busy && !brief) {
