@@ -243,6 +243,21 @@ export default function AdminPlanAgent() {
   // Phase 119: streaming-progress state. charCount ticks while the
   // plan is generating. Shown as "Drafting plan… 1,245 chars so far".
   const [streamChars, setStreamChars] = useState(0);
+  // Phase 127: track stream start so the button label can show
+  // "Drafting plan… 12s · 1,245 chars". The timer updates state
+  // every second while loading is true.
+  const [streamStartedAt, setStreamStartedAt] = useState(null);
+  const [streamElapsed, setStreamElapsed] = useState(0);
+  useEffect(() => {
+    if (!loading || !streamStartedAt) {
+      setStreamElapsed(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setStreamElapsed(Math.floor((Date.now() - streamStartedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [loading, streamStartedAt]);
   // Plan-level chat — separate from per-item chats. Scoped to the
   // whole plan + context + history + measurement state.
   const [planChatOpen, setPlanChatOpen] = useState(false);
@@ -454,6 +469,7 @@ export default function AdminPlanAgent() {
           }))
         : null;
       setStreamChars(0);
+      setStreamStartedAt(Date.now());
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
         body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true }),
@@ -682,8 +698,8 @@ export default function AdminPlanAgent() {
           >
             {loading
               ? (streamChars > 0
-                ? `Drafting plan… ${streamChars.toLocaleString()} chars`
-                : 'Starting up…')
+                ? `Drafting plan… ${streamElapsed}s · ${streamChars.toLocaleString()} chars`
+                : `Starting up… ${streamElapsed}s`)
               : hasPlan ? 'Re-generate plan' : 'Generate plan'}
           </button>
           {hasPlan && (

@@ -261,8 +261,21 @@ function AdminAIIngestion() {
     await processFiles(files);
   }
 
-  // Live char-count progress while the streaming extraction runs.
+  // Live char-count + elapsed-time progress while the streaming
+  // extraction runs.
   const [streamChars, setStreamChars] = useState(0);
+  const [streamStartedAt, setStreamStartedAt] = useState(null);
+  const [streamElapsed, setStreamElapsed] = useState(0);
+  useEffect(() => {
+    if (!busy || !streamStartedAt) {
+      setStreamElapsed(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setStreamElapsed(Math.floor((Date.now() - streamStartedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [busy, streamStartedAt]);
 
   async function submit() {
     if (text.trim().length < 20 && images.length === 0) {
@@ -274,6 +287,7 @@ function AdminAIIngestion() {
     setResult(null);
     setRowStates({});
     setStreamChars(0);
+    setStreamStartedAt(Date.now());
     try {
       const r = await adminFetch('/api/admin/ai-ingestion', {
         method: 'POST',
@@ -606,8 +620,8 @@ function AdminAIIngestion() {
           {busy && (
             <span style={styles.busy}>
               {streamChars > 0
-                ? `Extracting… ${streamChars.toLocaleString()} chars`
-                : 'Reading document + calling Claude…'}
+                ? `Extracting… ${streamElapsed}s · ${streamChars.toLocaleString()} chars`
+                : `Reading document… ${streamElapsed}s`}
             </span>
           )}
         </div>
