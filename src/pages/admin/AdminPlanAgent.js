@@ -264,6 +264,8 @@ export default function AdminPlanAgent() {
     setPlanChatInput('');
     setPlanChatBusy(true);
     setPlanChatErr(null);
+    // Push a placeholder assistant turn that we'll fill via streaming.
+    setPlanChatMessages([...next, { role: 'assistant', content: '' }]);
     try {
       const measuredState = {
         scope1Measured: !!live.scope1Measured,
@@ -280,13 +282,58 @@ export default function AdminPlanAgent() {
           history,
           measuredState,
           messages: next,
+          stream: true,
         }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
-      setPlanChatMessages([...next, { role: 'assistant', content: body.reply }]);
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      // SSE: 'delta' events append text to the in-progress assistant turn;
+      // 'done' finalizes; 'error' throws.
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accum = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) >= 0) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const eventLine = chunk.split('\n').find((l) => l.startsWith('event: '));
+          const dataLine  = chunk.split('\n').find((l) => l.startsWith('data: '));
+          if (!eventLine || !dataLine) continue;
+          const event = eventLine.slice(7).trim();
+          let payload = null;
+          try { payload = JSON.parse(dataLine.slice(6)); } catch {}
+          if (!payload) continue;
+          if (event === 'delta') {
+            accum += payload.text || '';
+            // Replace the last (placeholder) assistant turn with the
+            // accumulated text on each delta.
+            setPlanChatMessages((cur) => {
+              const out = cur.slice(0, -1);
+              out.push({ role: 'assistant', content: accum });
+              return out;
+            });
+          } else if (event === 'done') {
+            setPlanChatMessages((cur) => {
+              const out = cur.slice(0, -1);
+              out.push({ role: 'assistant', content: payload.reply });
+              return out;
+            });
+          } else if (event === 'error') {
+            throw new Error(payload.message || 'stream error');
+          }
+        }
+      }
     } catch (err) {
       setPlanChatErr(err.message);
+      // Pop the placeholder on error.
+      setPlanChatMessages((cur) => cur.slice(0, -1));
     } finally {
       setPlanChatBusy(false);
     }
@@ -1450,6 +1497,8 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
     setChatInput('');
     setChatBusy(true);
     setChatErr(null);
+    // Placeholder assistant turn that streaming will fill.
+    setChatMessages([...nextMessages, { role: 'assistant', content: '' }]);
     try {
       const r = await adminFetch('/api/admin/plan-item-chat', {
         method: 'POST',
@@ -1459,13 +1508,53 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
           context,
           memo: memo?.memo || null,
           messages: nextMessages,
+          stream: true,
         }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
-      setChatMessages([...nextMessages, { role: 'assistant', content: body.reply }]);
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accum = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) >= 0) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const eventLine = chunk.split('\n').find((l) => l.startsWith('event: '));
+          const dataLine  = chunk.split('\n').find((l) => l.startsWith('data: '));
+          if (!eventLine || !dataLine) continue;
+          const event = eventLine.slice(7).trim();
+          let payload = null;
+          try { payload = JSON.parse(dataLine.slice(6)); } catch {}
+          if (!payload) continue;
+          if (event === 'delta') {
+            accum += payload.text || '';
+            setChatMessages((cur) => {
+              const out = cur.slice(0, -1);
+              out.push({ role: 'assistant', content: accum });
+              return out;
+            });
+          } else if (event === 'done') {
+            setChatMessages((cur) => {
+              const out = cur.slice(0, -1);
+              out.push({ role: 'assistant', content: payload.reply });
+              return out;
+            });
+          } else if (event === 'error') {
+            throw new Error(payload.message || 'stream error');
+          }
+        }
+      }
     } catch (err) {
       setChatErr(err.message);
+      setChatMessages((cur) => cur.slice(0, -1));
     } finally {
       setChatBusy(false);
     }

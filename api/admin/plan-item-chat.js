@@ -128,6 +128,8 @@ export default async function handler(req, res) {
     return;
   }
 
+  const wantStream = body.stream === true;
+
   try {
     // Prepend the pinned-context block as the first user turn so it
     // sits inside the assistant's view of the conversation. Anthropic
@@ -139,6 +141,65 @@ export default async function handler(req, res) {
       { role: 'assistant', content: 'Understood. Pinned to that plan item — go ahead.' },
       ...messages,
     ];
+
+    if (wantStream) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      const send = (event, payload) => res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+      const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1200,
+          stream: true,
+          system: [
+            { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+          ],
+          messages: fullMessages,
+        }),
+      });
+      if (!apiRes.ok || !apiRes.body) {
+        let detail = '';
+        try { const b = await apiRes.json(); detail = b?.error?.message || JSON.stringify(b); } catch {}
+        send('error', { message: `Anthropic API ${apiRes.status}${detail ? ` — ${detail}` : ''}` });
+        res.end();
+        return;
+      }
+      const reader = apiRes.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let full = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) >= 0) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const dataLine = chunk.split('\n').find((l) => l.startsWith('data: '));
+          if (!dataLine) continue;
+          try {
+            const ev = JSON.parse(dataLine.slice(6));
+            if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+              const t = ev.delta.text || '';
+              full += t;
+              send('delta', { text: t });
+            } else if (ev.type === 'message_stop') break;
+          } catch {}
+        }
+      }
+      send('done', { reply: full.trim().slice(0, 8000), generatedAt: new Date().toISOString() });
+      res.end();
+      return;
+    }
 
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
