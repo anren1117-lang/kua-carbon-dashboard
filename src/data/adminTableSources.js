@@ -20,6 +20,8 @@ export const ADMIN_TABLE_SOURCES = [
   { table: 'scope1_propane',            label: 'Propane deliveries',               scope: 'Scope 1',     tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/propane' },
   { table: 'scope1_fleet',              label: 'Fleet fuel records',               scope: 'Scope 1',     tsCol: 'period_end',    cadence: 'monthly',   cta: '/admin/scope-1/fleet' },
   { table: 'scope1_refrigerants',       label: 'Refrigerant service logs',         scope: 'Scope 1',     tsCol: 'service_date',  cadence: 'irregular', cta: '/admin/scope-1/refrigerants' },
+  // ─── Scope 2 ──────────────────────────────────────────────────
+  { table: 'scope2_meter_readings',     label: 'Scope 2 meter readings',           scope: 'Scope 2',     tsCol: 'period_end',    cadence: 'monthly',   cta: '/admin/scope-2/meter' },
   // ─── Scope 3 — cohorts ────────────────────────────────────────
   { table: 'day_students',              label: 'Day students',                     scope: 'Scope 3',     tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
   { table: 'us_boarding_students',      label: 'US boarding students',             scope: 'Scope 3',     tsCol: 'created_at',    cadence: 'annual',    cta: '/admin/scope-3' },
