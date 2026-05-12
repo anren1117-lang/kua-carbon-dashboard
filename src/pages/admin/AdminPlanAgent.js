@@ -247,6 +247,9 @@ export default function AdminPlanAgent() {
       ) : null}
     >
       <ModuleSection title="Institutional context" hint="Loaded from KUA's canonical totals — adjust when the fiscal context changes (new board, new capex window, new regulation).">
+        <ScenarioPresets
+          onApply={(preset) => setContext((prev) => ({ ...prev, ...preset }))}
+        />
         <div style={styles.formGrid}>
           <Field label="Fiscal year">
             <input
@@ -502,6 +505,124 @@ function Hero({ label, value, unit, accent }) {
     </div>
   );
 }
+
+// Six canonical KUA planning scenarios. Each is a one-click filler
+// for the context form — applies fiscal stance + priority + horizon
+// + optional regulatory/notes context. Doesn't touch grossMt/sinksMt/
+// enrollment (those flow from live data).
+const SCENARIO_PRESETS = [
+  {
+    id: 'tight-budget',
+    label: 'Tight budget · operational only',
+    desc: 'No capital ask this cycle. Surface no-cost levers + low-cost ops tightening.',
+    accent: '#fbbf24',
+    apply: {
+      capitalAppetite: 'low',
+      topPriority: 'engagement',
+      timeHorizonYears: 1,
+      notes: 'Operating-budget cycle only. No new capital appropriations available until next FY.',
+    },
+  },
+  {
+    id: 'aggressive-2030',
+    label: 'Aggressive 2030 push',
+    desc: 'Board has authorized capital for the 50% by 2030 commitment. Surface the bigger levers.',
+    accent: '#ef4444',
+    apply: {
+      capitalAppetite: 'high',
+      topPriority: 'scope1',
+      timeHorizonYears: 5,
+      regulatoryDriver: 'KUA Board 2030 commitment (50% gross-reduction target)',
+      notes: 'Board ready to underwrite multi-year capital project work. Lead with heat-pump conversion feasibility.',
+    },
+  },
+  {
+    id: 'scope3-focus',
+    label: 'Scope 3 focus · student travel + dining',
+    desc: 'Dominant cluster work — international flights, beef portions, faculty commute.',
+    accent: '#a855f7',
+    apply: {
+      capitalAppetite: 'medium',
+      topPriority: 'scope3',
+      timeHorizonYears: 3,
+      notes: 'Scope 3 is biggest by central. Want cohort-specific levers + dining tightening.',
+    },
+  },
+  {
+    id: 'maintenance',
+    label: 'Maintenance mode · honor commitments',
+    desc: 'No new program work — just ship what was previously approved + measure where we stand.',
+    accent: '#94a3b8',
+    apply: {
+      capitalAppetite: 'low',
+      topPriority: 'engagement',
+      timeHorizonYears: 1,
+      notes: 'Transition year. Focus on completing already-approved work + measurement infrastructure.',
+    },
+  },
+  {
+    id: 'measurement-first',
+    label: 'Measurement-first · instrument before optimizing',
+    desc: 'Get every scope to "measured" before bigger capital decisions.',
+    accent: '#22d3ee',
+    apply: {
+      capitalAppetite: 'medium',
+      topPriority: 'scope1',
+      timeHorizonYears: 2,
+      notes: 'Plan should prioritize data instrumentation — fuel-delivery integration, BMS extensions, forest inventory — so subsequent plans calibrate against measured baselines, not bottom-up.',
+    },
+  },
+  {
+    id: 'sinks-protect',
+    label: 'Sinks-first · protect + expand',
+    desc: 'Capitalize on the 2,650 mt/yr forest sequestration. Conservation easement, tree inventory, soil sampling.',
+    accent: '#22c55e',
+    apply: {
+      capitalAppetite: 'medium',
+      topPriority: 'sinks',
+      timeHorizonYears: 3,
+      notes: 'Forest carbon stock is KUA\'s strongest asset. Want easement + measurement work + selective management plan.',
+    },
+  },
+];
+
+function ScenarioPresets({ onApply }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={presetStyles.wrap}>
+      <button type="button" style={presetStyles.toggle} onClick={() => setOpen((v) => !v)}>
+        {open ? '▼' : '▶'} ⚡ Quick scenarios
+        <span style={presetStyles.toggleHint}>One-click fillers for common KUA planning postures</span>
+      </button>
+      {open && (
+        <div style={presetStyles.grid}>
+          {SCENARIO_PRESETS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => { onApply(s.apply); setOpen(false); }}
+              style={{ ...presetStyles.card, borderLeftColor: s.accent }}
+              title={`Click to populate the context with: ${JSON.stringify(s.apply)}`}
+            >
+              <div style={{ ...presetStyles.cardLabel, color: s.accent }}>{s.label}</div>
+              <div style={presetStyles.cardDesc}>{s.desc}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const presetStyles = {
+  wrap: { marginBottom: 14 },
+  toggle: { display: 'flex', alignItems: 'baseline', gap: 10, padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#22d3ee', fontSize: 13, fontWeight: 700, cursor: 'pointer', width: '100%', textAlign: 'left' },
+  toggleHint: { fontSize: 11, color: '#94a3b8', fontWeight: 500, textTransform: 'none', letterSpacing: 0 },
+  grid: { marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 },
+  card: { padding: '10px 12px', background: '#0f172a', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 6, textAlign: 'left', cursor: 'pointer', color: 'inherit', font: 'inherit' },
+  cardLabel: { fontSize: 13, fontWeight: 700 },
+  cardDesc: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 },
+};
 
 // Ranks plan items by mt-per-$1000-of-capex. Surfaces the most
 // cost-effective items separately from the priority-ordered list so
