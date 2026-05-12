@@ -143,6 +143,9 @@ export default function AdminHome() {
   const [freshness, setFreshness] = useState(null); // null | { fresh, aging, stale, empty, irregular, staleTables }
   const [brief, setBrief] = useState(null);         // null | { mode, state, focus, followups }
   const [briefBusy, setBriefBusy] = useState(false);
+  // Bumping this forces the brief useEffect to re-fetch + bypass
+  // the sessionStorage cache. Used by the manual "↻ Refresh" button.
+  const [briefRefreshTick, setBriefRefreshTick] = useState(0);
 
   // Combined count + freshness fetch. Both the bottom-of-page record
   // counts grid and the top-of-page freshness alert read the same
@@ -197,16 +200,19 @@ export default function AdminHome() {
   useEffect(() => {
     if (!freshness || !Array.isArray(feed)) return;
     const cacheKey = 'kua_admin_home_brief';
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Date.now() - parsed.cachedAt < 10 * 60 * 1000) {
-          setBrief(parsed);
-          return;
+    // Force-refresh bypasses the cache; otherwise honor the 10-min TTL.
+    if (briefRefreshTick === 0) {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Date.now() - parsed.cachedAt < 10 * 60 * 1000) {
+            setBrief(parsed);
+            return;
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    }
     let cancelled = false;
     (async () => {
       setBriefBusy(true);
@@ -242,7 +248,7 @@ export default function AdminHome() {
       }
     })();
     return () => { cancelled = true; };
-  }, [freshness, feed, live.scope1Measured, live.scope3Measured, live.sinksMeasured]);
+  }, [freshness, feed, live.scope1Measured, live.scope3Measured, live.sinksMeasured, briefRefreshTick]);
 
   // Recent-activity feed. Fetches the last N rows from each canonical
   // admin table, normalizes each row to a uniform { ts, label, summary }
@@ -377,7 +383,7 @@ export default function AdminHome() {
         <Stat label="Stage plans"           value={stagePlanCount}                              unit={stagePlanCount === 1 ? 'in your library' : 'in your library'} accent="#22c55e" />
       </div>
 
-      <AdminHomeBrief brief={brief} busy={briefBusy} />
+      <AdminHomeBrief brief={brief} busy={briefBusy} onRefresh={() => setBriefRefreshTick((n) => n + 1)} />
       <FreshnessAlert freshness={freshness} />
 
       <Section title="Quick actions" hint="The four most-used admin starting points.">
@@ -477,7 +483,7 @@ function formatFeedDate(iso) {
 // on" + 3-5 next-actions. Shown above the FreshnessAlert on the
 // admin home. Sessionstorage-cached for 10 min so it doesn't re-run
 // on every nav back to /admin.
-function AdminHomeBrief({ brief, busy }) {
+function AdminHomeBrief({ brief, busy, onRefresh }) {
   if (!brief && !busy) return null;
   if (busy && !brief) {
     return (
@@ -491,6 +497,11 @@ function AdminHomeBrief({ brief, busy }) {
     <div style={briefStyles.wrap}>
       <div style={briefStyles.head}>
         <span style={briefStyles.label}>📋 Admin brief · generated for this session</span>
+        {onRefresh && (
+          <button type="button" onClick={onRefresh} disabled={busy} style={briefStyles.refresh} title="Force a fresh brief, bypassing the 10-min cache">
+            {busy ? '…' : '↻ Refresh'}
+          </button>
+        )}
       </div>
       {brief.state && <p style={briefStyles.state}>{brief.state}</p>}
       {brief.focus && (
@@ -509,8 +520,9 @@ function AdminHomeBrief({ brief, busy }) {
 
 const briefStyles = {
   wrap: { marginTop: 14, padding: '14px 18px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 10 },
-  head: { marginBottom: 8 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   label: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6 },
+  refresh: { padding: '3px 10px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' },
   busyLabel: { fontSize: 12, color: '#a5b4fc', fontStyle: 'italic' },
   state: { margin: 0, fontSize: 14, color: '#cbd5e1', lineHeight: 1.55 },
   focus: { margin: '8px 0 0', fontSize: 14, color: '#e5e7eb', lineHeight: 1.55 },
