@@ -205,7 +205,7 @@ export default function AdminHome() {
           if (r.error && !firstError) firstError = r.error;
           const bucket = freshnessBucket({ count: r.count, lastUpdated: r.lastUpdated }, r.src.cadence);
           tally[bucket] += 1;
-          if (bucket === 'stale') staleTables.push(r.src.label);
+          if (bucket === 'stale') staleTables.push({ label: r.src.label, cta: r.src.cta });
         }
         setCounts(nextCounts);
         setFreshness({ ...tally, staleTables });
@@ -655,8 +655,24 @@ export function FreshnessAlert({ freshness }) {
         {fresh}/{total} fresh · {aging} aging · {stale} stale · {empty} empty{irregular > 0 ? ` · ${irregular} irregular` : ''}
       </div>
       {staleTables.length > 0 && (
-        <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 4 }}>
-          Stale: {staleTables.slice(0, 5).join(' · ')}{staleTables.length > 5 ? ` · +${staleTables.length - 5} more` : ''}
+        <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline' }}>
+          <span style={{ marginRight: 2 }}>Stale:</span>
+          {staleTables.slice(0, 5).map((t, i) => {
+            const label = typeof t === 'string' ? t : t.label;
+            const cta = typeof t === 'string' ? null : t.cta;
+            return cta ? (
+              <Link
+                key={label + i}
+                to={cta}
+                style={{ color: '#fecaca', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 2 }}
+              >
+                {label}
+              </Link>
+            ) : (
+              <span key={label + i}>{label}</span>
+            );
+          })}
+          {staleTables.length > 5 && <span style={{ color: '#94a3b8' }}>+{staleTables.length - 5} more</span>}
         </div>
       )}
     </div>

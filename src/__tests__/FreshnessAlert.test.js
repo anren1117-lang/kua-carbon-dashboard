@@ -78,11 +78,27 @@ describe('FreshnessAlert (AdminHome banner)', () => {
       fresh: 5, aging: 0, stale: 7, empty: 0, irregular: 0, unknown: 0,
       staleTables: ['T1','T2','T3','T4','T5','T6','T7'],
     }} />);
-    // First 5 names + "+2 more"
-    expect(screen.getByText(/T1.*T2.*T3.*T4.*T5/)).toBeTruthy();
+    // First 5 names appear individually + "+2 more"
+    for (const t of ['T1','T2','T3','T4','T5']) {
+      expect(screen.getByText(t)).toBeTruthy();
+    }
     expect(screen.getByText(/\+2 more/)).toBeTruthy();
-    expect(screen.queryByText(/T6/)).toBeNull();
-    expect(screen.queryByText(/T7/)).toBeNull();
+    expect(screen.queryByText('T6')).toBeNull();
+    expect(screen.queryByText('T7')).toBeNull();
+  });
+
+  it('renders each stale table as a deep link when staleTables carries {label, cta}', () => {
+    wrap(<FreshnessAlert freshness={{
+      fresh: 14, aging: 0, stale: 2, empty: 0, irregular: 0, unknown: 0,
+      staleTables: [
+        { label: 'Propane deliveries', cta: '/admin/scope-1/propane' },
+        { label: 'Solar PV records',   cta: '/admin/renewables/solar' },
+      ],
+    }} />);
+    const propane = screen.getByRole('link', { name: /Propane deliveries/i });
+    expect(propane.getAttribute('href')).toBe('/admin/scope-1/propane');
+    const solar = screen.getByRole('link', { name: /Solar PV records/i });
+    expect(solar.getAttribute('href')).toBe('/admin/renewables/solar');
   });
 
   it('grammar: 1 stale singular, 2+ stale plural', () => {
