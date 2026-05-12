@@ -53,18 +53,18 @@ function readEnv(key) {
   return undefined;
 }
 
-const SYSTEM_PROMPT = `You are KUA's institutional carbon-strategy planner. You generate prioritized 5-7 step decarbonization plans for the school's leadership (Head of School, Sustainability Committee, Board of Trustees, Facilities Director, Dining Services).
+const SYSTEM_PROMPT = `You are KUA's institutional carbon-strategy planner. You generate detailed prioritized decarbonization plans for the school's leadership (Head of School, Sustainability Committee, Board of Trustees, Facilities Director, Dining Services).
 
 KUA is a 340-student boarding secondary school in Plainfield/Meriden NH (climate zone 6A, ~7,500 HDD), 19 buildings totaling ~290K sqft (11 dorms ~105K, 3 academic ~78K, 3 athletic ~98K, 2 other ~10K). Heating dominates Scope 1 (~1,350 mt central, range 891–1,867 — from ~111K gal heating oil + ~19K gal propane); the school is on the ISO-NE grid for Scope 2 (~385 mt measured ±5%); Scope 3 (~2,635 mt central, range 1,726–3,720) is led by purchased goods (EEIO Cat 1 ~1,315) followed by student travel ~760 (East-Asia-heavy international + Northeast US boarders × 3-4 RTs/yr), dining ~235, upstream fuel ~230. ~1,000 acres of campus forest sequester ~2,650 mt/yr (range 2,100–2,650 across Birdsey 1992 / NH FIA / Nowak 2013).
 
 Output STRICT JSON only — no prose before or after — matching this shape exactly:
 {
-  "summary": "2-3 sentence framing of why this plan fits the current fiscal context",
+  "summary": "3-5 sentence framing of why this plan fits the current fiscal context, what the dominant lever cluster is, and how the next 12 months hand off to the years 2-5",
   "plan": [
     {
       "id": "p1",
       "title": "...",
-      "why": "...",
+      "why": "2-4 sentences. Memo-to-Sustainability-Committee voice. Specific to KUA's context.",
       "expectedMtPerYear": 0,
       "estimatedCostUsd": 0,
       "ownerRole": "Facilities Director|Dining Services Director|Head of School|Board of Trustees|Sustainability Committee|Director of Operations|Travel Office",
@@ -72,6 +72,11 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
       "category": "scope1|scope2|scope3|sinks|engagement",
       "difficulty": "easy|medium|hard",
       "paybackYears": 0,
+      "firstSteps": ["3-5 short concrete actions, each starting with a verb. Examples: 'Pull last 24 months of heating-oil delivery invoices from Facilities', 'Survey current T8 fluorescent count by building'."],
+      "dependencies": "What must be in place before this can start. 1-2 sentences. Use 'none' if no blockers.",
+      "milestones": ["2-4 dated checkpoints to verify the plan is on track. Each: 'YYYY-Qn: <observable outcome>'."],
+      "risks": ["1-3 short failure modes specific to KUA. Each is a single sentence."],
+      "kpis": ["1-3 measurable success metrics. Each: 'metric_name (unit): target'."],
       "dataSource": "Cite the type of source the mt + $ benchmarks come from. Examples: 'Project Drawdown plant-rich diets', 'NREL PVWatts simulation for NH', 'EPA WARM model v15.1', 'NEEP cold-climate heat-pump performance data', 'GHG Protocol Scope 3 Cat 7 + ICCT fuel economy', 'EPA ENERGY STAR commercial LED savings'. Do NOT fabricate specific page numbers or precise paper titles.",
       "provenance": "measured | cited | estimated. Use 'measured' ONLY if the mt comes from a real KUA meter or invoice (BMS, fuel deliveries, utility bills). Use 'cited' if the methodology is published (EPA, IPCC, NREL, Drawdown) AND the input quantities are reasonable for KUA. Use 'estimated' if either the input quantity (acreage, fuel use, fleet miles) or the resulting mt is your best-effort guess that needs replacement with measured data. When in doubt, use 'estimated' — never inflate confidence."
     }
@@ -79,7 +84,7 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
 }
 
 Rules:
-1. The plan must be 5–7 items, ordered by priority. Priority = (mtCO2e/yr) × (capital-appetite-fit) × (board-political-feasibility). Don't put $1M heat-pump retrofits at #1 if capitalAppetite is 'low'.
+1. The plan must be 8–12 items, ordered by priority. Priority = (mtCO2e/yr) × (capital-appetite-fit) × (board-political-feasibility). Don't put $1M heat-pump retrofits at #1 if capitalAppetite is 'low'.
 2. expectedMtPerYear is WHOLE-SCHOOL annual mt CO2e (not kg, not per-student). Anchor to these benchmarks:
    - Heating-oil to heat-pump conversion (whole campus): 600-900 mt/yr, ~$3-5M, 12-15 yr payback
    - Single-building boiler upgrade (one dorm/academic): 30-60 mt/yr, ~$200-400K, 8-12 yr
@@ -118,9 +123,9 @@ function buildUserMessage(context, history) {
     if (history.declined?.length) {
       lines.push(`- Declined / vetoed: ${history.declined.map((d) => d.title + (d.reason ? ` — ${d.reason}` : '')).join('; ')}`);
     }
-    lines.push('Generate a NEW 5-7 step plan that excludes completed and declined items. Priorities should reflect what\'s left, not the original full slate.');
+    lines.push('Generate a NEW 8-12 step plan that excludes completed and declined items. Priorities should reflect what\'s left, not the original full slate. Each item carries firstSteps, dependencies, milestones, risks, and kpis as documented in the schema.');
   } else {
-    lines.push('', 'No prior plan history. Generate the highest-impact 5-7 starting institutional levers for this fiscal year.');
+    lines.push('', 'No prior plan history. Generate the highest-impact 8-12 starting institutional levers for this fiscal year. Each item carries firstSteps, dependencies, milestones, risks, and kpis as documented in the schema.');
   }
   return lines.join('\n');
 }
@@ -176,10 +181,12 @@ function ruleBasedPlan(context, history) {
     if (r.timeline === 'this-year' && horizon < 1)    score *= 0.3;
     return { rule: r, score };
   }).sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, 5).map((s) => s.rule);
+  // Take more top-scored items than before so the rule-mode fallback
+  // also produces an 8-12 item plan (was 5+1 = 7 before).
+  const top = scored.slice(0, 10).map((s) => s.rule);
   // Always include at least one no-cost quick-win for momentum.
   const quickWin = candidates.find((c) => c.cost === 0 && !top.includes(c));
-  const final = (quickWin ? [...top, quickWin] : top).slice(0, 7).map((r, i) => ({
+  const final = (quickWin ? [...top, quickWin] : top).slice(0, 12).map((r, i) => ({
     id: `p${i + 1}`,
     title: r.title,
     why: ruleWhy(r, context),
@@ -190,6 +197,14 @@ function ruleBasedPlan(context, history) {
     category:          r.category,
     difficulty:        r.difficulty,
     paybackYears:      r.payback,
+    // Rule-based fallback doesn't have hand-curated detail fields
+    // for every rule — empty arrays signal "no detail" to the UI,
+    // which skips the matching DetailBlock cleanly.
+    firstSteps:        [],
+    dependencies:      '',
+    milestones:        [],
+    risks:             [],
+    kpis:              [],
     dataSource:        r.source,
     provenance:        r.provenance || 'estimated',
   }));
@@ -277,7 +292,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1800,
+        max_tokens: 6000,
         system: SYSTEM_PROMPT,
         messages: [
           { role: 'user', content: buildUserMessage(context, history) },
@@ -307,10 +322,17 @@ export default async function handler(req, res) {
       return;
     }
 
-    const plan = parsed.plan.slice(0, 7).map((p, i) => ({
+    // Truncate arbitrary string arrays to keep response compact +
+    // bound each item's payload (so the planner can't inflate one step
+    // at the cost of the others).
+    const cleanArr = (a, maxLen, maxItems) => Array.isArray(a)
+      ? a.slice(0, maxItems).map((s) => String(s || '').slice(0, maxLen)).filter(Boolean)
+      : [];
+
+    const plan = parsed.plan.slice(0, 12).map((p, i) => ({
       id:                p.id || `p${i + 1}`,
       title:             String(p.title || '').slice(0, 140),
-      why:               String(p.why || '').slice(0, 500),
+      why:               String(p.why || '').slice(0, 800),
       expectedMtPerYear: Number(p.expectedMtPerYear) || 0,
       estimatedCostUsd:  Number(p.estimatedCostUsd) || 0,
       ownerRole:         String(p.ownerRole || 'Sustainability Committee').slice(0, 60),
@@ -318,6 +340,13 @@ export default async function handler(req, res) {
       category:          ['scope1','scope2','scope3','sinks','engagement'].includes(p.category) ? p.category : 'scope1',
       difficulty:        ['easy','medium','hard'].includes(p.difficulty) ? p.difficulty : 'medium',
       paybackYears:      Number(p.paybackYears) || 0,
+      // New detailed fields. Each is a string array (firstSteps,
+      // milestones, risks, kpis) or a short prose string (dependencies).
+      firstSteps:        cleanArr(p.firstSteps, 200, 5),
+      dependencies:      String(p.dependencies || '').slice(0, 280),
+      milestones:        cleanArr(p.milestones, 200, 4),
+      risks:             cleanArr(p.risks, 200, 3),
+      kpis:              cleanArr(p.kpis, 140, 3),
       dataSource:        String(p.dataSource || 'AI estimate (no specific source provided)').slice(0, 280),
       provenance:        ['measured','cited','estimated'].includes(p.provenance) ? p.provenance : 'estimated',
     }));

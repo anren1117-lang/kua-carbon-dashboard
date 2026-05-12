@@ -447,6 +447,45 @@ function PlanCard({ item, rank, onComplete, onDecline }) {
         </div>
       </div>
       <div style={styles.planWhy}>{item.why}</div>
+
+      {Array.isArray(item.firstSteps) && item.firstSteps.length > 0 && (
+        <DetailBlock title="First steps" accent="#22d3ee">
+          <ol style={detailListStyles.ol}>
+            {item.firstSteps.map((s, i) => <li key={i} style={detailListStyles.li}>{s}</li>)}
+          </ol>
+        </DetailBlock>
+      )}
+
+      {item.dependencies && item.dependencies !== 'none' && (
+        <DetailBlock title="Dependencies" accent="#fbbf24">
+          <div style={styles.planListProse}>{item.dependencies}</div>
+        </DetailBlock>
+      )}
+
+      {Array.isArray(item.milestones) && item.milestones.length > 0 && (
+        <DetailBlock title="Milestones" accent="#86efac">
+          <ul style={detailListStyles.ul}>
+            {item.milestones.map((m, i) => <li key={i} style={detailListStyles.li}>{m}</li>)}
+          </ul>
+        </DetailBlock>
+      )}
+
+      {Array.isArray(item.risks) && item.risks.length > 0 && (
+        <DetailBlock title="Risks" accent="#fca5a5">
+          <ul style={detailListStyles.ul}>
+            {item.risks.map((r, i) => <li key={i} style={detailListStyles.li}>{r}</li>)}
+          </ul>
+        </DetailBlock>
+      )}
+
+      {Array.isArray(item.kpis) && item.kpis.length > 0 && (
+        <DetailBlock title="KPIs" accent="#a855f7">
+          <ul style={detailListStyles.ul}>
+            {item.kpis.map((k, i) => <li key={i} style={detailListStyles.li}>{k}</li>)}
+          </ul>
+        </DetailBlock>
+      )}
+
       {item.dataSource && (
         <div style={styles.planSource}>
           <span style={styles.planSourceLabel}>Data source:</span> {item.dataSource}
@@ -455,6 +494,26 @@ function PlanCard({ item, rank, onComplete, onDecline }) {
       <div style={styles.planActions}>
         <button type="button" onClick={onComplete} style={styles.completeBtn}>Mark shipped ✓</button>
         <button type="button" onClick={onDecline}  style={styles.declineBtn}>Take off the table</button>
+      </div>
+    </div>
+  );
+}
+
+const detailListStyles = {
+  ol: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 },
+  ul: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 },
+  li: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 },
+};
+
+// Small collapsible block for the detailed fields on each plan item.
+// Renders inline when there's content; auto-collapsed if the user has
+// shipped this item or hasn't expanded yet.
+function DetailBlock({ title, accent, children }) {
+  return (
+    <div style={{ marginTop: 10, padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: `3px solid ${accent}`, borderRadius: 6 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, color: accent, marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 }}>
+        {children}
       </div>
     </div>
   );
@@ -504,6 +563,10 @@ const styles = {
   planNumUnit: { fontSize: 10, color: '#94a3b8', fontWeight: 600 },
   planWhy: { marginTop: 10, fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 44 },
   planSource: { marginTop: 8, fontSize: 11, color: '#94a3b8', lineHeight: 1.5, paddingLeft: 44, fontStyle: 'italic' },
+  // Detail-block list styling — bullet/numbered lists inside the
+  // DetailBlock cards. Distinct from the outer `planList` (which is a
+  // grid of plan-item cards).
+  planListProse: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 },
   planSourceLabel: { color: '#64748b', fontWeight: 700, fontStyle: 'normal', textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 4 },
   planActions: { display: 'flex', gap: 8, marginTop: 12, paddingLeft: 44 },
   completeBtn: { padding: '6px 12px', background: '#052e1a', color: '#86efac', border: '1px solid #14532d', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
