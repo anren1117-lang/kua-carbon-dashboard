@@ -9,6 +9,7 @@ import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { useMeasuredRenewables } from '../../hooks/useMeasuredRenewables.js';
 import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 import { freshnessBucket } from '../../utils/freshness.js';
+import { adminFetch } from '../../utils/adminFetch.js';
 
 // Admin dashboard. Mirrors NAV_GROUPS exactly so the home page and the
 // header dropdowns stay in sync — adding a new admin page in
@@ -140,6 +141,8 @@ export default function AdminHome() {
   // AdminDataQuality but only computes the summary stats — no full
   // inventory table to render here.
   const [freshness, setFreshness] = useState(null); // null | { fresh, aging, stale, empty, irregular, staleTables }
+  const [brief, setBrief] = useState(null);         // null | { mode, state, focus, followups }
+  const [briefBusy, setBriefBusy] = useState(false);
 
   // Combined count + freshness fetch. Both the bottom-of-page record
   // counts grid and the top-of-page freshness alert read the same
@@ -186,6 +189,60 @@ export default function AdminHome() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // AI-generated admin-portal brief. Runs once freshness + feed are
+  // both populated (so the LLM gets a complete picture). Skipped if
+  // the admin's been here recently — a sessionStorage cache prevents
+  // re-firing on every navigation back to the dashboard.
+  useEffect(() => {
+    if (!freshness || !Array.isArray(feed)) return;
+    const cacheKey = 'kua_admin_home_brief';
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.cachedAt < 10 * 60 * 1000) {
+          setBrief(parsed);
+          return;
+        }
+      }
+    } catch {}
+    let cancelled = false;
+    (async () => {
+      setBriefBusy(true);
+      try {
+        const r = await adminFetch('/api/admin/admin-home-brief', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            scopeTotals: {
+              grossMt: Math.round(live.grossMt || 0),
+              netMt: Math.round(live.netMt || 0),
+              scope1Mt: Math.round(live.scope1Mt || 0),
+              scope2Mt: Math.round(live.scope2Mt || 0),
+              scope3Mt: Math.round(live.scope3Mt || 0),
+              sinkMt: Math.round(live.sinkMt || 0),
+              scope1Measured: !!live.scope1Measured,
+              scope3Measured: !!live.scope3Measured,
+              sinksMeasured: !!live.sinksMeasured,
+            },
+            freshness,
+            recentFeed: feed,
+          }),
+        });
+        if (!r.ok) return;
+        const body = await r.json();
+        if (cancelled) return;
+        setBrief(body);
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ ...body, cachedAt: Date.now() })); } catch {}
+      } catch {
+        /* silent — brief is non-critical */
+      } finally {
+        if (!cancelled) setBriefBusy(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [freshness, feed, live.scope1Measured, live.scope3Measured, live.sinksMeasured]);
 
   // Recent-activity feed. Fetches the last N rows from each canonical
   // admin table, normalizes each row to a uniform { ts, label, summary }
@@ -320,6 +377,7 @@ export default function AdminHome() {
         <Stat label="Stage plans"           value={stagePlanCount}                              unit={stagePlanCount === 1 ? 'in your library' : 'in your library'} accent="#22c55e" />
       </div>
 
+      <AdminHomeBrief brief={brief} busy={briefBusy} />
       <FreshnessAlert freshness={freshness} />
 
       <Section title="Quick actions" hint="The four most-used admin starting points.">
@@ -414,6 +472,52 @@ function formatFeedDate(iso) {
   if (Number.isNaN(d.getTime())) return String(iso);
   return d.toISOString().slice(0, 10);
 }
+
+// Compact AI-generated brief: "where things stand" + "what to focus
+// on" + 3-5 next-actions. Shown above the FreshnessAlert on the
+// admin home. Sessionstorage-cached for 10 min so it doesn't re-run
+// on every nav back to /admin.
+function AdminHomeBrief({ brief, busy }) {
+  if (!brief && !busy) return null;
+  if (busy && !brief) {
+    return (
+      <div style={briefStyles.wrap} role="status">
+        <div style={briefStyles.busyLabel}>Generating admin brief…</div>
+      </div>
+    );
+  }
+  if (!brief || brief.mode === 'unavailable') return null;
+  return (
+    <div style={briefStyles.wrap}>
+      <div style={briefStyles.head}>
+        <span style={briefStyles.label}>📋 Admin brief · generated for this session</span>
+      </div>
+      {brief.state && <p style={briefStyles.state}>{brief.state}</p>}
+      {brief.focus && (
+        <p style={briefStyles.focus}>
+          <span style={briefStyles.focusLabel}>Focus today: </span>{brief.focus}
+        </p>
+      )}
+      {Array.isArray(brief.followups) && brief.followups.length > 0 && (
+        <ul style={briefStyles.followups}>
+          {brief.followups.map((f, i) => <li key={i} style={briefStyles.followup}>{f}</li>)}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+const briefStyles = {
+  wrap: { marginTop: 14, padding: '14px 18px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 10 },
+  head: { marginBottom: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6 },
+  busyLabel: { fontSize: 12, color: '#a5b4fc', fontStyle: 'italic' },
+  state: { margin: 0, fontSize: 14, color: '#cbd5e1', lineHeight: 1.55 },
+  focus: { margin: '8px 0 0', fontSize: 14, color: '#e5e7eb', lineHeight: 1.55 },
+  focusLabel: { fontWeight: 700, color: '#a5b4fc' },
+  followups: { margin: '10px 0 0', paddingLeft: 18 },
+  followup: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 },
+};
 
 export function FreshnessAlert({ freshness }) {
   if (!freshness) return null;
