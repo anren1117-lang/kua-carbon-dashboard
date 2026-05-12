@@ -346,7 +346,17 @@ export default async function handler(req, res) {
         // Sonnet — those are narrower tasks where Sonnet matches.
         model: 'claude-opus-4-7',
         max_tokens: 8000,
-        system: SYSTEM_PROMPT,
+        // Phase 109: prompt caching on the stable system prompt.
+        // It's a ~3 KB anchor (KUA fingerprint + peer benchmarks +
+        // bench library + 5 plan-building principles) that stays
+        // constant across calls. Ephemeral cache means subsequent
+        // calls within the cache TTL (~5 min) hit the cached prefix
+        // — ~90% cost reduction + measurable latency drop on the
+        // typical admin workflow (generate → regenerate after
+        // tweaking context → generate alternatives → ...).
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+        ],
         messages: [
           { role: 'user', content: buildUserMessage(context, history, measuredState) },
         ],

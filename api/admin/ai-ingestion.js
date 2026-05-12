@@ -214,7 +214,12 @@ export default async function handler(req, res) {
         // run is a single call.
         model: 'claude-opus-4-7',
         max_tokens: 6000,
-        system: SYSTEM_PROMPT,
+        // Phase 109: prompt caching on the stable system prompt
+        // (the per-table field schema is ~4 KB — biggest cache win
+        // in the app).
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+        ],
         messages: [
           { role: 'user', content },
         ],

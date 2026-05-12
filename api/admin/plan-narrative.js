@@ -173,7 +173,10 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-opus-4-7',
         max_tokens: 3000,
-        system: SYSTEM_PROMPT,
+        // Phase 109: prompt caching on the stable system prompt.
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+        ],
         messages: [
           { role: 'user', content: buildUserMessage(plan, context, history, measuredState) },
         ],

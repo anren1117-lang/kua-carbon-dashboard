@@ -169,7 +169,12 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-opus-4-7',
         max_tokens: 2000,
-        system: SYSTEM_PROMPT,
+        // Phase 109: prompt caching on the stable system prompt.
+        // Chat traffic is high-volume per session so caching the
+        // anchor cuts cost + latency materially.
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+        ],
         messages: fullMessages,
       }),
     });
