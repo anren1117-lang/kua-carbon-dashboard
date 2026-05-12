@@ -116,6 +116,33 @@ function AdminAIIngestion() {
     });
   }
 
+  // Heuristic guess: turn a filename like "FW-Webb-Invoice-2026-03.pdf"
+  // into a hint like "FW Webb invoice — 2026-03". Pure-text, runs
+  // before any LLM call, so wrong guesses cost nothing.
+  function guessHintFromFilename(name) {
+    if (!name || typeof name !== 'string') return '';
+    const stem = name.replace(/\.[^.]+$/, '');
+    const cleaned = stem.replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!cleaned) return '';
+    // Common emissions-document keywords → standardized hint stems.
+    const lower = cleaned.toLowerCase();
+    const matchers = [
+      [/\b(fw[ -]?webb|cohen|irving|dead river)\b.*\b(oil|propane|fuel|delivery)\b/i, (s) => `Heating-oil delivery invoice — ${s}`],
+      [/\b(invoice|bill|statement|receipt)\b/i,                                       (s) => `Invoice — ${s}`],
+      [/\b(sodexo|aramark|sage)\b/i,                                                  (s) => `Dining services purchase order — ${s}`],
+      [/\b(itinerary|travel|flight|airfare|booking)\b/i,                              (s) => `Travel itinerary — ${s}`],
+      [/\b(bms|envysion|meter|trends?)\b/i,                                           (s) => `BMS meter export — ${s}`],
+      [/\b(waste|landfill|recycl|compost|haul)\b/i,                                   (s) => `Waste hauler report — ${s}`],
+      [/\b(liberty|electric|utility|kwh)\b/i,                                         (s) => `Liberty Utilities electricity bill — ${s}`],
+      [/\b(solar|inverter|generation)\b/i,                                            (s) => `Solar generation export — ${s}`],
+      [/\b(refrigerant|hvac|service|maintenance)\b/i,                                 (s) => `HVAC service report — ${s}`],
+    ];
+    for (const [re, build] of matchers) {
+      if (re.test(lower)) return build(cleaned).slice(0, 200);
+    }
+    return `Source: ${cleaned}`.slice(0, 200);
+  }
+
   async function onFile(e) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -149,6 +176,20 @@ function AdminAIIngestion() {
       }
       if (files.length === 1) setFileName(files[0].name);
       else setFileName(`${files.length} files`);
+      // Auto-populate the hint from filenames if the admin hasn't
+      // typed one yet. Joins multiple filenames so multi-file
+      // uploads still get a useful hint.
+      if (!hint.trim()) {
+        const guesses = files.map((f) => guessHintFromFilename(f.name)).filter(Boolean);
+        if (guesses.length === 1) {
+          setHint(guesses[0]);
+        } else if (guesses.length > 1) {
+          // Same-prefix guesses are common (3 monthly statements);
+          // emit one hint covering the batch.
+          const uniq = [...new Set(guesses)];
+          setHint(uniq.length === 1 ? `${uniq[0]} (${guesses.length} files)` : `Mixed batch: ${uniq.slice(0, 3).join(' / ')}`.slice(0, 200));
+        }
+      }
     } catch (err) {
       setError(`Could not read file: ${err.message}`);
     } finally {
