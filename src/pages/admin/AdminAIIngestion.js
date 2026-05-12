@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
+import { logAdminWrite } from '../../utils/adminAudit.js';
 
 // /admin/ai-ingestion
 //
@@ -308,6 +309,12 @@ function AdminAIIngestion() {
               setRowStates((s) => ({ ...s, [i]: 'sending' }));
               const { error: insErr } = await supabase.from(rows[i].table).insert(rows[i].fields);
               if (insErr) throw new Error(insErr.message);
+              logAdminWrite({
+                action: 'insert',
+                table: rows[i].table,
+                payload: rows[i].fields,
+                note: `AI ingestion · auto-write · high-confidence${rows[i].sourceDocument ? ` · ${rows[i].sourceDocument}` : ''}`,
+              });
               setRowStates((s) => ({ ...s, [i]: 'inserted' }));
             } catch (err) {
               setRowStates((s) => ({ ...s, [i]: `error:${err.message}` }));
@@ -355,8 +362,19 @@ function AdminAIIngestion() {
   async function acceptRow(i, row) {
     setRowStates((s) => ({ ...s, [i]: 'sending' }));
     try {
-      const { error: insErr } = await supabase.from(row.table).insert(activeFields(i, row));
+      const fields = activeFields(i, row);
+      const { error: insErr } = await supabase.from(row.table).insert(fields);
       if (insErr) throw new Error(insErr.message);
+      // Phase 118: tag every AI-ingested write in the audit log so
+      // reviewers can see which rows came from the agent vs manual
+      // entry. Note carries the confidence + source doc for
+      // traceability.
+      logAdminWrite({
+        action: 'insert',
+        table: row.table,
+        payload: fields,
+        note: `AI ingestion · ${row.confidence}-confidence${row.sourceDocument ? ` · ${row.sourceDocument}` : ''}`,
+      });
       setRowStates((s) => ({ ...s, [i]: 'inserted' }));
       setEditMode((m) => ({ ...m, [i]: false }));
     } catch (err) {
