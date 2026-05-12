@@ -324,6 +324,7 @@ export default function AdminPlanAgent() {
                 key={item.id}
                 item={item}
                 rank={i + 1}
+                context={context}
                 onComplete={() => completeItem(item)}
                 onDecline={() => declineItem(item)}
               />
@@ -420,7 +421,29 @@ function Hero({ label, value, unit, accent }) {
   );
 }
 
-function PlanCard({ item, rank, onComplete, onDecline }) {
+function PlanCard({ item, rank, context, onComplete, onDecline }) {
+  const [memo, setMemo] = useState(null);     // { mode, memo, generatedAt } | null
+  const [memoBusy, setMemoBusy] = useState(false);
+  const [memoErr, setMemoErr] = useState(null);
+
+  async function generateMemo() {
+    setMemoBusy(true);
+    setMemoErr(null);
+    try {
+      const r = await adminFetch('/api/admin/plan-item-memo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ item, context }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setMemo(body);
+    } catch (err) {
+      setMemoErr(err.message);
+    } finally {
+      setMemoBusy(false);
+    }
+  }
   const color = CATEGORY_COLORS[item.category] || '#94a3b8';
   return (
     <div style={{ ...styles.planCard, borderLeftColor: color }}>
@@ -494,10 +517,200 @@ function PlanCard({ item, rank, onComplete, onDecline }) {
       <div style={styles.planActions}>
         <button type="button" onClick={onComplete} style={styles.completeBtn}>Mark shipped ✓</button>
         <button type="button" onClick={onDecline}  style={styles.declineBtn}>Take off the table</button>
+        {!memo && (
+          <button type="button" onClick={generateMemo} disabled={memoBusy} style={styles.memoBtn}>
+            {memoBusy ? 'Generating memo…' : '📝 Implementation memo'}
+          </button>
+        )}
+        {memo && (
+          <button type="button" onClick={() => setMemo(null)} style={styles.memoBtn}>
+            ✕ Hide memo
+          </button>
+        )}
       </div>
+      {memoErr && <div role="alert" style={styles.memoErr}>Memo error: {memoErr}</div>}
+      {memo && memo.mode === 'unavailable' && (
+        <div style={styles.memoUnavail}>{memo.message || 'LLM not configured.'}</div>
+      )}
+      {memo && memo.mode === 'llm' && memo.memo && (
+        <ImplementationMemo memo={memo.memo} generatedAt={memo.generatedAt} />
+      )}
     </div>
   );
 }
+
+function ImplementationMemo({ memo, generatedAt }) {
+  return (
+    <div style={memoStyles.wrap}>
+      <div style={memoStyles.head}>
+        <span style={memoStyles.headLabel}>Implementation memo</span>
+        <span style={memoStyles.headDate}>generated {new Date(generatedAt).toLocaleString()}</span>
+      </div>
+      {memo.executiveSummary && (
+        <p style={memoStyles.execSummary}>{memo.executiveSummary}</p>
+      )}
+
+      {memo.weeklySchedule && memo.weeklySchedule.length > 0 && (
+        <MemoSection title="Weekly schedule">
+          <div style={memoStyles.weekList}>
+            {memo.weeklySchedule.map((w, i) => (
+              <div key={i} style={memoStyles.weekRow}>
+                <div style={memoStyles.weekNum}>Week {w.week}</div>
+                <div>
+                  <div style={memoStyles.weekFocus}>{w.focus}</div>
+                  <ul style={memoStyles.weekActions}>
+                    {(w.actions || []).map((a, j) => <li key={j} style={memoStyles.weekAction}>{a}</li>)}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        </MemoSection>
+      )}
+
+      {memo.stakeholderMap && memo.stakeholderMap.length > 0 && (
+        <MemoSection title="Stakeholder map">
+          <div style={memoStyles.stakeList}>
+            {memo.stakeholderMap.map((s, i) => (
+              <div key={i} style={memoStyles.stakeRow}>
+                <div style={memoStyles.stakeRole}>{s.role}</div>
+                <div style={memoStyles.stakeWhen}>{s.when}</div>
+                <div style={memoStyles.stakeWhy}>{s.why}</div>
+              </div>
+            ))}
+          </div>
+        </MemoSection>
+      )}
+
+      {memo.outreachTemplates && memo.outreachTemplates.length > 0 && (
+        <MemoSection title="Outreach templates">
+          {memo.outreachTemplates.map((t, i) => (
+            <div key={i} style={memoStyles.email}>
+              <div style={memoStyles.emailMeta}><strong>To:</strong> {t.to}</div>
+              <div style={memoStyles.emailMeta}><strong>Subject:</strong> {t.subject}</div>
+              <div style={memoStyles.emailDraft}>{t.draft}</div>
+            </div>
+          ))}
+        </MemoSection>
+      )}
+
+      {memo.approvalsRequired && memo.approvalsRequired.length > 0 && (
+        <MemoSection title="Approvals required">
+          <ul style={memoStyles.bulletList}>
+            {memo.approvalsRequired.map((a, i) => <li key={i} style={memoStyles.bullet}>{a}</li>)}
+          </ul>
+        </MemoSection>
+      )}
+
+      {memo.budgetBreakdown && memo.budgetBreakdown.length > 0 && (
+        <MemoSection title="Budget breakdown">
+          <table style={memoStyles.budgetTable}>
+            <tbody>
+              {memo.budgetBreakdown.map((b, i) => (
+                <tr key={i}>
+                  <td style={memoStyles.budgetLine}>{b.line}{b.note && <span style={memoStyles.budgetNote}> — {b.note}</span>}</td>
+                  <td style={memoStyles.budgetAmt}>{b.amountUsd === 0 ? '—' : `$${b.amountUsd.toLocaleString()}`}</td>
+                </tr>
+              ))}
+              <tr style={memoStyles.budgetTotal}>
+                <td style={memoStyles.budgetLine}><strong>Total</strong></td>
+                <td style={memoStyles.budgetAmt}><strong>${memo.budgetBreakdown.reduce((s, b) => s + (b.amountUsd || 0), 0).toLocaleString()}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </MemoSection>
+      )}
+
+      {memo.successMetrics && memo.successMetrics.length > 0 && (
+        <MemoSection title="Success metrics">
+          <ul style={memoStyles.bulletList}>
+            {memo.successMetrics.map((m, i) => <li key={i} style={memoStyles.bullet}>{m}</li>)}
+          </ul>
+        </MemoSection>
+      )}
+
+      {memo.failureModes && memo.failureModes.length > 0 && (
+        <MemoSection title="Failure modes + mitigations">
+          {memo.failureModes.map((f, i) => (
+            <div key={i} style={memoStyles.riskBlock}>
+              <div style={memoStyles.riskLabel}><strong>Risk:</strong> {f.risk}</div>
+              <div style={memoStyles.mitigLabel}><strong>Mitigation:</strong> {f.mitigation}</div>
+            </div>
+          ))}
+        </MemoSection>
+      )}
+
+      {memo.communicationPlan && memo.communicationPlan.length > 0 && (
+        <MemoSection title="Communication plan">
+          <div style={memoStyles.commList}>
+            {memo.communicationPlan.map((c, i) => (
+              <div key={i} style={memoStyles.commRow}>
+                <div style={memoStyles.commAud}>{c.audience}</div>
+                <div style={memoStyles.commChannel}>{c.channel}</div>
+                <div style={memoStyles.commMsg}>{c.message}</div>
+              </div>
+            ))}
+          </div>
+        </MemoSection>
+      )}
+    </div>
+  );
+}
+
+function MemoSection({ title, children }) {
+  return (
+    <div style={memoStyles.section}>
+      <div style={memoStyles.sectionTitle}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const memoStyles = {
+  wrap: { marginTop: 14, padding: '14px 16px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '3px solid #6366f1', borderRadius: 8 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #1f2937' },
+  headLabel: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.7 },
+  headDate: { fontSize: 11, color: '#64748b' },
+  execSummary: { margin: 0, fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 },
+  section: { marginTop: 14 },
+  sectionTitle: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 8 },
+
+  weekList: { display: 'grid', gap: 8 },
+  weekRow: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: 12, padding: '8px 10px', background: '#0b1220', borderRadius: 6, border: '1px solid #1f2937' },
+  weekNum: { fontSize: 12, fontWeight: 700, color: '#6366f1' },
+  weekFocus: { fontSize: 13, color: '#e5e7eb', fontWeight: 600 },
+  weekActions: { margin: '4px 0 0', paddingLeft: 16 },
+  weekAction: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginTop: 2 },
+
+  stakeList: { display: 'grid', gap: 6 },
+  stakeRow: { display: 'grid', gridTemplateColumns: '180px 90px 1fr', gap: 10, padding: '6px 10px', background: '#0b1220', borderRadius: 6, fontSize: 12 },
+  stakeRole: { color: '#e5e7eb', fontWeight: 600 },
+  stakeWhen: { color: '#94a3b8' },
+  stakeWhy: { color: '#cbd5e1', lineHeight: 1.5 },
+
+  email: { marginTop: 8, padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  emailMeta: { fontSize: 12, color: '#94a3b8', marginBottom: 4 },
+  emailDraft: { marginTop: 8, fontSize: 13, color: '#cbd5e1', lineHeight: 1.55, whiteSpace: 'pre-wrap', fontFamily: 'inherit' },
+
+  bulletList: { margin: 0, paddingLeft: 18 },
+  bullet: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 },
+
+  budgetTable: { width: '100%', borderCollapse: 'collapse' },
+  budgetLine: { padding: '6px 8px', fontSize: 13, color: '#cbd5e1', borderTop: '1px solid #1f2937' },
+  budgetAmt: { padding: '6px 8px', fontSize: 13, color: '#e5e7eb', borderTop: '1px solid #1f2937', textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
+  budgetNote: { color: '#64748b', fontSize: 11 },
+  budgetTotal: { background: '#0b1220' },
+
+  riskBlock: { padding: '8px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, marginTop: 6 },
+  riskLabel: { fontSize: 13, color: '#fca5a5' },
+  mitigLabel: { fontSize: 13, color: '#86efac', marginTop: 4 },
+
+  commList: { display: 'grid', gap: 6 },
+  commRow: { display: 'grid', gridTemplateColumns: '140px 180px 1fr', gap: 10, padding: '6px 10px', background: '#0b1220', borderRadius: 6, fontSize: 12 },
+  commAud: { color: '#e5e7eb', fontWeight: 600 },
+  commChannel: { color: '#94a3b8' },
+  commMsg: { color: '#cbd5e1', lineHeight: 1.5 },
+};
 
 const detailListStyles = {
   ol: { margin: 0, paddingLeft: 18, display: 'grid', gap: 4 },
@@ -571,6 +784,9 @@ const styles = {
   planActions: { display: 'flex', gap: 8, marginTop: 12, paddingLeft: 44 },
   completeBtn: { padding: '6px 12px', background: '#052e1a', color: '#86efac', border: '1px solid #14532d', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   declineBtn:  { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
+  memoBtn:     { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+  memoErr:     { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 13 },
+  memoUnavail: { marginTop: 8, padding: '8px 12px', background: '#3a2a0e', border: '1px solid #92400e', borderRadius: 6, color: '#fcd34d', fontSize: 13 },
 
   historyBlock: { marginBottom: 14 },
   historyTitle: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 },
