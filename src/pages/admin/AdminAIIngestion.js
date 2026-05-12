@@ -19,6 +19,13 @@ const styles = {
   subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 760 },
   card: { marginTop: 24, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 12, padding: 20 },
   upload: { padding: 24, border: '2px dashed #334155', borderRadius: 8, textAlign: 'center', color: '#94a3b8' },
+  imageStrip: { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #a855f7', borderRadius: 8 },
+  imageStripLabel: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginBottom: 10 },
+  imageGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 },
+  imageCell: { position: 'relative', padding: 8, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6 },
+  imageThumb: { width: '100%', height: 100, objectFit: 'cover', borderRadius: 4, display: 'block' },
+  imageName: { marginTop: 6, fontSize: 11, color: '#cbd5e1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  imageRemoveBtn: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, background: '#0b1220', color: '#fca5a5', border: '1px solid #7f1d1d', fontSize: 14, lineHeight: '20px', textAlign: 'center', cursor: 'pointer', fontWeight: 700, padding: 0 },
   textarea: { width: '100%', boxSizing: 'border-box', minHeight: 180, padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13, marginTop: 12, resize: 'vertical' },
   hintInput: { width: '100%', boxSizing: 'border-box', padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontSize: 14, marginTop: 8 },
   actionRow: { display: 'flex', gap: 10, marginTop: 14, alignItems: 'center', flexWrap: 'wrap' },
@@ -71,6 +78,10 @@ function AdminAIIngestion() {
   const [rowFields, setRowFields] = useState({}); // index → { ...editable copy of fields }
   const [editMode, setEditMode] = useState({});   // index → boolean (true = field inputs, false = read-only)
   const [fileName, setFileName] = useState(null);
+  // images: [{ name, media_type, data: base64 }, ...]. Either text or
+  // images (or both) feeds the extraction; for scanned invoices /
+  // photos the image path bypasses pdfjs entirely.
+  const [images, setImages] = useState([]);
   const [recentDrafts, setRecentDrafts] = useState([]);
 
   useEffect(() => {
@@ -90,15 +101,53 @@ function AdminAIIngestion() {
     return () => { cancelled = true; };
   }, [result]);
 
+  // Read a File as base64 (no data: prefix — just the encoded bytes).
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || '');
+        const idx = result.indexOf('base64,');
+        resolve(idx >= 0 ? result.slice(idx + 7) : result);
+      };
+      reader.onerror = () => reject(new Error('Could not read file'));
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function onFile(e) {
-    const f = e.target.files?.[0];
-    if (!f) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
     setError(null);
     setBusy(true);
-    setFileName(f.name);
     try {
-      const out = await extractFileText(f);
-      setText(out.text);
+      const newImages = [];
+      const newTexts = [];
+      for (const f of files) {
+        // Image branch — send directly to Claude vision.
+        if (/^image\/(png|jpeg|jpg|gif|webp)$/i.test(f.type) || /\.(png|jpe?g|gif|webp)$/i.test(f.name)) {
+          if (f.size > 5 * 1024 * 1024) {
+            setError(`Image "${f.name}" is too large (>5 MB).`);
+            continue;
+          }
+          const mediaType = f.type === 'image/jpg' ? 'image/jpeg' : (f.type || 'image/png');
+          const data = await fileToBase64(f);
+          newImages.push({ name: f.name, media_type: mediaType, data });
+        } else {
+          // Text/PDF branch — extract via pdfjs + FileReader.
+          const out = await extractFileText(f);
+          newTexts.push({ name: f.name, text: out.text, kind: out.kind });
+        }
+      }
+      if (newImages.length > 0) {
+        setImages((prev) => [...prev, ...newImages]);
+      }
+      if (newTexts.length > 0) {
+        const joined = newTexts.map((t) => `--- ${t.name} ---\n${t.text}`).join('\n\n');
+        setText((prev) => prev ? `${prev}\n\n${joined}` : joined);
+      }
+      if (files.length === 1) setFileName(files[0].name);
+      else setFileName(`${files.length} files`);
     } catch (err) {
       setError(`Could not read file: ${err.message}`);
     } finally {
@@ -106,9 +155,13 @@ function AdminAIIngestion() {
     }
   }
 
+  function removeImage(idx) {
+    setImages((arr) => arr.filter((_, i) => i !== idx));
+  }
+
   async function submit() {
-    if (text.trim().length < 20) {
-      setError('Paste at least 20 characters of source text.');
+    if (text.trim().length < 20 && images.length === 0) {
+      setError('Paste at least 20 characters of source text or attach an image.');
       return;
     }
     setBusy(true);
@@ -119,7 +172,13 @@ function AdminAIIngestion() {
       const r = await adminFetch('/api/admin/ai-ingestion', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ text, hint: hint || undefined }),
+        body: JSON.stringify({
+          text: text || undefined,
+          hint: hint || undefined,
+          images: images.length > 0
+            ? images.map(({ media_type, data }) => ({ media_type, data }))
+            : undefined,
+        }),
       });
       const body = await r.json();
       if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
@@ -147,6 +206,7 @@ function AdminAIIngestion() {
     setError(null);
     setRowStates({});
     setFileName(null);
+    setImages([]);
   }
 
   // Coerce empty strings to null + numeric strings to numbers so the
@@ -244,16 +304,46 @@ function AdminAIIngestion() {
         <div style={{ ...styles.upload, marginTop: 14 }}>
           <input
             type="file"
-            accept=".txt,.md,.csv,.json,.pdf"
+            accept=".txt,.md,.csv,.json,.pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
             onChange={onFile}
             aria-label="Pick a document to ingest"
             disabled={busy}
+            multiple
             style={{ display: 'block', margin: '0 auto' }}
           />
           <div style={{ marginTop: 10, fontSize: 13 }}>
-            {fileName ? `Loaded: ${fileName}` : 'PDF, .txt, .md, .csv, .json — or paste below.'}
+            {fileName ? `Loaded: ${fileName}` : 'PDF, .txt, .md, .csv, .json, or image (PNG/JPG/GIF/WebP) — or paste below.'}
           </div>
         </div>
+
+        {images.length > 0 && (
+          <div style={styles.imageStrip}>
+            <div style={styles.imageStripLabel}>
+              {images.length} image{images.length === 1 ? '' : 's'} attached · Claude vision
+            </div>
+            <div style={styles.imageGrid}>
+              {images.map((img, i) => (
+                <div key={i} style={styles.imageCell}>
+                  <img
+                    src={`data:${img.media_type};base64,${img.data}`}
+                    alt={img.name}
+                    style={styles.imageThumb}
+                  />
+                  <div style={styles.imageName}>{img.name}</div>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    style={styles.imageRemoveBtn}
+                    aria-label={`Remove ${img.name}`}
+                    disabled={busy}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <label style={{ display: 'block', marginTop: 14 }}>
           <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 }}>
@@ -284,7 +374,7 @@ function AdminAIIngestion() {
         </label>
 
         <div style={styles.actionRow}>
-          <button type="button" style={styles.submit} onClick={submit} disabled={busy || text.trim().length < 20}>
+          <button type="button" style={styles.submit} onClick={submit} disabled={busy || (text.trim().length < 20 && images.length === 0)}>
             {busy ? 'Extracting…' : '🧠 Extract structured rows'}
           </button>
           <button type="button" style={styles.clear} onClick={clear} disabled={busy}>

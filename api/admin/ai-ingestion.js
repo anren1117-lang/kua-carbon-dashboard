@@ -1,9 +1,13 @@
 // POST /api/admin/ai-ingestion
 //
 // Body:
-//   { text: string, hint?: string }
+//   { text?: string, images?: ImageInput[], hint?: string }
 //   - text: raw document text (parsed by client; PDFs go through pdfjs
 //     via src/utils/extractFileText.js before getting here)
+//   - images: optional array of { media_type: 'image/png'|'image/jpeg'|
+//     'image/gif'|'image/webp', data: base64 string }. Used for scanned
+//     PDFs (rasterized client-side) and photos of invoices/meters.
+//     Either text OR images (or both) must be provided.
 //   - hint: optional admin hint about what to extract (e.g. "this is
 //     a heating-oil delivery invoice from FW Webb")
 //
@@ -141,10 +145,25 @@ export default async function handler(req, res) {
   const body = req.body || {};
   const text = typeof body.text === 'string' ? body.text.trim() : '';
   const hint = typeof body.hint === 'string' ? body.hint.slice(0, 280) : '';
-  if (text.length < 20) {
-    res.status(400).json({ error: 'text body must be at least 20 characters of source document content' });
+  const images = Array.isArray(body.images) ? body.images : [];
+
+  // Validate images: accept up to 6 (Anthropic's effective practical
+  // cap) with known media types + base64 strings under ~5 MB each.
+  const ALLOWED_MEDIA = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+  const MAX_IMG_B64 = 7_000_000; // ~5 MB binary
+  const validImages = images.slice(0, 6).filter((img) =>
+    img && typeof img === 'object'
+    && ALLOWED_MEDIA.has(img.media_type)
+    && typeof img.data === 'string'
+    && img.data.length > 100
+    && img.data.length < MAX_IMG_B64
+  );
+
+  if (text.length < 20 && validImages.length === 0) {
+    res.status(400).json({ error: 'Either text (≥20 chars) or at least one image is required.' });
     return;
   }
+
   // Truncate very large documents — keep token budget bounded. 40K
   // chars ≈ 10K tokens, fits comfortably in a single Claude request.
   const TEXT_CAP = 40_000;
@@ -165,6 +184,17 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Multimodal content: image blocks first (Claude does better when
+    // visuals lead) + a text block with hint + transcribed text.
+    const content = [];
+    for (const img of validImages) {
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: img.media_type, data: img.data },
+      });
+    }
+    content.push({ type: 'text', text: buildUserMessage(clipped || '(no transcribed text — read the image(s))', hint) });
+
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -177,7 +207,7 @@ export default async function handler(req, res) {
         max_tokens: 4000,
         system: SYSTEM_PROMPT,
         messages: [
-          { role: 'user', content: buildUserMessage(clipped, hint) },
+          { role: 'user', content },
         ],
       }),
     });
@@ -223,6 +253,7 @@ export default async function handler(req, res) {
       ? parsed.flags.slice(0, 10).map((f) => String(f).slice(0, 280))
       : [];
     if (truncated) flags.unshift(`Document was truncated to ${TEXT_CAP.toLocaleString()} chars before extraction; later content was not processed.`);
+    if (validImages.length > 0) flags.unshift(`${validImages.length} image${validImages.length === 1 ? '' : 's'} processed via Claude vision.`);
 
     res.status(200).json({
       mode: 'llm',
