@@ -101,7 +101,7 @@ export default function AdminAuditLog() {
       <h1 style={styles.title}>Audit Log</h1>
       <p style={styles.subtitle}>
         Every admin write recorded for accreditation reporting (AASHE STARS) and debugging.
-        Logs flow from the AdminPortal Supabase writes via <code>/api/admin/audit-log</code>.
+        Logs flow from every admin Supabase write via <code>/api/admin/audit-log</code>.
       </p>
 
       <div style={styles.controls}>

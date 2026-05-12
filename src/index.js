@@ -50,7 +50,6 @@ const Procurement = lazy(() => import('./pages/Procurement'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin tree — also lazy. Most users never hit /admin.
-const AdminPortal = lazy(() => import('./AdminPortal'));
 const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
 const AdminScope1 = lazy(() => import('./pages/admin/AdminScope1'));
 const AdminScope2 = lazy(() => import('./pages/admin/AdminScope2'));
@@ -184,7 +183,6 @@ root.render(
             <Route path="stage-planner" element={<AdminStagePlanner />} />
             <Route path="facilities" element={<AdminFacilities />} />
             <Route path="bms-export" element={<AdminBmsExport />} />
-            <Route path="legacy" element={<AdminPortal />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           </Routes>

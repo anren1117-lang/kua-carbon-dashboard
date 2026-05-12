@@ -1,6 +1,6 @@
 // Client-side helper for the admin audit log.
 //
-// Fire-and-forget: every AdminPortal Supabase write should call
+// Fire-and-forget: every admin Supabase write should call
 // `logAdminWrite(...)` immediately after a successful insert/delete.
 // We never await the result on the user-visible path — a logging
 // failure must NOT block the actual data write or surface as an

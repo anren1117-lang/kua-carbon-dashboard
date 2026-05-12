@@ -190,10 +190,9 @@ export default function AdminScope3() {
 
       <ModuleSection
         title="Other entry surfaces (same data)"
-        hint="The legacy admin portal at /admin/legacy had a similar tabbed input UX and is still functional, but its forms were a parallel implementation. This page uses the same modular form components the per-category routes use, so every entry surface writes to the same Supabase tables."
+        hint="Direct links to the per-scope hubs. Each writes to the same Supabase tables this page reads from."
       >
         <div style={styles.linkRow}>
-          <Link to="/admin/legacy" style={styles.linkBtn}>📁 Legacy portal (same data, different layout)</Link>
           <Link to="/admin/scope-1" style={styles.linkBtn}>⛽ Scope 1 entry</Link>
           <Link to="/admin/scope-2" style={styles.linkBtn}>⚡ Scope 2 entry</Link>
         </div>

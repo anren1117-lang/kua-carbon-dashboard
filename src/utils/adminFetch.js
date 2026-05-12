@@ -2,7 +2,7 @@
 // Use for any client-side call to /api/admin/* that needs auth.
 
 const SESSION_KEY = 'kua_admin_session';
-// Custom event the AdminLayout / AdminPortal can subscribe to so they
+// Custom event the AdminLayout can subscribe to so they
 // can show a "session expired, please log in again" banner without
 // each call site having to write their own 401 handler.
 export const ADMIN_AUTH_EXPIRED_EVENT = 'kua-admin-auth-expired';
@@ -42,7 +42,7 @@ function dispatchAuthExpired(reason) {
 /**
  * Fetch wrapper that adds the bearer token. If the response is a 401
  * the local session blob is cleared and a `kua-admin-auth-expired`
- * window event fires — listeners (AdminLayout, AdminPortal) can show a
+ * window event fires — listeners (AdminLayout) can show a
  * "session expired, please sign in again" banner and re-render the
  * password gate without the caller having to handle 401 individually.
  *

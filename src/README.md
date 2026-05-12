@@ -84,7 +84,6 @@ and every meter-driven view goes through the adapter at `src/adapters/meter/`.
 | `/admin`            | Portal home — cards linking to Data Admin, Trends, the structured CRUD tree, and live record counts |
 | `/data-admin`       | Adapter status, live health probe, CSV upload, factor registry, meter quality |
 | `/admin/scope-1` `/scope-2` `/scope-3` `/renewables` `/sinks` `/methodology` `/framework` `/ai-ingestion` | Structured CRUD admin tree |
-| `/admin/legacy`     | Original password-gated admin portal |
 | `/ask`              | Free-form environmental Q&A (Anthropic API + web search) |
 
 ---

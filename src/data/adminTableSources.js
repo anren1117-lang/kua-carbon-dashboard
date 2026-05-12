@@ -15,7 +15,7 @@
 
 export const ADMIN_TABLE_SOURCES = [
   // ─── Scope 1 ──────────────────────────────────────────────────
-  { table: 'fuel_bills',                label: 'Fuel bills (legacy admin portal)', scope: 'Scope 1',     tsCol: 'date',          cadence: 'monthly',   cta: '/admin/legacy' },
+  { table: 'fuel_bills',                label: 'Fuel bills',                       scope: 'Scope 1',     tsCol: 'date',          cadence: 'monthly',   cta: '/admin/scope-1/heating-oil' },
   { table: 'scope1_heating_oil',        label: 'Heating oil deliveries',           scope: 'Scope 1',     tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/heating-oil' },
   { table: 'scope1_propane',            label: 'Propane deliveries',               scope: 'Scope 1',     tsCol: 'delivery_date', cadence: 'monthly',   cta: '/admin/scope-1/propane' },
   { table: 'scope1_fleet',              label: 'Fleet fuel records',               scope: 'Scope 1',     tsCol: 'period_end',    cadence: 'monthly',   cta: '/admin/scope-1/fleet' },

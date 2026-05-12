@@ -77,7 +77,7 @@ When adding a new measured-data table to Supabase, follow the same pattern: help
 - **Renewables**: `renewables_solar`, `renewables_geothermal`, `renewables_wind`
 - **Audit trail**: `admin_audit_log`
 
-Migrations in `supabase/migrations/`. The legacy `AdminPortal.fetchAllData` pulls the original 7; the live-measured hooks pull the rest as needed.
+Migrations in `supabase/migrations/`. The per-scope admin pages + live-measured hooks read/write all of them.
 
 ### Data quality + freshness
 
@@ -92,7 +92,7 @@ AdminHome surfaces a top-of-page freshness alert when any table is stale/aging/e
 
 ### Admin audit log + CSV export/import
 
-Every successful admin write through `AdminPortal.js` fires `logAdminWrite()` (`src/utils/adminAudit.js`) → `POST /api/admin/audit-log`. Reads via `GET /api/admin/audit-log` (paginated, optional `table` + `dateFrom` / `dateTo` filters) surface in the `/admin/audit-log` viewer page. The endpoint passes through to the same anon Supabase client the rest of the dashboard uses; the bearer-token gate IS the auth boundary, not RLS. No service-role key required.
+Every successful admin write through the per-scope pages fires `logAdminWrite()` (`src/utils/adminAudit.js`) → `POST /api/admin/audit-log`. Reads via `GET /api/admin/audit-log` (paginated, optional `table` + `dateFrom` / `dateTo` filters) surface in the `/admin/audit-log` viewer page. The endpoint passes through to the same anon Supabase client the rest of the dashboard uses; the bearer-token gate IS the auth boundary, not RLS. No service-role key required.
 
 CSV utilities live in `src/utils/csv.js`: `toCsv(rows, columns?)` for export (RFC-4180 escaping, JSON-stringifies jsonb), `parseCsv(text)` for import (single-pass tokenizer; returns `{ rows, columns, errors }`). Bulk-import UIs are wired into every canonical admin table via the shared `<CsvImportPanel>` component — paste CSV → preview + per-row validation → batch insert + audit log entry. The 7 validators are tested in `csvValidators.test.js`.
 
@@ -115,7 +115,7 @@ Login Just Works on a fresh deploy without setting either — the fallbacks ship
 
 ### Admin entry points
 
-`AdminPortal.js` is the legacy single-file Supabase CRUD UI (still routed at `/admin/legacy`). Day-to-day admin entry now happens through the per-scope pages under `/admin/scope-1`, `/admin/scope-2`, `/admin/scope-3`, etc. The old per-table singletons (`AdminFuel.js`, `AdminStudents.js`, `AdminTravel.js`, `AdminWaste.js`) were deleted in Phase 12b — modify the per-scope pages or `AdminPortal.js` instead.
+Admin entry happens through the per-scope pages under `/admin/scope-1`, `/admin/scope-2`, `/admin/scope-3`, `/admin/sinks`, `/admin/renewables`. The legacy single-file `AdminPortal.js` was removed in Phase 84.
 
 ## Tests
 
@@ -142,5 +142,5 @@ When adding a measured-data path, mirror the existing test shape: empty/null fal
 ## Conventions
 
 - Styling is done with inline `style={{...}}` objects and a small `App.css`. There is no CSS framework, no component library, and no shared style module — matching the existing inline-style patterns is fine.
-- Emission factors and grid-mix numbers are duplicated between `App.js` (display) and `AdminPortal.js` (data entry). If you change one, check whether the other needs the same update.
+- Emission factors live in `src/data/scopeTotals.js` (Scope 1/3 + sinks + renewables) and `src/data/gridMix.js` (Scope 2). Admin forms in `src/pages/admin/*` read these via `useFactor` / `useTable` from `_shared.js`.
 - API handlers use `createRateLimit` + `getClientKey` from `src/utils/rateLimit.js` — token-bucket per IP. Mirror existing handlers when adding new ones.
