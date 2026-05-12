@@ -39,6 +39,12 @@ const styles = {
   field: { fontSize: 12, color: '#cbd5e1' },
   fieldLabel: { color: '#64748b', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 2 },
   fieldValue: { color: '#e5e7eb', fontFamily: 'ui-monospace, monospace', fontSize: 13 },
+  fieldsEdit: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 },
+  fieldEditCell: { display: 'block' },
+  fieldInput: { width: '100%', boxSizing: 'border-box', padding: '6px 8px', background: '#0f172a', border: '1px solid #334155', borderRadius: 4, color: '#e5e7eb', fontSize: 13, fontFamily: 'ui-monospace, monospace', marginTop: 4 },
+  editToggleBtn: { marginLeft: 'auto', padding: '2px 8px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 3, fontSize: 11, cursor: 'pointer', fontWeight: 700 },
+  resetBtn: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 3, fontSize: 11, cursor: 'pointer' },
+  editedBadge: { color: '#fbbf24', textTransform: 'none', letterSpacing: 0, fontWeight: 600, fontSize: 10 },
   quote: { marginTop: 10, padding: '8px 10px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 4, fontSize: 11, color: '#94a3b8', fontStyle: 'italic', borderLeft: '2px solid #475569' },
   rowActions: { marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' },
   acceptBtn: { padding: '4px 12px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
@@ -62,6 +68,8 @@ function AdminAIIngestion() {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null); // { mode, summary, extractedRows, flags }
   const [rowStates, setRowStates] = useState({}); // index → 'idle'|'sending'|'inserted'|'drafted'|'rejected'|`error:<msg>`
+  const [rowFields, setRowFields] = useState({}); // index → { ...editable copy of fields }
+  const [editMode, setEditMode] = useState({});   // index → boolean (true = field inputs, false = read-only)
   const [fileName, setFileName] = useState(null);
   const [recentDrafts, setRecentDrafts] = useState([]);
 
@@ -116,6 +124,15 @@ function AdminAIIngestion() {
       const body = await r.json();
       if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
       setResult(body);
+      // Seed editable copies of each row's fields so the admin can
+      // tweak before sending. We deep-clone so edits don't mutate the
+      // shared `result.extractedRows[i].fields` object.
+      const initialFields = {};
+      (body.extractedRows || []).forEach((row, i) => {
+        initialFields[i] = { ...(row.fields || {}) };
+      });
+      setRowFields(initialFields);
+      setEditMode({});
     } catch (err) {
       setError(err.message);
     } finally {
@@ -132,12 +149,33 @@ function AdminAIIngestion() {
     setFileName(null);
   }
 
+  // Coerce empty strings to null + numeric strings to numbers so the
+  // edited row matches the column types Supabase expects.
+  function normaliseFields(fields) {
+    const out = {};
+    for (const [k, v] of Object.entries(fields)) {
+      if (v === '' || v === undefined) continue; // omit empty
+      // Try numeric coercion for fields the LLM originally typed as numbers.
+      if (typeof v === 'string' && v.trim() !== '' && !Number.isNaN(Number(v)) && /^-?\d+(\.\d+)?$/.test(v.trim())) {
+        out[k] = Number(v);
+      } else {
+        out[k] = v;
+      }
+    }
+    return out;
+  }
+
+  function activeFields(i, row) {
+    return rowFields[i] !== undefined ? normaliseFields(rowFields[i]) : (row.fields || {});
+  }
+
   async function acceptRow(i, row) {
     setRowStates((s) => ({ ...s, [i]: 'sending' }));
     try {
-      const { error: insErr } = await supabase.from(row.table).insert(row.fields);
+      const { error: insErr } = await supabase.from(row.table).insert(activeFields(i, row));
       if (insErr) throw new Error(insErr.message);
       setRowStates((s) => ({ ...s, [i]: 'inserted' }));
+      setEditMode((m) => ({ ...m, [i]: false }));
     } catch (err) {
       setRowStates((s) => ({ ...s, [i]: `error:${err.message}` }));
     }
@@ -146,26 +184,43 @@ function AdminAIIngestion() {
   async function draftRow(i, row) {
     setRowStates((s) => ({ ...s, [i]: 'sending' }));
     try {
+      const fields = activeFields(i, row);
       const draft = {
         scope: row.scope,
         category: row.table,
         label: `AI: ${row.table} row`,
-        value: typeof row.fields?.gallons === 'number' ? row.fields.gallons
-             : typeof row.fields?.gross_kwh === 'number' ? row.fields.gross_kwh
-             : typeof row.fields?.amount === 'number' ? row.fields.amount
+        value: typeof fields?.gallons === 'number' ? fields.gallons
+             : typeof fields?.gross_kwh === 'number' ? fields.gross_kwh
+             : typeof fields?.amount === 'number' ? fields.amount
              : null,
-        unit: row.fields?.unit || (row.fields?.gallons ? 'gallons' : row.fields?.gross_kwh ? 'kWh' : null),
-        date: row.fields?.delivery_date || row.fields?.date || row.fields?.period_end || null,
+        unit: fields?.unit || (fields?.gallons ? 'gallons' : fields?.gross_kwh ? 'kWh' : null),
+        date: fields?.delivery_date || fields?.date || fields?.period_end || null,
         data_quality: row.confidence === 'high' ? 'measured' : 'estimated',
         notes: row.sourceQuote || null,
-        source_doc: JSON.stringify({ fields: row.fields, ai: true }),
+        source_doc: JSON.stringify({ fields, ai: true, originalFields: row.fields }),
       };
       const { error: insErr } = await supabase.from('framework_drafts').insert(draft);
       if (insErr) throw new Error(insErr.message);
       setRowStates((s) => ({ ...s, [i]: 'drafted' }));
+      setEditMode((m) => ({ ...m, [i]: false }));
     } catch (err) {
       setRowStates((s) => ({ ...s, [i]: `error:${err.message}` }));
     }
+  }
+
+  function toggleEdit(i) {
+    setEditMode((m) => ({ ...m, [i]: !m[i] }));
+  }
+
+  function setFieldValue(i, key, value) {
+    setRowFields((rf) => ({
+      ...rf,
+      [i]: { ...(rf[i] || {}), [key]: value },
+    }));
+  }
+
+  function resetFields(i, row) {
+    setRowFields((rf) => ({ ...rf, [i]: { ...(row.fields || {}) } }));
   }
 
   function rejectRow(i) {
@@ -268,22 +323,63 @@ function AdminAIIngestion() {
 
           {result.extractedRows.map((row, i) => {
             const state = rowStates[i] || 'idle';
+            const editing = !!editMode[i];
+            const editedFields = rowFields[i] !== undefined ? rowFields[i] : row.fields;
             const accentColor = row.confidence === 'high' ? '#16a34a' : row.confidence === 'medium' ? '#ca8a04' : '#7f1d1d';
+            const fieldKeys = Object.keys(editedFields);
             return (
               <div key={i} style={{ ...styles.row, borderLeftColor: accentColor }}>
                 <div style={styles.rowHead}>
                   <span style={styles.rowTable}>{row.table}</span>
                   <span style={styles.rowScope}>· {row.scope}</span>
                   <ConfidencePill level={row.confidence} />
+                  {state === 'idle' && (
+                    <button type="button" onClick={() => toggleEdit(i)} style={styles.editToggleBtn}>
+                      {editing ? '✓ Done editing' : '✎ Edit fields'}
+                    </button>
+                  )}
+                  {editing && state === 'idle' && (
+                    <button type="button" onClick={() => resetFields(i, row)} style={styles.resetBtn} title="Restore the AI's original values">
+                      ↻ Reset to AI
+                    </button>
+                  )}
                 </div>
-                <div style={styles.fields}>
-                  {Object.entries(row.fields).map(([k, v]) => (
-                    <div key={k} style={styles.field}>
-                      <div style={styles.fieldLabel}>{k}</div>
-                      <div style={styles.fieldValue}>{v === null || v === undefined ? '—' : String(v)}</div>
-                    </div>
-                  ))}
-                </div>
+                {!editing ? (
+                  <div style={styles.fields}>
+                    {fieldKeys.map((k) => {
+                      const v = editedFields[k];
+                      const changed = JSON.stringify(v) !== JSON.stringify(row.fields[k]);
+                      return (
+                        <div key={k} style={styles.field}>
+                          <div style={styles.fieldLabel}>{k}{changed && <span style={styles.editedBadge}> · edited</span>}</div>
+                          <div style={styles.fieldValue}>{v === null || v === undefined || v === '' ? '—' : String(v)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={styles.fieldsEdit}>
+                    {fieldKeys.map((k) => {
+                      const v = editedFields[k];
+                      const original = row.fields[k];
+                      const changed = JSON.stringify(v) !== JSON.stringify(original);
+                      return (
+                        <label key={k} style={styles.fieldEditCell}>
+                          <span style={styles.fieldLabel}>
+                            {k}{changed && <span style={styles.editedBadge}> · edited</span>}
+                          </span>
+                          <input
+                            type="text"
+                            value={v === null || v === undefined ? '' : String(v)}
+                            onChange={(e) => setFieldValue(i, k, e.target.value)}
+                            style={styles.fieldInput}
+                            placeholder={original === null || original === undefined ? '' : String(original)}
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
                 {row.sourceQuote && (
                   <div style={styles.quote}>“{row.sourceQuote}”</div>
                 )}
