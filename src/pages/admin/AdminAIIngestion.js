@@ -40,6 +40,7 @@ const styles = {
   bulkAccept: { padding: '6px 12px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   bulkDraft:  { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   bulkReject: { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
+  reExtract:  { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   row: { marginTop: 10, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
   rowHead: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
   rowTable: { fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#22d3ee', fontWeight: 700 },
@@ -453,9 +454,20 @@ function AdminAIIngestion() {
 
       {result && (
         <div style={styles.card}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>
-            Extraction result {result.mode === 'unavailable' && <span style={{ fontSize: 12, color: '#fbbf24', marginLeft: 8 }}>(LLM not configured)</span>}
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 18 }}>
+              Extraction result {result.mode === 'unavailable' && <span style={{ fontSize: 12, color: '#fbbf24', marginLeft: 8 }}>(LLM not configured)</span>}
+            </h2>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={busy}
+              style={styles.reExtract}
+              title="Re-run extraction on the same source. Tweak the hint above first to nudge the agent toward different output."
+            >
+              {busy ? 'Re-extracting…' : '↻ Re-extract with updated hint'}
+            </button>
+          </div>
 
           {result.summary && (
             <div style={styles.summaryBox}>{result.summary}</div>
