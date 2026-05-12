@@ -35,6 +35,11 @@ const styles = {
   flagBox: { marginTop: 12, padding: '10px 14px', background: '#3a2a0e', border: '1px solid #ca8a04', borderLeft: '3px solid #fbbf24', borderRadius: 6, color: '#fde68a', fontSize: 13 },
   summaryBox: { marginTop: 12, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#cbd5e1', fontSize: 13 },
   rowsHead: { marginTop: 20, fontSize: 14, fontWeight: 700, color: '#e5e7eb' },
+  bulkBar: { marginTop: 10, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  bulkBarLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  bulkAccept: { padding: '6px 12px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  bulkDraft:  { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  bulkReject: { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
   row: { marginTop: 10, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
   rowHead: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
   rowTable: { fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#22d3ee', fontWeight: 700 },
@@ -325,6 +330,24 @@ function AdminAIIngestion() {
     setRowFields((rf) => ({ ...rf, [i]: { ...(row.fields || {}) } }));
   }
 
+  // Bulk action: apply a per-row handler to every row whose current
+  // state is 'idle' AND that matches the filter predicate. Sequenced
+  // serially (not Promise.all) so the per-row state machine displays
+  // a clean "Sending…" → "Inserted" progression instead of N parallel
+  // races.
+  async function bulkApply(filterFn, handlerName) {
+    const handler = handlerName === 'accept' ? acceptRow : handlerName === 'draft' ? draftRow : rejectRow;
+    const rows = result?.extractedRows || [];
+    for (let i = 0; i < rows.length; i++) {
+      if ((rowStates[i] || 'idle') !== 'idle') continue;
+      if (!filterFn(rows[i])) continue;
+      // For reject the handler is synchronous; for accept/draft it's async.
+      // We await regardless — sync handlers just resolve to undefined.
+      // eslint-disable-next-line no-await-in-loop
+      await handler(i, rows[i]);
+    }
+  }
+
   function rejectRow(i) {
     setRowStates((s) => ({ ...s, [i]: 'rejected' }));
   }
@@ -452,6 +475,48 @@ function AdminAIIngestion() {
               ? 'No emissions-relevant rows extracted.'
               : `${result.extractedRows.length} row${result.extractedRows.length === 1 ? '' : 's'} proposed`}
           </div>
+
+          {result.extractedRows.length > 1 && (() => {
+            // Tally idle rows by confidence for the bulk-action labels.
+            const idleByConf = { high: 0, medium: 0, low: 0 };
+            result.extractedRows.forEach((r, i) => {
+              if ((rowStates[i] || 'idle') === 'idle') {
+                idleByConf[r.confidence] = (idleByConf[r.confidence] || 0) + 1;
+              }
+            });
+            const totalIdle = idleByConf.high + idleByConf.medium + idleByConf.low;
+            if (totalIdle <= 1) return null;
+            return (
+              <div style={styles.bulkBar}>
+                <span style={styles.bulkBarLabel}>Bulk actions ({totalIdle} pending):</span>
+                {idleByConf.high > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => bulkApply((r) => r.confidence === 'high', 'accept')}
+                    style={styles.bulkAccept}
+                  >
+                    ✓ Accept all high-confidence ({idleByConf.high})
+                  </button>
+                )}
+                {(idleByConf.medium > 0 || idleByConf.low > 0) && (
+                  <button
+                    type="button"
+                    onClick={() => bulkApply((r) => r.confidence === 'medium' || r.confidence === 'low', 'draft')}
+                    style={styles.bulkDraft}
+                  >
+                    → Draft all medium + low ({idleByConf.medium + idleByConf.low})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => bulkApply(() => true, 'reject')}
+                  style={styles.bulkReject}
+                >
+                  Reject remaining ({totalIdle})
+                </button>
+              </div>
+            );
+          })()}
 
           {result.extractedRows.map((row, i) => {
             const state = rowStates[i] || 'idle';
