@@ -8,6 +8,7 @@ import {
   saveStagePlan,
   deleteStagePlan,
   rollupPlan,
+  saveCustomAction,
 } from '../../data/customActions.js';
 
 // Admin Stage Planner — compose actions (custom + library) into named,
@@ -93,6 +94,66 @@ export default function AdminStagePlanner() {
   const activePlan = allPlans.find((p) => p.id === activePlanId) || null;
   const rollup = activePlan ? rollupPlan(activePlan, lookup) : null;
 
+  // Phase 121: import the current AI plan (from Plan Agent) as a 3-
+  // stage rollout. Reads the AI plan from localStorage and bins items
+  // by timeline tier into Quick wins / This fiscal year / Multi-year.
+  // Each plan item gets stashed as a "custom action" so the rollup
+  // works against the same lookup table the stage rollup uses.
+  function importAIPlan() {
+    let aiPlan;
+    try {
+      aiPlan = JSON.parse(localStorage.getItem('kua_admin_plan') || 'null');
+    } catch { aiPlan = null; }
+    if (!aiPlan || !Array.isArray(aiPlan.plan) || aiPlan.plan.length === 0) {
+      window.alert('No AI plan found in localStorage. Generate one at /admin/plan-agent first.');
+      return;
+    }
+    if (!window.confirm(`Import ${aiPlan.plan.length} items from the AI plan into a new stage plan? Each item also gets saved as a custom action so the stage rollup totals correctly.`)) return;
+
+    // Save each AI plan item as a custom action via the same helper
+    // the manual "Add custom action" page uses. This way the lookup
+    // map + rollup math work without special-casing.
+    const savedActions = aiPlan.plan.map((it) => saveCustomAction({
+      title: it.title,
+      description: it.why || '',
+      category: it.category || 'engagement',
+      owner: it.ownerRole || '',
+      expectedMtPerYear: it.expectedMtPerYear || 0,
+      estimatedCostUsd: it.estimatedCostUsd || 0,
+      provenance: it.provenance || 'estimated',
+      importedFromAIPlan: true,
+      aiPlanItemId: it.id,
+    }));
+
+    // Build a 3-stage plan binning each item by its timeline tier.
+    const idForItem = (i) => savedActions[i]?.id || aiPlan.plan[i].id;
+    const stages = [
+      {
+        name: 'Phase 1 — Quick wins (≤90 days)',
+        timeframe: 'this quarter',
+        actionIds: aiPlan.plan.map((it, i) => it.timeline === 'this-quarter' ? idForItem(i) : null).filter(Boolean),
+      },
+      {
+        name: 'Phase 2 — This fiscal year',
+        timeframe: 'this fiscal year',
+        actionIds: aiPlan.plan.map((it, i) => it.timeline === 'this-year' ? idForItem(i) : null).filter(Boolean),
+      },
+      {
+        name: 'Phase 3 — Multi-year capital arc',
+        timeframe: 'next 3 years',
+        actionIds: aiPlan.plan.map((it, i) => it.timeline === 'this-3-years' ? idForItem(i) : null).filter(Boolean),
+      },
+    ];
+    const draft = {
+      name: `AI plan import · ${new Date().toLocaleDateString()}`,
+      fiscalYear: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
+      stages,
+    };
+    const persisted = saveStagePlan(draft);
+    setActivePlanId(persisted.id);
+    refresh();
+  }
+
   function newPlan() {
     const draft = emptyPlan();
     const persisted = saveStagePlan(draft);
@@ -175,6 +236,14 @@ export default function AdminStagePlanner() {
             </button>
           ))}
           <button type="button" onClick={newPlan} style={styles.newPlanBtn}>+ New plan</button>
+          <button
+            type="button"
+            onClick={importAIPlan}
+            style={styles.importBtn}
+            title="Import the current AI-generated plan (/admin/plan-agent) as a 3-stage rollout. Each plan item also gets saved as a custom action so totals roll up correctly."
+          >
+            📋 Import AI plan
+          </button>
         </div>
       </ModuleSection>
 
@@ -369,6 +438,7 @@ const styles = {
   planRow: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' },
   planTab: { padding: '8px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: '1px solid', cursor: 'pointer', fontFamily: 'inherit' },
   newPlanBtn: { padding: '8px 14px', background: '#22c55e', color: '#0b1220', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  importBtn: { padding: '8px 14px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
   empty: { padding: 20, background: '#0b1220', border: '1px dashed #334155', borderRadius: 8, fontSize: 14, color: '#94a3b8', lineHeight: 1.6 },
   emptyStage: { padding: 12, color: '#64748b', fontSize: 12, fontStyle: 'italic' },
 
