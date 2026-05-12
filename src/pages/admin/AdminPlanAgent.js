@@ -464,6 +464,14 @@ function PlanCard({ item, rank, context, onComplete, onDecline }) {
   const [memoBusy, setMemoBusy] = useState(false);
   const [memoErr, setMemoErr] = useState(null);
 
+  // Per-item follow-up chat thread. Closed by default; opens when
+  // admin clicks "Ask follow-up". Persists for the page lifecycle.
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]); // [{role,content}]
+  const [chatInput, setChatInput] = useState('');
+  const [chatBusy, setChatBusy] = useState(false);
+  const [chatErr, setChatErr] = useState(null);
+
   async function generateMemo() {
     setMemoBusy(true);
     setMemoErr(null);
@@ -480,6 +488,35 @@ function PlanCard({ item, rank, context, onComplete, onDecline }) {
       setMemoErr(err.message);
     } finally {
       setMemoBusy(false);
+    }
+  }
+
+  async function sendChat() {
+    const trimmed = chatInput.trim();
+    if (!trimmed || chatBusy) return;
+    const nextMessages = [...chatMessages, { role: 'user', content: trimmed }];
+    setChatMessages(nextMessages);
+    setChatInput('');
+    setChatBusy(true);
+    setChatErr(null);
+    try {
+      const r = await adminFetch('/api/admin/plan-item-chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          item,
+          context,
+          memo: memo?.memo || null,
+          messages: nextMessages,
+        }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setChatMessages([...nextMessages, { role: 'assistant', content: body.reply }]);
+    } catch (err) {
+      setChatErr(err.message);
+    } finally {
+      setChatBusy(false);
     }
   }
   const color = CATEGORY_COLORS[item.category] || '#94a3b8';
@@ -565,6 +602,9 @@ function PlanCard({ item, rank, context, onComplete, onDecline }) {
             ✕ Hide memo
           </button>
         )}
+        <button type="button" onClick={() => setChatOpen((v) => !v)} style={styles.chatToggleBtn}>
+          {chatOpen ? '✕ Close chat' : `💬 Ask follow-up${chatMessages.length > 0 ? ` (${chatMessages.length})` : ''}`}
+        </button>
       </div>
       {memoErr && <div role="alert" style={styles.memoErr}>Memo error: {memoErr}</div>}
       {memo && memo.mode === 'unavailable' && (
@@ -573,9 +613,85 @@ function PlanCard({ item, rank, context, onComplete, onDecline }) {
       {memo && memo.mode === 'llm' && memo.memo && (
         <ImplementationMemo memo={memo.memo} generatedAt={memo.generatedAt} />
       )}
+      {chatOpen && (
+        <ChatThread
+          messages={chatMessages}
+          input={chatInput}
+          setInput={setChatInput}
+          onSend={sendChat}
+          busy={chatBusy}
+          error={chatErr}
+          itemTitle={item.title}
+        />
+      )}
     </div>
   );
 }
+
+function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle }) {
+  function onKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSend();
+    }
+  }
+  return (
+    <div style={chatStyles.wrap}>
+      <div style={chatStyles.label}>Follow-up · pinned to "{itemTitle}"</div>
+      <div style={chatStyles.thread} role="log" aria-live="polite">
+        {messages.length === 0 && (
+          <div style={chatStyles.empty}>
+            Ask anything about this item — alternatives, draft talking points,
+            sensitivity analysis if the budget changes, etc.
+          </div>
+        )}
+        {messages.map((m, i) => (
+          <div key={i} style={m.role === 'user' ? chatStyles.userTurn : chatStyles.assistantTurn}>
+            <div style={chatStyles.turnRole}>{m.role === 'user' ? 'You' : 'Agent'}</div>
+            <div style={chatStyles.turnContent}>{m.content}</div>
+          </div>
+        ))}
+        {busy && (
+          <div style={chatStyles.assistantTurn}>
+            <div style={chatStyles.turnRole}>Agent</div>
+            <div style={{ ...chatStyles.turnContent, color: '#94a3b8', fontStyle: 'italic' }}>thinking…</div>
+          </div>
+        )}
+      </div>
+      {error && <div role="alert" style={chatStyles.err}>{error}</div>}
+      <div style={chatStyles.composer}>
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={onKey}
+          placeholder="Ask a follow-up — enter to send, shift+enter for a new line."
+          aria-label={`Follow-up question for ${itemTitle}`}
+          rows={2}
+          disabled={busy}
+          style={chatStyles.input}
+        />
+        <button type="button" onClick={onSend} disabled={busy || !input.trim()} style={chatStyles.sendBtn}>
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const chatStyles = {
+  wrap: { marginTop: 14, padding: '12px 14px', background: '#0f172a', border: '1px solid #1f2937', borderLeft: '3px solid #22d3ee', borderRadius: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 },
+  thread: { display: 'grid', gap: 8, maxHeight: 360, overflowY: 'auto' },
+  empty: { padding: '10px 12px', background: '#0b1220', border: '1px dashed #334155', borderRadius: 6, color: '#64748b', fontSize: 12, fontStyle: 'italic' },
+  userTurn: { padding: '8px 12px', background: '#0b1220', borderLeft: '3px solid #22d3ee', borderRadius: '0 6px 6px 0' },
+  assistantTurn: { padding: '8px 12px', background: '#0b1220', borderLeft: '3px solid #a855f7', borderRadius: '0 6px 6px 0' },
+  turnRole: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
+  turnContent: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55, whiteSpace: 'pre-wrap' },
+  composer: { display: 'flex', gap: 8, marginTop: 10, alignItems: 'flex-end' },
+  input: { flex: 1, padding: '8px 10px', background: '#0b1220', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', minHeight: 44 },
+  sendBtn: { padding: '8px 16px', background: '#0e3a1f', color: '#86efac', border: '1px solid #16a34a', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  err: { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 12 },
+};
 
 function ImplementationMemo({ memo, generatedAt }) {
   return (
@@ -950,6 +1066,7 @@ const styles = {
   completeBtn: { padding: '6px 12px', background: '#052e1a', color: '#86efac', border: '1px solid #14532d', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   declineBtn:  { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
   memoBtn:     { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+  chatToggleBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   memoErr:     { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 13 },
   memoUnavail: { marginTop: 8, padding: '8px 12px', background: '#3a2a0e', border: '1px solid #92400e', borderRadius: 6, color: '#fcd34d', fontSize: 13 },
 
