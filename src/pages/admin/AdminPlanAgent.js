@@ -130,6 +130,49 @@ export default function AdminPlanAgent() {
   const [snapshots, setSnapshots] = useState(() => loadJson(SNAPSHOTS_KEY, []));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Plan-level chat — separate from per-item chats. Scoped to the
+  // whole plan + context + history + measurement state.
+  const [planChatOpen, setPlanChatOpen] = useState(false);
+  const [planChatMessages, setPlanChatMessages] = useState([]);
+  const [planChatInput, setPlanChatInput] = useState('');
+  const [planChatBusy, setPlanChatBusy] = useState(false);
+  const [planChatErr, setPlanChatErr] = useState(null);
+
+  async function sendPlanChat() {
+    const trimmed = planChatInput.trim();
+    if (!trimmed || planChatBusy || !plan) return;
+    const next = [...planChatMessages, { role: 'user', content: trimmed }];
+    setPlanChatMessages(next);
+    setPlanChatInput('');
+    setPlanChatBusy(true);
+    setPlanChatErr(null);
+    try {
+      const measuredState = {
+        scope1Measured: !!live.scope1Measured,
+        scope2Measured: true,
+        scope3Measured: !!live.scope3Measured,
+        sinksMeasured:  !!live.sinksMeasured,
+      };
+      const r = await adminFetch('/api/admin/plan-chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          plan,
+          context,
+          history,
+          measuredState,
+          messages: next,
+        }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setPlanChatMessages([...next, { role: 'assistant', content: body.reply }]);
+    } catch (err) {
+      setPlanChatErr(err.message);
+    } finally {
+      setPlanChatBusy(false);
+    }
+  }
 
   useEffect(() => { saveJson(CONTEXT_KEY, context); }, [context]);
   useEffect(() => { saveJson(HISTORY_KEY, history); }, [history]);
@@ -409,7 +452,26 @@ export default function AdminPlanAgent() {
             <button type="button" onClick={saveSnapshot} style={styles.snapshotBtn}>
               💾 Save as snapshot
             </button>
+            <button
+              type="button"
+              onClick={() => setPlanChatOpen((v) => !v)}
+              style={styles.planChatBtn}
+            >
+              {planChatOpen ? '✕ Close plan chat' : `💬 Ask about the plan${planChatMessages.length > 0 ? ` (${planChatMessages.length})` : ''}`}
+            </button>
           </div>
+
+          {planChatOpen && (
+            <ChatThread
+              messages={planChatMessages}
+              input={planChatInput}
+              setInput={setPlanChatInput}
+              onSend={sendPlanChat}
+              busy={planChatBusy}
+              error={planChatErr}
+              itemTitle="the whole plan"
+            />
+          )}
           <PlanAtAGlance items={plan.plan} grossMt={context.grossMt} />
           <TargetProgress items={plan.plan} live={live} alreadyShippedMt={mtAlreadySaved} />
           <EfficiencyLeaderboard items={plan.plan} />
@@ -1642,6 +1704,7 @@ const styles = {
   memoBtn:     { padding: '6px 12px', background: 'transparent', color: '#a5b4fc', border: '1px solid #3730a3', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   chatToggleBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   snapshotBtn: { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  planChatBtn: { padding: '6px 12px', background: 'transparent', color: '#22d3ee', border: '1px solid #155e75', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   snapshotList: { display: 'grid', gap: 8 },
   snapshotRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #fbbf24', borderRadius: 6 },
   snapshotName: { fontSize: 14, color: '#e5e7eb', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
