@@ -90,8 +90,8 @@ export default function AdminDataQuality() {
       mt: live.scope2Mt,
       measuredMt: measuredScope2Mt,
       measured: true,
-      tables: [],
-      note: 'Always live via the Distech Eclypse BMS. No admin entry required.',
+      tables: ['scope2_meter_readings'],
+      note: 'Live via the Distech Eclypse BMS. Optional manual meter readings cross-check the BMS.',
     },
     {
       label: 'Scope 3 — Travel + waste',
