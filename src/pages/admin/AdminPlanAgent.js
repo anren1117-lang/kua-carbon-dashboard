@@ -258,6 +258,46 @@ export default function AdminPlanAgent() {
     }, 1000);
     return () => clearInterval(id);
   }, [loading, streamStartedAt]);
+
+  // Phase 128: keyboard shortcuts.
+  //   ⌘/Ctrl + Enter  — generate plan (when context is complete + not loading)
+  //   ⌘/Ctrl + S      — save current plan as snapshot
+  //   ⌘/Ctrl + K      — toggle plan-level chat
+  //   Esc             — close plan-level chat / memo / narrative if open
+  // Skipped when focus is inside a form input/textarea — admins typing
+  // in the context fields shouldn't accidentally trigger these.
+  useEffect(() => {
+    function inForm(target) {
+      const tag = target?.tagName?.toLowerCase();
+      return tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable;
+    }
+    function onKey(e) {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === 'Enter') {
+        if (inForm(e.target)) return; // let user type into chat input normally
+        if (!loading && contextIsComplete(context)) {
+          e.preventDefault();
+          generatePlan();
+        }
+      } else if (mod && e.key.toLowerCase() === 's') {
+        if (plan) {
+          e.preventDefault();
+          saveSnapshot();
+        }
+      } else if (mod && e.key.toLowerCase() === 'k') {
+        if (plan) {
+          e.preventDefault();
+          setPlanChatOpen((v) => !v);
+        }
+      } else if (e.key === 'Escape') {
+        if (inForm(e.target)) return;
+        if (planChatOpen)  setPlanChatOpen(false);
+        if (narrative)     setNarrative(null);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [loading, context, plan, planChatOpen, narrative, generatePlan]);
   // Plan-level chat — separate from per-item chats. Scoped to the
   // whole plan + context + history + measurement state.
   const [planChatOpen, setPlanChatOpen] = useState(false);
@@ -702,6 +742,11 @@ export default function AdminPlanAgent() {
                 : `Starting up… ${streamElapsed}s`)
               : hasPlan ? 'Re-generate plan' : 'Generate plan'}
           </button>
+          {!loading && contextIsComplete(context) && (
+            <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>
+              Shortcuts: ⌘↵ generate · ⌘S snapshot · ⌘K chat · Esc close
+            </span>
+          )}
           {hasPlan && (
             <button type="button" onClick={resetEverything} style={styles.dangerBtn}>
               Reset context + history

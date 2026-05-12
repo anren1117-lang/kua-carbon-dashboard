@@ -277,6 +277,36 @@ function AdminAIIngestion() {
     return () => clearInterval(id);
   }, [busy, streamStartedAt]);
 
+  // Phase 128: keyboard shortcuts.
+  //   ⌘/Ctrl + Enter  — submit extraction (when input is ready + not busy)
+  //   Esc             — clear form (no in-flight extract)
+  useEffect(() => {
+    function inForm(target) {
+      const tag = target?.tagName?.toLowerCase();
+      // Allow Cmd-Enter from inside the hint/text inputs — that's the
+      // natural place admin presses it after pasting text.
+      return tag === 'select' || target?.isContentEditable;
+    }
+    function onKey(e) {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === 'Enter') {
+        if (inForm(e.target)) return;
+        if (!busy && (text.trim().length >= 20 || images.length > 0)) {
+          e.preventDefault();
+          submit();
+        }
+      } else if (e.key === 'Escape') {
+        const tag = e.target?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        if (!busy && (text || images.length > 0 || result)) {
+          clear();
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [busy, text, images, result]);
+
   async function submit() {
     if (text.trim().length < 20 && images.length === 0) {
       setError('Paste at least 20 characters of source text or attach an image.');
@@ -605,6 +635,11 @@ function AdminAIIngestion() {
           <button type="button" style={styles.submit} onClick={submit} disabled={busy || (text.trim().length < 20 && images.length === 0)}>
             {busy ? 'Extracting…' : '🧠 Extract structured rows'}
           </button>
+          {!busy && (
+            <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>
+              ⌘↵ extract · Esc clear
+            </span>
+          )}
           <button type="button" style={styles.clear} onClick={clear} disabled={busy}>
             Clear
           </button>
