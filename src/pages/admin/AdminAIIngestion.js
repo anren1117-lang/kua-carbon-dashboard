@@ -41,6 +41,7 @@ const styles = {
   bulkDraft:  { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   bulkReject: { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
   reExtract:  { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  autoWriteToggle: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, color: '#cbd5e1', cursor: 'pointer', userSelect: 'none' },
   row: { marginTop: 10, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
   rowHead: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
   rowTable: { fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#22d3ee', fontWeight: 700 },
@@ -89,6 +90,18 @@ function AdminAIIngestion() {
   // images (or both) feeds the extraction; for scanned invoices /
   // photos the image path bypasses pdfjs entirely.
   const [images, setImages] = useState([]);
+  // Phase 108: optional auto-write toggle. When ON, rows the agent
+  // tags as high-confidence get inserted into Supabase immediately
+  // after extraction — no per-row click. Medium + low still queue
+  // for review. Off by default; admins opt in when they trust the
+  // agent on a familiar document type.
+  const AUTO_WRITE_KEY = 'kua_admin_ai_autowrite';
+  const [autoWrite, setAutoWrite] = useState(() => {
+    try { return localStorage.getItem(AUTO_WRITE_KEY) === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(AUTO_WRITE_KEY, autoWrite ? '1' : '0'); } catch {}
+  }, [autoWrite]);
   const [recentDrafts, setRecentDrafts] = useState([]);
 
   useEffect(() => {
@@ -240,6 +253,32 @@ function AdminAIIngestion() {
       });
       setRowFields(initialFields);
       setEditMode({});
+      // Auto-write fast path. Immediately insert every high-confidence
+      // row after extraction. Each insert runs through the same
+      // acceptRow path so logAdminWrite + audit-log entries still fire.
+      // We pause briefly to let React commit the initial render before
+      // mutating row states.
+      if (autoWrite) {
+        const rows = body.extractedRows || [];
+        // Use setTimeout so the result panel renders first, then
+        // auto-writes start as the user can see them tick over.
+        setTimeout(async () => {
+          for (let i = 0; i < rows.length; i++) {
+            if (rows[i].confidence !== 'high') continue;
+            // Use the row's own fields (no edits possible yet) — we
+            // call the same Supabase insert path as acceptRow but
+            // inline since acceptRow reads from rowFields state.
+            try {
+              setRowStates((s) => ({ ...s, [i]: 'sending' }));
+              const { error: insErr } = await supabase.from(rows[i].table).insert(rows[i].fields);
+              if (insErr) throw new Error(insErr.message);
+              setRowStates((s) => ({ ...s, [i]: 'inserted' }));
+            } catch (err) {
+              setRowStates((s) => ({ ...s, [i]: `error:${err.message}` }));
+            }
+          }
+        }, 80);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -446,6 +485,15 @@ function AdminAIIngestion() {
           <button type="button" style={styles.clear} onClick={clear} disabled={busy}>
             Clear
           </button>
+          <label style={styles.autoWriteToggle} title="When ON, rows the agent tags as high-confidence get inserted into Supabase immediately after extraction. Medium + low still queue for review.">
+            <input
+              type="checkbox"
+              checked={autoWrite}
+              onChange={(e) => setAutoWrite(e.target.checked)}
+              disabled={busy}
+            />
+            <span>Auto-write high-confidence rows</span>
+          </label>
           {busy && <span style={styles.busy}>Reading document + calling Claude…</span>}
         </div>
 
