@@ -76,6 +76,7 @@ Output STRICT JSON only — no prose before or after — matching this shape:
       "table": "scope1_heating_oil",
       "scope": "Scope 1",
       "confidence": "high",
+      "confidenceReason": "1-sentence explanation of WHY this confidence level — what's clear, what's inferred. Examples: 'Delivery date + gallons clearly stated in the line-item table.' / 'Date \"3/14\" had no year; inferred 2026 from the surrounding context.' / 'Vendor name is a manual fill — not shown in the source.'",
       "fields": { "delivery_date": "2026-02-14", "gallons": 1850, "vendor": "FW Webb", "cost_usd": 5550 },
       "provenance": "measured",
       "sourceQuote": "verbatim snippet from the document that supports this row",
@@ -254,13 +255,14 @@ export default async function handler(req, res) {
           .filter((r) => r && typeof r === 'object' && ALLOWED_TABLES.has(r.table))
           .slice(0, 100) // Opus + bigger token budget can emit more rows
           .map((r) => ({
-            table:          String(r.table),
-            scope:          String(r.scope || '').slice(0, 30),
-            confidence:     ['high','medium','low'].includes(r.confidence) ? r.confidence : 'low',
-            fields:         (r.fields && typeof r.fields === 'object') ? r.fields : {},
-            provenance:     ['measured','cited','estimated'].includes(r.provenance) ? r.provenance : 'estimated',
-            sourceQuote:    String(r.sourceQuote || '').slice(0, 400),
-            sourceDocument: String(r.sourceDocument || '').slice(0, 200),
+            table:            String(r.table),
+            scope:            String(r.scope || '').slice(0, 30),
+            confidence:       ['high','medium','low'].includes(r.confidence) ? r.confidence : 'low',
+            confidenceReason: String(r.confidenceReason || '').slice(0, 400),
+            fields:           (r.fields && typeof r.fields === 'object') ? r.fields : {},
+            provenance:       ['measured','cited','estimated'].includes(r.provenance) ? r.provenance : 'estimated',
+            sourceQuote:      String(r.sourceQuote || '').slice(0, 400),
+            sourceDocument:   String(r.sourceDocument || '').slice(0, 200),
           }))
       : [];
 

@@ -42,6 +42,8 @@ const styles = {
   bulkReject: { padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 12, cursor: 'pointer' },
   reExtract:  { padding: '6px 12px', background: 'transparent', color: '#fbbf24', border: '1px solid #92400e', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   autoWriteToggle: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, color: '#cbd5e1', cursor: 'pointer', userSelect: 'none' },
+  confReason: { marginTop: 8, padding: '6px 10px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 4, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 },
+  confReasonLabel: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, marginRight: 6 },
   row: { marginTop: 10, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '3px solid #475569', borderRadius: 8 },
   rowHead: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
   rowTable: { fontFamily: 'ui-monospace, monospace', fontSize: 12, color: '#22d3ee', fontWeight: 700 },
@@ -71,9 +73,13 @@ const styles = {
   error: { marginTop: 12, padding: '10px 14px', background: '#3a0d0d', border: '1px solid #7f1d1d', color: '#fca5a5', borderRadius: 6, fontSize: 13 },
 };
 
-function ConfidencePill({ level }) {
+function ConfidencePill({ level, reason }) {
   const s = level === 'high' ? styles.pillHigh : level === 'medium' ? styles.pillMedium : styles.pillLow;
-  return <span style={s}>{level} confidence</span>;
+  return (
+    <span style={s} title={reason || `${level} confidence — no explanation provided`}>
+      {level} confidence{reason ? ' · why?' : ''}
+    </span>
+  );
 }
 
 function AdminAIIngestion() {
@@ -589,7 +595,7 @@ function AdminAIIngestion() {
                 <div style={styles.rowHead}>
                   <span style={styles.rowTable}>{row.table}</span>
                   <span style={styles.rowScope}>· {row.scope}</span>
-                  <ConfidencePill level={row.confidence} />
+                  <ConfidencePill level={row.confidence} reason={row.confidenceReason} />
                   {row.sourceDocument && (
                     <span style={styles.sourceDocPill} title={`Extracted from ${row.sourceDocument}`}>
                       📄 {row.sourceDocument}
@@ -606,6 +612,11 @@ function AdminAIIngestion() {
                     </button>
                   )}
                 </div>
+                {row.confidenceReason && (
+                  <div style={styles.confReason}>
+                    <span style={styles.confReasonLabel}>Why this confidence:</span> {row.confidenceReason}
+                  </div>
+                )}
                 {!editing ? (
                   <div style={styles.fields}>
                     {fieldKeys.map((k) => {
