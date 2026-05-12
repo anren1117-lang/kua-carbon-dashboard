@@ -4,10 +4,11 @@ import React from 'react';
 // header/section/card patterns keeps the new pages visually consistent
 // without re-writing inline styles per page.
 
-export function ModulePage({ title, subtitle, children }) {
+export function ModulePage({ title, subtitle, children, className, toolbar }) {
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className={className}>
       <header style={styles.header}>
+        {toolbar && <div className="no-print" style={styles.toolbar}>{toolbar}</div>}
         <h1 style={styles.title}>{title}</h1>
         {subtitle && <p style={styles.subtitle}>{subtitle}</p>}
       </header>
@@ -84,6 +85,7 @@ export function Pill({ kind = 'neutral', children }) {
 const styles = {
   page: { maxWidth: 1100, margin: '0 auto', padding: '0 16px' },
   header: { marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #1f2937' },
+  toolbar: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 10 },
   title: { fontSize: 'clamp(24px, 5vw, 32px)', color: '#e5e7eb', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' },
   subtitle: { fontSize: 15, color: '#94a3b8', margin: '8px 0 0', lineHeight: 1.5, maxWidth: 800 },
 

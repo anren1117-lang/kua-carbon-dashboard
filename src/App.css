@@ -133,7 +133,8 @@ a[href="#admin-main"]:focus {
     padding: 0 !important;
     max-width: 100% !important;
   }
-  .annual-report {
+  .annual-report,
+  .plan-print {
     margin: 0 !important;
     padding: 0 !important;
     color: #000 !important;
@@ -143,8 +144,19 @@ a[href="#admin-main"]:focus {
     text-decoration: none !important;
   }
   /* Page break between major sections so we don't split tables. */
-  .annual-report section {
+  .annual-report section,
+  .plan-print section {
     page-break-inside: avoid;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1f2937 !important;
   }
+  /* Force readable text colors inside the plan when printed — most
+     plan styling uses dark-background-light-text inline styles. */
+  .plan-print h1, .plan-print h2, .plan-print h3 { color: #0b1220 !important; }
+  .plan-print, .plan-print * { color: #1f2937 !important; }
+  /* Restore some semantic colors on print so red/green/amber pills + section
+     accents stay readable + recognizable. */
+  .plan-print .no-print { display: none !important; }
 }
 

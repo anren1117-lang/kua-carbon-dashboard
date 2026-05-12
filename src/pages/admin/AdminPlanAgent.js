@@ -203,8 +203,28 @@ export default function AdminPlanAgent() {
 
   return (
     <ModulePage
+      className="plan-print"
       title="Plan agent — institutional decarbonization roadmap"
-      subtitle="Set the institutional context, then let the agent draft a 5-7 step plan ranked by impact, cost-fit, and political feasibility. Record what ships and what gets vetoed; the agent re-prioritizes from there."
+      subtitle="Set the institutional context, then let the agent draft an 8-12 step plan ranked by impact, cost-fit, and political feasibility. Record what ships and what gets vetoed; the agent re-prioritizes from there."
+      toolbar={plan ? (
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{
+            padding: '6px 12px',
+            background: 'transparent',
+            color: '#22d3ee',
+            border: '1px solid #155e75',
+            borderRadius: 6,
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+          title="Print / save as PDF — board-ready layout with all items, memos, and history"
+        >
+          🖨 Print or save as PDF
+        </button>
+      ) : null}
     >
       <ModuleSection title="Institutional context" hint="Loaded from KUA's canonical totals — adjust when the fiscal context changes (new board, new capex window, new regulation).">
         <div style={styles.formGrid}>
