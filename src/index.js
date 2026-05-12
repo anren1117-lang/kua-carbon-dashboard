@@ -3,8 +3,13 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import Layout from './components/Layout';
-import AdminLayout from './components/AdminLayout';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
+
+// AdminLayout is heavy (nav dropdowns, login form, breadcrumb,
+// expiry handlers) and only matters for the small subset of users
+// who hit /admin. Lazy-loading it shaves several KB off the
+// public-site initial bundle.
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
 
 // All non-homepage routes are lazy-loaded so the initial bundle stays small.
 // Homepage (App) and Layout stay eager so first paint is fast.
