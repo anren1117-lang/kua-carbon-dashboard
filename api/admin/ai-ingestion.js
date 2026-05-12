@@ -124,6 +124,124 @@ const ALLOWED_TABLES = new Set([
   'renewables_solar', 'renewables_geothermal', 'renewables_wind',
 ]);
 
+// Shared cleanup: turn an LLM-returned extractedRows array into the
+// safely-typed shape the UI expects. Used by both the streaming and
+// non-streaming paths.
+function cleanExtractedRows(rawRows) {
+  return Array.isArray(rawRows)
+    ? rawRows
+        .filter((r) => r && typeof r === 'object' && ALLOWED_TABLES.has(r.table))
+        .slice(0, 100)
+        .map((r) => ({
+          table:            String(r.table),
+          scope:            String(r.scope || '').slice(0, 30),
+          confidence:       ['high','medium','low'].includes(r.confidence) ? r.confidence : 'low',
+          confidenceReason: String(r.confidenceReason || '').slice(0, 400),
+          fields:           (r.fields && typeof r.fields === 'object') ? r.fields : {},
+          provenance:       ['measured','cited','estimated'].includes(r.provenance) ? r.provenance : 'estimated',
+          sourceQuote:      String(r.sourceQuote || '').slice(0, 400),
+          sourceDocument:   String(r.sourceDocument || '').slice(0, 200),
+        }))
+    : [];
+}
+
+async function streamingIngestion({ res, apiKey, content, validImages, truncated }) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  function send(event, payload) {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+  }
+
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-7',
+        max_tokens: 6000,
+        stream: true,
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+        ],
+        messages: [
+          { role: 'user', content },
+        ],
+      }),
+    });
+
+    if (!apiRes.ok || !apiRes.body) {
+      let detail = '';
+      try { const b = await apiRes.json(); detail = b?.error?.message || JSON.stringify(b); } catch {}
+      send('error', { message: `Anthropic API ${apiRes.status}${detail ? ` — ${detail}` : ''}` });
+      res.end();
+      return;
+    }
+
+    const reader = apiRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+    let charCount = 0;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let idx;
+      while ((idx = buffer.indexOf('\n\n')) >= 0) {
+        const chunk = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        const dataLine = chunk.split('\n').find((l) => l.startsWith('data: '));
+        if (!dataLine) continue;
+        try {
+          const ev = JSON.parse(dataLine.slice(6));
+          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            const t = ev.delta.text || '';
+            fullText += t;
+            charCount += t.length;
+            if (charCount >= 200) {
+              send('progress', { charCount: fullText.length });
+              charCount = 0;
+            }
+          } else if (ev.type === 'message_stop') {
+            break;
+          }
+        } catch {}
+      }
+    }
+
+    const parsed = tryParseJson(fullText);
+    if (!parsed) {
+      send('error', { message: 'Could not parse JSON from LLM response' });
+      res.end();
+      return;
+    }
+
+    const extractedRows = cleanExtractedRows(parsed.extractedRows);
+    const flags = Array.isArray(parsed.flags)
+      ? parsed.flags.slice(0, 10).map((f) => String(f).slice(0, 280))
+      : [];
+    if (truncated) flags.unshift(`Document was truncated to 40,000 chars before extraction.`);
+    if (validImages.length > 0) flags.unshift(`${validImages.length} image${validImages.length === 1 ? '' : 's'} processed via Claude vision.`);
+
+    send('done', {
+      mode: 'llm',
+      summary: String(parsed.summary || '').slice(0, 500),
+      extractedRows,
+      flags,
+    });
+    res.end();
+  } catch (err) {
+    send('error', { message: String(err?.message || 'stream failed') });
+    res.end();
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader && res.setHeader('Allow', 'POST');
@@ -187,17 +305,28 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Multimodal content array — image blocks first (Claude does better
+  // when visuals lead) + a text block with hint + transcribed text.
+  // Built once + used by both the streaming + non-streaming paths.
+  const content = [];
+  for (const img of validImages) {
+    content.push({
+      type: 'image',
+      source: { type: 'base64', media_type: img.media_type, data: img.data },
+    });
+  }
+  content.push({ type: 'text', text: buildUserMessage(clipped || '(no transcribed text — read the image(s))', hint) });
+
+  // Phase 122: streaming path. When the client asks for stream:true,
+  // pipe Anthropic SSE deltas back as 'progress' events + emit a
+  // 'done' event with the parsed extraction at end. Same protocol as
+  // the plan endpoint (Phase 119) — client uses the same SSE parser.
+  const wantStream = body.stream === true;
+  if (wantStream) {
+    return streamingIngestion({ res, apiKey, content, validImages, truncated });
+  }
+
   try {
-    // Multimodal content: image blocks first (Claude does better when
-    // visuals lead) + a text block with hint + transcribed text.
-    const content = [];
-    for (const img of validImages) {
-      content.push({
-        type: 'image',
-        source: { type: 'base64', media_type: img.media_type, data: img.data },
-      });
-    }
-    content.push({ type: 'text', text: buildUserMessage(clipped || '(no transcribed text — read the image(s))', hint) });
 
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -250,21 +379,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const extractedRows = Array.isArray(parsed.extractedRows)
-      ? parsed.extractedRows
-          .filter((r) => r && typeof r === 'object' && ALLOWED_TABLES.has(r.table))
-          .slice(0, 100) // Opus + bigger token budget can emit more rows
-          .map((r) => ({
-            table:            String(r.table),
-            scope:            String(r.scope || '').slice(0, 30),
-            confidence:       ['high','medium','low'].includes(r.confidence) ? r.confidence : 'low',
-            confidenceReason: String(r.confidenceReason || '').slice(0, 400),
-            fields:           (r.fields && typeof r.fields === 'object') ? r.fields : {},
-            provenance:       ['measured','cited','estimated'].includes(r.provenance) ? r.provenance : 'estimated',
-            sourceQuote:      String(r.sourceQuote || '').slice(0, 400),
-            sourceDocument:   String(r.sourceDocument || '').slice(0, 200),
-          }))
-      : [];
+    const extractedRows = cleanExtractedRows(parsed.extractedRows);
 
     const flags = Array.isArray(parsed.flags)
       ? parsed.flags.slice(0, 10).map((f) => String(f).slice(0, 280))

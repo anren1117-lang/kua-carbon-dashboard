@@ -257,6 +257,9 @@ function AdminAIIngestion() {
     await processFiles(files);
   }
 
+  // Live char-count progress while the streaming extraction runs.
+  const [streamChars, setStreamChars] = useState(0);
+
   async function submit() {
     if (text.trim().length < 20 && images.length === 0) {
       setError('Paste at least 20 characters of source text or attach an image.');
@@ -266,6 +269,7 @@ function AdminAIIngestion() {
     setError(null);
     setResult(null);
     setRowStates({});
+    setStreamChars(0);
     try {
       const r = await adminFetch('/api/admin/ai-ingestion', {
         method: 'POST',
@@ -276,10 +280,40 @@ function AdminAIIngestion() {
           images: images.length > 0
             ? images.map(({ media_type, data }) => ({ media_type, data }))
             : undefined,
+          stream: true,
         }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      // SSE parsing (mirrors the plan endpoint client in Phase 119).
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalBody = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) >= 0) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const eventLine = chunk.split('\n').find((l) => l.startsWith('event: '));
+          const dataLine  = chunk.split('\n').find((l) => l.startsWith('data: '));
+          if (!eventLine || !dataLine) continue;
+          const event = eventLine.slice(7).trim();
+          let payload = null;
+          try { payload = JSON.parse(dataLine.slice(6)); } catch {}
+          if (!payload) continue;
+          if (event === 'progress')      setStreamChars(payload.charCount || 0);
+          else if (event === 'done')     finalBody = payload;
+          else if (event === 'error')    throw new Error(payload.message || 'stream error');
+        }
+      }
+      if (!finalBody) throw new Error('Stream ended without extraction result');
+      const body = finalBody;
       setResult(body);
       // Seed editable copies of each row's fields so the admin can
       // tweak before sending. We deep-clone so edits don't mutate the
@@ -562,7 +596,13 @@ function AdminAIIngestion() {
             />
             <span>Auto-write high-confidence rows</span>
           </label>
-          {busy && <span style={styles.busy}>Reading document + calling Claude…</span>}
+          {busy && (
+            <span style={styles.busy}>
+              {streamChars > 0
+                ? `Extracting… ${streamChars.toLocaleString()} chars`
+                : 'Reading document + calling Claude…'}
+            </span>
+          )}
         </div>
 
         {error && <div role="alert" style={styles.error}>Error: {error}</div>}
