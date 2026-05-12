@@ -31,6 +31,7 @@
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
+import { openSSE, streamAnthropicJson, tryParseJsonLoose } from '../../src/utils/anthropicStream.js';
 
 const limiter = createRateLimit({ capacity: 6, refillPerSec: 0.1 });
 
@@ -135,6 +136,38 @@ function tryParseJson(text) {
   try { return JSON.parse(match[0]); } catch { return null; }
 }
 
+function cleanMemo(parsed) {
+  return {
+    executiveSummary: String(parsed?.executiveSummary || '').slice(0, 1200),
+    weeklySchedule: Array.isArray(parsed?.weeklySchedule)
+      ? parsed.weeklySchedule.slice(0, 12).map((w) => ({
+          week: Number(w?.week) || 0,
+          focus: String(w?.focus || '').slice(0, 200),
+          actions: cleanArr(w?.actions, 200, 6),
+        }))
+      : [],
+    stakeholderMap: cleanObjArr(parsed?.stakeholderMap, 8, { role: 80, when: 40, why: 240 }),
+    outreachTemplates: Array.isArray(parsed?.outreachTemplates)
+      ? parsed.outreachTemplates.slice(0, 4).map((o) => ({
+          to: String(o?.to || '').slice(0, 120),
+          subject: String(o?.subject || '').slice(0, 160),
+          draft: String(o?.draft || '').slice(0, 1600),
+        }))
+      : [],
+    approvalsRequired: cleanArr(parsed?.approvalsRequired, 240, 6),
+    budgetBreakdown: Array.isArray(parsed?.budgetBreakdown)
+      ? parsed.budgetBreakdown.slice(0, 8).map((b) => ({
+          line: String(b?.line || '').slice(0, 160),
+          amountUsd: Number(b?.amountUsd) || 0,
+          note: String(b?.note || '').slice(0, 200),
+        }))
+      : [],
+    successMetrics: cleanArr(parsed?.successMetrics, 200, 6),
+    failureModes: cleanObjArr(parsed?.failureModes, 6, { risk: 240, mitigation: 280 }),
+    communicationPlan: cleanObjArr(parsed?.communicationPlan, 6, { audience: 80, channel: 80, message: 280 }),
+  };
+}
+
 const cleanArr = (a, maxLen, maxItems) => Array.isArray(a)
   ? a.slice(0, maxItems).map((s) => String(s || '').slice(0, maxLen)).filter(Boolean)
   : [];
@@ -194,6 +227,36 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Phase 125: streaming branch. When stream:true, pipe Anthropic SSE
+  // through as char-count progress events + emit the cleaned memo on
+  // 'done'. Memo cleanup runs after the stream completes since the
+  // 8-section JSON only parses as a unit.
+  if (body.stream === true) {
+    const send = openSSE(res);
+    const { ok, text } = await streamAnthropicJson({
+      apiKey,
+      send,
+      mode: 'progress',
+      body: {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+        messages: [{ role: 'user', content: buildUserMessage(item, context) }],
+      },
+    });
+    if (!ok) { res.end(); return; }
+    const parsed = tryParseJsonLoose(text);
+    if (!parsed) {
+      send('error', { message: 'Could not parse JSON from LLM response' });
+      res.end();
+      return;
+    }
+    const memo = cleanMemo(parsed);
+    send('done', { memo, generatedAt: new Date().toISOString() });
+    res.end();
+    return;
+  }
+
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -238,35 +301,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const memo = {
-      executiveSummary: String(parsed.executiveSummary || '').slice(0, 1200),
-      weeklySchedule: Array.isArray(parsed.weeklySchedule)
-        ? parsed.weeklySchedule.slice(0, 12).map((w) => ({
-            week: Number(w?.week) || 0,
-            focus: String(w?.focus || '').slice(0, 200),
-            actions: cleanArr(w?.actions, 200, 6),
-          }))
-        : [],
-      stakeholderMap: cleanObjArr(parsed.stakeholderMap, 8, { role: 80, when: 40, why: 240 }),
-      outreachTemplates: Array.isArray(parsed.outreachTemplates)
-        ? parsed.outreachTemplates.slice(0, 4).map((o) => ({
-            to: String(o?.to || '').slice(0, 120),
-            subject: String(o?.subject || '').slice(0, 160),
-            draft: String(o?.draft || '').slice(0, 1600),
-          }))
-        : [],
-      approvalsRequired: cleanArr(parsed.approvalsRequired, 240, 6),
-      budgetBreakdown: Array.isArray(parsed.budgetBreakdown)
-        ? parsed.budgetBreakdown.slice(0, 8).map((b) => ({
-            line: String(b?.line || '').slice(0, 160),
-            amountUsd: Number(b?.amountUsd) || 0,
-            note: String(b?.note || '').slice(0, 200),
-          }))
-        : [],
-      successMetrics: cleanArr(parsed.successMetrics, 200, 6),
-      failureModes: cleanObjArr(parsed.failureModes, 6, { risk: 240, mitigation: 280 }),
-      communicationPlan: cleanObjArr(parsed.communicationPlan, 6, { audience: 80, channel: 80, message: 280 }),
-    };
+    const memo = cleanMemo(parsed);
 
     res.status(200).json({
       mode: 'llm',

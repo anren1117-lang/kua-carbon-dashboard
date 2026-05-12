@@ -30,6 +30,7 @@
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
+import { openSSE, streamAnthropicJson, tryParseJsonLoose } from '../../src/utils/anthropicStream.js';
 
 const limiter = createRateLimit({ capacity: 4, refillPerSec: 0.1 });
 
@@ -151,6 +152,20 @@ export default async function handler(req, res) {
   const history = body.history || { completed: [], declined: [] };
   const measuredState = body.measuredState;
 
+  // Extract + clean the 7-section narrative from a parsed JSON object.
+  function cleanNarrative(parsed) {
+    return {
+      title:           String(parsed?.title || 'Board Brief').slice(0, 200),
+      openingFrame:    String(parsed?.openingFrame || '').slice(0, 2000),
+      whereWeStand:    String(parsed?.whereWeStand || '').slice(0, 2000),
+      strategicChoice: String(parsed?.strategicChoice || '').slice(0, 3000),
+      financialCase:   String(parsed?.financialCase || '').slice(0, 2000),
+      riskNarrative:   String(parsed?.riskNarrative || '').slice(0, 2000),
+      successScenario: String(parsed?.successScenario || '').slice(0, 2000),
+      boardAsk:        String(parsed?.boardAsk || '').slice(0, 2000),
+    };
+  }
+
   const apiKey = readEnv('ANTHROPIC_API_KEY');
   if (!apiKey) {
     res.status(200).json({
@@ -159,6 +174,32 @@ export default async function handler(req, res) {
       generatedAt: new Date().toISOString(),
       message: 'ANTHROPIC_API_KEY is not configured.',
     });
+    return;
+  }
+
+  // Phase 125: streaming branch.
+  if (body.stream === true) {
+    const send = openSSE(res);
+    const { ok, text } = await streamAnthropicJson({
+      apiKey,
+      send,
+      mode: 'progress',
+      body: {
+        model: 'claude-opus-4-7',
+        max_tokens: 3000,
+        system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+        messages: [{ role: 'user', content: buildUserMessage(plan, context, history, measuredState) }],
+      },
+    });
+    if (!ok) { res.end(); return; }
+    const parsed = tryParseJsonLoose(text);
+    if (!parsed) {
+      send('error', { message: 'Could not parse JSON from LLM response' });
+      res.end();
+      return;
+    }
+    send('done', { narrative: cleanNarrative(parsed), generatedAt: new Date().toISOString() });
+    res.end();
     return;
   }
 
@@ -206,16 +247,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const narrative = {
-      title:           String(parsed.title || 'Board Brief').slice(0, 200),
-      openingFrame:    String(parsed.openingFrame || '').slice(0, 2000),
-      whereWeStand:    String(parsed.whereWeStand || '').slice(0, 2000),
-      strategicChoice: String(parsed.strategicChoice || '').slice(0, 3000),
-      financialCase:   String(parsed.financialCase || '').slice(0, 2000),
-      riskNarrative:   String(parsed.riskNarrative || '').slice(0, 2000),
-      successScenario: String(parsed.successScenario || '').slice(0, 2000),
-      boardAsk:        String(parsed.boardAsk || '').slice(0, 2000),
-    };
+    const narrative = cleanNarrative(parsed);
 
     res.status(200).json({
       mode: 'llm',

@@ -23,6 +23,7 @@
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
+import { openSSE, streamAnthropicJson, tryParseJsonLoose } from '../../src/utils/anthropicStream.js';
 
 const limiter = createRateLimit({ capacity: 6, refillPerSec: 0.15 });
 
@@ -143,6 +144,52 @@ export default async function handler(req, res) {
       generatedAt: new Date().toISOString(),
       message: 'ANTHROPIC_API_KEY is not configured.',
     });
+    return;
+  }
+
+  function cleanAlternatives(parsed) {
+    return Array.isArray(parsed?.alternatives)
+      ? parsed.alternatives.slice(0, 3).map((p, i) => ({
+          id: p.id || `alt${i + 1}`,
+          title: String(p.title || '').slice(0, 140),
+          why: String(p.why || '').slice(0, 600),
+          expectedMtPerYear: Number(p.expectedMtPerYear) || 0,
+          estimatedCostUsd: Number(p.estimatedCostUsd) || 0,
+          ownerRole: String(p.ownerRole || 'Sustainability Committee').slice(0, 60),
+          timeline: ['this-quarter','this-year','this-3-years'].includes(p.timeline) ? p.timeline : 'this-year',
+          category: ['scope1','scope2','scope3','sinks','engagement'].includes(p.category) ? p.category : item.category,
+          difficulty: ['easy','medium','hard'].includes(p.difficulty) ? p.difficulty : 'medium',
+          paybackYears: Number(p.paybackYears) || 0,
+          dataSource: String(p.dataSource || '').slice(0, 280),
+          provenance: ['measured','cited','estimated'].includes(p.provenance) ? p.provenance : 'estimated',
+        }))
+      : [];
+  }
+
+  // Phase 125: streaming branch.
+  if (body.stream === true) {
+    const send = openSSE(res);
+    const { ok, text } = await streamAnthropicJson({
+      apiKey,
+      send,
+      mode: 'progress',
+      progressInterval: 100,
+      body: {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+        messages: [{ role: 'user', content: buildUserMessage(item, context, otherItems, reason) }],
+      },
+    });
+    if (!ok) { res.end(); return; }
+    const parsed = tryParseJsonLoose(text);
+    if (!parsed) {
+      send('error', { message: 'Could not parse JSON from LLM response' });
+      res.end();
+      return;
+    }
+    send('done', { alternatives: cleanAlternatives(parsed), generatedAt: new Date().toISOString() });
+    res.end();
     return;
   }
 

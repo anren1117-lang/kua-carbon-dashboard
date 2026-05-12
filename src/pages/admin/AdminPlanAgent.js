@@ -23,6 +23,41 @@ import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 const CONTEXT_KEY = 'kua_admin_plan_context';
 const PLAN_KEY    = 'kua_admin_plan';
 
+// Phase 125: consume an SSE Response from one of the admin AI
+// endpoints. Returns the payload of the 'done' event (with mode:'llm'
+// merged in for parity with the non-streaming JSON shape). Throws on
+// 'error' event. Optional onDelta lets callers stream chat text into
+// state as it arrives.
+async function parseSSE(response, onDelta, onProgress) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let final = null;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buffer.indexOf('\n\n')) >= 0) {
+      const chunk = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 2);
+      const eventLine = chunk.split('\n').find((l) => l.startsWith('event: '));
+      const dataLine  = chunk.split('\n').find((l) => l.startsWith('data: '));
+      if (!eventLine || !dataLine) continue;
+      const event = eventLine.slice(7).trim();
+      let payload = null;
+      try { payload = JSON.parse(dataLine.slice(6)); } catch {}
+      if (!payload) continue;
+      if      (event === 'progress' && onProgress) onProgress(payload);
+      else if (event === 'delta'    && onDelta)    onDelta(payload);
+      else if (event === 'done')                   final = payload;
+      else if (event === 'error')                  throw new Error(payload.message || 'stream error');
+    }
+  }
+  if (!final) throw new Error('Stream ended without a result');
+  return { mode: 'llm', ...final };
+}
+
 // Browser-only download helper. Builds a blob URL, clicks an anchor,
 // revokes. Same pattern src/utils/csv.js uses.
 function triggerDownload(filename, text, mime) {
@@ -244,11 +279,14 @@ export default function AdminPlanAgent() {
       const r = await adminFetch('/api/admin/plan-narrative', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan, context, history, measuredState }),
+        body: JSON.stringify({ plan, context, history, measuredState, stream: true }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
-      setNarrative(body);
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      const result = await parseSSE(r);
+      setNarrative(result);
     } catch (err) {
       setNarrativeErr(err.message);
     } finally {
@@ -1458,11 +1496,14 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
       const r = await adminFetch('/api/admin/plan-item-alternatives', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ item, context, otherItems, reason: reason || '' }),
+        body: JSON.stringify({ item, context, otherItems, reason: reason || '', stream: true }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
-      setAlts(body);
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      const result = await parseSSE(r);
+      setAlts(result);
     } catch (err) {
       setAltsErr(err.message);
     } finally {
@@ -1477,11 +1518,14 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
       const r = await adminFetch('/api/admin/plan-item-memo', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ item, context }),
+        body: JSON.stringify({ item, context, stream: true }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
-      setMemo(body);
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      const result = await parseSSE(r);
+      setMemo(result);
     } catch (err) {
       setMemoErr(err.message);
     } finally {
