@@ -408,6 +408,9 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
     let buffer = '';
     let fullText = '';
     let charCount = 0;
+    // Phase 154: capture Anthropic usage so the 'done' event can carry
+    // input/output token counts back to the client for cost telemetry.
+    const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
@@ -431,6 +434,12 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
               send('progress', { charCount: fullText.length });
               charCount = 0;
             }
+          } else if (ev.type === 'message_start' && ev.message?.usage) {
+            usage.inputTokens = ev.message.usage.input_tokens || 0;
+            usage.cacheCreationInputTokens = ev.message.usage.cache_creation_input_tokens || 0;
+            usage.cacheReadInputTokens = ev.message.usage.cache_read_input_tokens || 0;
+          } else if (ev.type === 'message_delta' && ev.usage) {
+            usage.outputTokens = ev.usage.output_tokens || usage.outputTokens;
           } else if (ev.type === 'message_stop') {
             // End of stream — we'll handle parse below.
             break;
@@ -468,6 +477,8 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
       percentOfGross: context.grossMt > 0 ? (totalExpectedMtPerYear / context.grossMt) * 100 : 0,
       generatedAt: new Date().toISOString(),
       nextCheckInDays: 90,
+      usage,
+      model: pickModel(model),
     });
     res.end();
   } catch (err) {

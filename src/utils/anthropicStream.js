@@ -58,6 +58,10 @@ export async function streamAnthropicJson({
   let buffer = '';
   let full = '';
   let chunkSinceProgress = 0;
+  // Phase 154: capture Anthropic's usage block from message_start +
+  // message_delta events so callers can surface "this generation
+  // cost $X / used Y tokens" telemetry.
+  const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
@@ -82,6 +86,13 @@ export async function streamAnthropicJson({
               chunkSinceProgress = 0;
             }
           }
+        } else if (ev.type === 'message_start' && ev.message?.usage) {
+          const u = ev.message.usage;
+          usage.inputTokens = u.input_tokens || 0;
+          usage.cacheCreationInputTokens = u.cache_creation_input_tokens || 0;
+          usage.cacheReadInputTokens = u.cache_read_input_tokens || 0;
+        } else if (ev.type === 'message_delta' && ev.usage) {
+          usage.outputTokens = ev.usage.output_tokens || usage.outputTokens;
         } else if (ev.type === 'message_stop') {
           // Anthropic done.
           break;
@@ -89,7 +100,7 @@ export async function streamAnthropicJson({
       } catch { /* ignore malformed event */ }
     }
   }
-  return { ok: true, text: full };
+  return { ok: true, text: full, usage };
 }
 
 export function tryParseJsonLoose(text) {

@@ -946,7 +946,7 @@ export default function AdminPlanAgent() {
       {hasPlan && (
         <ModuleSection
           title="Current plan"
-          hint={`${plan.mode === 'llm' ? 'AI-generated' : 'Rule-based fallback'} · drafted ${new Date(plan.generatedAt).toLocaleDateString()} · re-generate after a board meeting / fiscal cycle / new project completion.`}
+          hint={`${plan.mode === 'llm' ? 'AI-generated' : 'Rule-based fallback'}${plan.model ? ` · ${plan.model === 'claude-opus-4-7' ? 'Opus 4.7' : plan.model === 'claude-sonnet-4-6' ? 'Sonnet 4.6' : plan.model}` : ''} · drafted ${new Date(plan.generatedAt).toLocaleDateString()}${plan.usage ? ` · ${formatUsage(plan.usage)}` : ''} · re-generate after a board meeting / fiscal cycle / new project completion.`}
         >
           {(diff || diffBusy || diffErr) && (
             <PlanDiffCard
@@ -2214,6 +2214,24 @@ function ImplementationMemo({ memo, generatedAt }) {
       )}
     </div>
   );
+}
+
+// Compact summary of Anthropic usage block. Token counts come straight
+// from the stream; the cost is a rough estimate using published pricing
+// per the model tier — meant for "is this expensive?" awareness, not
+// for billing reconciliation.
+export function formatUsage(usage) {
+  if (!usage) return '';
+  const inp = (Number(usage.inputTokens) || 0) + (Number(usage.cacheCreationInputTokens) || 0);
+  const out = Number(usage.outputTokens) || 0;
+  const cached = Number(usage.cacheReadInputTokens) || 0;
+  if (inp === 0 && out === 0) return '';
+  // Rough Opus 4 pricing snapshot: $15 / 1M input, $75 / 1M output.
+  // Cached reads bill at 10% of input.
+  const cost = (inp / 1_000_000) * 15 + (out / 1_000_000) * 75 + (cached / 1_000_000) * 1.5;
+  const tokens = inp + out + cached;
+  const tokensFmt = tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}K` : tokens.toString();
+  return `${tokensFmt} tok · ~$${cost.toFixed(3)}`;
 }
 
 // Reusable error pill for AI requests. Shows the failure message + an
