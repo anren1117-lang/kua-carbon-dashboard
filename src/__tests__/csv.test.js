@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect } from 'vitest';
-import { toCsv, parseCsv, downloadCsv } from '../utils/csv.js';
+import { toCsv, parseCsv, downloadCsv, downloadBlob } from '../utils/csv.js';
 
 describe('toCsv', () => {
   it('returns empty string for empty input', () => {
@@ -137,6 +137,61 @@ describe('downloadCsv (browser-side)', () => {
     } finally {
       URL.createObjectURL = origCreate;
       URL.revokeObjectURL = origRevoke;
+    }
+  });
+});
+
+describe('downloadBlob (generic)', () => {
+  it('builds a Blob with the requested MIME and triggers a click on a fresh anchor', () => {
+    const created = [];
+    const origCreate = URL.createObjectURL;
+    URL.createObjectURL = (b) => { created.push(b); return 'blob:mock'; };
+    // Capture the anchor that gets clicked so we can verify the
+    // filename + download attributes.
+    let clickedAnchor = null;
+    const origCreateElement = document.createElement.bind(document);
+    document.createElement = (tag) => {
+      const el = origCreateElement(tag);
+      if (tag === 'a') {
+        const origClick = el.click.bind(el);
+        el.click = () => { clickedAnchor = el; origClick(); };
+      }
+      return el;
+    };
+    try {
+      downloadBlob('plan.json', '{"a":1}', 'application/json');
+      expect(created.length).toBe(1);
+      expect(created[0].type).toBe('application/json');
+      expect(clickedAnchor).not.toBeNull();
+      expect(clickedAnchor.download).toBe('plan.json');
+      expect(clickedAnchor.href).toBe('blob:mock');
+    } finally {
+      URL.createObjectURL = origCreate;
+      document.createElement = origCreateElement;
+    }
+  });
+
+  it('defaults MIME to text/plain when omitted', () => {
+    const types = [];
+    const origCreate = URL.createObjectURL;
+    URL.createObjectURL = (b) => { types.push(b.type); return 'blob:mock'; };
+    try {
+      downloadBlob('whatever.txt', 'hello');
+      expect(types[0]).toBe('text/plain;charset=utf-8');
+    } finally {
+      URL.createObjectURL = origCreate;
+    }
+  });
+
+  it('downloadCsv still routes through downloadBlob with text/csv MIME', () => {
+    const types = [];
+    const origCreate = URL.createObjectURL;
+    URL.createObjectURL = (b) => { types.push(b.type); return 'blob:mock'; };
+    try {
+      downloadCsv('export.csv', 'a,b\n1,2');
+      expect(types[0]).toBe('text/csv;charset=utf-8');
+    } finally {
+      URL.createObjectURL = origCreate;
     }
   });
 });
