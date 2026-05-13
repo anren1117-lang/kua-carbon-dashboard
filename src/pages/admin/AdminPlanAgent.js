@@ -484,6 +484,57 @@ export default function AdminPlanAgent() {
     setSnapshots((prev) => prev.filter((s) => s.id !== id));
   }
 
+  // Restore plan + context + history + snapshots from a JSON file
+  // previously created by exportPlanJson. Validates the shape before
+  // touching state so a malformed paste doesn't corrupt the agent.
+  async function onImportJsonFile(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ''; // allow re-picking the same file later
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object' || !parsed.plan || !Array.isArray(parsed.plan.plan)) {
+        window.alert('That JSON does not look like a KUA plan export — missing { plan: { plan: [...] } } shape.');
+        return;
+      }
+      const itemCount = parsed.plan.plan.length;
+      const snapCount = Array.isArray(parsed.snapshots) ? parsed.snapshots.length : 0;
+      const ok = window.confirm(
+        `Import this plan?\n\n` +
+        `• ${itemCount} item${itemCount === 1 ? '' : 's'} in the plan\n` +
+        `• ${snapCount} snapshot${snapCount === 1 ? '' : 's'}\n` +
+        `• Exported ${parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString() : 'at an unknown time'}\n\n` +
+        `Your current plan, context, history, and snapshots will be replaced.`
+      );
+      if (!ok) return;
+      setPlan(parsed.plan);
+      if (parsed.context && typeof parsed.context === 'object') {
+        setContext((prev) => ({
+          ...prev,
+          ...parsed.context,
+          // Always keep the live measured-state fields from the
+          // current session — these come from useMeasuredScopeTotals
+          // and should reflect THIS browser's view of Supabase.
+          grossMt: prev.grossMt,
+          sinksMt: prev.sinksMt,
+          enrollment: prev.enrollment,
+        }));
+      }
+      if (parsed.history && typeof parsed.history === 'object') {
+        setHistory({
+          completed: Array.isArray(parsed.history.completed) ? parsed.history.completed : [],
+          declined:  Array.isArray(parsed.history.declined)  ? parsed.history.declined  : [],
+        });
+      }
+      if (Array.isArray(parsed.snapshots)) {
+        setSnapshots(parsed.snapshots.slice(0, MAX_SNAPSHOTS));
+      }
+    } catch (err) {
+      window.alert(`Could not parse JSON: ${err?.message || err}`);
+    }
+  }
+
   const [comparingSnapId, setComparingSnapId] = useState(null);
   function toggleCompare(id) {
     setComparingSnapId((cur) => cur === id ? null : id);
@@ -799,6 +850,15 @@ export default function AdminPlanAgent() {
             <button type="button" onClick={() => exportPlanJson(plan, context, history, snapshots)} style={styles.exportBtn} title="Download the plan + context + history + snapshots as a JSON file — for backup or moving between browsers.">
               📥 JSON
             </button>
+            <label style={{ ...styles.exportBtn, cursor: 'pointer', display: 'inline-block' }} title="Restore a plan from a JSON file previously exported. Overwrites the current plan, context, history, and snapshots after confirmation.">
+              📤 Import JSON
+              <input
+                type="file"
+                accept=".json,application/json"
+                style={{ display: 'none' }}
+                onChange={onImportJsonFile}
+              />
+            </label>
             <button
               type="button"
               onClick={() => setPlanChatOpen((v) => !v)}
