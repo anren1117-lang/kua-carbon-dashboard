@@ -228,7 +228,14 @@ export default function AdminHome() {
   // re-firing on every navigation back to the dashboard.
   useEffect(() => {
     if (!freshness || !Array.isArray(feed)) return;
-    const cacheKey = 'kua_admin_home_brief';
+    // Cache key includes plan state so generating a new plan or
+    // marking items shipped invalidates the cached brief — otherwise
+    // the brief tells the admin "no plan yet" 9 minutes after they
+    // just generated one.
+    const planTag = planSummary
+      ? `p:${planSummary.generatedAt || 'na'}:${planSummary.shippedCount}:${planSummary.declinedCount}`
+      : 'p:none';
+    const cacheKey = `kua_admin_home_brief|${planTag}`;
     // Force-refresh bypasses the cache; otherwise honor the 10-min TTL.
     if (briefRefreshTick === 0) {
       try {
