@@ -318,6 +318,41 @@ export default function AdminPlanAgent() {
   const [narrative, setNarrative] = useState(null); // { narrative: {...}, generatedAt } | null
   const [narrativeBusy, setNarrativeBusy] = useState(false);
   const [narrativeErr, setNarrativeErr] = useState(null);
+
+  // Phase 150: AI-narrated diff between the prior plan and the freshly
+  // regenerated one. Triggered automatically after a regenerate when a
+  // priorPlan existed. Persists to localStorage so the admin sees it
+  // again on reload until the next regeneration.
+  const DIFF_KEY = 'kua_admin_plan_diff';
+  const [diff, setDiff] = useState(() => loadJson(DIFF_KEY, null));
+  const [diffBusy, setDiffBusy] = useState(false);
+  const [diffErr, setDiffErr] = useState(null);
+  useEffect(() => {
+    if (diff) saveJson(DIFF_KEY, diff);
+    else { try { localStorage.removeItem(DIFF_KEY); } catch {} }
+  }, [diff]);
+
+  async function fetchPlanDiff(priorPlanRef, newPlan) {
+    setDiffBusy(true);
+    setDiffErr(null);
+    try {
+      const r = await adminFetch('/api/admin/plan-diff', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ priorPlan: priorPlanRef, newPlan, context, stream: true }),
+      });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${r.status}`);
+      }
+      const result = await parseSSE(r);
+      setDiff({ ...result, priorCount: priorPlanRef.length, newCount: newPlan.plan.length });
+    } catch (err) {
+      setDiffErr(err.message);
+    } finally {
+      setDiffBusy(false);
+    }
+  }
   // Plan item view mode: 'compact' (1-row summary per item) or
   // 'detailed' (full per-item card with all detail blocks). Defaults
   // to compact for 8+ item plans so admins don't have to scroll a
@@ -625,6 +660,15 @@ export default function AdminPlanAgent() {
       }
       if (!finalPlan) throw new Error('Stream ended without a plan');
       setPlan(finalPlan);
+      // Phase 150: if a prior plan existed, immediately fetch an
+      // AI-narrated diff so the admin sees what changed and why. The
+      // diff fetch is fire-and-forget — failure does not block plan
+      // display.
+      if (priorPlan && priorPlan.length > 0) {
+        fetchPlanDiff(priorPlan, finalPlan).catch(() => {});
+      } else {
+        setDiff(null);
+      }
     } catch (err) {
       // AbortError is user-initiated — show a friendly message rather
       // than an exception trace.
@@ -861,6 +905,14 @@ export default function AdminPlanAgent() {
           title="Current plan"
           hint={`${plan.mode === 'llm' ? 'AI-generated' : 'Rule-based fallback'} · drafted ${new Date(plan.generatedAt).toLocaleDateString()} · re-generate after a board meeting / fiscal cycle / new project completion.`}
         >
+          {(diff || diffBusy || diffErr) && (
+            <PlanDiffCard
+              diff={diff}
+              busy={diffBusy}
+              error={diffErr}
+              onDismiss={() => setDiff(null)}
+            />
+          )}
           <div style={styles.summary}>{plan.summary}</div>
           <div style={styles.heroRow}>
             <Hero label="Plan annual reduction"     value={`${Math.round(totalMt).toLocaleString()}`} unit="mtCO₂e/yr" accent="#86efac" />
@@ -2161,6 +2213,88 @@ const aiErrorStyles = {
     fontWeight: 700,
     fontFamily: 'inherit',
   },
+};
+
+// Phase 150: AI-narrated diff between the prior plan and the freshly
+// regenerated one. Renders the headline + summary + grouped
+// added/removed/evolved chips. Caller decides when it appears
+// (right after a regenerate when priorPlan was non-empty).
+function PlanDiffCard({ diff, busy, error, onDismiss }) {
+  if (busy && !diff) {
+    return (
+      <div role="status" style={diffCardStyles.wrap}>
+        <span style={diffCardStyles.label}>Narrating the diff…</span>
+      </div>
+    );
+  }
+  if (error && !diff) {
+    return (
+      <div role="alert" style={{ ...diffCardStyles.wrap, borderLeftColor: '#7f1d1d' }}>
+        <span style={diffCardStyles.label}>Diff narrative error:</span>
+        <span style={{ color: '#fca5a5' }}>{error}</span>
+      </div>
+    );
+  }
+  if (!diff || !diff.diff) return null;
+  const d = diff.diff;
+  return (
+    <div style={diffCardStyles.wrap}>
+      <div style={diffCardStyles.head}>
+        <span style={diffCardStyles.label}>📋 What changed</span>
+        <button type="button" onClick={onDismiss} style={diffCardStyles.dismiss} aria-label="Dismiss diff card">
+          ✕
+        </button>
+      </div>
+      <p style={diffCardStyles.headline}>{d.headline}</p>
+      {d.summary && <p style={diffCardStyles.summary}>{d.summary}</p>}
+      <div style={diffCardStyles.groups}>
+        {d.added && d.added.length > 0 && (
+          <div style={diffCardStyles.group}>
+            <div style={{ ...diffCardStyles.groupLabel, color: '#86efac' }}>+ Added ({d.added.length})</div>
+            <ul style={diffCardStyles.list}>
+              {d.added.map((x, i) => <li key={i} style={diffCardStyles.li}>{x}</li>)}
+            </ul>
+          </div>
+        )}
+        {d.removed && d.removed.length > 0 && (
+          <div style={diffCardStyles.group}>
+            <div style={{ ...diffCardStyles.groupLabel, color: '#fca5a5' }}>− Removed ({d.removed.length})</div>
+            <ul style={diffCardStyles.list}>
+              {d.removed.map((x, i) => <li key={i} style={diffCardStyles.li}>{x}</li>)}
+            </ul>
+          </div>
+        )}
+        {d.evolved && d.evolved.length > 0 && (
+          <div style={diffCardStyles.group}>
+            <div style={{ ...diffCardStyles.groupLabel, color: '#fbbf24' }}>~ Evolved ({d.evolved.length})</div>
+            <ul style={diffCardStyles.list}>
+              {d.evolved.map((x, i) => <li key={i} style={diffCardStyles.li}>{x}</li>)}
+            </ul>
+          </div>
+        )}
+        {typeof d.unchanged === 'number' && d.unchanged > 0 && (
+          <div style={diffCardStyles.group}>
+            <div style={{ ...diffCardStyles.groupLabel, color: '#94a3b8' }}>= Unchanged</div>
+            <div style={{ fontSize: 13, color: '#cbd5e1' }}>{d.unchanged} item{d.unchanged === 1 ? '' : 's'} kept as-is</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const diffCardStyles = {
+  wrap: { marginBottom: 16, padding: '14px 18px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 10 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 },
+  label: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6 },
+  dismiss: { width: 24, height: 24, borderRadius: 12, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 700 },
+  headline: { margin: 0, fontSize: 14, color: '#e5e7eb', fontWeight: 700, lineHeight: 1.5 },
+  summary: { margin: '6px 0 0', fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 },
+  groups: { marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 },
+  group: { padding: '8px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
+  groupLabel: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+  list: { margin: 0, paddingLeft: 16, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 },
+  li: { marginBottom: 3 },
 };
 
 // Aggregate calibration of expected vs actual across shipped items.
