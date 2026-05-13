@@ -94,8 +94,8 @@ export default async function handler(req, res) {
   }
 
   const authed = verifyAdminRequest(req);
-  if (!authed.ok) {
-    res.status(authed.status).json({ error: authed.reason });
+  if (!authed.valid) {
+    res.status(401).json({ error: `admin auth required: ${authed.reason}` });
     return;
   }
 

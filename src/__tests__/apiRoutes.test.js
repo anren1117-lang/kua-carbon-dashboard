@@ -24,6 +24,13 @@ import adminPlanHandler      from '../../api/admin/plan.js';
 import adminEstimateAction   from '../../api/admin/estimate-action.js';
 import adminLoginHandler     from '../../api/admin/login.js';
 import adminAuditLogHandler  from '../../api/admin/audit-log.js';
+import adminPlanNarrative    from '../../api/admin/plan-narrative.js';
+import adminPlanItemMemo     from '../../api/admin/plan-item-memo.js';
+import adminPlanChat         from '../../api/admin/plan-chat.js';
+import adminHomeBrief        from '../../api/admin/admin-home-brief.js';
+import adminPlanItemAlts     from '../../api/admin/plan-item-alternatives.js';
+import adminPlanItemChat     from '../../api/admin/plan-item-chat.js';
+import adminAiIngestion      from '../../api/admin/ai-ingestion.js';
 import { signAdminToken, verifyAdminToken } from '../utils/adminToken.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
@@ -944,6 +951,47 @@ describe('/api/admin/audit-log GET pagination + filters', () => {
     // gives a sane default. With env unset it still 503s.
     expect([503, 200]).toContain(r.statusCode);
   });
+});
+
+// Regression test for Phase 146 — six handlers were checking `authed.ok`
+// but verifyAdminRequest returns `{ valid, reason, payload }`. The bug
+// caused every authenticated admin AI request to 401 silently in
+// production. These tests prove the auth-gate shape is correct: each
+// handler 401s on no-auth and does NOT 401 on valid auth (it falls
+// through to the next gate, which is usually "ANTHROPIC_API_KEY
+// missing" → 200 unavailable, or a body-validation 400).
+describe('admin AI endpoints — auth gate shape regression (Phase 146)', () => {
+  const handlers = [
+    { name: 'plan-narrative',       fn: adminPlanNarrative, body: { plan: { plan: [] }, context: {} } },
+    { name: 'plan-item-memo',       fn: adminPlanItemMemo,  body: { item: { title: 'x' }, context: {} } },
+    { name: 'plan-chat',            fn: adminPlanChat,      body: { plan: { plan: [] }, context: {}, messages: [{ role: 'user', content: 'hi' }] } },
+    { name: 'admin-home-brief',     fn: adminHomeBrief,     body: {} },
+    { name: 'plan-item-alternatives', fn: adminPlanItemAlts, body: { item: { title: 'x', category: 'scope1' } } },
+    { name: 'plan-item-chat',       fn: adminPlanItemChat,  body: { item: { title: 'x' }, context: {}, messages: [{ role: 'user', content: 'hi' }] } },
+    { name: 'ai-ingestion',         fn: adminAiIngestion,   body: { text: 'sample heating oil 100 gal on 2026-04-15' } },
+  ];
+
+  beforeAll(() => {
+    // Force the no-LLM path so each handler falls through cleanly to
+    // its 200/unavailable response rather than calling Anthropic.
+    delete process.env.ANTHROPIC_API_KEY;
+  });
+
+  for (const h of handlers) {
+    it(`${h.name}: 401s without auth header`, async () => {
+      const r = await call(h.fn, { method: 'POST', body: h.body, headers: {} });
+      expect(r.statusCode).toBe(401);
+      expect(r.body.error).toMatch(/admin auth|auth required/i);
+    });
+
+    it(`${h.name}: does NOT 401 with valid auth (proves auth-gate shape)`, async () => {
+      const r = await call(h.fn, { method: 'POST', body: h.body, headers: adminAuthHeaders() });
+      // 401 here would mean someone wrote `authed.ok` again. Any other
+      // status (200 unavailable, 400 validation, 429 rate-limit) means
+      // auth passed.
+      expect(r.statusCode).not.toBe(401);
+    });
+  }
 });
 
 describe('verifyGoogleIdToken', () => {
