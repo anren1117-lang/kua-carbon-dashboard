@@ -2071,8 +2071,8 @@ function ImplementationMemo({ memo, generatedAt }) {
 // Aggregate calibration of expected vs actual across shipped items.
 // Hidden until there are at least 2 items with both numbers; below
 // that, the sample is too small for "estimates run X% high/low" to
-// mean anything.
-function CalibrationBadge({ completed }) {
+// mean anything. Exported for unit testing.
+export function CalibrationBadge({ completed }) {
   const both = (completed || []).filter((c) => {
     const e = Number(c.expectedMt);
     const a = Number(c.mtSaved);
