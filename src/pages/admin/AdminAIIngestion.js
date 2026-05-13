@@ -527,6 +527,12 @@ function AdminAIIngestion() {
     try {
       const fields = activeFields(i, row);
       const targetTable = activeTable(i, row);
+      // The framework_drafts table only has the columns listed in
+      // supabase/migrations/20260429220000_initial_schema.sql:239 —
+      // there's no source_doc column. Stash the AI provenance into
+      // `source` so it survives in the row without breaking the
+      // insert.
+      const sourcePrefix = row.sourceDocument ? `AI: ${row.sourceDocument}` : 'AI ingestion';
       const draft = {
         scope: row.scope,
         category: targetTable,
@@ -538,8 +544,8 @@ function AdminAIIngestion() {
         unit: fields?.unit || (fields?.gallons ? 'gallons' : fields?.gross_kwh ? 'kWh' : null),
         date: fields?.delivery_date || fields?.date || fields?.period_end || null,
         data_quality: row.confidence === 'high' ? 'measured' : 'estimated',
+        source: sourcePrefix,
         notes: row.sourceQuote || null,
-        source_doc: JSON.stringify({ fields, ai: true, originalFields: row.fields }),
       };
       const { error: insErr } = await supabase.from('framework_drafts').insert(draft);
       if (insErr) throw new Error(insErr.message);
