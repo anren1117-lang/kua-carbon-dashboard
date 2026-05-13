@@ -3,7 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
-import { AIError } from './AdminPlanAgent.js';
+import { AIError, formatUsage } from './AdminPlanAgent.js';
 
 const previewBoxStyles = {
   wrap: { marginTop: 14, padding: '12px 16px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 8 },
@@ -855,6 +855,11 @@ function AdminAIIngestion() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 12 }}>
             <h2 style={{ margin: 0, fontSize: 18 }}>
               Extraction result {result.mode === 'unavailable' && <span style={{ fontSize: 12, color: '#fbbf24', marginLeft: 8 }}>(LLM not configured)</span>}
+              {result.usage && (
+                <span style={{ fontSize: 11, color: '#64748b', marginLeft: 10, fontWeight: 400, fontVariantNumeric: 'tabular-nums' }}>
+                  {formatUsage(result.usage, result.model)}
+                </span>
+              )}
             </h2>
             <button
               type="button"

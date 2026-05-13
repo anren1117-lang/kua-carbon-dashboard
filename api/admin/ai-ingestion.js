@@ -194,6 +194,8 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
     // event as soon as the closing `}` lands.
     const stepExtractor = createItemExtractor('extractedRows');
     let previewIndex = 0;
+    // Phase 160: capture Anthropic usage for the 'done' event.
+    const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
@@ -222,6 +224,12 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
                 previewIndex += 1;
               } catch { /* malformed partial; final parse handles it */ }
             }
+          } else if (ev.type === 'message_start' && ev.message?.usage) {
+            usage.inputTokens = ev.message.usage.input_tokens || 0;
+            usage.cacheCreationInputTokens = ev.message.usage.cache_creation_input_tokens || 0;
+            usage.cacheReadInputTokens = ev.message.usage.cache_read_input_tokens || 0;
+          } else if (ev.type === 'message_delta' && ev.usage) {
+            usage.outputTokens = ev.usage.output_tokens || usage.outputTokens;
           } else if (ev.type === 'message_stop') {
             break;
           }
@@ -248,6 +256,8 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
       summary: String(parsed.summary || '').slice(0, 500),
       extractedRows,
       flags,
+      usage,
+      model: 'claude-opus-4-7',
     });
     res.end();
   } catch (err) {
