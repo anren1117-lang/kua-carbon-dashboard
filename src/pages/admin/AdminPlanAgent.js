@@ -1923,6 +1923,24 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
         </div>
       </div>
       {!compact && <div style={styles.planWhy}>{item.why}</div>}
+      {compact && item.why && (
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 12,
+            color: '#94a3b8',
+            lineHeight: 1.45,
+            display: '-webkit-box',
+            WebkitLineClamp: 1,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          title={item.why}
+        >
+          {item.why}
+        </div>
+      )}
 
       {!compact && Array.isArray(item.firstSteps) && item.firstSteps.length > 0 && (
         <DetailBlock title="First steps" accent="#22d3ee">
