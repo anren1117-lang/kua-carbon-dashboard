@@ -57,7 +57,13 @@ export async function streamAnthropicJson({
   const decoder = new TextDecoder();
   let buffer = '';
   let full = '';
+  // Phase 168: extended-thinking blocks come through as a separate
+  // content block before the regular text. We accumulate them
+  // separately so callers can expose "agent's reasoning" panels
+  // without it bleeding into the JSON payload.
+  let thinking = '';
   let chunkSinceProgress = 0;
+  let thinkingSinceProgress = 0;
   // Phase 154: capture Anthropic's usage block from message_start +
   // message_delta events so callers can surface "this generation
   // cost $X / used Y tokens" telemetry.
@@ -86,6 +92,17 @@ export async function streamAnthropicJson({
               chunkSinceProgress = 0;
             }
           }
+        } else if (ev.type === 'content_block_delta' && ev.delta?.type === 'thinking_delta') {
+          // Extended-thinking text — model's internal reasoning.
+          const t = ev.delta.thinking || '';
+          thinking += t;
+          thinkingSinceProgress += t.length;
+          // Emit thinking progress less frequently than text — the
+          // admin doesn't need char-by-char, just "still reasoning…".
+          if (thinkingSinceProgress >= progressInterval * 4) {
+            send('thinking', { charCount: thinking.length });
+            thinkingSinceProgress = 0;
+          }
         } else if (ev.type === 'message_start' && ev.message?.usage) {
           const u = ev.message.usage;
           usage.inputTokens = u.input_tokens || 0;
@@ -100,7 +117,7 @@ export async function streamAnthropicJson({
       } catch { /* ignore malformed event */ }
     }
   }
-  return { ok: true, text: full, usage };
+  return { ok: true, text: full, usage, thinking };
 }
 
 export function tryParseJsonLoose(text) {

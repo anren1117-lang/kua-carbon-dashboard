@@ -388,6 +388,22 @@ export default function AdminPlanAgent() {
   useEffect(() => {
     try { localStorage.setItem(MODEL_KEY, planModel); } catch {}
   }, [planModel]);
+
+  // Phase 168: extended thinking budget. When on (Opus only), the
+  // model spends ~8K reasoning tokens before drafting. Slower (+30-
+  // 60s) and pricier (+$0.12) but plan quality is meaningfully
+  // higher on multi-item prioritization. Default ON for Opus.
+  const THINKING_KEY = 'kua_admin_plan_thinking';
+  const [useThinking, setUseThinking] = useState(() => {
+    try { return localStorage.getItem(THINKING_KEY) !== '0'; }
+    catch { return true; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(THINKING_KEY, useThinking ? '1' : '0'); } catch {}
+  }, [useThinking]);
+  // Track thinking-phase progress so the UI can show "agent thinking…"
+  // while no plan items have materialized yet.
+  const [thinkingChars, setThinkingChars] = useState(0);
   // Re-apply the default when a fresh plan lands (after Generate).
   useEffect(() => {
     if (plan?.plan?.length) {
@@ -679,9 +695,12 @@ export default function AdminPlanAgent() {
       setStreamChars(0);
       setStreamStartedAt(Date.now());
       setPreviewItems([]);
+      setThinkingChars(0);
+      // Extended thinking is Opus-only on the server.
+      const wantThinking = useThinking && planModel === 'claude-opus-4-7';
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true, model: planModel }),
+        body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true, model: planModel, useThinking: wantThinking }),
         signal: ac.signal,
       });
       if (!res.ok) {
@@ -713,6 +732,8 @@ export default function AdminPlanAgent() {
           if (!payload) continue;
           if (event === 'progress') {
             setStreamChars(payload.charCount || 0);
+          } else if (event === 'thinking') {
+            setThinkingChars(payload.charCount || 0);
           } else if (event === 'item') {
             // Phase 157: append the freshly materialized item so the
             // preview cards stack up as the agent drafts.
@@ -930,7 +951,9 @@ export default function AdminPlanAgent() {
             {loading
               ? (streamChars > 0
                 ? `Drafting plan… ${streamElapsed}s · ${streamChars.toLocaleString()} chars`
-                : `Starting up… ${streamElapsed}s`)
+                : thinkingChars > 0
+                  ? `Agent thinking… ${streamElapsed}s · ${thinkingChars.toLocaleString()} chars`
+                  : `Starting up… ${streamElapsed}s`)
               : hasPlan ? 'Re-generate plan' : 'Generate plan'}
           </button>
           {loading && (
@@ -970,6 +993,20 @@ export default function AdminPlanAgent() {
               </select>
             </label>
           )}
+          {!loading && planModel === 'claude-opus-4-7' && (
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8', cursor: 'pointer' }}
+              title="Extended thinking: Opus reasons through KUA tradeoffs for ~8K tokens before drafting. Slower (+30-60s) and pricier (+$0.12), but plan quality is meaningfully higher on multi-item prioritization."
+            >
+              <input
+                type="checkbox"
+                checked={useThinking}
+                onChange={(e) => setUseThinking(e.target.checked)}
+                disabled={loading}
+              />
+              <span>🧠 Extended thinking</span>
+            </label>
+          )}
           {!loading && contextIsComplete(context) && (
             <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>
               Shortcuts: ⌘↵ generate · ⌘S snapshot · ⌘K chat · Esc close
@@ -1000,6 +1037,7 @@ export default function AdminPlanAgent() {
               onDismiss={() => setDiff(null)}
             />
           )}
+          {plan.thinking && <ThinkingPanel thinking={plan.thinking} />}
           <div style={styles.summary}>{plan.summary}</div>
           <div style={styles.heroRow}>
             <Hero label="Plan annual reduction"     value={`${Math.round(totalMt).toLocaleString()}`} unit="mtCO₂e/yr" accent="#86efac" />
@@ -2444,6 +2482,45 @@ const aiErrorStyles = {
     fontWeight: 700,
     fontFamily: 'inherit',
   },
+};
+
+// Phase 168: collapsible panel exposing the model's extended-
+// thinking trace so the admin can read HOW the agent reasoned
+// about KUA's tradeoffs before drafting. Useful for board
+// presentations ("here's what the AI weighed") and for spotting
+// hallucinated reasoning ("agent claimed Densmore is 80K sqft but
+// it's 9K").
+function ThinkingPanel({ thinking }) {
+  const [open, setOpen] = useState(false);
+  if (!thinking || thinking.length === 0) return null;
+  const chars = thinking.length;
+  return (
+    <div style={thinkingStyles.wrap}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        style={thinkingStyles.toggle}
+      >
+        <span>{open ? '▼' : '▶'}</span>
+        <span style={thinkingStyles.label}>🧠 Agent's reasoning</span>
+        <span style={thinkingStyles.meta}>{chars >= 1000 ? `${(chars / 1000).toFixed(1)}K` : chars} chars</span>
+      </button>
+      {open && (
+        <div style={thinkingStyles.body}>
+          {thinking}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const thinkingStyles = {
+  wrap: { marginBottom: 16, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  toggle: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 14px', background: 'transparent', color: '#a5b4fc', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' },
+  label: { textTransform: 'uppercase', letterSpacing: 0.6, flex: 1 },
+  meta: { color: '#64748b', fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
+  body: { padding: '0 14px 14px', fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', maxHeight: 400, overflowY: 'auto' },
 };
 
 // Phase 150: AI-narrated diff between the prior plan and the freshly

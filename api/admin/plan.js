@@ -366,7 +366,7 @@ function pickModel(requested) {
 // src/utils/anthropicStream.js so both /api/admin/plan and
 // /api/admin/ai-ingestion can reuse it.
 
-async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model }) {
+async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking }) {
   // Open the SSE connection back to the client.
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -386,8 +386,17 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
       },
       body: JSON.stringify({
         model: pickModel(model),
-        max_tokens: 8000,
+        // Phase 168: when extended thinking is enabled, max_tokens
+        // must accommodate both the thinking budget AND the final
+        // output. 16K total = ~8K thinking + ~8K response.
+        max_tokens: useThinking ? 16000 : 8000,
         stream: true,
+        ...(useThinking ? {
+          thinking: { type: 'enabled', budget_tokens: 8000 },
+        } : {}),
+        // Anthropic requires temperature=1 when thinking is enabled
+        // (it samples from the model with no temperature dampening).
+        ...(useThinking ? { temperature: 1 } : {}),
         system: [
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
         ],
@@ -416,6 +425,11 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
     // Phase 154: capture Anthropic usage so the 'done' event can carry
     // input/output token counts back to the client for cost telemetry.
     const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
+    // Phase 168: extended-thinking text accumulates separately from
+    // the response JSON. Emitted in the 'done' event so the client can
+    // show an expandable "agent's reasoning" panel.
+    let thinking = '';
+    let thinkingCharCount = 0;
     // Phase 157: per-stream item extractor. Run it after every text
     // delta; emit each completed item as it materializes so the
     // client can render preview cards while the rest of the plan is
@@ -455,6 +469,17 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
                 send('item', { index: previewIndex, item: obj });
                 previewIndex += 1;
               } catch { /* ignore malformed partial; final parse handles it */ }
+            }
+          } else if (ev.type === 'content_block_delta' && ev.delta?.type === 'thinking_delta') {
+            const t = ev.delta.thinking || '';
+            thinking += t;
+            thinkingCharCount += t.length;
+            // Ping the client every ~800 chars of thinking so it can
+            // show "agent thinking… 3.2K chars" while no plan items
+            // have materialized yet.
+            if (thinkingCharCount >= 800) {
+              send('thinking', { charCount: thinking.length });
+              thinkingCharCount = 0;
             }
           } else if (ev.type === 'message_start' && ev.message?.usage) {
             usage.inputTokens = ev.message.usage.input_tokens || 0;
@@ -501,6 +526,8 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
       nextCheckInDays: 90,
       usage,
       model: pickModel(model),
+      thinking: useThinking ? thinking : undefined,
+      thinkingEnabled: !!useThinking,
     });
     res.end();
   } catch (err) {
@@ -519,7 +546,10 @@ export default async function handler(req, res) {
     res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
-  const { context, history, measuredState, priorPlan, stream: wantStream, model } = req.body || {};
+  const { context, history, measuredState, priorPlan, stream: wantStream, model, useThinking } = req.body || {};
+  // Extended thinking only on Opus 4.7. Sonnet 4.6 does not support
+  // it on the streaming path; silently downgrade to standard mode.
+  const effectiveThinking = useThinking === true && pickModel(model) === 'claude-opus-4-7';
   if (!context || typeof context !== 'object') {
     res.status(400).json({ error: 'context (object) is required' });
     return;
@@ -566,7 +596,7 @@ export default async function handler(req, res) {
   // it as a 'done' event with the same shape the non-streaming path
   // returns. Errors mid-stream surface as 'error' events.
   if (wantStream) {
-    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model });
+    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking: effectiveThinking });
   }
 
   try {
