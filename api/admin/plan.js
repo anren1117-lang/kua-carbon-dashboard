@@ -361,6 +361,74 @@ function pickModel(requested) {
   return ALLOWED_MODELS.includes(requested) ? requested : 'claude-opus-4-7';
 }
 
+// Phase 157: progressive item extraction during streaming. As the
+// agent emits text deltas, we run a small JSON state machine over
+// the accumulated text to detect when a top-level item INSIDE the
+// `"plan": [ ... ]` array has just been completed (`}` at the right
+// nesting level), then emit it as an SSE `item` event so the client
+// can render preview cards as items materialize.
+//
+// `state` carries the cursor across delta callbacks so we're O(N)
+// total across the whole stream rather than O(N²) per-delta.
+function createItemExtractor() {
+  const state = {
+    pos: 0,            // cursor position in fullText
+    arrayStart: -1,    // index just after the `[` of "plan": [...]
+    depth: 0,          // unmatched `{` count (1 = inside an item)
+    inString: false,
+    escape: false,
+    itemStart: -1,     // index of the `{` opening the current item
+    finished: false,
+  };
+  return function step(fullText) {
+    const items = [];
+    if (state.finished) return items;
+    // Find the "plan": [...] opening if we haven't yet.
+    if (state.arrayStart < 0) {
+      const keyIdx = fullText.indexOf('"plan"', state.pos);
+      if (keyIdx < 0) {
+        // Not enough text yet. Stay at current pos so we don't
+        // re-scan content already inspected.
+        state.pos = Math.max(0, fullText.length - 8);
+        return items;
+      }
+      const bracket = fullText.indexOf('[', keyIdx);
+      if (bracket < 0) {
+        state.pos = keyIdx;
+        return items;
+      }
+      state.arrayStart = bracket + 1;
+      state.pos = state.arrayStart;
+    }
+    for (let i = state.pos; i < fullText.length; i++) {
+      const c = fullText[i];
+      if (state.escape) { state.escape = false; continue; }
+      if (c === '\\' && state.inString) { state.escape = true; continue; }
+      if (state.inString) {
+        if (c === '"') state.inString = false;
+        continue;
+      }
+      if (c === '"') { state.inString = true; continue; }
+      if (c === '{') {
+        if (state.depth === 0) state.itemStart = i;
+        state.depth += 1;
+      } else if (c === '}') {
+        state.depth -= 1;
+        if (state.depth === 0 && state.itemStart >= 0) {
+          items.push(fullText.slice(state.itemStart, i + 1));
+          state.itemStart = -1;
+        }
+      } else if (c === ']' && state.depth === 0) {
+        state.finished = true;
+        state.pos = i + 1;
+        return items;
+      }
+    }
+    state.pos = fullText.length;
+    return items;
+  };
+}
+
 async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model }) {
   // Open the SSE connection back to the client.
   res.setHeader('Content-Type', 'text/event-stream');
@@ -411,6 +479,12 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
     // Phase 154: capture Anthropic usage so the 'done' event can carry
     // input/output token counts back to the client for cost telemetry.
     const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
+    // Phase 157: per-stream item extractor. Run it after every text
+    // delta; emit each completed item as it materializes so the
+    // client can render preview cards while the rest of the plan is
+    // still being drafted.
+    const stepExtractor = createItemExtractor();
+    let previewIndex = 0;
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
@@ -433,6 +507,17 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
             if (charCount >= 200) {
               send('progress', { charCount: fullText.length });
               charCount = 0;
+            }
+            // Phase 157: try to extract any newly-complete plan items
+            // and emit them as preview events. Per-item cost is small;
+            // the state machine is O(N) across the whole stream.
+            const newItems = stepExtractor(fullText);
+            for (const itemText of newItems) {
+              try {
+                const obj = JSON.parse(itemText);
+                send('item', { index: previewIndex, item: obj });
+                previewIndex += 1;
+              } catch { /* ignore malformed partial; final parse handles it */ }
             }
           } else if (ev.type === 'message_start' && ev.message?.usage) {
             usage.inputTokens = ev.message.usage.input_tokens || 0;

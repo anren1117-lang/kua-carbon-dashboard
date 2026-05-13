@@ -252,6 +252,11 @@ export default function AdminPlanAgent() {
   // Phase 119: streaming-progress state. charCount ticks while the
   // plan is generating. Shown as "Drafting plan… 1,245 chars so far".
   const [streamChars, setStreamChars] = useState(0);
+  // Phase 157: live preview of plan items as they materialize during
+  // streaming. Cleared on each generate. Each entry is an item object
+  // matching the canonical plan-item shape (title, expectedMtPerYear,
+  // category, ...).
+  const [previewItems, setPreviewItems] = useState([]);
   // Phase 127: track stream start so the button label can show
   // "Drafting plan… 12s · 1,245 chars". The timer updates state
   // every second while loading is true.
@@ -643,6 +648,7 @@ export default function AdminPlanAgent() {
         : null;
       setStreamChars(0);
       setStreamStartedAt(Date.now());
+      setPreviewItems([]);
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
         body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true, model: planModel }),
@@ -677,6 +683,10 @@ export default function AdminPlanAgent() {
           if (!payload) continue;
           if (event === 'progress') {
             setStreamChars(payload.charCount || 0);
+          } else if (event === 'item') {
+            // Phase 157: append the freshly materialized item so the
+            // preview cards stack up as the agent drafts.
+            setPreviewItems((cur) => [...cur, payload.item]);
           } else if (event === 'done') {
             finalPlan = payload;
           } else if (event === 'error') {
@@ -941,6 +951,9 @@ export default function AdminPlanAgent() {
           )}
         </div>
         {error && <div role="alert" style={styles.error}>{error}</div>}
+        {loading && previewItems.length > 0 && (
+          <PlanPreviewList items={previewItems} />
+        )}
       </ModuleSection>
 
       {hasPlan && (
@@ -2240,6 +2253,52 @@ function ImplementationMemo({ memo, generatedAt }) {
 const PRICING = {
   'claude-opus-4-7':   { input: 15, output: 75 },
   'claude-sonnet-4-6': { input:  3, output: 15 },
+};
+
+// Phase 157: live preview of plan items as they materialize during
+// streaming. The server's createItemExtractor() emits each complete
+// item as a separate SSE event; this just stacks them up as compact
+// cards so the admin sees concrete output instead of "drafting plan…
+// 1,245 chars" alone.
+function PlanPreviewList({ items }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div style={previewStyles.wrap}>
+      <div style={previewStyles.head}>
+        <span style={previewStyles.label}>🪄 Drafting…</span>
+        <span style={previewStyles.count}>{items.length} item{items.length === 1 ? '' : 's'} so far</span>
+      </div>
+      <ol style={previewStyles.list}>
+        {items.map((it, i) => (
+          <li key={i} style={previewStyles.li}>
+            <span style={previewStyles.rank}>#{i + 1}</span>
+            <span style={previewStyles.title}>{it.title || '(no title yet)'}</span>
+            {typeof it.expectedMtPerYear === 'number' && (
+              <span style={previewStyles.mt}>{Math.round(it.expectedMtPerYear)} mt/yr</span>
+            )}
+            {it.category && <span style={previewStyles.cat}>{it.category}</span>}
+          </li>
+        ))}
+        <li style={{ ...previewStyles.li, fontStyle: 'italic', color: '#64748b' }}>
+          <span style={previewStyles.rank}>#{items.length + 1}</span>
+          <span>thinking…</span>
+        </li>
+      </ol>
+    </div>
+  );
+}
+
+const previewStyles = {
+  wrap: { marginTop: 14, padding: '12px 16px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 8 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, fontSize: 11, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  label: {},
+  count: { color: '#94a3b8', fontWeight: 600 },
+  list: { margin: 0, paddingLeft: 0, listStyle: 'none' },
+  li: { display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 0', fontSize: 13, color: '#cbd5e1', borderBottom: '1px solid #1f2937' },
+  rank: { color: '#64748b', fontWeight: 800, fontVariantNumeric: 'tabular-nums', minWidth: 28 },
+  title: { flex: 1 },
+  mt: { color: '#86efac', fontWeight: 700, fontVariantNumeric: 'tabular-nums', fontSize: 12 },
+  cat: { fontSize: 11, color: '#94a3b8', padding: '2px 6px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4 },
 };
 
 // Compact summary of Anthropic usage block. Token counts come straight
