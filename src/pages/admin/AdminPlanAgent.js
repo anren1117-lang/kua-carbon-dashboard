@@ -358,6 +358,18 @@ export default function AdminPlanAgent() {
   // to compact for 8+ item plans so admins don't have to scroll a
   // wall of cards on first render.
   const [planItemMode, setPlanItemMode] = useState(() => (plan?.plan?.length ?? 0) >= 8 ? 'compact' : 'detailed');
+
+  // Phase 151: admin chooses Opus 4.7 (deep, slow ~30-60s) or Sonnet
+  // 4.6 (faster ~10-20s, slightly less coherent on 12-item plans).
+  // Default Opus. Persisted so iteration preference sticks.
+  const MODEL_KEY = 'kua_admin_plan_model';
+  const [planModel, setPlanModel] = useState(() => {
+    try { return localStorage.getItem(MODEL_KEY) || 'claude-opus-4-7'; }
+    catch { return 'claude-opus-4-7'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(MODEL_KEY, planModel); } catch {}
+  }, [planModel]);
   // Re-apply the default when a fresh plan lands (after Generate).
   useEffect(() => {
     if (plan?.plan?.length) {
@@ -619,7 +631,7 @@ export default function AdminPlanAgent() {
       setStreamStartedAt(Date.now());
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true }),
+        body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true, model: planModel }),
         signal: ac.signal,
       });
       if (!res.ok) {
@@ -681,7 +693,7 @@ export default function AdminPlanAgent() {
       planAbortRef.current = null;
       setLoading(false);
     }
-  }, [context, history, live]);
+  }, [context, history, live, planModel]);
 
   const completeItem = (item) => {
     // Two-step prompt — first capture the actual mt saved (defaults
@@ -885,6 +897,23 @@ export default function AdminPlanAgent() {
             >
               ✕ Cancel
             </button>
+          )}
+          {!loading && (
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8', cursor: 'pointer' }}
+              title="Opus 4.7 produces the most coherent 12-item plan but takes 30-60s. Sonnet 4.6 is ~3× faster and good for iteration."
+            >
+              <span>Model:</span>
+              <select
+                value={planModel}
+                onChange={(e) => setPlanModel(e.target.value)}
+                disabled={loading}
+                style={{ padding: '4px 8px', background: '#0b1220', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 4, fontSize: 12, fontFamily: 'inherit', cursor: 'pointer' }}
+              >
+                <option value="claude-opus-4-7">Opus 4.7 (deep)</option>
+                <option value="claude-sonnet-4-6">Sonnet 4.6 (fast)</option>
+              </select>
+            </label>
           )}
           {!loading && contextIsComplete(context) && (
             <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>

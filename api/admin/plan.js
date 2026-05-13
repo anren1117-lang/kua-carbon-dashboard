@@ -354,7 +354,14 @@ function cleanPlanItem(p, i, fallbackCategory) {
   };
 }
 
-async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan }) {
+// Admins can opt into a faster Sonnet model for iteration. The
+// default — and the choice for final plans — is Opus 4.7.
+const ALLOWED_MODELS = ['claude-opus-4-7', 'claude-sonnet-4-6'];
+function pickModel(requested) {
+  return ALLOWED_MODELS.includes(requested) ? requested : 'claude-opus-4-7';
+}
+
+async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model }) {
   // Open the SSE connection back to the client.
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -373,7 +380,7 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-7',
+        model: pickModel(model),
         max_tokens: 8000,
         stream: true,
         system: [
@@ -479,7 +486,7 @@ export default async function handler(req, res) {
     res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
-  const { context, history, measuredState, priorPlan, stream: wantStream } = req.body || {};
+  const { context, history, measuredState, priorPlan, stream: wantStream, model } = req.body || {};
   if (!context || typeof context !== 'object') {
     res.status(400).json({ error: 'context (object) is required' });
     return;
@@ -526,7 +533,7 @@ export default async function handler(req, res) {
   // it as a 'done' event with the same shape the non-streaming path
   // returns. Errors mid-stream surface as 'error' events.
   if (wantStream) {
-    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan });
+    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model });
   }
 
   try {
@@ -545,7 +552,7 @@ export default async function handler(req, res) {
         // on coherent multi-item prioritization + KUA-specific
         // tailoring. Other endpoints (memo, chat, ingestion) stay on
         // Sonnet — those are narrower tasks where Sonnet matches.
-        model: 'claude-opus-4-7',
+        model: pickModel(model),
         max_tokens: 8000,
         // Phase 109: prompt caching on the stable system prompt.
         // It's a ~3 KB anchor (KUA fingerprint + peer benchmarks +
