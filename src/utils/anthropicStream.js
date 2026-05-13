@@ -108,3 +108,83 @@ export function tryParseJsonLoose(text) {
   if (!match) return null;
   try { return JSON.parse(match[0]); } catch { return null; }
 }
+
+/**
+ * Phase 157+: progressive item extraction during JSON streaming.
+ *
+ * Returns a stepper function. Each call passes the accumulating
+ * fullText; the stepper returns any TOP-LEVEL items that have just
+ * been completed inside the array reachable from `arrayKey`.
+ *
+ * Tracks brace depth + string state across calls so the work is O(N)
+ * across the whole stream (not O(N²) per delta).
+ *
+ *   const step = createItemExtractor('plan');
+ *   while (streaming) {
+ *     fullText += delta;
+ *     for (const itemText of step(fullText)) {
+ *       try { send('item', JSON.parse(itemText)); } catch {}
+ *     }
+ *   }
+ *
+ * @param {string} arrayKey  JSON key whose array elements to extract
+ *                           ("plan", "extractedRows", etc.)
+ */
+export function createItemExtractor(arrayKey) {
+  const needle = `"${arrayKey}"`;
+  const state = {
+    pos: 0,
+    arrayStart: -1,
+    depth: 0,
+    inString: false,
+    escape: false,
+    itemStart: -1,
+    finished: false,
+  };
+  return function step(fullText) {
+    const items = [];
+    if (state.finished) return items;
+    if (state.arrayStart < 0) {
+      const keyIdx = fullText.indexOf(needle, state.pos);
+      if (keyIdx < 0) {
+        // Stay close to the tail so we re-check newly arrived bytes
+        // without re-scanning the whole accumulator.
+        state.pos = Math.max(0, fullText.length - needle.length);
+        return items;
+      }
+      const bracket = fullText.indexOf('[', keyIdx);
+      if (bracket < 0) {
+        state.pos = keyIdx;
+        return items;
+      }
+      state.arrayStart = bracket + 1;
+      state.pos = state.arrayStart;
+    }
+    for (let i = state.pos; i < fullText.length; i++) {
+      const c = fullText[i];
+      if (state.escape) { state.escape = false; continue; }
+      if (c === '\\' && state.inString) { state.escape = true; continue; }
+      if (state.inString) {
+        if (c === '"') state.inString = false;
+        continue;
+      }
+      if (c === '"') { state.inString = true; continue; }
+      if (c === '{') {
+        if (state.depth === 0) state.itemStart = i;
+        state.depth += 1;
+      } else if (c === '}') {
+        state.depth -= 1;
+        if (state.depth === 0 && state.itemStart >= 0) {
+          items.push(fullText.slice(state.itemStart, i + 1));
+          state.itemStart = -1;
+        }
+      } else if (c === ']' && state.depth === 0) {
+        state.finished = true;
+        state.pos = i + 1;
+        return items;
+      }
+    }
+    state.pos = fullText.length;
+    return items;
+  };
+}

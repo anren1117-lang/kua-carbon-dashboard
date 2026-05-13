@@ -37,6 +37,7 @@
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
+import { createItemExtractor } from '../../src/utils/anthropicStream.js';
 
 // Generous per-IP throttle — each call can burn ~10K input tokens
 // (a multi-page PDF), so we limit aggressive batch ingestion.
@@ -188,6 +189,11 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
     let buffer = '';
     let fullText = '';
     let charCount = 0;
+    // Phase 158: progressive row extraction during streaming. Each
+    // row in "extractedRows": [...] gets emitted as an SSE `item`
+    // event as soon as the closing `}` lands.
+    const stepExtractor = createItemExtractor('extractedRows');
+    let previewIndex = 0;
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
@@ -207,6 +213,14 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
             if (charCount >= 200) {
               send('progress', { charCount: fullText.length });
               charCount = 0;
+            }
+            const newRows = stepExtractor(fullText);
+            for (const rowText of newRows) {
+              try {
+                const obj = JSON.parse(rowText);
+                send('item', { index: previewIndex, item: obj });
+                previewIndex += 1;
+              } catch { /* malformed partial; final parse handles it */ }
             }
           } else if (ev.type === 'message_stop') {
             break;

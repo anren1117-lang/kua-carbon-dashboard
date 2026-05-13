@@ -4,6 +4,25 @@ import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { AIError } from './AdminPlanAgent.js';
+
+const previewBoxStyles = {
+  wrap: { marginTop: 14, padding: '12px 16px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 8 },
+  head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, fontSize: 11, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  label: {},
+  count: { color: '#94a3b8', fontWeight: 600 },
+  list: { margin: 0, paddingLeft: 0, listStyle: 'none' },
+  li: { display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 0', fontSize: 13, color: '#cbd5e1', borderBottom: '1px solid #1f2937' },
+  rank: { color: '#64748b', fontWeight: 800, fontVariantNumeric: 'tabular-nums', minWidth: 28 },
+  table: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, color: '#22d3ee' },
+  scope: { fontSize: 11, color: '#94a3b8' },
+  conf: (level) => ({
+    fontSize: 11,
+    padding: '2px 6px',
+    borderRadius: 4,
+    background: level === 'high' ? '#052e1a' : level === 'medium' ? '#3a2a0d' : '#3a0d0d',
+    color: level === 'high' ? '#86efac' : level === 'medium' ? '#fbbf24' : '#fca5a5',
+  }),
+};
 import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 
 // /admin/ai-ingestion
@@ -317,6 +336,8 @@ function AdminAIIngestion() {
   // Live char-count + elapsed-time progress while the streaming
   // extraction runs.
   const [streamChars, setStreamChars] = useState(0);
+  // Phase 158: live preview of rows as the AI extracts them.
+  const [previewRows, setPreviewRows] = useState([]);
   const [streamStartedAt, setStreamStartedAt] = useState(null);
   const [streamElapsed, setStreamElapsed] = useState(0);
   useEffect(() => {
@@ -381,6 +402,7 @@ function AdminAIIngestion() {
     setResult(null);
     setRowStates({});
     setStreamChars(0);
+    setPreviewRows([]);
     setStreamStartedAt(Date.now());
     const ac = new AbortController();
     extractAbortRef.current = ac;
@@ -423,6 +445,7 @@ function AdminAIIngestion() {
           try { payload = JSON.parse(dataLine.slice(6)); } catch {}
           if (!payload) continue;
           if (event === 'progress')      setStreamChars(payload.charCount || 0);
+          else if (event === 'item')     setPreviewRows((cur) => [...cur, payload.item]);
           else if (event === 'done')     finalBody = payload;
           else if (event === 'error')    throw new Error(payload.message || 'stream error');
         }
@@ -803,6 +826,28 @@ function AdminAIIngestion() {
         </div>
 
         <AIError label="Error" error={error} onRetry={submit} busy={busy} />
+        {busy && previewRows.length > 0 && (
+          <div style={previewBoxStyles.wrap}>
+            <div style={previewBoxStyles.head}>
+              <span style={previewBoxStyles.label}>🪄 Extracting…</span>
+              <span style={previewBoxStyles.count}>{previewRows.length} row{previewRows.length === 1 ? '' : 's'} so far</span>
+            </div>
+            <ol style={previewBoxStyles.list}>
+              {previewRows.map((row, i) => (
+                <li key={i} style={previewBoxStyles.li}>
+                  <span style={previewBoxStyles.rank}>#{i + 1}</span>
+                  <span style={previewBoxStyles.table}>{row.table || '(no table)'}</span>
+                  <span style={previewBoxStyles.scope}>{row.scope || ''}</span>
+                  {row.confidence && <span style={previewBoxStyles.conf(row.confidence)}>{row.confidence}</span>}
+                </li>
+              ))}
+              <li style={{ ...previewBoxStyles.li, fontStyle: 'italic', color: '#64748b' }}>
+                <span style={previewBoxStyles.rank}>#{previewRows.length + 1}</span>
+                <span>thinking…</span>
+              </li>
+            </ol>
+          </div>
+        )}
       </div>
 
       {result && (
