@@ -172,6 +172,22 @@ function buildUserMessage(context, history, measuredState, priorPlan) {
         }
         return c.title + tag;
       }).join('; ')}`);
+      // Aggregate calibration — surface the systematic optimism/
+      // pessimism so the agent can calibrate the new plan's expectedMt
+      // numbers (e.g. "previous estimates ran 18% high → trim 15-20%
+      // from the analogous lever this time").
+      const calibratable = history.completed.filter((c) => {
+        const e = Number(c.expectedMt);
+        const a = Number(c.mtSaved);
+        return Number.isFinite(e) && e > 0 && Number.isFinite(a) && a >= 0;
+      });
+      if (calibratable.length >= 2) {
+        const tExp = calibratable.reduce((s, c) => s + Number(c.expectedMt), 0);
+        const tAct = calibratable.reduce((s, c) => s + Number(c.mtSaved), 0);
+        const pct = ((tAct - tExp) / tExp) * 100;
+        const direction = pct >= 5 ? 'beating' : pct <= -5 ? 'underdelivering on' : 'tracking';
+        lines.push(`- Calibration: across ${calibratable.length} shipped items, actuals are ${pct.toFixed(1)}% vs estimates — admin is ${direction} the plan. Adjust expectedMtPerYear for similar levers accordingly (don't blindly copy prior numbers if calibration signal is significant).`);
+      }
     }
     if (history.declined?.length) {
       lines.push(`- Declined / vetoed: ${history.declined.map((d) => d.title + (d.reason ? ` — ${d.reason}` : '')).join('; ')}`);
