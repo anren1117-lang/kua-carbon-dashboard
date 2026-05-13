@@ -898,6 +898,7 @@ export default function AdminPlanAgent() {
           {history.completed.length > 0 && (
             <div style={styles.historyBlock}>
               <div style={styles.historyTitle}>Shipped ({history.completed.length}) · {Math.round(mtAlreadySaved).toLocaleString()} mt/yr</div>
+              <CalibrationBadge completed={history.completed} />
               <ul style={styles.historyList}>
                 {history.completed.map((c, i) => {
                   // Show variance vs estimate when both are available.
@@ -1982,6 +1983,49 @@ function ImplementationMemo({ memo, generatedAt }) {
           </div>
         </MemoSection>
       )}
+    </div>
+  );
+}
+
+// Aggregate calibration of expected vs actual across shipped items.
+// Hidden until there are at least 2 items with both numbers; below
+// that, the sample is too small for "estimates run X% high/low" to
+// mean anything.
+function CalibrationBadge({ completed }) {
+  const both = (completed || []).filter((c) => {
+    const e = Number(c.expectedMt);
+    const a = Number(c.mtSaved);
+    return Number.isFinite(e) && e > 0 && Number.isFinite(a) && a >= 0;
+  });
+  if (both.length < 2) return null;
+  const totalExpected = both.reduce((s, c) => s + Number(c.expectedMt), 0);
+  const totalActual = both.reduce((s, c) => s + Number(c.mtSaved), 0);
+  const variancePct = ((totalActual - totalExpected) / totalExpected) * 100;
+  const sign = variancePct >= 0 ? '+' : '';
+  const color = variancePct >= 5 ? '#86efac' : variancePct <= -5 ? '#fbbf24' : '#cbd5e1';
+  const verdict = variancePct >= 5
+    ? 'beating estimates'
+    : variancePct <= -5
+      ? 'underdelivering vs estimates'
+      : 'tracking estimates';
+  return (
+    <div
+      role="status"
+      style={{
+        margin: '6px 0 10px',
+        padding: '8px 12px',
+        background: '#0b1220',
+        border: '1px solid #1f2937',
+        borderLeft: `4px solid ${color}`,
+        borderRadius: 6,
+        fontSize: 12,
+        color: '#cbd5e1',
+      }}
+    >
+      <strong style={{ color, fontWeight: 800 }}>{sign}{variancePct.toFixed(1)}%</strong>
+      {' '}across <strong>{both.length}</strong> shipped item{both.length === 1 ? '' : 's'} —
+      {' '}actuals {Math.round(totalActual).toLocaleString()} mt vs estimate {Math.round(totalExpected).toLocaleString()} mt
+      {' · '}<span style={{ color }}>{verdict}</span>
     </div>
   );
 }
