@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
@@ -359,6 +359,17 @@ function AdminAIIngestion() {
     return () => window.removeEventListener('keydown', onKey);
   }, [busy, text, images, result]);
 
+  // AbortController for the in-flight extraction request. Same
+  // pattern as AdminPlanAgent's planAbortRef (Phase 147) — the
+  // ✕ Cancel button calls .abort() and the catch branches on
+  // AbortError for a friendly cancellation message.
+  const extractAbortRef = useRef(null);
+  function cancelExtraction() {
+    if (extractAbortRef.current) {
+      try { extractAbortRef.current.abort(); } catch {}
+    }
+  }
+
   async function submit() {
     if (text.trim().length < 20 && images.length === 0) {
       setError('Paste at least 20 characters of source text or attach an image.');
@@ -370,6 +381,8 @@ function AdminAIIngestion() {
     setRowStates({});
     setStreamChars(0);
     setStreamStartedAt(Date.now());
+    const ac = new AbortController();
+    extractAbortRef.current = ac;
     try {
       const r = await adminFetch('/api/admin/ai-ingestion', {
         method: 'POST',
@@ -382,6 +395,7 @@ function AdminAIIngestion() {
             : undefined,
           stream: true,
         }),
+        signal: ac.signal,
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -457,8 +471,13 @@ function AdminAIIngestion() {
         }, 80);
       }
     } catch (err) {
-      setError(err.message);
+      if (err?.name === 'AbortError') {
+        setError('Extraction cancelled.');
+      } else {
+        setError(err.message);
+      }
     } finally {
+      extractAbortRef.current = null;
       setBusy(false);
     }
   }
@@ -736,6 +755,26 @@ function AdminAIIngestion() {
           <button type="button" style={styles.submit} onClick={submit} disabled={busy || (text.trim().length < 20 && images.length === 0)}>
             {busy ? 'Extracting…' : '🧠 Extract structured rows'}
           </button>
+          {busy && (
+            <button
+              type="button"
+              onClick={cancelExtraction}
+              style={{
+                padding: '8px 14px',
+                background: 'transparent',
+                color: '#fca5a5',
+                border: '1px solid #7f1d1d',
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+              title="Stop the in-flight extraction. Partial output is discarded."
+            >
+              ✕ Cancel
+            </button>
+          )}
           {!busy && (
             <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>
               ⌘↵ extract · Esc clear
