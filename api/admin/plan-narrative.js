@@ -61,7 +61,16 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
   "financialCase": "1 paragraph. Total capital ask + opex ask, broken into 'this-year' vs 'multi-year' commitments. The mt/$ value. Compare to KUA's typical capital cadence.",
   "riskNarrative": "1 paragraph. The 2-3 biggest risks to this plan, named honestly. What we'll do if X goes wrong. Boards respect this section more than the success section.",
   "successScenario": "1 paragraph. If everything in the 'this-year' tier ships, what does end-of-FY look like? Concrete: 'X mt off the books, Y items completed, Z still to do.'",
-  "boardAsk": "1 paragraph. Concrete asks of the Board this meeting: approve capital line A; charter committee for B; receive informational update on C. Not 'support our work' — actual votes."
+  "boardAsk": "1 paragraph. Concrete asks of the Board this meeting: approve capital line A; charter committee for B; receive informational update on C. Not 'support our work' — actual votes.",
+  "selfCritique": {
+    "overallConfidence": "high | medium | low — how confident are you the narrative would survive Q&A from a sharp Trustee?",
+    "weaknesses": [
+      "1-4 bullets. What's shaky in YOUR narrative: claims you couldn't fully ground in the provided context, paragraphs where the strategic logic depends on assumptions about KUA you don't actually know (e.g., the board's political appetite for capital asks). Concrete, NOT marketing voice."
+    ],
+    "openQuestions": [
+      "1-3 questions the admin should sanity-check before sending this to the Board. Examples: 'Is the Hotchkiss biomass comparison still apt given KUA's lack of regional wood supply chain?', 'Has Densmore's lifecycle audit actually completed?'"
+    ]
+  }
 }
 
 Rules:
@@ -69,7 +78,8 @@ Rules:
 2. Every claim about KUA's emissions should map to a number in the provided context or plan.
 3. When referencing peer schools, name one or two specifically and what they did (Andover's PPA, Exeter's geothermal, Hotchkiss's biomass plant, etc.). Don't overdo it.
 4. The boardAsk section is the most important — make it concrete enough that a Trustee could form a motion from it.
-5. Each section is one paragraph (except strategicChoice which can be two). No section longer than 7 sentences.`;
+5. Each section is one paragraph (except strategicChoice which can be two). No section longer than 7 sentences.
+6. selfCritique is REQUIRED. Boards are sophisticated; an admin who walks in with the agent's own articulated doubts handles Q&A better than one with a glossy pitch.`;
 
 function buildUserMessage(plan, context, history, measuredState) {
   const lines = ['Plan + context to write the narrative for:', ''];
@@ -154,6 +164,16 @@ export default async function handler(req, res) {
 
   // Extract + clean the 7-section narrative from a parsed JSON object.
   function cleanNarrative(parsed) {
+    // Phase 172: extract optional selfCritique block, mirroring the
+    // plan endpoint's sanitization pattern.
+    const sc = parsed?.selfCritique;
+    const cleanArr = (v, max, cap = 280) =>
+      Array.isArray(v) ? v.slice(0, max).map((s) => String(s).slice(0, cap)).filter(Boolean) : [];
+    const selfCritique = sc && typeof sc === 'object' ? {
+      overallConfidence: ['high', 'medium', 'low'].includes(sc.overallConfidence) ? sc.overallConfidence : 'medium',
+      weaknesses: cleanArr(sc.weaknesses, 6, 320),
+      openQuestions: cleanArr(sc.openQuestions, 5, 280),
+    } : null;
     return {
       title:           String(parsed?.title || 'Board Brief').slice(0, 200),
       openingFrame:    String(parsed?.openingFrame || '').slice(0, 2000),
@@ -163,6 +183,7 @@ export default async function handler(req, res) {
       riskNarrative:   String(parsed?.riskNarrative || '').slice(0, 2000),
       successScenario: String(parsed?.successScenario || '').slice(0, 2000),
       boardAsk:        String(parsed?.boardAsk || '').slice(0, 2000),
+      selfCritique,
     };
   }
 

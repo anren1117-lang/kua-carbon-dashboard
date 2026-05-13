@@ -3423,6 +3423,7 @@ function BoardNarrative({ narrative, generatedAt, usage, model, thinking }) {
           </section>
         ) : null
       ))}
+      {narrative.selfCritique && <SelfCritiquePanel critique={narrative.selfCritique} />}
       {thinking && <ThinkingPanel thinking={thinking} />}
     </div>
   );
