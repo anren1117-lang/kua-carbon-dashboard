@@ -6,6 +6,7 @@ import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
 import { adminFetch } from '../../utils/adminFetch.js';
+import { downloadBlob } from '../../utils/csv.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
@@ -60,18 +61,8 @@ async function parseSSE(response, onDelta, onProgress) {
 
 // Browser-only download helper. Builds a blob URL, clicks an anchor,
 // revokes. Same pattern src/utils/csv.js uses.
-function triggerDownload(filename, text, mime) {
-  if (typeof window === 'undefined') return;
-  const blob = new Blob([text], { type: mime || 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+// Use the shared utility — same implementation, single source of truth.
+const triggerDownload = (filename, text, mime) => downloadBlob(filename, text, mime);
 
 function exportPlanMarkdown(plan, context) {
   if (!plan || !Array.isArray(plan.plan)) return;

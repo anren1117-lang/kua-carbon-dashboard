@@ -153,12 +153,21 @@ export function parseCsv(text) {
  * @param {string} filename
  * @param {string} csv         Output of toCsv()
  */
-export function downloadCsv(filename, csv) {
+/**
+ * Trigger a browser download of arbitrary text content. Generalized
+ * from downloadCsv — the only thing that varies between CSV / JSON /
+ * Markdown exports is the MIME type. No-ops on the server.
+ *
+ * @param {string} filename
+ * @param {string} text
+ * @param {string} [mime='text/plain;charset=utf-8']
+ */
+export function downloadBlob(filename, text, mime = 'text/plain;charset=utf-8') {
   if (typeof document === 'undefined' || typeof URL === 'undefined') return;
   // Lazily build a Blob so we don't keep the string in memory after
   // the download starts. revokeObjectURL after a tick to free the
   // URL once the browser has consumed it.
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob([text], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -172,4 +181,9 @@ export function downloadCsv(filename, csv) {
     // setTimeout where no caller can catch it.
     if (typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url);
   }, 0);
+}
+
+// Backward-compat alias — many callers still import downloadCsv.
+export function downloadCsv(filename, csv) {
+  return downloadBlob(filename, csv, 'text/csv;charset=utf-8');
 }
