@@ -1080,6 +1080,7 @@ export default function AdminPlanAgent() {
             />
           )}
           {plan.thinking && <ThinkingPanel thinking={plan.thinking} />}
+          {plan.selfCritique && <SelfCritiquePanel critique={plan.selfCritique} />}
           <div style={styles.summary}>{plan.summary}</div>
           <div style={styles.heroRow}>
             <Hero label="Plan annual reduction"     value={`${Math.round(totalMt).toLocaleString()}`} unit="mtCO₂e/yr" accent="#86efac" />
@@ -2524,6 +2525,72 @@ const aiErrorStyles = {
     fontWeight: 700,
     fontFamily: 'inherit',
   },
+};
+
+// Phase 170: agent's self-critique of its own plan. The plan
+// endpoint asks the model to enumerate weaknesses, alternative
+// framings, and open questions it can't answer from context.
+// Surfacing this honestly is what makes the agent trustworthy —
+// admin sees both the recommendation AND the agent's calibrated
+// uncertainty about it.
+function SelfCritiquePanel({ critique }) {
+  const [open, setOpen] = useState(true);
+  if (!critique) return null;
+  const conf = critique.overallConfidence || 'medium';
+  const confColor = conf === 'high' ? '#86efac' : conf === 'low' ? '#fca5a5' : '#fbbf24';
+  return (
+    <div style={critiqueStyles.wrap}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        style={critiqueStyles.toggle}
+      >
+        <span>{open ? '▼' : '▶'}</span>
+        <span style={critiqueStyles.label}>🔍 Agent's self-critique</span>
+        <span style={{ ...critiqueStyles.confidence, color: confColor }}>{conf} confidence</span>
+      </button>
+      {open && (
+        <div style={critiqueStyles.body}>
+          {Array.isArray(critique.weaknesses) && critique.weaknesses.length > 0 && (
+            <div style={critiqueStyles.section}>
+              <div style={{ ...critiqueStyles.sectionLabel, color: '#fcd34d' }}>Weaknesses</div>
+              <ul style={critiqueStyles.list}>
+                {critique.weaknesses.map((w, i) => <li key={i} style={critiqueStyles.li}>{w}</li>)}
+              </ul>
+            </div>
+          )}
+          {critique.alternativeFraming && (
+            <div style={critiqueStyles.section}>
+              <div style={{ ...critiqueStyles.sectionLabel, color: '#a5b4fc' }}>Alternative framing</div>
+              <p style={critiqueStyles.para}>{critique.alternativeFraming}</p>
+            </div>
+          )}
+          {Array.isArray(critique.openQuestions) && critique.openQuestions.length > 0 && (
+            <div style={critiqueStyles.section}>
+              <div style={{ ...critiqueStyles.sectionLabel, color: '#7dd3fc' }}>Open questions for the admin</div>
+              <ul style={critiqueStyles.list}>
+                {critique.openQuestions.map((q, i) => <li key={i} style={critiqueStyles.li}>{q}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const critiqueStyles = {
+  wrap: { marginBottom: 16, background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #fbbf24', borderRadius: 8 },
+  toggle: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 14px', background: 'transparent', color: '#fcd34d', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' },
+  label: { textTransform: 'uppercase', letterSpacing: 0.6, flex: 1 },
+  confidence: { fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 },
+  body: { padding: '0 16px 14px' },
+  section: { marginTop: 10 },
+  sectionLabel: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+  list: { margin: 0, paddingLeft: 18, fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 },
+  li: { marginBottom: 4 },
+  para: { margin: 0, fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 },
 };
 
 // Phase 168: collapsible panel exposing the model's extended-

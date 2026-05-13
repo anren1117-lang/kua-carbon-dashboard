@@ -105,7 +105,17 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
       "dataSource": "Cite the type of source the mt + $ benchmarks come from. Examples: 'Project Drawdown plant-rich diets', 'NREL PVWatts simulation for NH', 'EPA WARM model v15.1', 'NEEP cold-climate heat-pump performance data', 'GHG Protocol Scope 3 Cat 7 + ICCT fuel economy', 'EPA ENERGY STAR commercial LED savings'. Do NOT fabricate specific page numbers or precise paper titles.",
       "provenance": "measured | cited | estimated. Use 'measured' ONLY if the mt comes from a real KUA meter or invoice (BMS, fuel deliveries, utility bills). Use 'cited' if the methodology is published (EPA, IPCC, NREL, Drawdown) AND the input quantities are reasonable for KUA. Use 'estimated' if either the input quantity (acreage, fuel use, fleet miles) or the resulting mt is your best-effort guess that needs replacement with measured data. When in doubt, use 'estimated' — never inflate confidence."
     }
-  ]
+  ],
+  "selfCritique": {
+    "overallConfidence": "high | medium | low — your own confidence that this plan would survive board scrutiny.",
+    "weaknesses": [
+      "1-4 short bullets. Be honest about what's shaky in YOUR plan: items where the mt estimate is a wide range, items that might overlap or double-count, items that depend on inputs you don't actually know, peer benchmarks you cited without verification. Concrete, NOT marketing voice."
+    ],
+    "alternativeFraming": "1-2 sentences. If a reasonable Head of School said 'I disagree with the priority ordering', what's the most defensible counter-framing? (E.g., 'A capital-heavy heat-pump-first framing would also be defensible if the board's regulatory exposure shifts.')",
+    "openQuestions": [
+      "1-3 short questions the admin should answer to firm this plan up. Examples: 'What did the 2025 boiler audit conclude on Densmore's lifecycle?', 'Is the Hotchkiss biomass program a realistic regional supply chain for KUA?'"
+    ]
+  }
 }
 
 Rules:
@@ -125,7 +135,8 @@ Rules:
 4. paybackYears = estimatedCostUsd ÷ (expectedMtPerYear × $200/mt social cost) for capital projects, or "0" for no-cost / opex levers. The model can use other reasonable cost-of-carbon assumptions.
 5. Honor history: never propose a completed item again. Never propose a declined item again. The "why" line must reflect the current context — if topPriority is 'scope1' and the item is scope2, explain why it's still on the list (lower-effort, faster payback, bridge action).
 6. No filler. Every item must have realistic mt + $ numbers that justify the priority order.
-7. The "why" line is 1-3 sentences, reads like a memo to the Sustainability Committee — specific to KUA's context (mention the fuel mix, climate, enrollment, forest, budget appetite where relevant).`;
+7. The "why" line is 1-3 sentences, reads like a memo to the Sustainability Committee — specific to KUA's context (mention the fuel mix, climate, enrollment, forest, budget appetite where relevant).
+8. selfCritique is REQUIRED, not optional. Be ruthlessly honest — overconfident plans erode trust when actuals come in 30% under estimate. If you only have 1 weak spot, list 1. If you have 4, list 4. The admin will respect honesty more than a polished pitch.`;
 
 function buildUserMessage(context, history, measuredState, priorPlan, extraContext) {
   const lines = [
@@ -353,6 +364,23 @@ function tryParseJson(text) {
 // Coerce a raw LLM plan-item object into the same shape the non-
 // streaming path returns. Pulled out so both paths share the
 // post-parse cleanup.
+// Phase 170: sanitize the self-critique block so a malformed LLM
+// response doesn't break the UI. Each field has a sensible default.
+function cleanSelfCritique(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const cleanArr = (v, max, cap = 280) =>
+    Array.isArray(v) ? v.slice(0, max).map((s) => String(s).slice(0, cap)).filter(Boolean) : [];
+  const confidence = ['high', 'medium', 'low'].includes(raw.overallConfidence)
+    ? raw.overallConfidence
+    : 'medium';
+  return {
+    overallConfidence: confidence,
+    weaknesses: cleanArr(raw.weaknesses, 6, 320),
+    alternativeFraming: String(raw.alternativeFraming || '').slice(0, 500),
+    openQuestions: cleanArr(raw.openQuestions, 5, 280),
+  };
+}
+
 function cleanPlanItem(p, i, fallbackCategory) {
   const cleanArr = (a, maxLen, maxItems) => Array.isArray(a)
     ? a.slice(0, maxItems).map((s) => String(s || '').slice(0, maxLen)).filter(Boolean)
@@ -561,6 +589,7 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
       model: pickModel(model),
       thinking: useThinking ? thinking : undefined,
       thinkingEnabled: !!useThinking,
+      selfCritique: cleanSelfCritique(parsed.selfCritique),
     });
     res.end();
   } catch (err) {
@@ -740,6 +769,7 @@ export default async function handler(req, res) {
       percentOfGross: context.grossMt > 0 ? (totalExpectedMtPerYear / context.grossMt) * 100 : 0,
       generatedAt: new Date().toISOString(),
       nextCheckInDays: 90,
+      selfCritique: cleanSelfCritique(parsed.selfCritique),
     });
   } catch (err) {
     if (typeof res.setHeader === 'function') {
