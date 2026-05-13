@@ -625,7 +625,22 @@ function AdminHomeBrief({ brief, busy, onRefresh }) {
       )}
       {Array.isArray(brief.followups) && brief.followups.length > 0 && (
         <ul style={briefStyles.followups}>
-          {brief.followups.map((f, i) => <li key={i} style={briefStyles.followup}>{f}</li>)}
+          {brief.followups.map((f, i) => {
+            // Phase 164: followups can be plain strings (legacy) or
+            // structured { text, cta }. When cta is present, render
+            // the bullet as a deep-link to that admin route.
+            const text = typeof f === 'string' ? f : f.text;
+            const cta = typeof f === 'object' && f.cta ? f.cta : null;
+            return (
+              <li key={i} style={briefStyles.followup}>
+                {cta ? (
+                  <Link to={cta} style={{ color: '#a5b4fc', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 2 }}>
+                    {text}
+                  </Link>
+                ) : text}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

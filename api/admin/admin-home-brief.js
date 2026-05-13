@@ -42,15 +42,39 @@ Output STRICT JSON only — no prose before or after — matching this shape exa
 {
   "state":     "1-2 sentences. Where things stand right now: gross emissions level, what's measured vs estimated, freshness state. Plain prose, no jargon.",
   "focus":     "1-2 sentences. What this admin should look at FIRST when they land on the portal today. Specific. If freshness is degrading, mention which tables. If a scope is still estimated, point at instrumentation. If no plan exists, suggest generating one. Open with a verb — 'Pull...', 'Check...', 'Review...'",
-  "followups": ["3-5 short next-actions (verb-first, 6-10 words each). Each one is something the admin could check off in <5 minutes."]
+  "followups": [
+    { "text": "Verb-first 6-10 word action.", "cta": "/admin/<route>" }
+  ]
 }
+
+The cta field is OPTIONAL on each followup. When the action maps cleanly to one of these admin routes, include the matching cta. When the action is general advice ("Schedule a meeting with Facilities Director"), omit cta entirely.
+
+Valid cta routes:
+- /admin/scope-1/heating-oil       — heating-oil delivery records
+- /admin/scope-1/propane           — propane delivery records
+- /admin/scope-1/fleet             — fleet fuel records
+- /admin/scope-1/refrigerants      — refrigerant service logs
+- /admin/scope-2/meter             — Scope 2 manual meter readings
+- /admin/scope-3                   — Scope 3 entry (cohorts/travel/waste)
+- /admin/scope-3/cat1-purchased-goods
+- /admin/scope-3/cat7-commuting
+- /admin/sinks/stands              — forest stand inventory
+- /admin/renewables/solar          — solar PV records
+- /admin/renewables/geothermal     — geothermal records
+- /admin/renewables/wind           — wind asset documentation
+- /admin/plan-agent                — AI plan generation + chat
+- /admin/ai-ingestion              — paste docs → structured rows
+- /admin/data-quality              — per-table freshness + row counts
+- /admin/audit-log                 — admin write history
+- /admin/stage-planner             — phased reduction plan composer
 
 Rules:
 1. Total reply length under 800 chars across the 3 fields. This is a top-of-page snapshot, not a memo.
 2. NO welcome / NO marketing voice / NO "great job". Direct admin-tone.
 3. Specific to the data provided. Don't fabricate numbers.
-4. Focus field opens with a verb. Followups all open with verbs.
-5. If everything is fresh + measured + a plan exists, the focus can be aspirational ("Look at the cumulative-shipped chart — you're ahead of schedule on Scope 3").`;
+4. Focus field opens with a verb. Each followup.text opens with a verb.
+5. Up to 5 followups. Use ctas where the action maps cleanly to a route — never invent a route, never use a route not in the list above.
+6. If everything is fresh + measured + a plan exists, the focus can be aspirational ("Look at the cumulative-shipped chart — you're ahead of schedule on Scope 3").`;
 
 function buildUserMessage(s) {
   const lines = ['Admin-portal state for the brief:'];
@@ -168,13 +192,49 @@ export default async function handler(req, res) {
       cacheReadInputTokens: json.usage.cache_read_input_tokens || 0,
     } : null;
 
+    // Phase 164: followups are now optionally structured —
+    // [{ text, cta? }] — so the UI can render deep links. Validate
+    // ctas against a whitelist so a hallucinated route can't slip
+    // through and 404 the admin.
+    const ALLOWED_CTAS = new Set([
+      '/admin/scope-1/heating-oil',
+      '/admin/scope-1/propane',
+      '/admin/scope-1/fleet',
+      '/admin/scope-1/refrigerants',
+      '/admin/scope-2/meter',
+      '/admin/scope-3',
+      '/admin/scope-3/cat1-purchased-goods',
+      '/admin/scope-3/cat7-commuting',
+      '/admin/sinks/stands',
+      '/admin/renewables/solar',
+      '/admin/renewables/geothermal',
+      '/admin/renewables/wind',
+      '/admin/plan-agent',
+      '/admin/ai-ingestion',
+      '/admin/data-quality',
+      '/admin/audit-log',
+      '/admin/stage-planner',
+    ]);
+    const cleanFollowups = Array.isArray(parsed?.followups)
+      ? parsed.followups.slice(0, 5).map((f) => {
+          // Accept either plain strings (legacy / fallback path) or
+          // structured { text, cta } objects.
+          if (typeof f === 'string') return { text: f.slice(0, 120) };
+          if (f && typeof f === 'object') {
+            const text = String(f.text || '').slice(0, 120);
+            if (!text) return null;
+            const cta = typeof f.cta === 'string' && ALLOWED_CTAS.has(f.cta) ? f.cta : undefined;
+            return cta ? { text, cta } : { text };
+          }
+          return null;
+        }).filter(Boolean)
+      : [];
+
     res.status(200).json({
       mode: 'llm',
       state: String(parsed?.state || '').slice(0, 500),
       focus: String(parsed?.focus || '').slice(0, 500),
-      followups: Array.isArray(parsed?.followups)
-        ? parsed.followups.slice(0, 5).map((s) => String(s).slice(0, 120)).filter(Boolean)
-        : [],
+      followups: cleanFollowups,
       usage,
       model: 'claude-sonnet-4-6',
       generatedAt: new Date().toISOString(),
