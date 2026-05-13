@@ -315,10 +315,21 @@ export default function AdminPlanAgent() {
   // Plan-level chat — separate from per-item chats. Scoped to the
   // whole plan + context + history + measurement state.
   const [planChatOpen, setPlanChatOpen] = useState(false);
-  const [planChatMessages, setPlanChatMessages] = useState([]);
+  // Phase 162: persist plan-level chat across reloads so admins can
+  // resume a long thread the next morning. Per-item chats stay in
+  // memory (they're scoped to a one-shot question, not a recurring
+  // conversation).
+  const PLAN_CHAT_KEY = 'kua_admin_plan_chat';
+  const [planChatMessages, setPlanChatMessages] = useState(() => loadJson(PLAN_CHAT_KEY, []));
+  useEffect(() => { saveJson(PLAN_CHAT_KEY, planChatMessages); }, [planChatMessages]);
   const [planChatInput, setPlanChatInput] = useState('');
   const [planChatBusy, setPlanChatBusy] = useState(false);
   const [planChatErr, setPlanChatErr] = useState(null);
+  function clearPlanChat() {
+    if (!window.confirm('Clear the plan-level chat history? Cannot be undone.')) return;
+    setPlanChatMessages([]);
+    try { localStorage.removeItem(PLAN_CHAT_KEY); } catch {}
+  }
   // Board narrative — full 2-page strategic brief.
   const [narrative, setNarrative] = useState(null); // { narrative: {...}, generatedAt } | null
   const [narrativeBusy, setNarrativeBusy] = useState(false);
@@ -1040,6 +1051,7 @@ export default function AdminPlanAgent() {
               busy={planChatBusy}
               error={planChatErr}
               itemTitle="the whole plan"
+              onClear={planChatMessages.length > 0 ? clearPlanChat : null}
             />
           )}
           <PlanOverview
@@ -2064,7 +2076,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
   );
 }
 
-function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle }) {
+function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle, onClear }) {
   function onKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -2073,7 +2085,19 @@ function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle 
   }
   return (
     <div style={chatStyles.wrap}>
-      <div style={chatStyles.label}>Follow-up · pinned to "{itemTitle}"</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+        <div style={chatStyles.label}>Follow-up · pinned to "{itemTitle}"</div>
+        {onClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            style={{ padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 4, fontSize: 11, cursor: 'pointer' }}
+            title="Clear this chat thread permanently."
+          >
+            Clear chat
+          </button>
+        )}
+      </div>
       <div style={chatStyles.thread} role="log" aria-live="polite">
         {messages.length === 0 && (
           <div style={chatStyles.empty}>
