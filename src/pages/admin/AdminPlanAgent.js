@@ -377,10 +377,21 @@ export default function AdminPlanAgent() {
     }
   }, [plan?.plan?.length]);
 
+  // AbortController for in-flight narrative generation. Same pattern
+  // as planAbortRef (Phase 147).
+  const narrativeAbortRef = React.useRef(null);
+  function cancelNarrative() {
+    if (narrativeAbortRef.current) {
+      try { narrativeAbortRef.current.abort(); } catch {}
+    }
+  }
+
   async function generateNarrative() {
     if (!plan) return;
     setNarrativeBusy(true);
     setNarrativeErr(null);
+    const ac = new AbortController();
+    narrativeAbortRef.current = ac;
     try {
       const measuredState = {
         scope1Measured: !!live.scope1Measured,
@@ -391,6 +402,7 @@ export default function AdminPlanAgent() {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ plan, context, history, measuredState, stream: true }),
+        signal: ac.signal,
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -399,8 +411,10 @@ export default function AdminPlanAgent() {
       const result = await parseSSE(r);
       setNarrative(result);
     } catch (err) {
-      setNarrativeErr(err.message);
+      if (err?.name === 'AbortError') setNarrativeErr('Cancelled.');
+      else setNarrativeErr(err.message);
     } finally {
+      narrativeAbortRef.current = null;
       setNarrativeBusy(false);
     }
   }
@@ -981,6 +995,16 @@ export default function AdminPlanAgent() {
             {!narrative && (
               <button type="button" onClick={generateNarrative} disabled={narrativeBusy} style={styles.narrativeBtn}>
                 {narrativeBusy ? 'Drafting board brief…' : '📄 Board narrative'}
+              </button>
+            )}
+            {narrativeBusy && (
+              <button
+                type="button"
+                onClick={cancelNarrative}
+                style={{ padding: '6px 10px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                title="Stop the in-flight narrative generation."
+              >
+                ✕ Cancel
               </button>
             )}
             {narrative && (
