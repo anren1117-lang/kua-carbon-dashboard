@@ -263,6 +263,12 @@ export default function AdminHome() {
             },
             freshness,
             recentFeed: feed,
+            ...(planSummary ? {
+              shippedCount: planSummary.shippedCount,
+              // The current plan.plan array is "open work" by definition —
+              // regeneration drops anything already shipped or declined.
+              openItems: planSummary.itemCount,
+            } : {}),
           }),
         });
         if (!r.ok) return;
