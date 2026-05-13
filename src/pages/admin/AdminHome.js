@@ -10,6 +10,9 @@ import { useMeasuredRenewables } from '../../hooks/useMeasuredRenewables.js';
 import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 import { freshnessBucket } from '../../utils/freshness.js';
 import { adminFetch } from '../../utils/adminFetch.js';
+import { formatUsage } from './AdminPlanAgent.js';
+
+const formatBriefUsage = (usage) => formatUsage(usage, 'claude-sonnet-4-6');
 
 // Admin dashboard. Mirrors NAV_GROUPS exactly so the home page and the
 // header dropdowns stay in sync — adding a new admin page in
@@ -600,7 +603,14 @@ function AdminHomeBrief({ brief, busy, onRefresh }) {
   return (
     <div style={briefStyles.wrap}>
       <div style={briefStyles.head}>
-        <span style={briefStyles.label}>📋 Admin brief · generated for this session</span>
+        <span style={briefStyles.label}>
+          📋 Admin brief · generated for this session
+          {brief.usage && (
+            <span style={{ marginLeft: 8, fontSize: 10, color: '#64748b', fontVariantNumeric: 'tabular-nums', fontWeight: 400, letterSpacing: 0 }}>
+              {formatBriefUsage(brief.usage)}
+            </span>
+          )}
+        </span>
         {onRefresh && (
           <button type="button" onClick={onRefresh} disabled={busy} style={briefStyles.refresh} title="Force a fresh brief, bypassing the 10-min cache">
             {busy ? '…' : '↻ Refresh'}

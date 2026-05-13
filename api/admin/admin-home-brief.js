@@ -160,6 +160,13 @@ export default async function handler(req, res) {
       .map((c) => c.text)
       .join('\n\n');
     const parsed = tryParseJson(text);
+    // Phase 161: pass usage so the AdminHome card can show cost stamp.
+    const usage = json.usage ? {
+      inputTokens: json.usage.input_tokens || 0,
+      outputTokens: json.usage.output_tokens || 0,
+      cacheCreationInputTokens: json.usage.cache_creation_input_tokens || 0,
+      cacheReadInputTokens: json.usage.cache_read_input_tokens || 0,
+    } : null;
 
     res.status(200).json({
       mode: 'llm',
@@ -168,6 +175,8 @@ export default async function handler(req, res) {
       followups: Array.isArray(parsed?.followups)
         ? parsed.followups.slice(0, 5).map((s) => String(s).slice(0, 120)).filter(Boolean)
         : [],
+      usage,
+      model: 'claude-sonnet-4-6',
       generatedAt: new Date().toISOString(),
     });
   } catch (err) {
