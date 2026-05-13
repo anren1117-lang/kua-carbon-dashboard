@@ -946,7 +946,7 @@ export default function AdminPlanAgent() {
       {hasPlan && (
         <ModuleSection
           title="Current plan"
-          hint={`${plan.mode === 'llm' ? 'AI-generated' : 'Rule-based fallback'}${plan.model ? ` · ${plan.model === 'claude-opus-4-7' ? 'Opus 4.7' : plan.model === 'claude-sonnet-4-6' ? 'Sonnet 4.6' : plan.model}` : ''} · drafted ${new Date(plan.generatedAt).toLocaleDateString()}${plan.usage ? ` · ${formatUsage(plan.usage)}` : ''} · re-generate after a board meeting / fiscal cycle / new project completion.`}
+          hint={`${plan.mode === 'llm' ? 'AI-generated' : 'Rule-based fallback'}${plan.model ? ` · ${plan.model === 'claude-opus-4-7' ? 'Opus 4.7' : plan.model === 'claude-sonnet-4-6' ? 'Sonnet 4.6' : plan.model}` : ''} · drafted ${new Date(plan.generatedAt).toLocaleDateString()}${plan.usage ? ` · ${formatUsage(plan.usage, plan.model)}` : ''} · re-generate after a board meeting / fiscal cycle / new project completion.`}
         >
           {(diff || diffBusy || diffErr) && (
             <PlanDiffCard
@@ -2216,19 +2216,26 @@ function ImplementationMemo({ memo, generatedAt }) {
   );
 }
 
+// Per-million-token pricing snapshot. Keep these in sync with the
+// published rates — values are USD per 1M tokens. Cached reads bill
+// at 10% of the input rate.
+const PRICING = {
+  'claude-opus-4-7':   { input: 15, output: 75 },
+  'claude-sonnet-4-6': { input:  3, output: 15 },
+};
+
 // Compact summary of Anthropic usage block. Token counts come straight
-// from the stream; the cost is a rough estimate using published pricing
-// per the model tier — meant for "is this expensive?" awareness, not
-// for billing reconciliation.
-export function formatUsage(usage) {
+// from the stream; the cost is a rough estimate using the matching
+// model's published pricing — meant for "is this expensive?"
+// awareness, not for billing reconciliation.
+export function formatUsage(usage, model) {
   if (!usage) return '';
   const inp = (Number(usage.inputTokens) || 0) + (Number(usage.cacheCreationInputTokens) || 0);
   const out = Number(usage.outputTokens) || 0;
   const cached = Number(usage.cacheReadInputTokens) || 0;
   if (inp === 0 && out === 0) return '';
-  // Rough Opus 4 pricing snapshot: $15 / 1M input, $75 / 1M output.
-  // Cached reads bill at 10% of input.
-  const cost = (inp / 1_000_000) * 15 + (out / 1_000_000) * 75 + (cached / 1_000_000) * 1.5;
+  const p = PRICING[model] || PRICING['claude-opus-4-7'];
+  const cost = (inp / 1_000_000) * p.input + (out / 1_000_000) * p.output + (cached / 1_000_000) * (p.input * 0.1);
   const tokens = inp + out + cached;
   const tokensFmt = tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}K` : tokens.toString();
   return `${tokensFmt} tok · ~$${cost.toFixed(3)}`;
