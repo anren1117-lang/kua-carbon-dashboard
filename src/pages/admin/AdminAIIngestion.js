@@ -5,6 +5,26 @@ import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { AIError, formatUsage } from './AdminPlanAgent.js';
 
+// Pick the most informative 1-2 fields from the extracted row so the
+// preview chip shows what's being captured ("100 gal · 2026-04-15"
+// rather than just the table name). Hovers reveal the full payload.
+function summarizeRowFields(fields) {
+  if (!fields || typeof fields !== 'object') return null;
+  // Prefer concrete numeric quantities first, then dates, then any
+  // string field that looks like a vendor / building name.
+  const numericKey = ['gallons', 'gross_kwh', 'kg', 'lb', 'amount', 'kwh', 'pounds', 'gallons_delivered']
+    .find((k) => typeof fields[k] === 'number');
+  const dateKey = ['delivery_date', 'date', 'period_end', 'service_date', 'departure_date']
+    .find((k) => typeof fields[k] === 'string' && /^\d{4}-\d{2}-\d{2}/.test(fields[k]));
+  const stringKey = ['vendor', 'building_or_tank', 'name', 'label']
+    .find((k) => typeof fields[k] === 'string' && fields[k].length > 0);
+  const parts = [];
+  if (numericKey) parts.push(`${fields[numericKey]} ${numericKey.replace(/_/g, ' ')}`);
+  if (dateKey) parts.push(String(fields[dateKey]).slice(0, 10));
+  if (stringKey && parts.length < 2) parts.push(String(fields[stringKey]).slice(0, 30));
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 const previewBoxStyles = {
   wrap: { marginTop: 14, padding: '12px 16px', background: '#0f172a', border: '1px solid #312e81', borderLeft: '4px solid #6366f1', borderRadius: 8 },
   head: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, fontSize: 11, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
@@ -22,6 +42,7 @@ const previewBoxStyles = {
     background: level === 'high' ? '#052e1a' : level === 'medium' ? '#3a2a0d' : '#3a0d0d',
     color: level === 'high' ? '#86efac' : level === 'medium' ? '#fbbf24' : '#fca5a5',
   }),
+  fieldsHint: { fontSize: 11, color: '#94a3b8', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', marginLeft: 'auto' },
 };
 import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 
@@ -839,6 +860,11 @@ function AdminAIIngestion() {
                   <span style={previewBoxStyles.table}>{row.table || '(no table)'}</span>
                   <span style={previewBoxStyles.scope}>{row.scope || ''}</span>
                   {row.confidence && <span style={previewBoxStyles.conf(row.confidence)}>{row.confidence}</span>}
+                  {summarizeRowFields(row.fields) && (
+                    <span style={previewBoxStyles.fieldsHint} title={JSON.stringify(row.fields, null, 2)}>
+                      {summarizeRowFields(row.fields)}
+                    </span>
+                  )}
                 </li>
               ))}
               <li style={{ ...previewBoxStyles.li, fontStyle: 'italic', color: '#64748b' }}>
