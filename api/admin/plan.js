@@ -127,7 +127,7 @@ Rules:
 6. No filler. Every item must have realistic mt + $ numbers that justify the priority order.
 7. The "why" line is 1-3 sentences, reads like a memo to the Sustainability Committee — specific to KUA's context (mention the fuel mix, climate, enrollment, forest, budget appetite where relevant).`;
 
-function buildUserMessage(context, history, measuredState, priorPlan) {
+function buildUserMessage(context, history, measuredState, priorPlan, extraContext) {
   const lines = [
     'KUA institutional context:',
     `- Fiscal year: ${context.fiscalYear || 'unspecified'}`,
@@ -207,6 +207,39 @@ function buildUserMessage(context, history, measuredState, priorPlan) {
     lines.push('', `Prior plan (${priorPlan.length} items, not yet shipped or declined). PRESERVE continuity where these items still make sense; rename, drop, or evolve them only when the institutional context has materially shifted (capital appetite changed, new regulatory driver, shipped items obsoleted a peer item, etc.). Do NOT pointlessly rephrase titles — admins lose trust when the same lever keeps re-naming.`);
     for (const p of priorPlan) {
       lines.push(`- ${p.title} (${p.expectedMtPerYear} mt, ${p.estimatedCostUsd === 0 ? 'no capex' : '$' + Number(p.estimatedCostUsd).toLocaleString()}, ${p.timeline}, ${p.category})`);
+    }
+  }
+
+  // Phase 169: extra grounding signals so the agent's plan reflects
+  // ACTUAL recent dashboard activity, not just the high-level
+  // measured/estimated flags. Each block is optional — only included
+  // when the client passes it.
+  if (Array.isArray(extraContext?.recentActivity) && extraContext.recentActivity.length > 0) {
+    lines.push('', `Recent admin activity (${extraContext.recentActivity.length} writes in the last 30 days — use to spot what the admin has been focused on or which tables are getting attention):`);
+    for (const a of extraContext.recentActivity.slice(0, 20)) {
+      lines.push(`- ${a.date || ''} · ${a.action || 'write'} on ${a.table}${a.summary ? ` — ${a.summary}` : ''}`);
+    }
+  }
+  if (Array.isArray(extraContext?.customActions) && extraContext.customActions.length > 0) {
+    lines.push('', `Custom actions the admin has saved (these are levers the institution is ALREADY tracking — don't propose duplicates):`);
+    for (const c of extraContext.customActions.slice(0, 15)) {
+      lines.push(`- ${c.title}${typeof c.mtCo2ePerYear === 'number' ? ` (${Math.round(c.mtCo2ePerYear)} mt/yr)` : ''}${c.category ? ` · ${c.category}` : ''}`);
+    }
+  }
+  if (Array.isArray(extraContext?.stagePlans) && extraContext.stagePlans.length > 0) {
+    lines.push('', `Stage planner state (the admin has already organized work into phased stages — your plan items should align with these stages where possible):`);
+    for (const s of extraContext.stagePlans.slice(0, 5)) {
+      lines.push(`- ${s.name || 'Stage'}${s.targetYear ? ` (${s.targetYear})` : ''}${typeof s.targetMtReduction === 'number' ? ` · target ${Math.round(s.targetMtReduction)} mt` : ''}${Array.isArray(s.actionIds) ? ` · ${s.actionIds.length} actions` : ''}`);
+    }
+  }
+  if (extraContext?.freshness) {
+    const f = extraContext.freshness;
+    const concernCount = (f.stale || 0) + (f.empty || 0) + (f.aging || 0);
+    if (concernCount > 0) {
+      lines.push('', `Data freshness signal: ${f.fresh || 0} tables fresh, ${f.aging || 0} aging, ${f.stale || 0} stale, ${f.empty || 0} empty. If stale/empty tables are blocking a scope from flipping to measured, surface an instrumentation item in the plan.`);
+      if (Array.isArray(f.staleTables) && f.staleTables.length > 0) {
+        lines.push(`  Stale: ${f.staleTables.slice(0, 5).join(', ')}`);
+      }
     }
   }
   return lines.join('\n');
@@ -366,7 +399,7 @@ function pickModel(requested) {
 // src/utils/anthropicStream.js so both /api/admin/plan and
 // /api/admin/ai-ingestion can reuse it.
 
-async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking }) {
+async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking, extraContext }) {
   // Open the SSE connection back to the client.
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -401,7 +434,7 @@ async function streamingHandler({ res, apiKey, context, history, measuredState, 
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
         ],
         messages: [
-          { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan) },
+          { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan, extraContext) },
         ],
       }),
     });
@@ -546,7 +579,7 @@ export default async function handler(req, res) {
     res.status(401).json({ error: `admin auth required: ${auth.reason}` });
     return;
   }
-  const { context, history, measuredState, priorPlan, stream: wantStream, model, useThinking } = req.body || {};
+  const { context, history, measuredState, priorPlan, stream: wantStream, model, useThinking, extraContext } = req.body || {};
   // Extended thinking only on Opus 4.7. Sonnet 4.6 does not support
   // it on the streaming path; silently downgrade to standard mode.
   const effectiveThinking = useThinking === true && pickModel(model) === 'claude-opus-4-7';
@@ -596,7 +629,7 @@ export default async function handler(req, res) {
   // it as a 'done' event with the same shape the non-streaming path
   // returns. Errors mid-stream surface as 'error' events.
   if (wantStream) {
-    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking: effectiveThinking });
+    return streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking: effectiveThinking, extraContext });
   }
 
   try {
@@ -629,7 +662,7 @@ export default async function handler(req, res) {
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
         ],
         messages: [
-          { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan) },
+          { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan, extraContext) },
         ],
       }),
     });

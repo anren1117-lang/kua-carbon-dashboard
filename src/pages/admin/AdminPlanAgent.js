@@ -8,6 +8,8 @@ import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COM
 import { adminFetch } from '../../utils/adminFetch.js';
 import { downloadBlob } from '../../utils/csv.js';
 import { recordUsage } from '../../utils/aiUsageTally.js';
+import { getCustomActions, getStagePlans } from '../../data/customActions.js';
+import { fetchAuditLog } from '../../utils/adminAudit.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
@@ -692,6 +694,46 @@ export default function AdminPlanAgent() {
             timeline: it.timeline,
           }))
         : null;
+      // Phase 169: extra grounding signals. The agent gets the
+      // admin's actual recent activity, the custom actions they're
+      // already tracking, and the stage planner state — so its plan
+      // reflects WHAT THE INSTITUTION IS ACTUALLY DOING, not just
+      // the high-level scope numbers.
+      const extraContext = {};
+      try {
+        const cutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const auditLog = await fetchAuditLog({ limit: 50 });
+        if (auditLog?.rows?.length) {
+          extraContext.recentActivity = auditLog.rows
+            .filter((r) => r.created_at && new Date(r.created_at).getTime() >= cutoffMs)
+            .slice(0, 20)
+            .map((r) => ({
+              date: r.created_at ? String(r.created_at).slice(0, 10) : null,
+              action: r.action,
+              table: r.table_name,
+              summary: r.note || null,
+            }));
+        }
+      } catch { /* audit log fetch is non-critical */ }
+      try {
+        const custom = getCustomActions();
+        if (Array.isArray(custom) && custom.length > 0) {
+          extraContext.customActions = custom.slice(0, 15).map((c) => ({
+            title: c.title,
+            mtCo2ePerYear: c.mtCo2ePerYear,
+            category: c.category,
+          }));
+        }
+        const stages = getStagePlans();
+        if (Array.isArray(stages) && stages.length > 0) {
+          extraContext.stagePlans = stages.slice(0, 5).map((s) => ({
+            name: s.name,
+            targetYear: s.targetYear,
+            targetMtReduction: s.targetMtReduction,
+            actionIds: s.actionIds,
+          }));
+        }
+      } catch { /* localStorage helpers shouldn't throw, but defensive */ }
       setStreamChars(0);
       setStreamStartedAt(Date.now());
       setPreviewItems([]);
@@ -700,7 +742,7 @@ export default function AdminPlanAgent() {
       const wantThinking = useThinking && planModel === 'claude-opus-4-7';
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
-        body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true, model: planModel, useThinking: wantThinking }),
+        body: JSON.stringify({ context, history, measuredState, priorPlan, extraContext, stream: true, model: planModel, useThinking: wantThinking }),
         signal: ac.signal,
       });
       if (!res.ok) {
