@@ -531,9 +531,21 @@ export default function AdminPlanAgent() {
     setComparingSnapId((cur) => cur === id ? null : id);
   }
 
+  // AbortController for the in-flight plan generation. Set when
+  // generatePlan starts; cleared in finally; user-clicked "Cancel"
+  // calls .abort() which propagates as an AbortError caught below.
+  const planAbortRef = React.useRef(null);
+  function cancelPlanGeneration() {
+    if (planAbortRef.current) {
+      try { planAbortRef.current.abort(); } catch {}
+    }
+  }
+
   const generatePlan = useCallback(async () => {
     setLoading(true);
     setError('');
+    const ac = new AbortController();
+    planAbortRef.current = ac;
     try {
       // Phase 93: send a richer measuredState block so the agent can
       // recommend "go after Scope 1 first because it's still on
@@ -573,6 +585,7 @@ export default function AdminPlanAgent() {
       const res = await adminFetch('/api/admin/plan', {
         method: 'POST',
         body: JSON.stringify({ context, history, measuredState, priorPlan, stream: true }),
+        signal: ac.signal,
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -613,8 +626,15 @@ export default function AdminPlanAgent() {
       if (!finalPlan) throw new Error('Stream ended without a plan');
       setPlan(finalPlan);
     } catch (err) {
-      setError(err.message || 'Could not generate the plan.');
+      // AbortError is user-initiated — show a friendly message rather
+      // than an exception trace.
+      if (err?.name === 'AbortError') {
+        setError('Plan generation cancelled.');
+      } else {
+        setError(err.message || 'Could not generate the plan.');
+      }
     } finally {
+      planAbortRef.current = null;
       setLoading(false);
     }
   }, [context, history, live]);
@@ -802,6 +822,26 @@ export default function AdminPlanAgent() {
                 : `Starting up… ${streamElapsed}s`)
               : hasPlan ? 'Re-generate plan' : 'Generate plan'}
           </button>
+          {loading && (
+            <button
+              type="button"
+              onClick={cancelPlanGeneration}
+              style={{
+                padding: '10px 16px',
+                background: 'transparent',
+                color: '#fca5a5',
+                border: '1px solid #7f1d1d',
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+              title="Stop the in-flight generation. Partial output is discarded."
+            >
+              ✕ Cancel
+            </button>
+          )}
           {!loading && contextIsComplete(context) && (
             <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>
               Shortcuts: ⌘↵ generate · ⌘S snapshot · ⌘K chat · Esc close
