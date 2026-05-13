@@ -908,7 +908,7 @@ export default function AdminPlanAgent() {
               </button>
             )}
           </div>
-          {narrativeErr && <div role="alert" style={styles.memoErr}>Narrative error: {narrativeErr}</div>}
+          <AIError label="Narrative error" error={narrativeErr} onRetry={generateNarrative} busy={narrativeBusy} />
           {narrative && narrative.narrative && (
             <BoardNarrative narrative={narrative.narrative} generatedAt={narrative.generatedAt} />
           )}
@@ -1657,13 +1657,11 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
   const [alts, setAlts] = useState(null);  // { alternatives: [...] } | null
   const [altsBusy, setAltsBusy] = useState(false);
   const [altsErr, setAltsErr] = useState(null);
+  // Last reason the admin supplied — kept so the Retry button can
+  // re-issue the request without re-prompting.
+  const [lastAltsReason, setLastAltsReason] = useState(null);
 
-  async function generateAlternatives() {
-    const reason = window.prompt(
-      `What\'s wrong with this item? Tell the agent so it can tune the alternatives.\n\n(e.g. "Too aggressive — board won\'t fund $300K this year", "Already declined this in Q1", "Need something faster — 90-day timeline")`,
-      ''
-    );
-    if (reason === null) return;
+  async function fetchAlternatives(reason) {
     setAltsBusy(true);
     setAltsErr(null);
     try {
@@ -1683,6 +1681,20 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
     } finally {
       setAltsBusy(false);
     }
+  }
+
+  async function generateAlternatives() {
+    const reason = window.prompt(
+      `What\'s wrong with this item? Tell the agent so it can tune the alternatives.\n\n(e.g. "Too aggressive — board won\'t fund $300K this year", "Already declined this in Q1", "Need something faster — 90-day timeline")`,
+      ''
+    );
+    if (reason === null) return;
+    setLastAltsReason(reason);
+    return fetchAlternatives(reason);
+  }
+
+  function retryAlternatives() {
+    return fetchAlternatives(lastAltsReason);
   }
 
   async function generateMemo() {
@@ -1870,7 +1882,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
           {altsBusy ? 'Finding alternatives…' : '↻ Find alternatives'}
         </button>
       </div>
-      {altsErr && <div role="alert" style={styles.memoErr}>Alternatives error: {altsErr}</div>}
+      <AIError label="Alternatives error" error={altsErr} onRetry={retryAlternatives} busy={altsBusy} />
       {alts && alts.alternatives && alts.alternatives.length > 0 && (
         <div style={altsStyles.wrap}>
           <div style={altsStyles.head}>
@@ -1894,7 +1906,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
           ))}
         </div>
       )}
-      {memoErr && <div role="alert" style={styles.memoErr}>Memo error: {memoErr}</div>}
+      <AIError label="Memo error" error={memoErr} onRetry={generateMemo} busy={memoBusy} />
       {memo && memo.mode === 'unavailable' && (
         <div style={styles.memoUnavail}>{memo.message || 'LLM not configured.'}</div>
       )}
@@ -2098,6 +2110,58 @@ function ImplementationMemo({ memo, generatedAt }) {
     </div>
   );
 }
+
+// Reusable error pill for AI requests. Shows the failure message + an
+// optional Retry button (caller passes onRetry). Exported so the AI
+// ingestion page can use the same look.
+export function AIError({ label, error, onRetry, busy }) {
+  if (!error) return null;
+  return (
+    <div role="alert" style={aiErrorStyles.wrap}>
+      <span style={aiErrorStyles.label}>{label || 'AI error'}:</span>
+      <span style={aiErrorStyles.body}>{error}</span>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          disabled={busy}
+          style={{ ...aiErrorStyles.retry, opacity: busy ? 0.5 : 1, cursor: busy ? 'wait' : 'pointer' }}
+          title="Try the request again."
+        >
+          {busy ? 'Retrying…' : '↻ Retry'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const aiErrorStyles = {
+  wrap: {
+    marginTop: 8,
+    padding: '8px 12px',
+    background: '#3a0d0d',
+    border: '1px solid #7f1d1d',
+    borderRadius: 6,
+    color: '#fca5a5',
+    fontSize: 13,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  label: { fontWeight: 700 },
+  body:  { flex: '1 1 auto', wordBreak: 'break-word' },
+  retry: {
+    padding: '4px 10px',
+    background: 'transparent',
+    color: '#fca5a5',
+    border: '1px solid #fca5a5',
+    borderRadius: 4,
+    fontSize: 12,
+    fontWeight: 700,
+    fontFamily: 'inherit',
+  },
+};
 
 // Aggregate calibration of expected vs actual across shipped items.
 // Hidden until there are at least 2 items with both numbers; below
