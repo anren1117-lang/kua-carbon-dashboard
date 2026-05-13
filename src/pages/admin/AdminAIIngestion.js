@@ -4,6 +4,7 @@ import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { AIError, formatUsage } from './AdminPlanAgent.js';
+import { recordUsage } from '../../utils/aiUsageTally.js';
 
 // Pick the most informative 1-2 fields from the extracted row so the
 // preview chip shows what's being captured ("100 gal · 2026-04-15"
@@ -474,6 +475,7 @@ function AdminAIIngestion() {
       if (!finalBody) throw new Error('Stream ended without extraction result');
       const body = finalBody;
       setResult(body);
+      recordUsage(body?.usage, body?.model, 'ingestion');
       // Seed editable copies of each row's fields so the admin can
       // tweak before sending. We deep-clone so edits don't mutate the
       // shared `result.extractedRows[i].fields` object.

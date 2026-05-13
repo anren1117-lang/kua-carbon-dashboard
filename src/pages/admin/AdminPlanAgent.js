@@ -7,6 +7,7 @@ import { TOTAL_STUDENTS } from '../../data/students.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { downloadBlob } from '../../utils/csv.js';
+import { recordUsage } from '../../utils/aiUsageTally.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
 import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
@@ -363,6 +364,7 @@ export default function AdminPlanAgent() {
       }
       const result = await parseSSE(r);
       setDiff({ ...result, priorCount: priorPlanRef.length, newCount: newPlan.plan.length });
+      recordUsage(result?.usage, result?.model, 'plan-diff');
     } catch (err) {
       setDiffErr(err.message);
     } finally {
@@ -426,6 +428,7 @@ export default function AdminPlanAgent() {
       }
       const result = await parseSSE(r);
       setNarrative(result);
+      recordUsage(result?.usage, result?.model, 'narrative');
     } catch (err) {
       if (err?.name === 'AbortError') setNarrativeErr('Cancelled.');
       else setNarrativeErr(err.message);
@@ -723,6 +726,7 @@ export default function AdminPlanAgent() {
       }
       if (!finalPlan) throw new Error('Stream ended without a plan');
       setPlan(finalPlan);
+      recordUsage(finalPlan.usage, finalPlan.model, 'plan');
       // Phase 150: if a prior plan existed, immediately fetch an
       // AI-narrated diff so the admin sees what changed and why. The
       // diff fetch is fire-and-forget — failure does not block plan
@@ -1823,6 +1827,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
       }
       const result = await parseSSE(r);
       setAlts(result);
+      recordUsage(result?.usage, result?.model, 'alternatives');
     } catch (err) {
       setAltsErr(err.message);
     } finally {
@@ -1859,6 +1864,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
       }
       const result = await parseSSE(r);
       setMemo(result);
+      recordUsage(result?.usage, result?.model, 'memo');
     } catch (err) {
       setMemoErr(err.message);
     } finally {

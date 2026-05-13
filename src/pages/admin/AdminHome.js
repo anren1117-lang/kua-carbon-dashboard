@@ -11,6 +11,7 @@ import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 import { freshnessBucket } from '../../utils/freshness.js';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { formatUsage } from './AdminPlanAgent.js';
+import { recordUsage, getTally, formatTally, AI_USAGE_UPDATED_EVENT } from '../../utils/aiUsageTally.js';
 
 const formatBriefUsage = (usage) => formatUsage(usage, 'claude-sonnet-4-6');
 
@@ -285,6 +286,7 @@ export default function AdminHome() {
         const body = await r.json();
         if (cancelled) return;
         setBrief(body);
+        recordUsage(body?.usage, body?.model, 'brief');
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ ...body, cachedAt: Date.now() })); } catch {}
       } catch {
         /* silent — brief is non-critical */
@@ -529,6 +531,28 @@ function formatFeedDate(iso) {
 // on" + 3-5 next-actions. Shown above the FreshnessAlert on the
 // admin home. Sessionstorage-cached for 10 min so it doesn't re-run
 // on every nav back to /admin.
+// Compact widget showing cumulative AI usage in this session. Listens
+// for AI_USAGE_UPDATED_EVENT so it refreshes the moment any AI call
+// completes anywhere in the admin portal.
+function SessionUsageTally() {
+  const [tally, setTally] = useState(() => getTally());
+  useEffect(() => {
+    function handler(e) { setTally(e?.detail || getTally()); }
+    window.addEventListener(AI_USAGE_UPDATED_EVENT, handler);
+    return () => window.removeEventListener(AI_USAGE_UPDATED_EVENT, handler);
+  }, []);
+  const fmt = formatTally(tally);
+  if (!fmt) return null;
+  return (
+    <span
+      title="Cumulative AI usage across this browser session — plan, narrative, memo, alternatives, brief, ingestion. Resets when you close the tab."
+      style={{ fontSize: 10, color: '#64748b', fontVariantNumeric: 'tabular-nums', fontWeight: 600, letterSpacing: 0, padding: '2px 8px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4 }}
+    >
+      AI session: {fmt}
+    </span>
+  );
+}
+
 function PlanSummaryCard({ summary, grossMt }) {
   const halfTarget = grossMt > 0 ? grossMt * 0.5 : 0;
   const gapToHalf = grossMt > 0 ? Math.max(0, grossMt - summary.totalExpectedMt - summary.shippedMt - halfTarget) : 0;
@@ -611,11 +635,14 @@ function AdminHomeBrief({ brief, busy, onRefresh }) {
             </span>
           )}
         </span>
-        {onRefresh && (
-          <button type="button" onClick={onRefresh} disabled={busy} style={briefStyles.refresh} title="Force a fresh brief, bypassing the 10-min cache">
-            {busy ? '…' : '↻ Refresh'}
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <SessionUsageTally />
+          {onRefresh && (
+            <button type="button" onClick={onRefresh} disabled={busy} style={briefStyles.refresh} title="Force a fresh brief, bypassing the 10-min cache">
+              {busy ? '…' : '↻ Refresh'}
+            </button>
+          )}
+        </div>
       </div>
       {brief.state && <p style={briefStyles.state}>{brief.state}</p>}
       {brief.focus && (
