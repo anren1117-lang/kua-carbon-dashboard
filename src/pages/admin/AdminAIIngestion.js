@@ -116,6 +116,58 @@ function AdminAIIngestion() {
   }, [autoWrite]);
   const [recentDrafts, setRecentDrafts] = useState([]);
 
+  // Phase 139: persist the in-progress extraction across reloads so an
+  // accidental refresh doesn't dump 30 reviewed rows. Saves whenever
+  // result becomes non-null; clears on `clear()`. Only the LLM
+  // output + admin's per-row edits are persisted — not text/hint/images
+  // (those would re-upload the source on next mount, which is wasted).
+  const DRAFT_KEY = 'kua_admin_ai_draft';
+  // One-time hydration on mount.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (!saved || !saved.result) return;
+      // Don't auto-restore — let the admin opt in so a stale draft
+      // doesn't surprise them.
+      setStashedDraft(saved);
+    } catch {}
+  }, []);
+  const [stashedDraft, setStashedDraft] = useState(null);
+  // Save in-progress state whenever it materially changes.
+  useEffect(() => {
+    if (!result) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        result,
+        rowStates,
+        rowFields,
+        editMode,
+        tableOverride,
+        hint,
+        fileName,
+      }));
+    } catch {}
+  }, [result, rowStates, rowFields, editMode, tableOverride, hint, fileName]);
+
+  function restoreDraft() {
+    if (!stashedDraft) return;
+    setResult(stashedDraft.result || null);
+    setRowStates(stashedDraft.rowStates || {});
+    setRowFields(stashedDraft.rowFields || {});
+    setEditMode(stashedDraft.editMode || {});
+    setTableOverride(stashedDraft.tableOverride || {});
+    if (typeof stashedDraft.hint === 'string') setHint(stashedDraft.hint);
+    if (typeof stashedDraft.fileName === 'string') setFileName(stashedDraft.fileName);
+    setStashedDraft(null);
+  }
+  function dismissDraft() {
+    setStashedDraft(null);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  }
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -417,8 +469,12 @@ function AdminAIIngestion() {
     setResult(null);
     setError(null);
     setRowStates({});
+    setRowFields({});
+    setEditMode({});
+    setTableOverride({});
     setFileName(null);
     setImages([]);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
   }
 
   // Coerce empty strings to null + numeric strings to numbers so the
@@ -542,6 +598,45 @@ function AdminAIIngestion() {
         structured rows for your review. Accept directly, send to the
         review queue, or reject.
       </p>
+
+      {stashedDraft && !result && (
+        <div
+          role="status"
+          style={{
+            marginTop: 12,
+            padding: '12px 16px',
+            background: '#0f172a',
+            border: '1px solid #312e81',
+            borderLeft: '4px solid #6366f1',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ flex: 1, fontSize: 13, color: '#cbd5e1' }}>
+            <strong style={{ color: '#a5b4fc' }}>Resume previous extraction?</strong>
+            {' '}{(stashedDraft.result?.extractedRows || []).length} row{(stashedDraft.result?.extractedRows || []).length === 1 ? '' : 's'}
+            {stashedDraft.fileName ? ` from "${stashedDraft.fileName}"` : ''}
+            {stashedDraft.savedAt ? ` · saved ${new Date(stashedDraft.savedAt).toLocaleString()}` : ''}
+          </div>
+          <button
+            type="button"
+            onClick={restoreDraft}
+            style={{ padding: '6px 12px', background: '#312e81', color: '#e0e7ff', border: '1px solid #6366f1', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+          >
+            Restore
+          </button>
+          <button
+            type="button"
+            onClick={dismissDraft}
+            style={{ padding: '6px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 6, fontSize: 12, cursor: 'pointer' }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       <div style={styles.card}>
         <h2 style={{ margin: 0, fontSize: 18 }}>Source document</h2>
