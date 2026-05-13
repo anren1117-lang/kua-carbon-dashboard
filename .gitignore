@@ -16,6 +16,9 @@ src/dist
 # production
 /build
 
+# Claude Code runtime state
+.claude/scheduled_tasks.lock
+
 # misc
 .DS_Store
 .env.local
