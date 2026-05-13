@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
+import { AIError } from './AdminPlanAgent.js';
 import { ADMIN_TABLE_SOURCES } from '../../data/adminTableSources.js';
 
 // /admin/ai-ingestion
@@ -801,7 +802,7 @@ function AdminAIIngestion() {
           )}
         </div>
 
-        {error && <div role="alert" style={styles.error}>Error: {error}</div>}
+        <AIError label="Error" error={error} onRetry={submit} busy={busy} />
       </div>
 
       {result && (
