@@ -435,6 +435,14 @@ export default function AdminPlanAgent() {
     }
   }
 
+  // AbortController for the in-flight plan-level chat request.
+  const planChatAbortRef = React.useRef(null);
+  function cancelPlanChat() {
+    if (planChatAbortRef.current) {
+      try { planChatAbortRef.current.abort(); } catch {}
+    }
+  }
+
   async function sendPlanChat() {
     const trimmed = planChatInput.trim();
     if (!trimmed || planChatBusy || !plan) return;
@@ -445,6 +453,8 @@ export default function AdminPlanAgent() {
     setPlanChatErr(null);
     // Push a placeholder assistant turn that we'll fill via streaming.
     setPlanChatMessages([...next, { role: 'assistant', content: '' }]);
+    const ac = new AbortController();
+    planChatAbortRef.current = ac;
     try {
       const measuredState = {
         scope1Measured: !!live.scope1Measured,
@@ -463,6 +473,7 @@ export default function AdminPlanAgent() {
           messages: next,
           stream: true,
         }),
+        signal: ac.signal,
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -510,10 +521,15 @@ export default function AdminPlanAgent() {
         }
       }
     } catch (err) {
-      setPlanChatErr(err.message);
+      if (err?.name === 'AbortError') {
+        setPlanChatErr('Cancelled.');
+      } else {
+        setPlanChatErr(err.message);
+      }
       // Pop the placeholder on error.
       setPlanChatMessages((cur) => cur.slice(0, -1));
     } finally {
+      planChatAbortRef.current = null;
       setPlanChatBusy(false);
     }
   }
@@ -1052,6 +1068,7 @@ export default function AdminPlanAgent() {
               error={planChatErr}
               itemTitle="the whole plan"
               onClear={planChatMessages.length > 0 ? clearPlanChat : null}
+              onCancel={cancelPlanChat}
             />
           )}
           <PlanOverview
@@ -1849,6 +1866,13 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
     }
   }
 
+  const itemChatAbortRef = React.useRef(null);
+  function cancelItemChat() {
+    if (itemChatAbortRef.current) {
+      try { itemChatAbortRef.current.abort(); } catch {}
+    }
+  }
+
   async function sendChat() {
     const trimmed = chatInput.trim();
     if (!trimmed || chatBusy) return;
@@ -1859,6 +1883,8 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
     setChatErr(null);
     // Placeholder assistant turn that streaming will fill.
     setChatMessages([...nextMessages, { role: 'assistant', content: '' }]);
+    const ac = new AbortController();
+    itemChatAbortRef.current = ac;
     try {
       const r = await adminFetch('/api/admin/plan-item-chat', {
         method: 'POST',
@@ -1870,6 +1896,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
           messages: nextMessages,
           stream: true,
         }),
+        signal: ac.signal,
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -1913,9 +1940,11 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
         }
       }
     } catch (err) {
-      setChatErr(err.message);
+      if (err?.name === 'AbortError') setChatErr('Cancelled.');
+      else setChatErr(err.message);
       setChatMessages((cur) => cur.slice(0, -1));
     } finally {
+      itemChatAbortRef.current = null;
       setChatBusy(false);
     }
   }
@@ -2070,13 +2099,14 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
           busy={chatBusy}
           error={chatErr}
           itemTitle={item.title}
+          onCancel={cancelItemChat}
         />
       )}
     </div>
   );
 }
 
-function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle, onClear }) {
+function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle, onClear, onCancel }) {
   function onKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -2133,6 +2163,16 @@ function ChatThread({ messages, input, setInput, onSend, busy, error, itemTitle,
         <button type="button" onClick={onSend} disabled={busy || !input.trim()} style={chatStyles.sendBtn}>
           Send
         </button>
+        {busy && onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{ marginLeft: 6, padding: '6px 10px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+            title="Stop the in-flight reply."
+          >
+            ✕ Cancel
+          </button>
+        )}
       </div>
     </div>
   );
