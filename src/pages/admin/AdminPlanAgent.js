@@ -1055,7 +1055,7 @@ export default function AdminPlanAgent() {
           </div>
           <AIError label="Narrative error" error={narrativeErr} onRetry={generateNarrative} busy={narrativeBusy} />
           {narrative && narrative.narrative && (
-            <BoardNarrative narrative={narrative.narrative} generatedAt={narrative.generatedAt} />
+            <BoardNarrative narrative={narrative.narrative} generatedAt={narrative.generatedAt} usage={narrative.usage} model={narrative.model} />
           )}
 
           {planChatOpen && (
@@ -2063,7 +2063,10 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
       {alts && alts.alternatives && alts.alternatives.length > 0 && (
         <div style={altsStyles.wrap}>
           <div style={altsStyles.head}>
-            <span style={altsStyles.headLabel}>Alternatives proposed for #{rank}</span>
+            <span style={altsStyles.headLabel}>
+              Alternatives proposed for #{rank}
+              {alts.usage && <span style={{ marginLeft: 8, color: '#64748b', fontSize: 10, fontVariantNumeric: 'tabular-nums', fontWeight: 400, letterSpacing: 0 }}>{formatUsage(alts.usage, alts.model)}</span>}
+            </span>
             <button type="button" onClick={() => setAlts(null)} style={altsStyles.hide}>✕ Hide</button>
           </div>
           {alts.alternatives.map((a, i) => (
@@ -2088,7 +2091,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
         <div style={styles.memoUnavail}>{memo.message || 'LLM not configured.'}</div>
       )}
       {memo && memo.mode === 'llm' && memo.memo && (
-        <ImplementationMemo memo={memo.memo} generatedAt={memo.generatedAt} />
+        <ImplementationMemo memo={memo.memo} generatedAt={memo.generatedAt} usage={memo.usage} model={memo.model} />
       )}
       {chatOpen && (
         <ChatThread
@@ -2193,12 +2196,15 @@ const chatStyles = {
   err: { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 12 },
 };
 
-function ImplementationMemo({ memo, generatedAt }) {
+function ImplementationMemo({ memo, generatedAt, usage, model }) {
   return (
     <div style={memoStyles.wrap}>
       <div style={memoStyles.head}>
         <span style={memoStyles.headLabel}>Implementation memo</span>
-        <span style={memoStyles.headDate}>generated {new Date(generatedAt).toLocaleString()}</span>
+        <span style={memoStyles.headDate}>
+          generated {new Date(generatedAt).toLocaleString()}
+          {usage && <span style={{ marginLeft: 8, color: '#64748b' }}>· {formatUsage(usage, model)}</span>}
+        </span>
       </div>
       {memo.executiveSummary && (
         <p style={memoStyles.execSummary}>{memo.executiveSummary}</p>
@@ -2459,7 +2465,14 @@ function PlanDiffCard({ diff, busy, error, onDismiss }) {
   return (
     <div style={diffCardStyles.wrap}>
       <div style={diffCardStyles.head}>
-        <span style={diffCardStyles.label}>📋 What changed</span>
+        <span style={diffCardStyles.label}>
+          📋 What changed
+          {diff.usage && (
+            <span style={{ marginLeft: 8, color: '#64748b', fontSize: 10, fontVariantNumeric: 'tabular-nums', fontWeight: 400, letterSpacing: 0 }}>
+              {formatUsage(diff.usage, diff.model)}
+            </span>
+          )}
+        </span>
         <button type="button" onClick={onDismiss} style={diffCardStyles.dismiss} aria-label="Dismiss diff card">
           ✕
         </button>
@@ -3190,7 +3203,7 @@ const diffStyles = {
 // 8-section board brief from /api/admin/plan-narrative. Reads like
 // a Head-of-School cover memo to the Trustees — strategic framing
 // for the meeting BEFORE the line-item plan review.
-function BoardNarrative({ narrative, generatedAt }) {
+function BoardNarrative({ narrative, generatedAt, usage, model }) {
   const sections = [
     { key: 'openingFrame',    label: 'Why this plan, why now',    text: narrative.openingFrame },
     { key: 'whereWeStand',    label: 'Where KUA stands today',    text: narrative.whereWeStand },
@@ -3204,7 +3217,10 @@ function BoardNarrative({ narrative, generatedAt }) {
     <div style={narrativeStyles.wrap}>
       <div style={narrativeStyles.head}>
         <span style={narrativeStyles.headLabel}>Board narrative · 2-page brief</span>
-        <span style={narrativeStyles.headDate}>generated {new Date(generatedAt).toLocaleString()}</span>
+        <span style={narrativeStyles.headDate}>
+          generated {new Date(generatedAt).toLocaleString()}
+          {usage && <span style={{ marginLeft: 8, color: '#64748b' }}>· {formatUsage(usage, model)}</span>}
+        </span>
       </div>
       <h2 style={narrativeStyles.title}>{narrative.title}</h2>
       {sections.map((s) => (

@@ -169,7 +169,7 @@ export default async function handler(req, res) {
   // Phase 125: streaming branch.
   if (body.stream === true) {
     const send = openSSE(res);
-    const { ok, text } = await streamAnthropicJson({
+    const { ok, text, usage } = await streamAnthropicJson({
       apiKey,
       send,
       mode: 'progress',
@@ -188,7 +188,7 @@ export default async function handler(req, res) {
       res.end();
       return;
     }
-    send('done', { alternatives: cleanAlternatives(parsed), generatedAt: new Date().toISOString() });
+    send('done', { alternatives: cleanAlternatives(parsed), generatedAt: new Date().toISOString(), usage, model: 'claude-sonnet-4-6' });
     res.end();
     return;
   }

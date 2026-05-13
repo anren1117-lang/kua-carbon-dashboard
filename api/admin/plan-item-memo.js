@@ -233,7 +233,7 @@ export default async function handler(req, res) {
   // 8-section JSON only parses as a unit.
   if (body.stream === true) {
     const send = openSSE(res);
-    const { ok, text } = await streamAnthropicJson({
+    const { ok, text, usage } = await streamAnthropicJson({
       apiKey,
       send,
       mode: 'progress',
@@ -252,7 +252,7 @@ export default async function handler(req, res) {
       return;
     }
     const memo = cleanMemo(parsed);
-    send('done', { memo, generatedAt: new Date().toISOString() });
+    send('done', { memo, generatedAt: new Date().toISOString(), usage, model: 'claude-sonnet-4-6' });
     res.end();
     return;
   }
