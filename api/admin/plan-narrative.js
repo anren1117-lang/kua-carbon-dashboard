@@ -180,13 +180,22 @@ export default async function handler(req, res) {
   // Phase 125: streaming branch.
   if (body.stream === true) {
     const send = openSSE(res);
-    const { ok, text, usage } = await streamAnthropicJson({
+    // Phase 171: extended thinking on the narrative endpoint. Board
+    // briefs benefit even more than plan generation from careful
+    // reasoning — 7 sections, 2 pages, each must hang together.
+    // Default ON; client can opt out via useThinking: false.
+    const useThinking = body.useThinking !== false;
+    const { ok, text, usage, thinking } = await streamAnthropicJson({
       apiKey,
       send,
       mode: 'progress',
       body: {
         model: 'claude-opus-4-7',
-        max_tokens: 3000,
+        max_tokens: useThinking ? 12000 : 3000,
+        ...(useThinking ? {
+          thinking: { type: 'enabled', budget_tokens: 6000 },
+          temperature: 1,
+        } : {}),
         system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: buildUserMessage(plan, context, history, measuredState) }],
       },
@@ -203,6 +212,8 @@ export default async function handler(req, res) {
       generatedAt: new Date().toISOString(),
       usage,
       model: 'claude-opus-4-7',
+      thinking: useThinking ? thinking : undefined,
+      thinkingEnabled: !!useThinking,
     });
     res.end();
     return;

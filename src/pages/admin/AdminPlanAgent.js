@@ -1140,7 +1140,7 @@ export default function AdminPlanAgent() {
           </div>
           <AIError label="Narrative error" error={narrativeErr} onRetry={generateNarrative} busy={narrativeBusy} />
           {narrative && narrative.narrative && (
-            <BoardNarrative narrative={narrative.narrative} generatedAt={narrative.generatedAt} usage={narrative.usage} model={narrative.model} />
+            <BoardNarrative narrative={narrative.narrative} generatedAt={narrative.generatedAt} usage={narrative.usage} model={narrative.model} thinking={narrative.thinking} />
           )}
 
           {planChatOpen && (
@@ -3395,7 +3395,7 @@ const diffStyles = {
 // 8-section board brief from /api/admin/plan-narrative. Reads like
 // a Head-of-School cover memo to the Trustees — strategic framing
 // for the meeting BEFORE the line-item plan review.
-function BoardNarrative({ narrative, generatedAt, usage, model }) {
+function BoardNarrative({ narrative, generatedAt, usage, model, thinking }) {
   const sections = [
     { key: 'openingFrame',    label: 'Why this plan, why now',    text: narrative.openingFrame },
     { key: 'whereWeStand',    label: 'Where KUA stands today',    text: narrative.whereWeStand },
@@ -3423,6 +3423,7 @@ function BoardNarrative({ narrative, generatedAt, usage, model }) {
           </section>
         ) : null
       ))}
+      {thinking && <ThinkingPanel thinking={thinking} />}
     </div>
   );
 }
