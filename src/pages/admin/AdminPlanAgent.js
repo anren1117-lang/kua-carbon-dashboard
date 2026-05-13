@@ -117,6 +117,24 @@ function exportPlanMarkdown(plan, context) {
   triggerDownload(`kua-plan-${date}.md`, lines.join('\n'), 'text/markdown');
 }
 
+// JSON export: full backup of plan + context + history + snapshots so
+// admin can move state between browsers or archive a board meeting's
+// official plan. JSON is the only export round-tripped by Phase 141
+// import.
+function exportPlanJson(plan, context, history, snapshots) {
+  if (!plan) return;
+  const date = new Date().toISOString().slice(0, 10);
+  const blob = JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    formatVersion: 1,
+    context,
+    plan,
+    history: history || { completed: [], declined: [] },
+    snapshots: snapshots || [],
+  }, null, 2);
+  triggerDownload(`kua-plan-${date}.json`, blob, 'application/json');
+}
+
 function exportPlanCsv(plan) {
   if (!plan || !Array.isArray(plan.plan)) return;
   const cols = ['rank', 'title', 'category', 'difficulty', 'timeline', 'ownerRole', 'expectedMtPerYear', 'estimatedCostUsd', 'paybackYears', 'provenance', 'dataSource', 'why', 'firstSteps', 'dependencies', 'milestones', 'risks', 'kpis'];
@@ -777,6 +795,9 @@ export default function AdminPlanAgent() {
             </button>
             <button type="button" onClick={() => exportPlanCsv(plan)} style={styles.exportBtn} title="Download the plan as a CSV — open in Excel / Google Sheets.">
               📥 CSV
+            </button>
+            <button type="button" onClick={() => exportPlanJson(plan, context, history, snapshots)} style={styles.exportBtn} title="Download the plan + context + history + snapshots as a JSON file — for backup or moving between browsers.">
+              📥 JSON
             </button>
             <button
               type="button"
