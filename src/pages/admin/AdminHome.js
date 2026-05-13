@@ -36,6 +36,7 @@ const SHORT_LABELS = {
   scope1_propane: 'Propane',
   scope1_fleet: 'Fleet',
   scope1_refrigerants: 'Refrigerants',
+  scope2_meter_readings: 'Scope 2 meters',
   day_students: 'Day students',
   us_boarding_students: 'US boarding',
   international_students: 'International',
