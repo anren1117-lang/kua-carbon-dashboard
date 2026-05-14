@@ -5,6 +5,7 @@ import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { AIError, formatUsage } from './AdminPlanAgent.js';
 import { recordUsage } from '../../utils/aiUsageTally.js';
+import { ThinkingPanel } from '../../components/ThinkingPanel.js';
 
 // Pick the most informative 1-2 fields from the extracted row so the
 // preview chip shows what's being captured ("100 gal · 2026-04-15"
@@ -358,6 +359,8 @@ function AdminAIIngestion() {
   // Live char-count + elapsed-time progress while the streaming
   // extraction runs.
   const [streamChars, setStreamChars] = useState(0);
+  // Phase 178: live extended-thinking char count.
+  const [thinkingChars, setThinkingChars] = useState(0);
   // Phase 158: live preview of rows as the AI extracts them.
   const [previewRows, setPreviewRows] = useState([]);
   const [streamStartedAt, setStreamStartedAt] = useState(null);
@@ -424,6 +427,7 @@ function AdminAIIngestion() {
     setResult(null);
     setRowStates({});
     setStreamChars(0);
+    setThinkingChars(0);
     setPreviewRows([]);
     setStreamStartedAt(Date.now());
     const ac = new AbortController();
@@ -467,6 +471,7 @@ function AdminAIIngestion() {
           try { payload = JSON.parse(dataLine.slice(6)); } catch {}
           if (!payload) continue;
           if (event === 'progress')      setStreamChars(payload.charCount || 0);
+          else if (event === 'thinking') setThinkingChars(payload.charCount || 0);
           else if (event === 'item')     setPreviewRows((cur) => [...cur, payload.item]);
           else if (event === 'done')     finalBody = payload;
           else if (event === 'error')    throw new Error(payload.message || 'stream error');
@@ -843,7 +848,9 @@ function AdminAIIngestion() {
             <span style={styles.busy}>
               {streamChars > 0
                 ? `Extracting… ${streamElapsed}s · ${streamChars.toLocaleString()} chars`
-                : `Reading document… ${streamElapsed}s`}
+                : thinkingChars > 0
+                  ? `🧠 Thinking… ${streamElapsed}s · ${(thinkingChars / 1000).toFixed(1)}K chars`
+                  : `Reading document… ${streamElapsed}s`}
             </span>
           )}
         </div>
@@ -912,6 +919,8 @@ function AdminAIIngestion() {
               </ul>
             </div>
           )}
+
+          {result.thinking && <ThinkingPanel thinking={result.thinking} />}
 
           <div style={styles.rowsHead}>
             {result.extractedRows.length === 0

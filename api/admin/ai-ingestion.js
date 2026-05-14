@@ -146,7 +146,7 @@ function cleanExtractedRows(rawRows) {
     : [];
 }
 
-async function streamingIngestion({ res, apiKey, content, validImages, truncated }) {
+async function streamingIngestion({ res, apiKey, content, validImages, truncated, useThinking }) {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
@@ -165,8 +165,18 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
       },
       body: JSON.stringify({
         model: 'claude-opus-4-7',
-        max_tokens: 6000,
+        // Phase 178: extended thinking on document extraction. Multi-
+        // source ingestion (text + images, multiple table types,
+        // ambiguous units) is exactly the structured-reasoning task
+        // thinking helps with — the model can plan its extraction
+        // strategy before emitting rows. 4K thinking budget; output
+        // cap stays at ~6K, total max bumped to 10K.
+        max_tokens: useThinking ? 10000 : 6000,
         stream: true,
+        ...(useThinking ? {
+          thinking: { type: 'enabled', budget_tokens: 4000 },
+          temperature: 1,
+        } : {}),
         system: [
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
         ],
@@ -194,6 +204,11 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
     // event as soon as the closing `}` lands.
     const stepExtractor = createItemExtractor('extractedRows');
     let previewIndex = 0;
+    // Phase 178: accumulate extended-thinking text separately from
+    // the response JSON. Emitted as 'thinking' events during streaming
+    // and surfaced in full on the 'done' payload for the panel.
+    let thinking = '';
+    let thinkingSinceProgress = 0;
     // Phase 160: capture Anthropic usage for the 'done' event.
     const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
     while (true) {
@@ -223,6 +238,14 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
                 send('item', { index: previewIndex, item: obj });
                 previewIndex += 1;
               } catch { /* malformed partial; final parse handles it */ }
+            }
+          } else if (ev.type === 'content_block_delta' && ev.delta?.type === 'thinking_delta') {
+            const t = ev.delta.thinking || '';
+            thinking += t;
+            thinkingSinceProgress += t.length;
+            if (thinkingSinceProgress >= 800) {
+              send('thinking', { charCount: thinking.length });
+              thinkingSinceProgress = 0;
             }
           } else if (ev.type === 'message_start' && ev.message?.usage) {
             usage.inputTokens = ev.message.usage.input_tokens || 0;
@@ -258,6 +281,8 @@ async function streamingIngestion({ res, apiKey, content, validImages, truncated
       flags,
       usage,
       model: 'claude-opus-4-7',
+      thinking: useThinking ? thinking : undefined,
+      thinkingEnabled: !!useThinking,
     });
     res.end();
   } catch (err) {
@@ -347,7 +372,11 @@ export default async function handler(req, res) {
   // the plan endpoint (Phase 119) — client uses the same SSE parser.
   const wantStream = body.stream === true;
   if (wantStream) {
-    return streamingIngestion({ res, apiKey, content, validImages, truncated });
+    // Phase 178: extended thinking on the streaming path. Default ON;
+    // client can opt out via useThinking: false. Non-streaming path
+    // (below) stays as the legacy fast-path with no thinking.
+    const useThinking = body.useThinking !== false;
+    return streamingIngestion({ res, apiKey, content, validImages, truncated, useThinking });
   }
 
   try {
