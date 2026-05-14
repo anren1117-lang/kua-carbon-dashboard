@@ -149,18 +149,19 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 421 tests across 19 files:
+Vitest. 441 tests across 20 files:
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
 - `src/__tests__/csvValidators.test.js` (33) — the 7 CsvImportPanel validators.
 - `src/__tests__/useMeasuredScope.test.js` (23) — render-hook tests for useMeasuredScope1/3/Sinks/Renewables + scope3CohortDetail passthrough.
+- `src/__tests__/anthropicStream.test.js` (22) — server-side streaming: createItemExtractor + tryParseJsonLoose + streamAnthropicJson (text/thinking/usage/progress/delta/item events, mocked fetch).
 - `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
 - `src/__tests__/csv.test.js` (19) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
-- `src/__tests__/anthropicStream.test.js` (12) — server-side createItemExtractor + tryParseJsonLoose for streaming JSON.
 - `src/__tests__/sseClient.test.js` (11) — client-side parseSSE wire protocol (delta / progress / thinking / done / error).
 - `src/__tests__/FreshnessAlert.test.js` (11) — AdminHome banner severity + grammar + link target.
+- `src/__tests__/ThinkingPanel.test.js` (10) — shared extended-thinking panel: suppression, expand/collapse, char-count formatting.
 - `src/__tests__/aiUsageTally.test.js` (8) — session-wide token usage tally on AdminHome.
 - `src/__tests__/CalibrationBadge.test.js` (7) — calibration pill display.
 - `src/__tests__/auditLogPaging.test.js` (6) — fetchAllAuditLog progress + maxRows ceiling + error short-circuit.
