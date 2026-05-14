@@ -8,6 +8,7 @@ import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COM
 import { adminFetch } from '../../utils/adminFetch.js';
 import { downloadBlob } from '../../utils/csv.js';
 import { recordUsage } from '../../utils/aiUsageTally.js';
+import { parseSSE } from '../../utils/sseClient.js';
 import { getCustomActions, getStagePlans } from '../../data/customActions.js';
 import { fetchAuditLog } from '../../utils/adminAudit.js';
 import { useMeasuredScopeTotals } from '../../hooks/useMeasuredScopeTotals.js';
@@ -26,42 +27,6 @@ import { reductionTargets, targetTrajectoryAt } from '../../data/targets.js';
 
 const CONTEXT_KEY = 'kua_admin_plan_context';
 const PLAN_KEY    = 'kua_admin_plan';
-
-// Phase 125: consume an SSE Response from one of the admin AI
-// endpoints. Returns the payload of the 'done' event (with mode:'llm'
-// merged in for parity with the non-streaming JSON shape). Throws on
-// 'error' event. Optional onDelta lets callers stream chat text into
-// state as it arrives.
-async function parseSSE(response, onDelta, onProgress, onThinking) {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let final = null;
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let idx;
-    while ((idx = buffer.indexOf('\n\n')) >= 0) {
-      const chunk = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 2);
-      const eventLine = chunk.split('\n').find((l) => l.startsWith('event: '));
-      const dataLine  = chunk.split('\n').find((l) => l.startsWith('data: '));
-      if (!eventLine || !dataLine) continue;
-      const event = eventLine.slice(7).trim();
-      let payload = null;
-      try { payload = JSON.parse(dataLine.slice(6)); } catch {}
-      if (!payload) continue;
-      if      (event === 'progress' && onProgress) onProgress(payload);
-      else if (event === 'delta'    && onDelta)    onDelta(payload);
-      else if (event === 'thinking' && onThinking) onThinking(payload);
-      else if (event === 'done')                   final = payload;
-      else if (event === 'error')                  throw new Error(payload.message || 'stream error');
-    }
-  }
-  if (!final) throw new Error('Stream ended without a result');
-  return { mode: 'llm', ...final };
-}
 
 // Browser-only download helper. Builds a blob URL, clicks an anchor,
 // revokes. Same pattern src/utils/csv.js uses.
