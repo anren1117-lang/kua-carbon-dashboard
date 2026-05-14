@@ -56,9 +56,12 @@ export function detectAnomalies(readings, opts = {}) {
       }
     }
 
-    // Flat: 6 consecutive identical values. Track a run of equal values;
-    // close it out when the run ends OR when we hit the end of the list
-    // (otherwise a trailing flat run never gets flagged).
+    // Flat: 7+ consecutive identical values. `runLen` counts equal
+    // *pairs*, so it's (identical-reading-count − 1) — hence the
+    // `runLen >= 6` threshold (7 values) and the `runLen + 1` in the
+    // description. Track a run of equal values; close it out when the
+    // run ends OR when we hit the end of the list (otherwise a
+    // trailing flat run never gets flagged).
     let runStart = null;
     let runLen = 0;
     let runEndIdx = 0;
