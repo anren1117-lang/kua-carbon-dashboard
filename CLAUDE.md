@@ -117,20 +117,54 @@ Login Just Works on a fresh deploy without setting either — the fallbacks ship
 
 Admin entry happens through the per-scope pages under `/admin/scope-1`, `/admin/scope-2`, `/admin/scope-3`, `/admin/sinks`, `/admin/renewables`. The legacy single-file `AdminPortal.js` was removed in Phase 84.
 
+### AI plan agent (`/admin/plan-agent`)
+
+The institutional planning agent is the most active AI surface — `src/pages/admin/AdminPlanAgent.js` (~3700 lines) plus the `/api/admin/plan*` endpoint family. All endpoints stream Server-Sent Events.
+
+Endpoints:
+
+- `plan.js` — primary plan generation (12-item prioritized list). Default Opus 4.7, optional Sonnet 4.6. Extended thinking opt-in via UI checkbox (`THINKING_KEY` localStorage).
+- `plan-narrative.js` — board brief: 7-section, 2-page strategic narrative. Opus 4.7. Extended thinking default ON (Phase 171). Self-critique pass (Phase 172).
+- `plan-item-memo.js` — per-item 8-section implementation memo (weekly schedule, stakeholders, budget, etc.). Sonnet 4.6. Extended thinking default ON (Phase 173).
+- `plan-item-alternatives.js` — generate 3 alternatives for swapping into a plan slot. Sonnet 4.6. No thinking.
+- `plan-item-chat.js`, `plan-chat.js` — follow-up chat threads (per-item and plan-level).
+- `plan-diff.js` — narrate the diff between prior plan and freshly regenerated one (Phase 150).
+
+Streaming protocol (`src/utils/anthropicStream.js` server-side, `src/utils/sseClient.js` client-side):
+
+- `event: progress` `{ charCount }` — text accumulation pings every ~200 chars
+- `event: delta` `{ text }` — per-chunk text (chat endpoints with typewriter feel)
+- `event: thinking` `{ charCount }` — extended-thinking accumulation (Phase 168+, every ~800 chars)
+- `event: item` — individual plan items as they materialize (Phase 157, plan endpoint only)
+- `event: done` — final structured payload with usage + thinking + model
+- `event: error` `{ message }`
+
+`parseSSE(response, onDelta, onProgress, onThinking)` consumes the stream client-side; `streamAnthropicJson({...})` serves it. Both have unit tests (`sseClient.test.js`, `anthropicStream.test.js`).
+
+UX patterns to mirror when adding new AI endpoints:
+- Live progress in the busy button label: "🧠 Thinking… 3.2K chars" → "Drafting… 12s · 1.4K chars" → result.
+- AbortController for cancel button (memo + narrative + plan all support this).
+- `recordUsage(usage, model, label)` on every `done` for the session-wide AdminHome tally.
+- `<ThinkingPanel thinking={x} />` collapsible reasoning panel on the result card.
+
 ## Tests
 
-Vitest. 362 tests across 15 files:
+Vitest. 421 tests across 19 files:
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
-- `src/__tests__/apiRoutes.test.js` (91) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
+- `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
+- `src/__tests__/csvValidators.test.js` (33) — the 7 CsvImportPanel validators.
 - `src/__tests__/useMeasuredScope.test.js` (23) — render-hook tests for useMeasuredScope1/3/Sinks/Renewables + scope3CohortDetail passthrough.
 - `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
-- `src/__tests__/csv.test.js` (16) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
+- `src/__tests__/csv.test.js` (19) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
-- `src/__tests__/csvValidators.test.js` (33) — the 7 CsvImportPanel validators.
+- `src/__tests__/anthropicStream.test.js` (12) — server-side createItemExtractor + tryParseJsonLoose for streaming JSON.
+- `src/__tests__/sseClient.test.js` (11) — client-side parseSSE wire protocol (delta / progress / thinking / done / error).
+- `src/__tests__/FreshnessAlert.test.js` (11) — AdminHome banner severity + grammar + link target.
+- `src/__tests__/aiUsageTally.test.js` (8) — session-wide token usage tally on AdminHome.
+- `src/__tests__/CalibrationBadge.test.js` (7) — calibration pill display.
 - `src/__tests__/auditLogPaging.test.js` (6) — fetchAllAuditLog progress + maxRows ceiling + error short-circuit.
 - `src/__tests__/measuredCache.test.js` (6) — promise-cache dedupe + invalidate.
-- `src/__tests__/FreshnessAlert.test.js` (9) — AdminHome banner severity + grammar + link target.
 - `src/__tests__/Renewables.test.js` (4) — public /renewables measured-flip rendering.
 - `src/__tests__/Goals.test.js` (3) — provenance pill flip on Goals.
 - `src/__tests__/Executive.test.js` (3) — cohort row + ScopeRow pills.
