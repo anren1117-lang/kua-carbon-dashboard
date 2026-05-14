@@ -53,7 +53,10 @@ export function rankActions(actions) {
         a.expectedReductionMtCO2e *
         (urgencyW[a.urgency] || 1) *
         (confW[a.confidence] || 1) -
-        diffPenalty[a.difficulty];
+        // `|| 0` so a missing/unknown difficulty doesn't turn the
+        // whole score into NaN (which sorts unpredictably). Note
+        // diffPenalty.low is 0, so the fallback is a safe no-op there.
+        (diffPenalty[a.difficulty] || 0);
       return { action: a, score };
     })
     .sort((a, b) => b.score - a.score);
