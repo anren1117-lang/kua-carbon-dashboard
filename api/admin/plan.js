@@ -609,9 +609,7 @@ export default async function handler(req, res) {
     return;
   }
   const { context, history, measuredState, priorPlan, stream: wantStream, model, useThinking, extraContext } = req.body || {};
-  // Extended thinking only on Opus 4.7. Sonnet 4.6 does not support
-  // it on the streaming path; silently downgrade to standard mode.
-  const effectiveThinking = useThinking === true && pickModel(model) === 'claude-opus-4-7';
+  const effectiveThinking = useThinking === true;
   if (!context || typeof context !== 'object') {
     res.status(400).json({ error: 'context (object) is required' });
     return;

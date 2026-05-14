@@ -2178,7 +2178,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
         <div style={styles.memoUnavail}>{memo.message || 'LLM not configured.'}</div>
       )}
       {memo && memo.mode === 'llm' && memo.memo && (
-        <ImplementationMemo memo={memo.memo} generatedAt={memo.generatedAt} usage={memo.usage} model={memo.model} />
+        <ImplementationMemo memo={memo.memo} generatedAt={memo.generatedAt} usage={memo.usage} model={memo.model} thinking={memo.thinking} />
       )}
       {chatOpen && (
         <ChatThread
@@ -2283,7 +2283,7 @@ const chatStyles = {
   err: { marginTop: 8, padding: '8px 12px', background: '#3a0d0d', border: '1px solid #7f1d1d', borderRadius: 6, color: '#fca5a5', fontSize: 12 },
 };
 
-function ImplementationMemo({ memo, generatedAt, usage, model }) {
+function ImplementationMemo({ memo, generatedAt, usage, model, thinking }) {
   return (
     <div style={memoStyles.wrap}>
       <div style={memoStyles.head}>
@@ -2400,6 +2400,8 @@ function ImplementationMemo({ memo, generatedAt, usage, model }) {
           </div>
         </MemoSection>
       )}
+
+      {thinking && <ThinkingPanel thinking={thinking} />}
     </div>
   );
 }

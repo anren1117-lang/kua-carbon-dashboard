@@ -233,13 +233,23 @@ export default async function handler(req, res) {
   // 8-section JSON only parses as a unit.
   if (body.stream === true) {
     const send = openSSE(res);
-    const { ok, text, usage } = await streamAnthropicJson({
+    // Phase 173: extended thinking on Sonnet for memo generation.
+    // Memos are 8-section structured documents — thinking helps the
+    // model sequence the weekly schedule + stakeholder map + budget
+    // breakdown coherently rather than as parallel bullet lists.
+    // Default ON; client can opt out via useThinking: false.
+    const useThinking = body.useThinking !== false;
+    const { ok, text, usage, thinking } = await streamAnthropicJson({
       apiKey,
       send,
       mode: 'progress',
       body: {
         model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
+        max_tokens: useThinking ? 12000 : 4000,
+        ...(useThinking ? {
+          thinking: { type: 'enabled', budget_tokens: 4000 },
+          temperature: 1,
+        } : {}),
         system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: buildUserMessage(item, context) }],
       },
@@ -252,7 +262,14 @@ export default async function handler(req, res) {
       return;
     }
     const memo = cleanMemo(parsed);
-    send('done', { memo, generatedAt: new Date().toISOString(), usage, model: 'claude-sonnet-4-6' });
+    send('done', {
+      memo,
+      generatedAt: new Date().toISOString(),
+      usage,
+      model: 'claude-sonnet-4-6',
+      thinking: useThinking ? thinking : undefined,
+      thinkingEnabled: !!useThinking,
+    });
     res.end();
     return;
   }
