@@ -43,7 +43,7 @@
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
-import { createItemExtractor } from '../../src/utils/anthropicStream.js';
+import { openSSE, streamAnthropicJson, tryParseJsonLoose } from '../../src/utils/anthropicStream.js';
 
 const limiter = createRateLimit({ capacity: 8, refillPerSec: 0.1 });
 
@@ -428,137 +428,42 @@ function pickModel(requested) {
 // /api/admin/ai-ingestion can reuse it.
 
 async function streamingHandler({ res, apiKey, context, history, measuredState, priorPlan, model, useThinking, extraContext }) {
-  // Open the SSE connection back to the client.
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // some proxies (nginx) need this
-  function send(event, payload) {
-    res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
-  }
+  const send = openSSE(res);
 
   try {
-    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
+    // Phase 180: streaming + per-item extraction now flow through the
+    // shared streamAnthropicJson helper (arrayKey: 'plan'). The
+    // helper handles the SSE deltas, thinking accumulation, usage
+    // capture, and emits 'item' events for each completed plan
+    // entry as the model materializes it.
+    const { ok, text: fullText, usage, thinking } = await streamAnthropicJson({
+      apiKey,
+      send,
+      mode: 'progress',
+      arrayKey: 'plan',
+      body: {
         model: pickModel(model),
         // Phase 168: when extended thinking is enabled, max_tokens
         // must accommodate both the thinking budget AND the final
         // output. 16K total = ~8K thinking + ~8K response.
         max_tokens: useThinking ? 16000 : 8000,
-        stream: true,
         ...(useThinking ? {
           thinking: { type: 'enabled', budget_tokens: 8000 },
+          // Anthropic requires temperature=1 when thinking is enabled
+          // (it samples from the model with no temperature dampening).
+          temperature: 1,
         } : {}),
-        // Anthropic requires temperature=1 when thinking is enabled
-        // (it samples from the model with no temperature dampening).
-        ...(useThinking ? { temperature: 1 } : {}),
         system: [
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
         ],
         messages: [
           { role: 'user', content: buildUserMessage(context, history, measuredState, priorPlan, extraContext) },
         ],
-      }),
+      },
     });
+    if (!ok) { res.end(); return; }
 
-    if (!apiRes.ok || !apiRes.body) {
-      let detail = '';
-      try { const b = await apiRes.json(); detail = b?.error?.message || JSON.stringify(b); } catch {}
-      send('error', { message: `Anthropic API ${apiRes.status}${detail ? ` — ${detail}` : ''}` });
-      res.end();
-      return;
-    }
-
-    // Parse Anthropic's SSE stream: each event has a `type` and
-    // `delta` for content_block_delta. We accumulate text + emit
-    // simpler delta events to our client.
-    const reader = apiRes.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let fullText = '';
-    let charCount = 0;
-    // Phase 154: capture Anthropic usage so the 'done' event can carry
-    // input/output token counts back to the client for cost telemetry.
-    const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
-    // Phase 168: extended-thinking text accumulates separately from
-    // the response JSON. Emitted in the 'done' event so the client can
-    // show an expandable "agent's reasoning" panel.
-    let thinking = '';
-    let thinkingCharCount = 0;
-    // Phase 157: per-stream item extractor. Run it after every text
-    // delta; emit each completed item as it materializes so the
-    // client can render preview cards while the rest of the plan is
-    // still being drafted.
-    const stepExtractor = createItemExtractor('plan');
-    let previewIndex = 0;
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      // Anthropic SSE chunks are separated by \n\n. Each chunk has
-      // event: <type> and data: <json> lines.
-      let idx;
-      while ((idx = buffer.indexOf('\n\n')) >= 0) {
-        const chunk = buffer.slice(0, idx);
-        buffer = buffer.slice(idx + 2);
-        const dataLine = chunk.split('\n').find((l) => l.startsWith('data: '));
-        if (!dataLine) continue;
-        try {
-          const ev = JSON.parse(dataLine.slice(6));
-          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
-            const t = ev.delta.text || '';
-            fullText += t;
-            charCount += t.length;
-            // Don't flood: send progress pings every ~200 chars.
-            if (charCount >= 200) {
-              send('progress', { charCount: fullText.length });
-              charCount = 0;
-            }
-            // Phase 157: try to extract any newly-complete plan items
-            // and emit them as preview events. Per-item cost is small;
-            // the state machine is O(N) across the whole stream.
-            const newItems = stepExtractor(fullText);
-            for (const itemText of newItems) {
-              try {
-                const obj = JSON.parse(itemText);
-                send('item', { index: previewIndex, item: obj });
-                previewIndex += 1;
-              } catch { /* ignore malformed partial; final parse handles it */ }
-            }
-          } else if (ev.type === 'content_block_delta' && ev.delta?.type === 'thinking_delta') {
-            const t = ev.delta.thinking || '';
-            thinking += t;
-            thinkingCharCount += t.length;
-            // Ping the client every ~800 chars of thinking so it can
-            // show "agent thinking… 3.2K chars" while no plan items
-            // have materialized yet.
-            if (thinkingCharCount >= 800) {
-              send('thinking', { charCount: thinking.length });
-              thinkingCharCount = 0;
-            }
-          } else if (ev.type === 'message_start' && ev.message?.usage) {
-            usage.inputTokens = ev.message.usage.input_tokens || 0;
-            usage.cacheCreationInputTokens = ev.message.usage.cache_creation_input_tokens || 0;
-            usage.cacheReadInputTokens = ev.message.usage.cache_read_input_tokens || 0;
-          } else if (ev.type === 'message_delta' && ev.usage) {
-            usage.outputTokens = ev.usage.output_tokens || usage.outputTokens;
-          } else if (ev.type === 'message_stop') {
-            // End of stream — we'll handle parse below.
-            break;
-          }
-        } catch { /* ignore malformed event lines */ }
-      }
-    }
-
-    // Done streaming. Parse the accumulated text + emit the final
-    // structured plan as a 'done' event.
-    const parsed = tryParseJson(fullText);
+    const parsed = tryParseJsonLoose(fullText);
     if (!parsed || !Array.isArray(parsed.plan) || parsed.plan.length === 0) {
       // LLM returned garbage; emit a rule-based plan via 'done'.
       const rulePlan = ruleBasedPlan(context, history);

@@ -37,7 +37,7 @@
 
 import { createRateLimit, getClientKey } from '../../src/utils/rateLimit.js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
-import { createItemExtractor } from '../../src/utils/anthropicStream.js';
+import { openSSE, streamAnthropicJson, tryParseJsonLoose } from '../../src/utils/anthropicStream.js';
 
 // Generous per-IP throttle — each call can burn ~10K input tokens
 // (a multi-page PDF), so we limit aggressive batch ingestion.
@@ -147,125 +147,46 @@ function cleanExtractedRows(rawRows) {
 }
 
 async function streamingIngestion({ res, apiKey, content, validImages, truncated, useThinking }) {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  function send(event, payload) {
-    res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+  const send = openSSE(res);
+
+  // Phase 178: extended thinking on document extraction. Multi-source
+  // ingestion (text + images, multiple table types, ambiguous units)
+  // is exactly the structured-reasoning task thinking helps with —
+  // the model can plan its extraction strategy before emitting rows.
+  // 4K thinking budget; output cap stays at ~6K, total max bumped
+  // to 10K.
+  // Phase 180: streaming + item-extraction now flow through the
+  // shared streamAnthropicJson helper (arrayKey: 'extractedRows').
+  const { ok, text: fullText, usage, thinking } = await streamAnthropicJson({
+    apiKey,
+    send,
+    mode: 'progress',
+    arrayKey: 'extractedRows',
+    body: {
+      model: 'claude-opus-4-7',
+      max_tokens: useThinking ? 10000 : 6000,
+      ...(useThinking ? {
+        thinking: { type: 'enabled', budget_tokens: 4000 },
+        temperature: 1,
+      } : {}),
+      system: [
+        { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+      ],
+      messages: [
+        { role: 'user', content },
+      ],
+    },
+  });
+  if (!ok) { res.end(); return; }
+
+  const parsed = tryParseJsonLoose(fullText);
+  if (!parsed) {
+    send('error', { message: 'Could not parse JSON from LLM response' });
+    res.end();
+    return;
   }
 
   try {
-    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-7',
-        // Phase 178: extended thinking on document extraction. Multi-
-        // source ingestion (text + images, multiple table types,
-        // ambiguous units) is exactly the structured-reasoning task
-        // thinking helps with — the model can plan its extraction
-        // strategy before emitting rows. 4K thinking budget; output
-        // cap stays at ~6K, total max bumped to 10K.
-        max_tokens: useThinking ? 10000 : 6000,
-        stream: true,
-        ...(useThinking ? {
-          thinking: { type: 'enabled', budget_tokens: 4000 },
-          temperature: 1,
-        } : {}),
-        system: [
-          { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
-        ],
-        messages: [
-          { role: 'user', content },
-        ],
-      }),
-    });
-
-    if (!apiRes.ok || !apiRes.body) {
-      let detail = '';
-      try { const b = await apiRes.json(); detail = b?.error?.message || JSON.stringify(b); } catch {}
-      send('error', { message: `Anthropic API ${apiRes.status}${detail ? ` — ${detail}` : ''}` });
-      res.end();
-      return;
-    }
-
-    const reader = apiRes.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let fullText = '';
-    let charCount = 0;
-    // Phase 158: progressive row extraction during streaming. Each
-    // row in "extractedRows": [...] gets emitted as an SSE `item`
-    // event as soon as the closing `}` lands.
-    const stepExtractor = createItemExtractor('extractedRows');
-    let previewIndex = 0;
-    // Phase 178: accumulate extended-thinking text separately from
-    // the response JSON. Emitted as 'thinking' events during streaming
-    // and surfaced in full on the 'done' payload for the panel.
-    let thinking = '';
-    let thinkingSinceProgress = 0;
-    // Phase 160: capture Anthropic usage for the 'done' event.
-    const usage = { inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 0, cacheReadInputTokens: 0 };
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let idx;
-      while ((idx = buffer.indexOf('\n\n')) >= 0) {
-        const chunk = buffer.slice(0, idx);
-        buffer = buffer.slice(idx + 2);
-        const dataLine = chunk.split('\n').find((l) => l.startsWith('data: '));
-        if (!dataLine) continue;
-        try {
-          const ev = JSON.parse(dataLine.slice(6));
-          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
-            const t = ev.delta.text || '';
-            fullText += t;
-            charCount += t.length;
-            if (charCount >= 200) {
-              send('progress', { charCount: fullText.length });
-              charCount = 0;
-            }
-            const newRows = stepExtractor(fullText);
-            for (const rowText of newRows) {
-              try {
-                const obj = JSON.parse(rowText);
-                send('item', { index: previewIndex, item: obj });
-                previewIndex += 1;
-              } catch { /* malformed partial; final parse handles it */ }
-            }
-          } else if (ev.type === 'content_block_delta' && ev.delta?.type === 'thinking_delta') {
-            const t = ev.delta.thinking || '';
-            thinking += t;
-            thinkingSinceProgress += t.length;
-            if (thinkingSinceProgress >= 800) {
-              send('thinking', { charCount: thinking.length });
-              thinkingSinceProgress = 0;
-            }
-          } else if (ev.type === 'message_start' && ev.message?.usage) {
-            usage.inputTokens = ev.message.usage.input_tokens || 0;
-            usage.cacheCreationInputTokens = ev.message.usage.cache_creation_input_tokens || 0;
-            usage.cacheReadInputTokens = ev.message.usage.cache_read_input_tokens || 0;
-          } else if (ev.type === 'message_delta' && ev.usage) {
-            usage.outputTokens = ev.usage.output_tokens || usage.outputTokens;
-          } else if (ev.type === 'message_stop') {
-            break;
-          }
-        } catch {}
-      }
-    }
-
-    const parsed = tryParseJson(fullText);
-    if (!parsed) {
-      send('error', { message: 'Could not parse JSON from LLM response' });
-      res.end();
-      return;
-    }
 
     const extractedRows = cleanExtractedRows(parsed.extractedRows);
     const flags = Array.isArray(parsed.flags)

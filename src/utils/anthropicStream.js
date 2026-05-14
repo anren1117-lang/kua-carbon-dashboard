@@ -30,6 +30,12 @@ export function openSSE(res) {
  *                   (good for big JSON outputs like plan + ingestion).
  * mode 'token'    — emit one 'delta' event per text chunk
  *                   (good for chat where typewriter feel matters).
+ *
+ * arrayKey (optional) — Phase 180: when set, emit each completed
+ *   element of the named JSON array as a separate 'item' SSE event
+ *   (`{ index, item }`) so the client can render preview cards as
+ *   the rest of the JSON is still being drafted. Used by /plan
+ *   ('plan') and /ai-ingestion ('extractedRows').
  */
 export async function streamAnthropicJson({
   apiKey,
@@ -37,6 +43,7 @@ export async function streamAnthropicJson({
   body,
   mode = 'progress',
   progressInterval = 200,
+  arrayKey,
 }) {
   const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -64,6 +71,11 @@ export async function streamAnthropicJson({
   let thinking = '';
   let chunkSinceProgress = 0;
   let thinkingSinceProgress = 0;
+  // Phase 180: optional progressive item extraction. When arrayKey
+  // is set, emit each completed JSON item under that key as a
+  // separate SSE 'item' event with { index, item } shape.
+  const itemExtractor = arrayKey ? createItemExtractor(arrayKey) : null;
+  let itemIndex = 0;
   // Phase 154: capture Anthropic's usage block from message_start +
   // message_delta events so callers can surface "this generation
   // cost $X / used Y tokens" telemetry.
@@ -90,6 +102,16 @@ export async function streamAnthropicJson({
             if (chunkSinceProgress >= progressInterval) {
               send('progress', { charCount: full.length });
               chunkSinceProgress = 0;
+            }
+          }
+          if (itemExtractor) {
+            const newItems = itemExtractor(full);
+            for (const itemText of newItems) {
+              try {
+                const obj = JSON.parse(itemText);
+                send('item', { index: itemIndex, item: obj });
+                itemIndex += 1;
+              } catch { /* malformed partial; final parse handles it */ }
             }
           }
         } else if (ev.type === 'content_block_delta' && ev.delta?.type === 'thinking_delta') {
