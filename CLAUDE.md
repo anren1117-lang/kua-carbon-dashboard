@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 553 tests across 27 files:
+Vitest. 659 tests across 37 files:
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -157,20 +157,30 @@ Vitest. 553 tests across 27 files:
 - `src/__tests__/csvMeterParser.test.js` (30) — meter-CSV parsing: PII-column blocklist, required-column checks, per-row validation, RFC-4180 splitter, empty-cell guards.
 - `src/__tests__/emissions.test.js` (24) — core emission math (quantity→kgCO2e, kg/mt) + aggregation roll-ups (sumBy, grid-mix allocation, intensities, meter baselines).
 - `src/__tests__/useMeasuredScope.test.js` (23) — render-hook tests for useMeasuredScope1/3/Sinks/Renewables + scope3CohortDetail passthrough.
+- `src/__tests__/googleJwt.test.js` (22) — Google OIDC verification: real RS256 keypair, alg-confusion rejects, exp/nbf/aud claims, JWKS cache.
 - `src/__tests__/anthropicStream.test.js` (22) — server-side streaming: createItemExtractor + tryParseJsonLoose + streamAnthropicJson (text/thinking/usage/progress/delta/item events, mocked fetch).
 - `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
 - `src/__tests__/csv.test.js` (19) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
 - `src/__tests__/anomaly.test.js` (16) — meter anomaly detection: spike/flat/gap/stale detectors + qualityScore penalty curve.
 - `src/__tests__/comparison.test.js` (13) — percentChange / trendKind bands / yoyMonthly month-join.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
+- `src/__tests__/bmsExportMapping.test.js` (12) — BMS meter→building localStorage map: default merge, override/delete, reverse lookup.
 - `src/__tests__/sseClient.test.js` (11) — client-side parseSSE wire protocol (delta / progress / thinking / done / error).
 - `src/__tests__/hotspots.test.js` (11) — buildingHotspots severity/sort + rankActions scoring.
 - `src/__tests__/csvMeterFormatter.test.js` (11) — MeterReading→CSV escaping + round-trip with parseMeterCsv.
 - `src/__tests__/FreshnessAlert.test.js` (11) — AdminHome banner severity + grammar + link target.
+- `src/__tests__/CsvMeterAdapter.test.js` (11) — CSV meter adapter: ingest, NaN/missing-field filter, getBuildingEnergy math.
+- `src/__tests__/readingsStore.test.js` (10) — in-memory meter-readings store: dedupe-by-id idempotency + half-open time window.
+- `src/__tests__/extractFileText.test.js` (10) — teacher-upload text extraction: size cap, type/extension routing, truncation.
 - `src/__tests__/ThinkingPanel.test.js` (10) — shared extended-thinking panel: suppression, expand/collapse, char-count formatting.
+- `src/__tests__/MockMeterAdapter.test.js` (10) — synthetic meter generator: determinism, interval count, getBuildingEnergy rollup.
+- `src/__tests__/BmsExportMeterAdapter.test.js` (9) — BMS export synthesis: the honest-synthesis invariant (hourly sums to daily total) + mock fallback.
+- `src/__tests__/hash.test.js` (8) — quickHash/hashUserId determinism + per-role domain-prefix collision avoidance.
 - `src/__tests__/aiUsageTally.test.js` (8) — session-wide token usage tally on AdminHome.
+- `src/__tests__/meterAdapterFactory.test.js` (7) — getMeterAdapter source selection + cache lifecycle.
 - `src/__tests__/equivalents.test.js` (7) — kWh / mtCO2e real-world equivalents + zero-guards.
 - `src/__tests__/CalibrationBadge.test.js` (7) — calibration pill display.
+- `src/__tests__/BmsMeterAdapter.test.js` (7) — Eclypse REST adapter config contract + read-only guarantee.
 - `src/__tests__/auditLogPaging.test.js` (6) — fetchAllAuditLog progress + maxRows ceiling + error short-circuit.
 - `src/__tests__/measuredCache.test.js` (6) — promise-cache dedupe + invalidate.
 - `src/__tests__/Renewables.test.js` (4) — public /renewables measured-flip rendering.
@@ -180,6 +190,8 @@ Vitest. 553 tests across 27 files:
 - `src/App.test.js` (1) — top-level smoke test.
 
 When adding a measured-data path, mirror the existing test shape: empty/null fallback, math sanity, skip-invalid-row, factor-table exposure, round-trip with the placeholder version.
+
+`src/utils/`, `src/storage/`, and every adapter in `src/adapters/meter/` are fully covered. The thinnest remaining surface is the React pages/components under `src/pages/`.
 
 ## Conventions
 
