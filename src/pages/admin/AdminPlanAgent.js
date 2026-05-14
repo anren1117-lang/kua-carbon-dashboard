@@ -32,7 +32,7 @@ const PLAN_KEY    = 'kua_admin_plan';
 // merged in for parity with the non-streaming JSON shape). Throws on
 // 'error' event. Optional onDelta lets callers stream chat text into
 // state as it arrives.
-async function parseSSE(response, onDelta, onProgress) {
+async function parseSSE(response, onDelta, onProgress, onThinking) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -54,6 +54,7 @@ async function parseSSE(response, onDelta, onProgress) {
       if (!payload) continue;
       if      (event === 'progress' && onProgress) onProgress(payload);
       else if (event === 'delta'    && onDelta)    onDelta(payload);
+      else if (event === 'thinking' && onThinking) onThinking(payload);
       else if (event === 'done')                   final = payload;
       else if (event === 'error')                  throw new Error(payload.message || 'stream error');
     }
@@ -337,6 +338,7 @@ export default function AdminPlanAgent() {
   const [narrative, setNarrative] = useState(null); // { narrative: {...}, generatedAt } | null
   const [narrativeBusy, setNarrativeBusy] = useState(false);
   const [narrativeErr, setNarrativeErr] = useState(null);
+  const [narrativeThinkingChars, setNarrativeThinkingChars] = useState(0);
 
   // Phase 150: AI-narrated diff between the prior plan and the freshly
   // regenerated one. Triggered automatically after a regenerate when a
@@ -426,6 +428,7 @@ export default function AdminPlanAgent() {
     if (!plan) return;
     setNarrativeBusy(true);
     setNarrativeErr(null);
+    setNarrativeThinkingChars(0);
     const ac = new AbortController();
     narrativeAbortRef.current = ac;
     try {
@@ -444,7 +447,7 @@ export default function AdminPlanAgent() {
         const body = await r.json().catch(() => ({}));
         throw new Error(body.error || `HTTP ${r.status}`);
       }
-      const result = await parseSSE(r);
+      const result = await parseSSE(r, undefined, undefined, (p) => setNarrativeThinkingChars(p.charCount || 0));
       setNarrative(result);
       recordUsage(result?.usage, result?.model, 'narrative');
     } catch (err) {
@@ -1119,7 +1122,11 @@ export default function AdminPlanAgent() {
             </button>
             {!narrative && (
               <button type="button" onClick={generateNarrative} disabled={narrativeBusy} style={styles.narrativeBtn}>
-                {narrativeBusy ? 'Drafting board brief…' : '📄 Board narrative'}
+                {narrativeBusy
+                  ? (narrativeThinkingChars > 0
+                      ? `🧠 Thinking… ${(narrativeThinkingChars / 1000).toFixed(1)}K chars`
+                      : 'Drafting board brief…')
+                  : '📄 Board narrative'}
               </button>
             )}
             {narrativeBusy && (
@@ -1877,6 +1884,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
   const [memo, setMemo] = useState(null);     // { mode, memo, generatedAt } | null
   const [memoBusy, setMemoBusy] = useState(false);
   const [memoErr, setMemoErr] = useState(null);
+  const [memoThinkingChars, setMemoThinkingChars] = useState(0);
 
   // Per-item follow-up chat thread. Closed by default; opens when
   // admin clicks "Ask follow-up". Persists for the page lifecycle.
@@ -1933,6 +1941,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
   async function generateMemo() {
     setMemoBusy(true);
     setMemoErr(null);
+    setMemoThinkingChars(0);
     try {
       const r = await adminFetch('/api/admin/plan-item-memo', {
         method: 'POST',
@@ -1943,7 +1952,7 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
         const body = await r.json().catch(() => ({}));
         throw new Error(body.error || `HTTP ${r.status}`);
       }
-      const result = await parseSSE(r);
+      const result = await parseSSE(r, undefined, undefined, (p) => setMemoThinkingChars(p.charCount || 0));
       setMemo(result);
       recordUsage(result?.usage, result?.model, 'memo');
     } catch (err) {
@@ -2131,7 +2140,11 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
         <button type="button" onClick={onDecline}  style={styles.declineBtn}>Take off the table</button>
         {!memo && (
           <button type="button" onClick={generateMemo} disabled={memoBusy} style={styles.memoBtn}>
-            {memoBusy ? 'Generating memo…' : '📝 Implementation memo'}
+            {memoBusy
+              ? (memoThinkingChars > 0
+                  ? `🧠 Thinking… ${(memoThinkingChars / 1000).toFixed(1)}K chars`
+                  : 'Generating memo…')
+              : '📝 Implementation memo'}
           </button>
         )}
         {memo && (
