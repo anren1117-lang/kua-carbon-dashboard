@@ -81,7 +81,7 @@ export function parseMeterCsv(csv) {
     const row = splitCsvRow(lines[lineNo]);
     const meterId = row[idx('meter_id')];
     const timestamp = row[idx('timestamp')];
-    const value = Number(row[idx('value')]);
+    const rawValue = row[idx('value')];
     const unit = row[idx('unit')];
     const intervalMinutes = Number(row[idx('interval_minutes')]);
 
@@ -89,8 +89,16 @@ export function parseMeterCsv(csv) {
       errors.push(`row ${lineNo + 1}: unknown meter_id "${meterId}"`);
       continue;
     }
+    // Guard the empty cell explicitly — Number('') is 0, not NaN, so
+    // a blank value column would otherwise slip through as a real
+    // 0-kWh reading instead of being flagged as missing.
+    if (rawValue === undefined || rawValue === '') {
+      errors.push(`row ${lineNo + 1}: value is missing`);
+      continue;
+    }
+    const value = Number(rawValue);
     if (Number.isNaN(value)) {
-      errors.push(`row ${lineNo + 1}: value "${row[idx('value')]}" is not numeric`);
+      errors.push(`row ${lineNo + 1}: value "${rawValue}" is not numeric`);
       continue;
     }
     const ts = new Date(timestamp);
@@ -104,7 +112,10 @@ export function parseMeterCsv(csv) {
     }
 
     const meter = meterById[meterId];
-    const optDemand = idx('demand_kw') >= 0 ? Number(row[idx('demand_kw')]) : undefined;
+    // Empty optional demand_kw cell stays undefined — Number('') is 0,
+    // which would otherwise record a phantom 0 kW demand peak.
+    const rawDemand = idx('demand_kw') >= 0 ? row[idx('demand_kw')] : undefined;
+    const optDemand = rawDemand !== undefined && rawDemand !== '' ? Number(rawDemand) : undefined;
     const optQuality = idx('data_quality') >= 0 ? row[idx('data_quality')] : 'actual';
 
     readings.push({
@@ -116,7 +127,7 @@ export function parseMeterCsv(csv) {
       intervalMinutes,
       value,
       unit,
-      demandKw: !Number.isNaN(optDemand) && optDemand !== undefined ? optDemand : undefined,
+      demandKw: optDemand !== undefined && !Number.isNaN(optDemand) ? optDemand : undefined,
       dataQuality: ['actual', 'estimated', 'missing', 'anomaly'].includes(optQuality) ? optQuality : 'actual',
       source: 'csv',
     });
