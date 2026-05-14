@@ -149,20 +149,27 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 441 tests across 20 files:
+Vitest. 553 tests across 27 files:
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
 - `src/__tests__/csvValidators.test.js` (33) — the 7 CsvImportPanel validators.
+- `src/__tests__/csvMeterParser.test.js` (30) — meter-CSV parsing: PII-column blocklist, required-column checks, per-row validation, RFC-4180 splitter, empty-cell guards.
+- `src/__tests__/emissions.test.js` (24) — core emission math (quantity→kgCO2e, kg/mt) + aggregation roll-ups (sumBy, grid-mix allocation, intensities, meter baselines).
 - `src/__tests__/useMeasuredScope.test.js` (23) — render-hook tests for useMeasuredScope1/3/Sinks/Renewables + scope3CohortDetail passthrough.
 - `src/__tests__/anthropicStream.test.js` (22) — server-side streaming: createItemExtractor + tryParseJsonLoose + streamAnthropicJson (text/thinking/usage/progress/delta/item events, mocked fetch).
 - `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
 - `src/__tests__/csv.test.js` (19) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
+- `src/__tests__/anomaly.test.js` (16) — meter anomaly detection: spike/flat/gap/stale detectors + qualityScore penalty curve.
+- `src/__tests__/comparison.test.js` (13) — percentChange / trendKind bands / yoyMonthly month-join.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
 - `src/__tests__/sseClient.test.js` (11) — client-side parseSSE wire protocol (delta / progress / thinking / done / error).
+- `src/__tests__/hotspots.test.js` (11) — buildingHotspots severity/sort + rankActions scoring.
+- `src/__tests__/csvMeterFormatter.test.js` (11) — MeterReading→CSV escaping + round-trip with parseMeterCsv.
 - `src/__tests__/FreshnessAlert.test.js` (11) — AdminHome banner severity + grammar + link target.
 - `src/__tests__/ThinkingPanel.test.js` (10) — shared extended-thinking panel: suppression, expand/collapse, char-count formatting.
 - `src/__tests__/aiUsageTally.test.js` (8) — session-wide token usage tally on AdminHome.
+- `src/__tests__/equivalents.test.js` (7) — kWh / mtCO2e real-world equivalents + zero-guards.
 - `src/__tests__/CalibrationBadge.test.js` (7) — calibration pill display.
 - `src/__tests__/auditLogPaging.test.js` (6) — fetchAllAuditLog progress + maxRows ceiling + error short-circuit.
 - `src/__tests__/measuredCache.test.js` (6) — promise-cache dedupe + invalidate.
