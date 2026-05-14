@@ -1938,15 +1938,25 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
     return fetchAlternatives(lastAltsReason);
   }
 
+  const memoAbortRef = React.useRef(null);
+  function cancelMemo() {
+    if (memoAbortRef.current) {
+      try { memoAbortRef.current.abort(); } catch {}
+    }
+  }
+
   async function generateMemo() {
     setMemoBusy(true);
     setMemoErr(null);
     setMemoThinkingChars(0);
+    const ac = new AbortController();
+    memoAbortRef.current = ac;
     try {
       const r = await adminFetch('/api/admin/plan-item-memo', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ item, context, stream: true }),
+        signal: ac.signal,
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -1956,8 +1966,10 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
       setMemo(result);
       recordUsage(result?.usage, result?.model, 'memo');
     } catch (err) {
-      setMemoErr(err.message);
+      if (err?.name === 'AbortError') setMemoErr('Cancelled.');
+      else setMemoErr(err.message);
     } finally {
+      memoAbortRef.current = null;
       setMemoBusy(false);
     }
   }
@@ -2145,6 +2157,16 @@ function PlanCard({ item, rank, context, compact, onComplete, onDecline, onRepla
                   ? `🧠 Thinking… ${(memoThinkingChars / 1000).toFixed(1)}K chars`
                   : 'Generating memo…')
               : '📝 Implementation memo'}
+          </button>
+        )}
+        {memoBusy && (
+          <button
+            type="button"
+            onClick={cancelMemo}
+            style={{ padding: '6px 10px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+            title="Stop the in-flight memo generation."
+          >
+            ✕ Cancel
           </button>
         )}
         {memo && (
