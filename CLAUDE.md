@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 1,024 tests across 62 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines, the personal-footprint calculator all under direct test):
+Vitest. 1,065 tests across 66 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines, the personal-footprint calculator, the geographic-map projection, the viewport hook + Layout responsive behavior all under direct test):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -177,6 +177,10 @@ Vitest. 1,024 tests across 62 files (every routed page has at least a mount-smok
 - `src/__tests__/alertCronState.test.js` (6) — persistent alert dedup state (memory fallback + Supabase upsert).
 - `src/__tests__/alertHistory.test.js` (12) — append-only alert-email audit trail + admin read endpoint.
 - `src/__tests__/personalFootprint.test.js` (15) — student footprint estimator math + suggestion targeting.
+- `src/__tests__/geoLayout.test.js` (8) — geographic mode of /campus-map: lat/lng → SVG equirectangular projection, sqft scaling, missing-position counting, degenerate same-coord handling.
+- `src/__tests__/buildingEmissions.test.js` (varies) — per-building emissions roll-up + month filtering used by /campus-map, /buildings/:id, /dorm-leaderboard.
+- `src/__tests__/useViewport.test.js` (6) — useIsNarrow + useViewportWidth: mount value, resize event reactivity, custom breakpoint, exported NARROW_BREAKPOINT.
+- `src/__tests__/LayoutResponsive.test.js` (4) — Layout swaps between desktop horizontal nav and the mobile hamburger drawer based on viewport width; verifies drawer open/close + that high-traffic routes are reachable from the drawer.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
 - `src/__tests__/PasswordGate.test.js` (13) — admin auth gate: server login flow, session restore, expired/malformed session rejects, logout.
 - `src/__tests__/chatbotMatch.test.js` (12) — keyword-scoring chatbot matcher + QUIZ_BANK invariants.
@@ -216,5 +220,6 @@ When adding a measured-data path, mirror the existing test shape: empty/null fal
 ## Conventions
 
 - Styling is done with inline `style={{...}}` objects and a small `App.css`. There is no CSS framework, no component library, and no shared style module — matching the existing inline-style patterns is fine.
+- Mobile / responsive: because the codebase doesn't have media queries, responsive branches live in JS. Components that need a different layout on phones import `useIsNarrow` from `src/hooks/useViewport.js` (default breakpoint 720px, custom-breakpoint arg supported) and swap their style branch. Desktop code path stays unchanged when `isNarrow === false`. Layout collapses to a hamburger drawer on narrow viewports.
 - Emission factors live in `src/data/scopeTotals.js` (Scope 1/3 + sinks + renewables) and `src/data/gridMix.js` (Scope 2). Admin forms in `src/pages/admin/*` read these via `useFactor` / `useTable` from `_shared.js`.
 - API handlers use `createRateLimit` + `getClientKey` from `src/utils/rateLimit.js` — token-bucket per IP. Mirror existing handlers when adding new ones.
