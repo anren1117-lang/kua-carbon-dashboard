@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
+import { CampusMonthlyTrend } from '../components/CampusMonthlyTrend.js';
+import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -113,6 +115,12 @@ export default function CampusMap() {
         title="Campus zones"
         hint={`Schematic layout grouped by category — not geographically accurate (we don't yet have building coordinates). Sizes are scaled by sqft. Colors show kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. Based on ${monthsObserved} months of measured BMS data${mode === 'monthly' ? ', currently viewing one month' : ', annualized'}.`}
       >
+        <CampusMonthlyTrend
+          monthlyTotals={campusMonthlyTotals()}
+          selectedMonth={selectedMonth}
+          onSelect={setSelectedMonth}
+        />
+
         <div style={styles.controlsRow}>
           <span style={styles.controlLabel}>Time window:</span>
           <button
