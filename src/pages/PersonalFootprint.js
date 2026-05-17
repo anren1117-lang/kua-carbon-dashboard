@@ -1,0 +1,263 @@
+import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
+import { estimatePersonalFootprint, FOOTPRINT_REFERENCE } from '../utils/personalFootprint.js';
+
+// /your-footprint — a public student-facing personal carbon estimator.
+// Five inputs, transparent math, three reference comparisons, and
+// 1-2 suggestions targeting the dominant components.
+
+const STUDENT_TYPES = [
+  { value: 'day',           label: 'Day student' },
+  { value: 'us_boarding',   label: 'US boarder' },
+  { value: 'international', label: 'International boarder' },
+];
+
+const BEEF = [
+  { value: 'never',          label: 'Never' },
+  { value: 'weekly',         label: 'Once a week' },
+  { value: 'few_times_week', label: '2–4 times a week' },
+  { value: 'daily',          label: 'Daily' },
+];
+
+const THERMOSTAT = [
+  { value: 'always_on',         label: 'Leave it on all day' },
+  { value: 'turn_down_when_out', label: 'Turn it down when I leave' },
+  { value: 'off_when_out',      label: 'Turn it off when I leave' },
+];
+
+export default function PersonalFootprint() {
+  const [studentType, setStudentType] = useState('us_boarding');
+  const [commuteMiles, setCommuteMiles] = useState(8);
+  const [flights, setFlights] = useState(2);
+  const [beef, setBeef] = useState('weekly');
+  const [thermostat, setThermostat] = useState('turn_down_when_out');
+  const [showers, setShowers] = useState(7);
+  const [submitted, setSubmitted] = useState(false);
+
+  const result = useMemo(() => estimatePersonalFootprint({
+    studentType,
+    commuteMilesOneWay: commuteMiles,
+    flightsPerYear: flights,
+    beefFrequency: beef,
+    thermostatHabit: thermostat,
+    showersPerWeek: showers,
+  }), [studentType, commuteMiles, flights, beef, thermostat, showers]);
+
+  const isDay = studentType === 'day';
+  const isBoarder = studentType !== 'day';
+
+  return (
+    <ModulePage
+      title="Your personal footprint"
+      subtitle="A quick estimate of YOUR annual carbon footprint at KUA, based on five things you actually control. All math is transparent — every row shows its assumption inline."
+    >
+      <ModuleSection title="Tell us about your year" hint="Update any field — the estimate recomputes live.">
+        <form style={styles.form} onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+          <Field label="What kind of student are you?">
+            <RadioGroup name="student-type" value={studentType} onChange={setStudentType} options={STUDENT_TYPES} />
+          </Field>
+
+          {isDay && (
+            <Field label="How far do you live from KUA?" sublabel="One-way miles">
+              <input
+                type="number" min="0" max="60" step="0.5"
+                value={commuteMiles}
+                onChange={(e) => setCommuteMiles(Number(e.target.value))}
+                style={styles.input}
+              />
+              <span style={styles.unit}>miles</span>
+            </Field>
+          )}
+
+          {isBoarder && (
+            <Field label="Round trips home per year?" sublabel="Flights for breaks, holidays, etc.">
+              <input
+                type="number" min="0" max="20" step="1"
+                value={flights}
+                onChange={(e) => setFlights(Number(e.target.value))}
+                style={styles.input}
+              />
+              <span style={styles.unit}>flights/year</span>
+            </Field>
+          )}
+
+          <Field label="How often do you eat beef?">
+            <RadioGroup name="beef" value={beef} onChange={setBeef} options={BEEF} />
+          </Field>
+
+          {isBoarder && (
+            <Field label="What do you do with your dorm thermostat?">
+              <RadioGroup name="thermostat" value={thermostat} onChange={setThermostat} options={THERMOSTAT} />
+            </Field>
+          )}
+
+          <Field label="Showers per week?">
+            <input
+              type="number" min="0" max="21" step="1"
+              value={showers}
+              onChange={(e) => setShowers(Number(e.target.value))}
+              style={styles.input}
+            />
+            <span style={styles.unit}>per week</span>
+          </Field>
+        </form>
+      </ModuleSection>
+
+      <ModuleSection title="Your estimate">
+        <div style={styles.hero}>
+          <div style={styles.heroNumber}>{result.totalMt.toFixed(2)}</div>
+          <div style={styles.heroUnit}>mtCO₂e / year</div>
+        </div>
+
+        <div style={styles.compare}>
+          <ComparisonRow
+            label="vs KUA per-student average"
+            yourMt={result.totalMt}
+            refMt={FOOTPRINT_REFERENCE.kuaPerStudentNetMt}
+            note="Net (gross emissions minus campus-forest sequestration), divided by ~340 students."
+          />
+          <ComparisonRow
+            label="vs US per-person average"
+            yourMt={result.totalMt}
+            refMt={FOOTPRINT_REFERENCE.usAdultAvgMt}
+            note="EPA / WRI: ~16 mt per person per year for the average US adult."
+          />
+          <ComparisonRow
+            label="vs 1.5 °C-aligned target"
+            yourMt={result.totalMt}
+            refMt={FOOTPRINT_REFERENCE.parisAlignedMt}
+            note="IPCC SR1.5: roughly 2 mt per person per year by 2030 to keep warming under 1.5 °C."
+          />
+        </div>
+      </ModuleSection>
+
+      <ModuleSection title="Breakdown" hint="Each row shows the exact assumption used. Audit + push back on any of them.">
+        <ul style={styles.breakdown}>
+          {result.components.map((c, i) => (
+            <li key={i} style={styles.bdRow}>
+              <div style={styles.bdLabel}>{c.label}</div>
+              <div style={styles.bdMt}>
+                {c.mt > 0 ? `${c.mt.toFixed(2)} mt/yr` : '—'}
+              </div>
+              <div style={styles.bdNote}>{c.note}</div>
+            </li>
+          ))}
+        </ul>
+      </ModuleSection>
+
+      {result.suggestions.length > 0 && (
+        <ModuleSection title="Things you can change" hint="Targeted at your biggest reducible rows — not a generic eco-checklist.">
+          <ul style={styles.suggestions}>
+            {result.suggestions.map((s, i) => (
+              <li key={i} style={styles.suggestion}>{s}</li>
+            ))}
+          </ul>
+        </ModuleSection>
+      )}
+
+      <ModuleSection title="What about everything else?" hint="">
+        <p style={styles.fineprint}>
+          This estimator covers what you personally control day-to-day. It doesn't include
+          things like KUA's heating fuel for academic buildings, the supply-chain emissions
+          of stuff you buy, or the upstream emissions of the energy mix on the ISO-NE grid.
+          Those are covered on the <Link to="/" style={styles.link}>main dashboard</Link>.
+        </p>
+        <p style={styles.fineprint}>
+          Want to dig into where KUA's institutional numbers come from?
+          See <Link to="/methodology" style={styles.link}>Methodology</Link> for every emission
+          factor + citation.
+        </p>
+      </ModuleSection>
+    </ModulePage>
+  );
+}
+
+function Field({ label, sublabel, children }) {
+  return (
+    <div style={styles.field}>
+      <label style={styles.label}>
+        {label}
+        {sublabel && <span style={styles.sublabel}> · {sublabel}</span>}
+      </label>
+      <div style={styles.fieldInput}>{children}</div>
+    </div>
+  );
+}
+
+function RadioGroup({ name, value, onChange, options }) {
+  return (
+    <div style={styles.radioRow}>
+      {options.map((o) => (
+        <label key={o.value} style={{ ...styles.radio, ...(value === o.value ? styles.radioActive : {}) }}>
+          <input
+            type="radio"
+            name={name}
+            value={o.value}
+            checked={value === o.value}
+            onChange={() => onChange(o.value)}
+            style={styles.radioInput}
+          />
+          {o.label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function ComparisonRow({ label, yourMt, refMt, note }) {
+  const ratio = refMt > 0 ? yourMt / refMt : 0;
+  const pct = Math.round(ratio * 100);
+  const kind = ratio < 0.6 ? 'good' : ratio < 1.0 ? 'info' : 'warn';
+  return (
+    <div style={styles.compareRow}>
+      <div style={styles.compareHead}>
+        <span style={styles.compareLabel}>{label}</span>
+        <Pill kind={kind}>
+          {ratio < 1.0
+            ? `${pct}% of reference`
+            : ratio < 1.5
+              ? `${pct}% of reference`
+              : `${Math.round(ratio)}× reference`}
+        </Pill>
+      </div>
+      <div style={styles.compareBar}>
+        <div style={{ ...styles.compareFill, width: `${Math.min(100, Math.max(2, pct))}%`, background: kind === 'good' ? '#22c55e' : kind === 'info' ? '#22d3ee' : '#dc2626' }} />
+      </div>
+      <div style={styles.compareNote}>{note}</div>
+    </div>
+  );
+}
+
+const styles = {
+  form: { display: 'grid', gap: 18 },
+  field: { display: 'grid', gap: 8 },
+  label: { fontSize: 13, color: '#e5e7eb', fontWeight: 700 },
+  sublabel: { color: '#94a3b8', fontWeight: 400, fontStyle: 'italic' },
+  fieldInput: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
+  input: { padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#e5e7eb', fontSize: 14, fontFamily: 'inherit', width: 100 },
+  unit: { fontSize: 12, color: '#94a3b8' },
+  radioRow: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+  radio: { padding: '8px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#cbd5e1', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 },
+  radioActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 600 },
+  radioInput: { margin: 0 },
+  hero: { textAlign: 'center', padding: '24px 0' },
+  heroNumber: { fontSize: 56, fontWeight: 800, color: '#22d3ee', lineHeight: 1 },
+  heroUnit: { fontSize: 14, color: '#94a3b8', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 600 },
+  compare: { display: 'grid', gap: 18, marginTop: 20 },
+  compareRow: { },
+  compareHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  compareLabel: { fontSize: 13, color: '#e5e7eb', fontWeight: 600 },
+  compareBar: { height: 8, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden' },
+  compareFill: { height: '100%', transition: 'width 200ms' },
+  compareNote: { fontSize: 11, color: '#64748b', marginTop: 4 },
+  breakdown: { listStyle: 'none', padding: 0, margin: 0 },
+  bdRow: { padding: '10px 0', borderBottom: '1px solid #1f2937', display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 },
+  bdLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
+  bdMt: { fontSize: 14, color: '#22d3ee', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+  bdNote: { gridColumn: '1 / -1', fontSize: 11, color: '#64748b', lineHeight: 1.5 },
+  suggestions: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 },
+  suggestion: { padding: '12px 16px', background: '#052e16', border: '1px solid #14532d', borderLeft: '3px solid #86efac', borderRadius: 6, color: '#dcfce7', fontSize: 14, lineHeight: 1.6 },
+  fineprint: { fontSize: 13, color: '#94a3b8', lineHeight: 1.7, margin: '8px 0' },
+  link: { color: '#22d3ee', textDecoration: 'none' },
+};

@@ -38,6 +38,7 @@ const categoryItems = [
   { to: '/goals',          label: 'Goals (standalone)' },
   { to: '/actions',        label: 'Actions (standalone)' },
   { to: '/trends',         label: 'Trend Builder' },
+  { to: '/your-footprint', label: 'Your footprint (calculator)' },
 ];
 
 const portalItems = [

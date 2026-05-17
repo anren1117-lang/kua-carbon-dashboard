@@ -29,6 +29,7 @@ import Dining              from '../pages/Dining.js';
 import Drawdown            from '../pages/Drawdown.js';
 import EnvironmentNews     from '../pages/EnvironmentNews.js';
 import Unsubscribe         from '../pages/Unsubscribe.js';
+import PersonalFootprint   from '../pages/PersonalFootprint.js';
 import Hotspots            from '../pages/Hotspots.js';
 import Learn               from '../pages/Learn.js';
 import LessonEditor        from '../pages/LessonEditor.js';
@@ -78,6 +79,7 @@ const pages = [
   plain(Drawdown,            'Drawdown'),
   plain(EnvironmentNews,     'EnvironmentNews'),
   plain(Unsubscribe,         'Unsubscribe'),
+  plain(PersonalFootprint,   'PersonalFootprint'),
   plain(Hotspots,            'Hotspots'),
   plain(Learn,               'Learn'),
   plain(LessonEditor,        'LessonEditor'),
