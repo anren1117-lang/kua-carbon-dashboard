@@ -11,6 +11,7 @@ export function ModulePage({ title, subtitle, children, className, toolbar }) {
         {toolbar && <div className="no-print" style={styles.toolbar}>{toolbar}</div>}
         <h1 style={styles.title}>{title}</h1>
         {subtitle && <p style={styles.subtitle}>{subtitle}</p>}
+        <span style={styles.headerAccent} aria-hidden="true" />
       </header>
       {children}
     </div>
@@ -44,7 +45,17 @@ export function MetricGrid({ metrics }) {
   return (
     <div style={styles.metricGrid}>
       {metrics.map((m, i) => (
-        <div key={i} style={{ ...styles.metricCard, borderLeftColor: m.accent || '#22d3ee' }}>
+        <div
+          key={i}
+          className="kua-metric-card kua-card-hover"
+          style={{
+            ...styles.metricCard,
+            borderLeftColor: m.accent || '#22d3ee',
+            // Stagger each card's fade-in by 80ms so the grid
+            // populates left-to-right instead of all at once.
+            animationDelay: `${i * 80}ms`,
+          }}
+        >
           <div style={styles.metricLabel}>{m.label}</div>
           <div style={styles.metricValue}>
             {m.value}
@@ -84,10 +95,22 @@ export function Pill({ kind = 'neutral', children }) {
 
 const styles = {
   page: { maxWidth: 1100, margin: '0 auto', padding: '0 16px' },
-  header: { marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #1f2937' },
+  header: { marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid #1f2937', position: 'relative' },
+  // Subtle cyan accent line under the title — replaces the plain
+  // 1px border-bottom with a 2px gradient bar that runs across the
+  // first 80px of the header. Reads as "this page has identity"
+  // without being decorative.
+  headerAccent: { position: 'absolute', left: 0, bottom: -1, height: 2, width: 80, background: 'linear-gradient(90deg, #22d3ee, #3b82f6)', borderRadius: 2 },
   toolbar: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 10 },
-  title: { fontSize: 'clamp(24px, 5vw, 32px)', color: '#e5e7eb', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' },
-  subtitle: { fontSize: 15, color: '#94a3b8', margin: '8px 0 0', lineHeight: 1.5, maxWidth: 800 },
+  title: {
+    fontSize: 'clamp(26px, 5vw, 36px)',
+    color: '#e5e7eb',
+    fontWeight: 800,
+    margin: 0,
+    letterSpacing: '-0.015em',
+    lineHeight: 1.15,
+  },
+  subtitle: { fontSize: 15, color: '#94a3b8', margin: '10px 0 0', lineHeight: 1.55, maxWidth: 800 },
 
   // Section gets a subtle top-left accent gradient line for visual
   // hierarchy. The border-image trick paints a 3px gradient bar on

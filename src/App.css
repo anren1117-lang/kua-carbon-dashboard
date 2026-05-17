@@ -387,3 +387,18 @@ input[type="range"]::-webkit-slider-thumb {
 footer a:hover {
   color: #22d3ee !important;
 }
+
+/* Metric card stagger entry — fades up from below with the
+   per-card delay set inline via animationDelay. */
+@keyframes kuaMetricEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.kua-metric-card {
+  animation: kuaMetricEnter 500ms ease-out backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kua-metric-card { animation: none !important; }
+}
