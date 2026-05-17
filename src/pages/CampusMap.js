@@ -6,6 +6,7 @@ import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { layoutBoxesGeo } from '../utils/geoLayout.js';
 import { buildingPositions, allPositionsAreEstimated } from '../data/buildingPositions.js';
 import { toCsv, downloadCsv } from '../utils/csv.js';
+import { useIsNarrow } from '../hooks/useViewport.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -391,19 +392,36 @@ function DetailStat({ label, value, sub }) {
 }
 
 function Ranking({ rows, valueKey, suffix }) {
+  const isNarrow = useIsNarrow();
   const max = Math.max(...rows.map((r) => r[valueKey]), 1);
   return (
     <ol style={styles.rankList}>
-      {rows.map((r, i) => (
-        <li key={r.id} style={styles.rankRow}>
-          <span style={styles.rankNum}>#{i + 1}</span>
-          <span style={styles.rankName}>{r.name}</span>
-          <span style={styles.rankBar}>
-            <span style={{ ...styles.rankFill, width: `${(r[valueKey] / max) * 100}%`, background: intensityColor(r.kgPerSqft) }} />
-          </span>
-          <span style={styles.rankValue}>{r[valueKey].toLocaleString()}{suffix}</span>
-        </li>
-      ))}
+      {rows.map((r, i) => {
+        if (isNarrow) {
+          return (
+            <li key={r.id} style={styles.rankCard}>
+              <div style={styles.rankCardHead}>
+                <span style={styles.rankNum}>#{i + 1}</span>
+                <span style={{ ...styles.rankName, flex: 1 }}>{r.name}</span>
+                <span style={styles.rankValue}>{r[valueKey].toLocaleString()}{suffix}</span>
+              </div>
+              <span style={styles.rankBar}>
+                <span style={{ ...styles.rankFill, width: `${(r[valueKey] / max) * 100}%`, background: intensityColor(r.kgPerSqft) }} />
+              </span>
+            </li>
+          );
+        }
+        return (
+          <li key={r.id} style={styles.rankRow}>
+            <span style={styles.rankNum}>#{i + 1}</span>
+            <span style={styles.rankName}>{r.name}</span>
+            <span style={styles.rankBar}>
+              <span style={{ ...styles.rankFill, width: `${(r[valueKey] / max) * 100}%`, background: intensityColor(r.kgPerSqft) }} />
+            </span>
+            <span style={styles.rankValue}>{r[valueKey].toLocaleString()}{suffix}</span>
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -462,4 +480,8 @@ const styles = {
   rankBar:     { height: 6, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 3, overflow: 'hidden' },
   rankFill:    { display: 'block', height: '100%' },
   rankValue:   { textAlign: 'right', color: '#e5e7eb', fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
+
+  // Narrow: stack the bar under the head row so the building name has room.
+  rankCard:     { padding: '10px 0', borderBottom: '1px solid #1f2937', display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13 },
+  rankCardHead: { display: 'flex', alignItems: 'center', gap: 10 },
 };

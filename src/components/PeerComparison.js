@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useIsNarrow } from '../hooks/useViewport.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -100,6 +101,8 @@ const styles = {
   swatch: (color) => ({ width: 12, height: 12, borderRadius: 3, background: color }),
   rows: { marginTop: 22, display: 'grid', gap: 10 },
   row: { display: 'grid', gridTemplateColumns: 'minmax(140px, 210px) 1fr minmax(80px, 130px)', alignItems: 'center', gap: 10 },
+  rowNarrow: { display: 'flex', flexDirection: 'column', gap: 6, padding: '6px 0', borderBottom: '1px solid #1f2937' },
+  rowNarrowHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 },
   rowSelf: { background: '#1e293b', padding: '10px', borderRadius: 6, marginLeft: -10, marginRight: -10 },
   name: { fontSize: 13, color: '#e5e7eb', fontWeight: 500 },
   nameSelf: { fontSize: 13, color: '#fbbf24', fontWeight: 700 },
@@ -199,6 +202,7 @@ function Bar({ p }) {
 }
 
 export function PeerComparison() {
+  const isNarrow = useIsNarrow();
   // Axis tick values for context.
   const ticks = [Math.ceil(axisMin), 0, Math.round(axisMax / 2), Math.round(axisMax)];
 
@@ -226,16 +230,18 @@ export function PeerComparison() {
           </div>
         </div>
 
-        {/* Axis */}
-        <div style={styles.axisRow}>
-          <div />
-          <div style={styles.axis}>
-            {ticks.map((t) => (
-              <span key={t} style={{ ...styles.axisLabel, left: valToPct(t) + '%' }}>{t}</span>
-            ))}
+        {/* Axis — hidden on narrow viewports where the row layout stacks. */}
+        {!isNarrow && (
+          <div style={styles.axisRow}>
+            <div />
+            <div style={styles.axis}>
+              {ticks.map((t) => (
+                <span key={t} style={{ ...styles.axisLabel, left: valToPct(t) + '%' }}>{t}</span>
+              ))}
+            </div>
+            <div />
           </div>
-          <div />
-        </div>
+        )}
 
         <div style={styles.rows}>
           {peers
@@ -243,6 +249,22 @@ export function PeerComparison() {
             .sort((a, b) => sumNet(b) - sumNet(a))
             .map((p) => {
               const net = sumNet(p);
+              if (isNarrow) {
+                return (
+                  <div key={p.name} style={p.isUs ? { ...styles.rowNarrow, ...styles.rowSelf } : styles.rowNarrow}>
+                    <div style={styles.rowNarrowHead}>
+                      <div>
+                        <div style={p.isUs ? styles.nameSelf : styles.name}>{p.name}</div>
+                        <div style={styles.nameType}>{typeLabels[p.type]}</div>
+                      </div>
+                      <div style={p.isUs ? styles.netColSelf : styles.netCol}>
+                        net {net.toFixed(1)} mt
+                      </div>
+                    </div>
+                    <Bar p={p} />
+                  </div>
+                );
+              }
               return (
                 <div key={p.name} style={p.isUs ? { ...styles.row, ...styles.rowSelf } : styles.row}>
                   <div>
