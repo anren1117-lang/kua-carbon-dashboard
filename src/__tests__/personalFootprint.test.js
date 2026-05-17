@@ -4,7 +4,7 @@
 // reducible rows).
 
 import { describe, it, expect } from 'vitest';
-import { estimatePersonalFootprint, FOOTPRINT_REFERENCE } from '../utils/personalFootprint.js';
+import { estimatePersonalFootprint, FOOTPRINT_REFERENCE, typicalFootprintFor, allTypicalFootprints } from '../utils/personalFootprint.js';
 
 describe('estimatePersonalFootprint — components', () => {
   it('day student gets a commute row, no flights row', () => {
@@ -132,5 +132,40 @@ describe('FOOTPRINT_REFERENCE', () => {
     expect(FOOTPRINT_REFERENCE.kuaPerStudentNetMt).toBeGreaterThan(0);
     expect(FOOTPRINT_REFERENCE.usAdultAvgMt).toBeGreaterThan(FOOTPRINT_REFERENCE.kuaPerStudentNetMt);
     expect(FOOTPRINT_REFERENCE.parisAlignedMt).toBeLessThan(FOOTPRINT_REFERENCE.kuaPerStudentNetMt);
+  });
+});
+
+describe('typicalFootprintFor — peer comparison', () => {
+  it('returns a finite mt + label for every known student type', () => {
+    for (const t of ['day', 'us_boarding', 'international']) {
+      const p = typicalFootprintFor(t);
+      expect(Number.isFinite(p.totalMt)).toBe(true);
+      expect(p.totalMt).toBeGreaterThan(0);
+      expect(typeof p.label).toBe('string');
+      expect(p.label.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('international boarder has the highest typical footprint (long-haul flights)', () => {
+    const day  = typicalFootprintFor('day').totalMt;
+    const us   = typicalFootprintFor('us_boarding').totalMt;
+    const intl = typicalFootprintFor('international').totalMt;
+    expect(intl).toBeGreaterThan(day);
+    expect(intl).toBeGreaterThan(us);
+  });
+
+  it('allTypicalFootprints returns exactly 3 entries in known order', () => {
+    const all = allTypicalFootprints();
+    expect(all).toHaveLength(3);
+    expect(all[0].label).toMatch(/day/i);
+    expect(all[1].label).toMatch(/US boarder/i);
+    expect(all[2].label).toMatch(/international/i);
+  });
+
+  it('typical day student footprint is dominated by commute, not flights', () => {
+    // sanity: a day student walks, doesn't fly home — so their typical
+    // total shouldn't blow up to the international level
+    const day = typicalFootprintFor('day').totalMt;
+    expect(day).toBeLessThan(5); // < 5 mt is the reality check
   });
 });

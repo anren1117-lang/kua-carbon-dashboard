@@ -184,3 +184,62 @@ export const FOOTPRINT_REFERENCE = {
   usAdultAvgMt: 16,          // US per-capita ~16 mt/yr (EPA / WRI)
   parisAlignedMt: 2,         // 1.5°C-aligned per-capita target by 2030 (IPCC SR1.5)
 };
+
+// "Average behavior" inputs per student type — used to compute the
+// typical-footprint baseline that the comparison panel renders. These
+// are deliberately central, not best-case or worst-case.
+const TYPICAL_BEHAVIOR = {
+  day: {
+    studentType: 'day',
+    commuteMilesOneWay: 7,
+    flightsPerYear: 0,
+    beefFrequency: 'weekly',
+    thermostatHabit: 'always_on', // day students don't control campus heating
+    showersPerWeek: 7,
+  },
+  us_boarding: {
+    studentType: 'us_boarding',
+    commuteMilesOneWay: 0,
+    flightsPerYear: 2,
+    beefFrequency: 'weekly',
+    thermostatHabit: 'turn_down_when_out',
+    showersPerWeek: 7,
+  },
+  international: {
+    studentType: 'international',
+    commuteMilesOneWay: 0,
+    flightsPerYear: 2,
+    beefFrequency: 'weekly',
+    thermostatHabit: 'turn_down_when_out',
+    showersPerWeek: 7,
+  },
+};
+
+/**
+ * Returns the typical/average footprint for a given student type by
+ * running the estimator against a central-case behavior profile.
+ * Used by /your-footprint to draw the "you vs similar students"
+ * comparison.
+ *
+ * @param {'day'|'us_boarding'|'international'} studentType
+ * @returns {{ totalMt: number, label: string }}
+ */
+export function typicalFootprintFor(studentType) {
+  const inputs = TYPICAL_BEHAVIOR[studentType] || TYPICAL_BEHAVIOR.day;
+  const { totalMt } = estimatePersonalFootprint(inputs);
+  const labels = {
+    day:           'Average day student',
+    us_boarding:   'Average US boarder',
+    international: 'Average international boarder',
+  };
+  return { totalMt, label: labels[studentType] || labels.day };
+}
+
+/** All three typical footprints — useful for showing the full peer spectrum. */
+export function allTypicalFootprints() {
+  return [
+    typicalFootprintFor('day'),
+    typicalFootprintFor('us_boarding'),
+    typicalFootprintFor('international'),
+  ];
+}

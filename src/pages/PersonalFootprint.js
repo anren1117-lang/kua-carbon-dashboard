@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
-import { estimatePersonalFootprint, FOOTPRINT_REFERENCE } from '../utils/personalFootprint.js';
+import { estimatePersonalFootprint, FOOTPRINT_REFERENCE, typicalFootprintFor, allTypicalFootprints } from '../utils/personalFootprint.js';
 
 // /your-footprint — a public student-facing personal carbon estimator.
 // Five inputs, transparent math, three reference comparisons, and
@@ -132,6 +132,10 @@ export default function PersonalFootprint() {
         </div>
       </ModuleSection>
 
+      <ModuleSection title="You vs similar KUA students" hint="Where you sit relative to the average student of each type. The marker on your row shows your number; the bars show the typical footprint for each cohort.">
+        <PeerSpectrum yourTotalMt={result.totalMt} yourType={studentType} />
+      </ModuleSection>
+
       <ModuleSection title="Breakdown" hint="Each row shows the exact assumption used. Audit + push back on any of them.">
         <ul style={styles.breakdown}>
           {result.components.map((c, i) => (
@@ -170,6 +174,75 @@ export default function PersonalFootprint() {
         </p>
       </ModuleSection>
     </ModulePage>
+  );
+}
+
+// Side-by-side bar comparison of your footprint against the typical
+// footprint for each of the three student types. The bar for "your"
+// student type is highlighted, and your personal value is drawn as
+// a vertical marker on top so you can see whether you're above or
+// below the cohort average.
+function PeerSpectrum({ yourTotalMt, yourType }) {
+  const peers = allTypicalFootprints().map((p, i) => ({
+    ...p,
+    key: ['day', 'us_boarding', 'international'][i],
+  }));
+  const max = Math.max(yourTotalMt, ...peers.map((p) => p.totalMt), 1);
+
+  // Whether the user is above the typical for THEIR own type
+  const myPeer = peers.find((p) => p.key === yourType);
+  const delta  = myPeer ? yourTotalMt - myPeer.totalMt : 0;
+  const deltaPct = myPeer && myPeer.totalMt > 0 ? (delta / myPeer.totalMt) * 100 : 0;
+
+  return (
+    <div>
+      <div style={spectrum.bars}>
+        {peers.map((p) => {
+          const isYou = p.key === yourType;
+          const widthPct = (p.totalMt / max) * 100;
+          const yourPct  = (yourTotalMt / max) * 100;
+          return (
+            <div key={p.key} style={spectrum.row}>
+              <div style={{ ...spectrum.label, color: isYou ? '#22d3ee' : '#94a3b8', fontWeight: isYou ? 700 : 500 }}>
+                {p.label}{isYou ? ' (your group)' : ''}
+              </div>
+              <div style={spectrum.barTrack}>
+                <div style={{
+                  ...spectrum.barFill,
+                  width: `${widthPct}%`,
+                  background: isYou ? '#0e3a5f' : '#1f2937',
+                  borderColor: isYou ? '#22d3ee' : 'transparent',
+                }} />
+                <div style={{
+                  ...spectrum.barValue,
+                  color: isYou ? '#22d3ee' : '#cbd5e1',
+                }}>
+                  {p.totalMt.toFixed(1)} mt/yr typical
+                </div>
+                {isYou && (
+                  <div
+                    title={`Your footprint: ${yourTotalMt.toFixed(2)} mt/yr`}
+                    style={{ ...spectrum.youMarker, left: `${Math.min(99, yourPct)}%` }}
+                  >
+                    <span style={spectrum.youMarkerLabel}>you: {yourTotalMt.toFixed(2)} mt</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {myPeer && Math.abs(delta) > 0.05 && (
+        <p style={spectrum.deltaNote}>
+          You're <strong style={{ color: delta < 0 ? '#86efac' : '#fbbf24' }}>
+            {Math.abs(deltaPct).toFixed(0)}% {delta < 0 ? 'below' : 'above'}
+          </strong> the average {myPeer.label.toLowerCase().replace('average ', '')} ({myPeer.totalMt.toFixed(1)} mt/yr).
+          {delta < 0
+            ? ' Solid — keep doing whatever you\'re doing differently.'
+            : ' Look at the suggestions below for the easiest wins.'}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -260,4 +333,16 @@ const styles = {
   suggestion: { padding: '12px 16px', background: '#052e16', border: '1px solid #14532d', borderLeft: '3px solid #86efac', borderRadius: 6, color: '#dcfce7', fontSize: 14, lineHeight: 1.6 },
   fineprint: { fontSize: 13, color: '#94a3b8', lineHeight: 1.7, margin: '8px 0' },
   link: { color: '#22d3ee', textDecoration: 'none' },
+};
+
+const spectrum = {
+  bars: { display: 'grid', gap: 14 },
+  row: { display: 'grid', gridTemplateColumns: 'minmax(160px, 220px) 1fr', gap: 14, alignItems: 'center' },
+  label: { fontSize: 13 },
+  barTrack: { position: 'relative', height: 36, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, overflow: 'visible' },
+  barFill: { position: 'absolute', top: 0, bottom: 0, left: 0, border: '1px solid', borderRadius: 5, transition: 'width 200ms ease' },
+  barValue: { position: 'absolute', top: 0, bottom: 0, right: 10, display: 'flex', alignItems: 'center', fontSize: 12, fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+  youMarker: { position: 'absolute', top: -8, bottom: -8, width: 3, background: '#fcd34d', borderRadius: 1, boxShadow: '0 0 0 1px rgba(0,0,0,0.4)' },
+  youMarkerLabel: { position: 'absolute', top: -22, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#fcd34d', whiteSpace: 'nowrap', background: '#0b1220', padding: '2px 6px', borderRadius: 3, border: '1px solid #fcd34d' },
+  deltaNote: { fontSize: 13, color: '#94a3b8', marginTop: 16, lineHeight: 1.6 },
 };
