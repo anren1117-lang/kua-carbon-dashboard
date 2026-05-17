@@ -208,7 +208,7 @@ export function PeerComparison() {
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card}>
+      <section style={styles.card} className="kua-card-hover">
         <div style={styles.head}>
           <h2 style={styles.title}>Per-student emissions by scope, with offsets and sinks</h2>
           <p style={styles.blurb}>

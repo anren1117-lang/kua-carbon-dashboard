@@ -71,7 +71,7 @@ export function ScopeDonut() {
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card}>
+      <section style={styles.card} className="kua-card-hover">
         <h2 style={styles.title}>KUA emissions by scope</h2>
         <p style={styles.blurb}>
           Where the ~{grossTotal.toLocaleString()} mtCO₂e of gross annual emissions actually come
