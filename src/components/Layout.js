@@ -98,10 +98,11 @@ const portalItems = [
 
 const styles = {
   shell: { minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: '#0b1220', color: '#e5e7eb' },
-  header: { borderBottom: '1px solid #1f2937', background: '#0f172a', position: 'sticky', top: 0, zIndex: 10 },
+  header: { borderBottom: '1px solid #1f2937', background: '#0f172a', position: 'sticky', top: 0, zIndex: 10, transition: 'background 200ms ease, box-shadow 200ms ease' },
   headerInner: { maxWidth: 1200, margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'nowrap' },
   headerInnerNarrow: { maxWidth: 1200, margin: '0 auto', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#22d3ee', textDecoration: 'none', whiteSpace: 'nowrap' },
+  brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#22d3ee', textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 8 },
+  brandIcon: { display: 'inline-flex', filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.35))' },
   nav: { display: 'flex', gap: 4, flex: 1, minWidth: 0 },
   link: ({ isActive }) => ({
     padding: '6px 10px',
@@ -399,6 +400,28 @@ function Layout() {
   const { pathname } = useLocation();
   const isNarrow = useIsNarrow();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
+
+  // Track whether the user has scrolled past 60px so the sticky
+  // header can swap to a backdrop-blur treatment. Throttled to one
+  // update per animation frame to keep scroll cheap.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    let raf = null;
+    function onScroll() {
+      if (raf !== null) return;
+      raf = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 60);
+        raf = null;
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll(); // sync initial state
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (raf !== null) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   // Move focus to <main> on route change so screen readers + keyboard
   // users get a fresh reading position. Without this, focus stays on
@@ -427,10 +450,13 @@ function Layout() {
   return (
     <div style={styles.shell}>
       <a href="#main" style={styles.skipLink}>Skip to main content</a>
-      <header style={styles.header}>
+      <header style={styles.header} className={scrolled ? 'kua-header-scrolled' : ''}>
         {isNarrow ? (
           <div style={styles.headerInnerNarrow}>
-            <NavLink to="/" style={styles.brand} aria-label="KUA Carbon — go to overview">KUA Carbon</NavLink>
+            <NavLink to="/" style={styles.brand} aria-label="KUA Carbon — go to overview">
+              <span style={styles.brandIcon}><Icon.Leaf size={18} /></span>
+              KUA Carbon
+            </NavLink>
             <button
               type="button"
               style={styles.hamburger}
@@ -444,7 +470,10 @@ function Layout() {
           </div>
         ) : (
           <div style={styles.headerInner}>
-            <NavLink to="/" style={styles.brand} aria-label="KUA Carbon — go to overview">KUA Carbon</NavLink>
+            <NavLink to="/" style={styles.brand} aria-label="KUA Carbon — go to overview">
+              <span style={styles.brandIcon}><Icon.Leaf size={18} /></span>
+              KUA Carbon
+            </NavLink>
             <nav style={styles.nav} className="nav-scroll" aria-label="Primary">
               {topItems.map(({ to, label, end }) => (
                 <NavLink key={to} to={to} end={end} style={styles.link}>

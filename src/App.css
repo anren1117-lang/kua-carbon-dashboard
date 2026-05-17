@@ -402,3 +402,12 @@ footer a:hover {
 @media (prefers-reduced-motion: reduce) {
   .kua-metric-card { animation: none !important; }
 }
+
+/* Header gains backdrop blur once user scrolls past the hero.
+   Layout.js adds .kua-header-scrolled to <header> when scrollY > 60. */
+.kua-header-scrolled {
+  background: rgba(15, 23, 42, 0.78) !important;
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  box-shadow: 0 2px 12px -6px rgba(0, 0, 0, 0.5);
+}
