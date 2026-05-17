@@ -26,14 +26,22 @@ const BOX_GAP          = 10;
 
 // Color scale for emissions intensity (kgCO₂e/sqft/yr).
 // Roughly: <8 cool (efficient), 8–25 mid, >25 hot (high-intensity).
+// Note: kgPerSqft === 0 indicates NO MEASURED DATA (not "zero
+// emissions") — the caller renders that case differently rather
+// than reusing a color band, so a viewer doesn't confuse "we
+// don't have a meter on this building" with "this building is
+// efficient."
 function intensityColor(kgPerSqft) {
-  if (kgPerSqft <= 0)  return '#1f2937';
+  if (kgPerSqft <= 0)  return null;
   if (kgPerSqft <  4)  return '#0e7490';
   if (kgPerSqft <  8)  return '#06b6d4';
   if (kgPerSqft < 16)  return '#fcd34d';
   if (kgPerSqft < 30)  return '#fb923c';
   return '#dc2626';
 }
+
+const NO_DATA_FILL = 'url(#noDataHatch)';
+const NO_DATA_BORDER = '#475569';
 
 function categoryAccent(cat) {
   return cat === 'Academic'  ? '#a5b4fc'
@@ -149,6 +157,10 @@ export default function CampusMap() {
           <LegendChip color="#fcd34d">8–16</LegendChip>
           <LegendChip color="#fb923c">16–30</LegendChip>
           <LegendChip color="#dc2626">&gt; 30 (hot)</LegendChip>
+          <span style={{ ...styles.legendChip }}>
+            <span style={{ ...styles.legendSwatch, background: '#1e293b', border: '1px dashed #475569' }} />
+            no measured data
+          </span>
         </div>
 
         <svg
@@ -157,6 +169,16 @@ export default function CampusMap() {
           role="img"
           aria-label="KUA campus map showing per-building emissions intensity"
         >
+          <defs>
+            {/* Diagonal hatch for buildings with no measured data — visually
+                distinct from any of the intensity colors so a viewer
+                immediately reads "we don't have a meter here" vs "this
+                building is efficient." */}
+            <pattern id="noDataHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="#1e293b" />
+              <line x1="0" y1="0" x2="0" y2="6" stroke="#334155" strokeWidth="2" />
+            </pattern>
+          </defs>
           {zones.map((z) => (
             <g key={z.category} transform={`translate(0, ${z.y})`}>
               <rect
@@ -173,8 +195,10 @@ export default function CampusMap() {
                 {z.category}
               </text>
               {z.boxes.map((b) => {
-                const fill = intensityColor(b.row.kgPerSqft);
-                const stroke = selectedId === b.row.id ? '#fff' : '#1f2937';
+                const colorFill = intensityColor(b.row.kgPerSqft);
+                const hasData = colorFill !== null;
+                const fill = hasData ? colorFill : NO_DATA_FILL;
+                const stroke = selectedId === b.row.id ? '#fff' : (hasData ? '#1f2937' : NO_DATA_BORDER);
                 return (
                   <g
                     key={b.row.id}
@@ -187,7 +211,9 @@ export default function CampusMap() {
                       fill={fill}
                       stroke={stroke}
                       strokeWidth={selectedId === b.row.id ? 2.5 : 1}
+                      strokeDasharray={!hasData && selectedId !== b.row.id ? '4 3' : undefined}
                       rx={4}
+                      style={{ transition: 'fill 300ms ease, stroke 120ms ease, stroke-width 120ms ease' }}
                     />
                     <text
                       x={b.w / 2} y={b.h / 2 - 4}
