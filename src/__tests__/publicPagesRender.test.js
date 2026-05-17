@@ -33,6 +33,7 @@ import PersonalFootprint   from '../pages/PersonalFootprint.js';
 import CampusMap           from '../pages/CampusMap.js';
 import BuildingDetail      from '../pages/BuildingDetail.js';
 import DormLeaderboard     from '../pages/DormLeaderboard.js';
+import EnergyChallenge     from '../pages/EnergyChallenge.js';
 import Hotspots            from '../pages/Hotspots.js';
 import Learn               from '../pages/Learn.js';
 import LessonEditor        from '../pages/LessonEditor.js';
@@ -90,6 +91,7 @@ const pages = [
   // Same component on a bogus id to exercise the not-found branch.
   param(BuildingDetail,      'BuildingDetail (not found)', '/buildings/:id', '/buildings/b_nope'),
   plain(DormLeaderboard,     'DormLeaderboard'),
+  plain(EnergyChallenge,     'EnergyChallenge'),
   plain(Hotspots,            'Hotspots'),
   plain(Learn,               'Learn'),
   plain(LessonEditor,        'LessonEditor'),
