@@ -22,13 +22,15 @@ function easeOutCubic(t) {
 }
 
 /**
- * @param {object} props
- * @param {number} props.value           target number to count to
- * @param {number} [props.duration=1100] ms
- * @param {number} [props.decimals=0]    decimal places in displayed value
- * @param {(n: number) => string} [props.format] custom formatter (default toLocaleString)
+ * Hook variant — useful when the consumer needs to render the
+ * animated value inside an SVG <text> or another non-span context
+ * where the AnimatedNumber component's <span> won't work.
+ *
+ * @param {number} value           target number to count to
+ * @param {number} [duration=1100] ms
+ * @returns {number} the current eased value (updated each frame)
  */
-export function AnimatedNumber({ value, duration = 1100, decimals = 0, format }) {
+export function useAnimatedNumber(value, duration = 1100) {
   const [display, setDisplay] = useState(() => REDUCED_MOTION ? value : 0);
   const rafRef = useRef(null);
   const startRef = useRef(null);
@@ -40,14 +42,9 @@ export function AnimatedNumber({ value, duration = 1100, decimals = 0, format })
       setDisplay(value);
       return undefined;
     }
-    // If value changes mid-animation, start a new tween from the
-    // current displayed value rather than snapping. Avoids the jarring
-    // "0 → newValue" restart that would otherwise happen if e.g. live
-    // data lands during the initial count-up.
     fromRef.current = display;
     targetRef.current = value;
     startRef.current = null;
-
     function step(ts) {
       if (startRef.current === null) startRef.current = ts;
       const elapsed = ts - startRef.current;
@@ -55,27 +52,32 @@ export function AnimatedNumber({ value, duration = 1100, decimals = 0, format })
       const eased = easeOutCubic(t);
       const next = fromRef.current + (targetRef.current - fromRef.current) * eased;
       setDisplay(next);
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(step);
-      }
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
     }
     rafRef.current = requestAnimationFrame(step);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    // We don't depend on `display` (would create a feedback loop —
-    // setDisplay re-runs the effect that reads display, etc.). We
-    // capture the current display via the closure above and read it
-    // once at effect-start.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, duration]);
 
+  return display;
+}
+
+/**
+ * @param {object} props
+ * @param {number} props.value           target number to count to
+ * @param {number} [props.duration=1100] ms
+ * @param {number} [props.decimals=0]    decimal places in displayed value
+ * @param {(n: number) => string} [props.format] custom formatter (default toLocaleString)
+ */
+export function AnimatedNumber({ value, duration = 1100, decimals = 0, format }) {
+  const display = useAnimatedNumber(value, duration);
   const factor = Math.pow(10, decimals);
   const rounded = Math.round(display * factor) / factor;
   const text = format ? format(rounded) : rounded.toLocaleString(undefined, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
-
   return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{text}</span>;
 }

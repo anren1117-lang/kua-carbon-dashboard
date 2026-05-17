@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { useAnimatedNumber } from './AnimatedNumber.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut
@@ -63,6 +64,10 @@ export function ScopeDonut() {
   const centerLabel = hoveredArc ? hoveredArc.label.toUpperCase() : 'GROSS / YR';
   const centerValue = hoveredArc ? hoveredArc.value : grossTotal;
   const centerSub   = hoveredArc ? `${hoveredArc.pct.toFixed(0)}% of gross` : 'mtCO₂e';
+  // Tween the center number whenever it changes (hover swap +
+  // initial mount). 350ms is fast enough to feel responsive to
+  // hover but slow enough to register as motion.
+  const displayValue = useAnimatedNumber(centerValue, hoveredArc ? 350 : 900);
 
   return (
     <div style={styles.wrap}>
@@ -122,7 +127,7 @@ export function ScopeDonut() {
                 transition: 'fill 200ms ease',
               }}
             >
-              {centerValue.toLocaleString()}
+              {Math.round(displayValue).toLocaleString()}
             </text>
             <text x={cx} y={cy + 30} textAnchor="middle" style={styles.centerUnit}>{centerSub}</text>
           </svg>
