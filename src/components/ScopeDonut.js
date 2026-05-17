@@ -1,21 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
-
-// Track viewport width with a resize listener so the donut + legend can
-// reflow in real time. The previous implementation read window.innerWidth
-// once at mount, so resizing the window left the layout stuck.
-function useIsNarrow(breakpoint = 720) {
-  const get = () => typeof window !== 'undefined' && window.innerWidth < breakpoint;
-  const [narrow, setNarrow] = useState(get);
-  useEffect(() => {
-    const onResize = () => setNarrow(get());
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return narrow;
-}
+import { useIsNarrow } from '../hooks/useViewport.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useIsNarrow } from '../hooks/useViewport.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -121,7 +122,7 @@ const styles = {
 
 function ScopeCard({ s, color }) {
   const [open, setOpen] = useState(false);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 760;
+  const isMobile = useIsNarrow(760);
   return (
     <div style={styles.card(color)}>
       <div
