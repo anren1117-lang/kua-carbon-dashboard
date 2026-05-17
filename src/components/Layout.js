@@ -40,6 +40,7 @@ const categoryItems = [
   { to: '/actions',        label: 'Actions (standalone)' },
   { to: '/trends',         label: 'Trend Builder' },
   { to: '/your-footprint', label: 'Your footprint (calculator)' },
+  { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
 ];
 
 const portalItems = [
