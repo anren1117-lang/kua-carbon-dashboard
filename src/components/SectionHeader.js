@@ -13,11 +13,15 @@ const styles = {
     margin: 0,
     lineHeight: 1.25,
     letterSpacing: '-0.015em',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
   },
+  titleIcon: { display: 'inline-flex', color: '#22d3ee', flexShrink: 0 },
   description: { fontSize: 16, color: '#94a3b8', maxWidth: 720, marginTop: 12, lineHeight: 1.6 },
 };
 
-export function SectionHeader({ label, title, description }) {
+export function SectionHeader({ label, title, description, icon: SectionIcon }) {
   return (
     <header style={styles.wrap}>
       <div style={styles.rule} />
@@ -27,7 +31,14 @@ export function SectionHeader({ label, title, description }) {
           <span style={styles.label}>{label}</span>
         </div>
       )}
-      <h2 style={styles.title}>{title}</h2>
+      <h2 style={styles.title}>
+        {SectionIcon && (
+          <span style={styles.titleIcon} aria-hidden="true">
+            <SectionIcon size={26} />
+          </span>
+        )}
+        {title}
+      </h2>
       {description && <p style={styles.description}>{description}</p>}
     </header>
   );

@@ -24,26 +24,26 @@ function App() {
         <h2 style={styles.subtitle}>Campus Carbon Emissions Dashboard</h2>
       </header>
 
-      <SectionHeader label="The number" title="Net annual carbon footprint" />
+      <SectionHeader label="The number" title="Net annual carbon footprint" icon={Icon.Chart} />
       <NetEstimate />
 
-      <SectionHeader label="Summary" title="In plain English" />
+      <SectionHeader label="Summary" title="In plain English" icon={Icon.Sparkles} />
       <AISummary />
 
-      <SectionHeader label="Breakdown" title="By scope" />
+      <SectionHeader label="Breakdown" title="By scope" icon={Icon.Bolt} />
       <ScopeDonut />
       <ScopeExplainer />
 
-      <SectionHeader label="Context" title="How KUA compares" />
+      <SectionHeader label="Context" title="How KUA compares" icon={Icon.HelpCircle} />
       <PeerComparison />
 
-      <SectionHeader label="World" title="What's happening right now" />
+      <SectionHeader label="World" title="What's happening right now" icon={Icon.Leaf} />
       <NewsStrip />
 
-      <SectionHeader label="Dorms" title="Residence-hall energy race" />
+      <SectionHeader label="Dorms" title="Residence-hall energy race" icon={Icon.Trophy} />
       <DormLeaderboardPreview />
 
-      <SectionHeader label="Learn" title="Want a guided walkthrough?" />
+      <SectionHeader label="Learn" title="Want a guided walkthrough?" icon={Icon.Map} />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
         <Link
           to="/learn"
