@@ -47,6 +47,7 @@ function anthropicWith(items, { ok = true, status = 200, model = 'claude-sonnet-
 const goodItem = (over = {}) => ({
   headline: 'IPCC: warming on track to exceed 1.5 °C',
   summary: 'The latest IPCC assessment projects warming will pass 1.5 °C in the early 2030s under current policies.',
+  studentConnection: 'Warmer winters mean fewer ski days at Whaleback and a shorter maple-syrup tap season on the KUA campus forest.',
   topic: 'climate',
   sourceName: 'IPCC',
   sourceUrl: 'https://www.ipcc.ch/example',
@@ -118,6 +119,24 @@ describe('/api/environment-news — happy path + validation', () => {
     ])));
     const r = await call(get());
     expect(r.body.items.map((x) => x.headline)).toEqual(['keep']);
+  });
+
+  it('drops items with no studentConnection — the whole point of the feed is local relevance', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => anthropicWith([
+      goodItem({ headline: 'keep' }),
+      goodItem({ headline: 'drop-no-connection', studentConnection: '' }),
+      goodItem({ headline: 'drop-also-missing', studentConnection: undefined }),
+    ])));
+    const r = await call(get());
+    expect(r.body.items.map((x) => x.headline)).toEqual(['keep']);
+  });
+
+  it('passes studentConnection through on the cleaned item', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => anthropicWith([
+      goodItem({ studentConnection: 'Less snow at Whaleback this season.' }),
+    ])));
+    const r = await call(get());
+    expect(r.body.items[0].studentConnection).toBe('Less snow at Whaleback this season.');
   });
 
   it('falls back to "climate" for an unknown topic', async () => {

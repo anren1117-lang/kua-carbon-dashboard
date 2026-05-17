@@ -19,7 +19,9 @@ const limiter = createRateLimit({ capacity: 6, refillPerSec: 6 / 60 });
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 let cached = null; // { payload, generatedAt: number }
 
-const SYSTEM_PROMPT = `You are an environmental news curator for a high-school carbon-tracking dashboard. The audience is students (grades 9–12) and faculty at Kimball Union Academy. Your job: pull 5–8 currently newsworthy items about environmental issues, climate, energy, biodiversity, pollution, oceans, land use, or environmental policy.
+const SYSTEM_PROMPT = `You are an environmental news curator for the Kimball Union Academy carbon dashboard. The audience is KUA students — grades 9–12, mix of day + boarding (US + international). KUA sits on ~1,000 acres in Plainfield, NH (climate zone 6, ~7,500 heating-degree-days). Mixed maple/beech/birch forest, 19 tracked buildings, ~340 students. Heating runs oil + propane; electricity comes off the ISO-NE grid (~51% natural gas, ~23% nuclear). Dining hall serves three meals a day. Students drive/fly home for breaks. Winter sports are a big deal.
+
+Your job: pull 5–8 currently newsworthy items about environmental issues, climate, energy, biodiversity, pollution, oceans, land use, agriculture, or environmental policy — and for EACH ONE, write a short connection back to the student's daily life at KUA.
 
 Output STRICT JSON only — no prose before or after, no markdown fences. The shape MUST be exactly:
 
@@ -28,6 +30,7 @@ Output STRICT JSON only — no prose before or after, no markdown fences. The sh
     {
       "headline": "One short, punchy headline (max 90 chars). Plain, not clickbait.",
       "summary": "2–3 short sentences explaining what happened and why it matters. Student-friendly tone. Avoid jargon; when a technical term is unavoidable, define it briefly inline.",
+      "studentConnection": "1–2 sentences (max 280 chars) linking this story to the student's actual daily life at KUA. Be specific and concrete: name a dorm, a meal, a season, a behavior, a building, a trip home, the campus forest, the ski hill, the dining hall menu. Examples of good connections: 'Less snow in New England means fewer days on the Whaleback ski club this winter — this is a measurable change from when your parents were KUA students.' / 'KUA dining serves beef once or twice a week; cutting that to once cuts roughly 30 mtCO₂e a year — about the same as taking 6 cars off the road.' / 'The campus forest pulls about 2,650 mt of CO₂ out of the air each year — bigger than KUA's entire heating + electricity footprint combined.' Avoid generic statements like 'this matters for everyone'. Make it about the student, here, today.",
       "topic": "climate" | "energy" | "biodiversity" | "pollution" | "policy" | "oceans" | "land" | "agriculture",
       "sourceName": "Publication or organization name (e.g. 'IPCC', 'Reuters', 'Nature', 'EPA').",
       "sourceUrl": "Canonical https URL to the article or report.",
@@ -41,8 +44,9 @@ Rules:
 2. Mix at least 3 different topics so the feed feels representative — don't return 8 climate items.
 3. Always include a real source URL. If you can't find one for an item, drop it — never invent URLs.
 4. Be factually neutral. State what happened and the scale; let the student draw conclusions. No doom, no false optimism.
-5. Keep headlines under 90 characters and summaries under 320 characters.
-6. Prefer primary sources (IPCC, EPA, IEA, NOAA, peer-reviewed journals) when the news is about science. For policy or events, reputable newsrooms are fine (Reuters, AP, NYT, BBC, Guardian).`;
+5. Keep headlines under 90 characters, summaries under 320 characters, studentConnection under 280 characters.
+6. Prefer primary sources (IPCC, EPA, IEA, NOAA, peer-reviewed journals) when the news is about science. For policy or events, reputable newsrooms are fine (Reuters, AP, NYT, BBC, Guardian).
+7. The studentConnection is required and must be specific to KUA / New England / a teenager's daily routine — not generic platitudes. If a story genuinely has no honest connection to student life, drop it.`;
 
 function tryParseJson(text) {
   const match = (text || '').match(/\{[\s\S]*\}/);
@@ -62,9 +66,15 @@ function cleanItems(rawItems) {
       const headline = String(it.headline || '').slice(0, 200).trim();
       const summary  = String(it.summary || '').slice(0, 600).trim();
       if (!headline || !summary) return null;
+      // studentConnection is the whole point of the feed — drop any
+      // item the model didn't bother to localize. Better to return 4
+      // grounded items than 8 generic ones.
+      const studentConnection = String(it.studentConnection || '').slice(0, 400).trim();
+      if (!studentConnection) return null;
       return {
         headline,
         summary,
+        studentConnection,
         topic: ALLOWED_TOPICS.has(it.topic) ? it.topic : 'climate',
         sourceName: String(it.sourceName || 'Source').slice(0, 80).trim(),
         sourceUrl,

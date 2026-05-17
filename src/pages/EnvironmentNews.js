@@ -146,7 +146,14 @@ export default function EnvironmentNews() {
                 </div>
                 <h3 style={styles.headline}>{item.headline}</h3>
                 <p style={styles.summary}>{item.summary}</p>
+                {item.studentConnection && (
+                  <div style={styles.connection}>
+                    <div style={styles.connectionLabel}>What this means for you</div>
+                    <p style={styles.connectionText}>{item.studentConnection}</p>
+                  </div>
+                )}
                 <div style={styles.cardFoot}>
+                  <span style={styles.sourceLabel}>Source:</span>
                   <a
                     href={item.sourceUrl}
                     target="_blank"
@@ -248,10 +255,42 @@ const styles = {
     color: '#cbd5e1',
     lineHeight: 1.55,
   },
+  connection: {
+    marginTop: 4,
+    padding: '10px 12px',
+    background: '#052e16',
+    border: '1px solid #14532d',
+    borderLeft: '3px solid #86efac',
+    borderRadius: 6,
+  },
+  connectionLabel: {
+    fontSize: 10,
+    fontWeight: 700,
+    color: '#86efac',
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+    marginBottom: 4,
+  },
+  connectionText: {
+    margin: 0,
+    fontSize: 13,
+    color: '#dcfce7',
+    lineHeight: 1.55,
+  },
   cardFoot: {
     marginTop: 'auto',
-    paddingTop: 6,
+    paddingTop: 8,
     borderTop: '1px solid #1f2937',
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: 6,
+  },
+  sourceLabel: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   sourceLink: {
     fontSize: 12,
