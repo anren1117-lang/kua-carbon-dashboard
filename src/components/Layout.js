@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './ErrorBoundary.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { Icon } from './Icon.js';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -42,32 +43,50 @@ const topItems = [
 //   • Share (QR) → footer + /faq
 //   • Hotspots / Sinks / Report → footer + Executive
 const categoryItems = [
-  { to: '/your-footprint',   label: 'Your footprint (calculator)' },
-  { to: '/scenarios',        label: 'Reduction simulator' },
-  { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
-  { to: '/challenge',        label: 'Dorm challenge (monthly)' },
-  { to: '/faq',              label: 'FAQ' },
+  { to: '/your-footprint',   label: 'Your footprint (calculator)', icon: Icon.Leaf },
+  { to: '/scenarios',        label: 'Reduction simulator',         icon: Icon.Sparkles },
+  { to: '/dorm-leaderboard', label: 'Dorm leaderboard',            icon: Icon.Trophy },
+  { to: '/challenge',        label: 'Dorm challenge (monthly)',    icon: Icon.Bolt },
+  { to: '/faq',              label: 'FAQ',                          icon: Icon.HelpCircle },
 ];
 
-// Routes that moved out of the visible nav in Phase 273 but still
-// resolve as URLs. The footer "More" row links to them so they're
-// discoverable; deep links to the bare paths continue to work.
-const moreItems = [
-  { to: '/hotspots',       label: 'Hotspots' },
-  { to: '/sinks-os',       label: 'Sinks' },
-  { to: '/report',         label: 'Annual report' },
-  { to: '/drawdown',       label: 'Drawdown' },
-  { to: '/credits',        label: 'Carbon credits' },
-  { to: '/renewables-os',  label: 'Renewables' },
-  { to: '/goals',          label: 'Goals (standalone)' },
-  { to: '/actions',        label: 'Actions (standalone)' },
-  { to: '/dining',         label: 'Dining' },
-  { to: '/transportation', label: 'Transportation' },
-  { to: '/waste',          label: 'Waste' },
-  { to: '/procurement',    label: 'Procurement' },
-  { to: '/trends',         label: 'Trend Builder' },
-  { to: '/share',          label: 'Share (QR)' },
+// Routes that moved out of the visible nav in Phase 273. Footer
+// renders these in themed columns (Phase 274) so 14 unordered pills
+// turn into a scannable site index.
+const moreGroups = [
+  {
+    title: 'Insights',
+    items: [
+      { to: '/hotspots',       label: 'Hotspots' },
+      { to: '/sinks-os',       label: 'Sinks' },
+      { to: '/report',         label: 'Annual report' },
+      { to: '/trends',         label: 'Trend Builder' },
+    ],
+  },
+  {
+    title: 'Plan & finance',
+    items: [
+      { to: '/goals',          label: 'Goals (standalone)' },
+      { to: '/actions',        label: 'Actions (standalone)' },
+      { to: '/drawdown',       label: 'Drawdown' },
+      { to: '/credits',        label: 'Carbon credits' },
+      { to: '/renewables-os',  label: 'Renewables' },
+    ],
+  },
+  {
+    title: 'Operations',
+    items: [
+      { to: '/dining',         label: 'Dining' },
+      { to: '/transportation', label: 'Transportation' },
+      { to: '/waste',          label: 'Waste' },
+      { to: '/procurement',    label: 'Procurement' },
+      { to: '/share',          label: 'Share (QR)' },
+    ],
+  },
 ];
+// Flat list used by the mobile drawer's "More" section + by the
+// pageTitleFor() route lookup.
+const moreItems = moreGroups.flatMap((g) => g.items);
 
 const portalItems = [
   { to: '/news',    label: 'News',    color: '#86efac' },
@@ -108,14 +127,16 @@ const styles = {
   }),
   catMenu: { position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 8, padding: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.35)', minWidth: 240, zIndex: 100 },
   catItem: ({ isActive }) => ({
-    display: 'block',
-    padding: '8px 12px',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 12px',
     borderRadius: 6,
     fontSize: 13,
     color: isActive ? '#22d3ee' : '#cbd5e1',
     background: isActive ? '#1f2937' : 'transparent',
     textDecoration: 'none',
     whiteSpace: 'nowrap',
+    transition: 'background 120ms, color 120ms',
   }),
   rightGroup: { display: 'flex', gap: 6, flexShrink: 0 },
   portalLink: (color) => ({ isActive }) => ({
@@ -131,10 +152,13 @@ const styles = {
   }),
   main: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' },
   mainNarrow: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '20px 14px', width: '100%', boxSizing: 'border-box' },
-  footer: { borderTop: '1px solid #1f2937', padding: '24px 24px 28px', fontSize: 12, color: '#64748b' },
-  footerLinks: { maxWidth: 1100, margin: '0 auto 18px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, fontSize: 11 },
-  footerLink: { padding: '5px 10px', color: '#94a3b8', textDecoration: 'none', borderRadius: 4, transition: 'background 120ms, color 120ms' },
-  footerTag: { textAlign: 'center', color: '#64748b' },
+  footer: { borderTop: '1px solid #1f2937', padding: '32px 24px 28px', fontSize: 12, color: '#64748b', background: '#0a121f' },
+  footerInner: { maxWidth: 1100, margin: '0 auto' },
+  footerCols: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 24, marginBottom: 24 },
+  footerCol: { display: 'flex', flexDirection: 'column', gap: 4 },
+  footerColTitle: { fontSize: 11, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, marginBottom: 6 },
+  footerLink: { padding: '4px 0', color: '#94a3b8', textDecoration: 'none', fontSize: 12, transition: 'color 120ms' },
+  footerTag: { textAlign: 'center', color: '#64748b', borderTop: '1px solid #1f2937', paddingTop: 18, marginTop: 6 },
   skipLink: { position: 'absolute', left: -9999, top: 8, padding: '8px 12px', background: '#22d3ee', color: '#0b1220', textDecoration: 'none', borderRadius: 4, fontWeight: 700, zIndex: 100 },
 
   // Hamburger + drawer
@@ -266,13 +290,18 @@ function CategoriesMenu() {
       </button>
       {open && (
         <div style={styles.catMenu} role="menu">
-          {categoryItems.map(({ to, label }) => (
+          {categoryItems.map(({ to, label, icon: ItemIcon }) => (
             <NavLink
               key={to}
               to={to}
               style={styles.catItem}
               role="menuitem"
             >
+              {ItemIcon && (
+                <span style={{ display: 'inline-flex', marginRight: 10, opacity: 0.85 }}>
+                  <ItemIcon size={14} />
+                </span>
+              )}
               {label}
             </NavLink>
           ))}
@@ -326,8 +355,13 @@ function MobileDrawer({ open, onClose }) {
 
         <div>
           <div style={styles.drawerSectionLabel}>Tools</div>
-          {categoryItems.map(({ to, label }) => (
+          {categoryItems.map(({ to, label, icon: ItemIcon }) => (
             <NavLink key={to} to={to} style={styles.drawerLink}>
+              {ItemIcon && (
+                <span style={{ display: 'inline-flex', marginRight: 10, opacity: 0.85, verticalAlign: 'middle' }}>
+                  <ItemIcon size={14} />
+                </span>
+              )}
               {label}
             </NavLink>
           ))}
@@ -442,15 +476,22 @@ function Layout() {
         </ErrorBoundary>
       </main>
       <footer style={styles.footer}>
-        <div style={styles.footerLinks}>
-          {moreItems.map(({ to, label }) => (
-            <NavLink key={to} to={to} style={styles.footerLink}>
-              {label}
-            </NavLink>
-          ))}
-        </div>
-        <div style={styles.footerTag}>
-          Kimball Union Academy · Net Carbon Dashboard · methodology and source code public on GitHub
+        <div style={styles.footerInner}>
+          <div style={styles.footerCols}>
+            {moreGroups.map((g) => (
+              <div key={g.title} style={styles.footerCol}>
+                <div style={styles.footerColTitle}>{g.title}</div>
+                {g.items.map(({ to, label }) => (
+                  <NavLink key={to} to={to} style={styles.footerLink}>
+                    {label}
+                  </NavLink>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div style={styles.footerTag}>
+            Kimball Union Academy · Net Carbon Dashboard · methodology and source code public on GitHub
+          </div>
         </div>
       </footer>
     </div>

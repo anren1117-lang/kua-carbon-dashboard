@@ -382,3 +382,8 @@ input[type="range"]::-webkit-slider-thumb {
   .kua-cta-arrow { transition: none !important; }
   .kua-cta-card:hover .kua-cta-arrow { transform: none !important; }
 }
+
+/* Footer link hover — subtle cyan tint instead of jarring color jump */
+footer a:hover {
+  color: #22d3ee !important;
+}
