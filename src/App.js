@@ -8,6 +8,7 @@ import { AISummary } from './components/AISummary';
 import { NewsStrip } from './components/NewsStrip';
 import { DormLeaderboardPreview } from './components/DormLeaderboardPreview';
 import { SectionHeader } from './components/SectionHeader';
+import { Icon } from './components/Icon';
 import './App.css';
 
 // The homepage is the at-a-glance net-balance view across all scopes.
@@ -75,12 +76,12 @@ function App() {
       <div style={{ maxWidth: 1100, margin: '40px auto 0', padding: '0 16px' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, fontSize: 13 }}>
           {[
-            { to: '/faq',           label: 'FAQ' },
-            { to: '/your-footprint', label: 'Calculate your footprint' },
-            { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
-            { to: '/scenarios',     label: 'Reduction simulator' },
-            { to: '/methodology',   label: 'Methodology' },
-            { to: '/share',         label: 'Share via QR' },
+            { to: '/faq',              label: 'FAQ',                       icon: Icon.HelpCircle },
+            { to: '/your-footprint',   label: 'Calculate your footprint',  icon: Icon.Leaf },
+            { to: '/dorm-leaderboard', label: 'Dorm leaderboard',          icon: Icon.Trophy },
+            { to: '/scenarios',        label: 'Reduction simulator',       icon: Icon.Sparkles },
+            { to: '/methodology',      label: 'Methodology',               icon: Icon.Chart },
+            { to: '/share',            label: 'Share via QR',              icon: Icon.Share },
           ].map((l) => (
             <Link
               key={l.to}
@@ -94,8 +95,12 @@ function App() {
                 color: '#cbd5e1',
                 textDecoration: 'none',
                 fontWeight: 500,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
               }}
             >
+              <l.icon size={14} />
               {l.label}
             </Link>
           ))}

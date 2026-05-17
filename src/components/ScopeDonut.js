@@ -98,8 +98,30 @@ export function ScopeDonut() {
                 />
               );
             })}
+            {/* Soft glow ring behind the center text when a segment
+                is hovered — colored to match the hovered segment so
+                hover feedback feels integrated. */}
+            {hoveredArc && (
+              <circle
+                cx={cx} cy={cy} r={rI - 6}
+                fill="none"
+                stroke={hoveredArc.color}
+                strokeWidth={2}
+                opacity={0.4}
+                style={{ filter: `drop-shadow(0 0 8px ${hoveredArc.color})`, transition: 'stroke 200ms ease, opacity 200ms ease' }}
+              />
+            )}
             <text x={cx} y={cy - 14} textAnchor="middle" style={styles.centerText}>{centerLabel}</text>
-            <text x={cx} y={cy + 12} textAnchor="middle" style={{ ...styles.centerBig, fill: hoveredArc ? hoveredArc.color : '#e5e7eb' }}>
+            <text
+              x={cx}
+              y={cy + 12}
+              textAnchor="middle"
+              style={{
+                ...styles.centerBig,
+                fill: hoveredArc ? hoveredArc.color : '#e5e7eb',
+                transition: 'fill 200ms ease',
+              }}
+            >
               {centerValue.toLocaleString()}
             </text>
             <text x={cx} y={cy + 30} textAnchor="middle" style={styles.centerUnit}>{centerSub}</text>

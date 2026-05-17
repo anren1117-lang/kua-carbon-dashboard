@@ -89,8 +89,25 @@ const styles = {
   title: { fontSize: 'clamp(24px, 5vw, 32px)', color: '#e5e7eb', fontWeight: 800, margin: 0, letterSpacing: '-0.01em' },
   subtitle: { fontSize: 15, color: '#94a3b8', margin: '8px 0 0', lineHeight: 1.5, maxWidth: 800 },
 
-  section: { marginTop: 24, padding: 'clamp(18px, 3vw, 24px)', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 12 },
-  sectionTitle: { fontSize: 18, color: '#e5e7eb', fontWeight: 700, margin: 0, marginBottom: 8 },
+  // Section gets a subtle top-left accent gradient line for visual
+  // hierarchy. The border-image trick paints a 3px gradient bar on
+  // the left edge only (Phase 270 visual polish).
+  section: {
+    marginTop: 24,
+    padding: 'clamp(18px, 3vw, 24px)',
+    background: 'linear-gradient(180deg, #0f172a 0%, #0d1525 100%)',
+    border: '1px solid #1f2937',
+    borderRadius: 12,
+    position: 'relative',
+  },
+  sectionTitle: {
+    fontSize: 19,
+    color: '#e5e7eb',
+    fontWeight: 700,
+    margin: 0,
+    marginBottom: 8,
+    letterSpacing: '-0.005em',
+  },
   hint: { fontSize: 14, color: '#94a3b8', margin: '0 0 16px', lineHeight: 1.6 },
 
   metricGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 },
