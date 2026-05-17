@@ -106,7 +106,7 @@ export function Sparkline({
       onMouseMove={interactive ? onMove : undefined}
       onMouseLeave={interactive ? () => setHover(null) : undefined}
     >
-      <path d={areaPath} fill={fill} stroke="none" />
+      <path d={areaPath} fill={fill} stroke="none" className="kua-spark-area" />
       {hasFlags ? (
         segments.map((seg, i) => {
           const segPath = seg.pts.map(([x, y], j) => `${j === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ');

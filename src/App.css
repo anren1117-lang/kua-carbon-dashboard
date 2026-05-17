@@ -635,3 +635,15 @@ a:hover > .kua-back-arrow,
 @media (prefers-reduced-motion: reduce) {
   .kua-trend-bar { animation: none !important; }
 }
+
+/* Sparkline area fades up on mount for a subtle "loaded" feel */
+@keyframes kuaSparkAreaFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.kua-spark-area {
+  animation: kuaSparkAreaFadeIn 600ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kua-spark-area { animation: none !important; }
+}
