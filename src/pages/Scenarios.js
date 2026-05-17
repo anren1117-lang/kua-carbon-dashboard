@@ -295,7 +295,9 @@ function BarRow({ label, value, max, color }) {
       <div style={styles.barLabel}>{label}</div>
       <div style={styles.barTrack}>
         <div style={{ ...styles.barFill, width: `${pct}%`, background: color }} />
-        <span style={styles.barValue}>{value.toFixed(1)} mt</span>
+        <span style={styles.barValue}>
+          <AnimatedNumber value={value} decimals={1} duration={500} /> mt
+        </span>
       </div>
     </div>
   );
@@ -308,7 +310,9 @@ function ScopeStat({ label, before, after, negative }) {
   return (
     <div style={styles.scopeStat}>
       <div style={styles.scopeLabel}>{label}</div>
-      <div style={styles.scopeValue}>{after.toFixed(1)} mt</div>
+      <div style={styles.scopeValue}>
+        <AnimatedNumber value={after} decimals={1} duration={500} /> mt
+      </div>
       {Math.abs(delta) > 0.05 && (
         <div style={{ ...styles.scopeDelta, color: good ? '#86efac' : '#fca5a5' }}>
           {delta > 0 ? '+' : ''}{delta.toFixed(1)} vs baseline
@@ -337,7 +341,7 @@ const styles = {
   barRow: { marginBottom: 10 },
   barLabel: { fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 },
   barTrack: { position: 'relative', height: 28, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden' },
-  barFill: { position: 'absolute', top: 0, bottom: 0, left: 0, transition: 'width 200ms ease, background 200ms ease' },
+  barFill: { position: 'absolute', top: 0, bottom: 0, left: 0, transition: 'width 500ms cubic-bezier(0.22, 1, 0.36, 1), background 200ms ease' },
   barValue: { position: 'absolute', top: 0, bottom: 0, right: 10, display: 'flex', alignItems: 'center', fontSize: 13, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
 
   scopeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginTop: 18 },
