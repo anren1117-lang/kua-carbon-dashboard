@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { NewsCardSkeleton } from './Skeleton.js';
 
 // Homepage strip showing the top 3 current environmental-news
 // headlines from /api/environment-news, with a "See all" link to
@@ -69,7 +70,14 @@ export function NewsStrip() {
       </div>
       <div style={styles.grid}>
         {loading ? (
-          <div style={styles.loading}>Pulling current stories…</div>
+          // Three skeleton cards while the feed loads — same shape +
+          // padding as the real cards so the layout doesn't jump
+          // when content arrives.
+          <>
+            <NewsCardSkeleton />
+            <NewsCardSkeleton />
+            <NewsCardSkeleton />
+          </>
         ) : items.map((item, i) => {
           const topicColor = TOPIC_COLOR[item.topic] || TOPIC_COLOR.climate;
           const host = hostnameFromUrl(item.sourceUrl);
