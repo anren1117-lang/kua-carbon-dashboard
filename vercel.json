@@ -25,6 +25,7 @@
     }
   ],
   "crons": [
-    { "path": "/api/cron/sync-bms", "schedule": "0 * * * *" }
+    { "path": "/api/cron/sync-bms", "schedule": "0 * * * *" },
+    { "path": "/api/cron/check-alerts", "schedule": "0 13 * * *" }
   ]
 }
