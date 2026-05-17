@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 1,065 tests across 66 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines, the personal-footprint calculator, the geographic-map projection, the viewport hook + Layout responsive behavior all under direct test):
+Vitest. 1,099 tests across 71 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines, the personal-footprint calculator + peer-comparison helpers, the geographic-map projection + cited building positions, the viewport hook + Layout responsive behavior, the /scenarios reduction simulator math all under direct test):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -181,6 +181,11 @@ Vitest. 1,065 tests across 66 files (every routed page has at least a mount-smok
 - `src/__tests__/buildingEmissions.test.js` (varies) — per-building emissions roll-up + month filtering used by /campus-map, /buildings/:id, /dorm-leaderboard.
 - `src/__tests__/useViewport.test.js` (6) — useIsNarrow + useViewportWidth: mount value, resize event reactivity, custom breakpoint, exported NARROW_BREAKPOINT.
 - `src/__tests__/LayoutResponsive.test.js` (4) — Layout swaps between desktop horizontal nav and the mobile hamburger drawer based on viewport width; verifies drawer open/close + that high-traffic routes are reachable from the drawer.
+- `src/__tests__/buildingPositions.test.js` (8) — every position row has a valid id + finite lat/lng + cited provenance; helpers (getBuildingPosition, allPositionsAreEstimated/CitedOrBetter) work; lat/lng cluster near KUA.
+- `src/__tests__/CampusPhotoMap.test.js` (3) — Photo mode of /campus-map: mounts, loading state, missing-asset fallback when the official KUA map PNG isn't present.
+- `src/__tests__/CampusSatelliteMap.test.js` (2) — Satellite mode of /campus-map: mounts the pigeon-maps Esri imagery layer + recenter button.
+- `src/__tests__/scenarioModel.test.js` (13) — /scenarios what-if math: baseline identity, per-lever effects (electricity reduction / heat-pump electrification / solar / tree planting), multi-slider layering, zero-baseline safety.
+- `src/__tests__/DormLeaderboardPreview.test.js` (3) — homepage strip: renders top 3 dorm rows + links to /dorm-leaderboard + per-dorm links to /buildings/:id.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
 - `src/__tests__/PasswordGate.test.js` (13) — admin auth gate: server login flow, session restore, expired/malformed session rejects, logout.
 - `src/__tests__/chatbotMatch.test.js` (12) — keyword-scoring chatbot matcher + QUIZ_BANK invariants.
@@ -221,5 +226,8 @@ When adding a measured-data path, mirror the existing test shape: empty/null fal
 
 - Styling is done with inline `style={{...}}` objects and a small `App.css`. There is no CSS framework, no component library, and no shared style module — matching the existing inline-style patterns is fine.
 - Mobile / responsive: because the codebase doesn't have media queries, responsive branches live in JS. Components that need a different layout on phones import `useIsNarrow` from `src/hooks/useViewport.js` (default breakpoint 720px, custom-breakpoint arg supported) and swap their style branch. Desktop code path stays unchanged when `isNarrow === false`. Layout collapses to a hamburger drawer on narrow viewports.
+- Loading states: for async-loading components, prefer the `<NewsCardSkeleton>` (or generic `<Skeleton>`) primitive in `src/components/Skeleton.js` over a "Loading…" text label — keeps the layout shape locked in so content doesn't pop when remote data arrives. The skeleton injects its CSS keyframes once on mount; no global stylesheet change required.
+- Static assets in `src/public/` get copied to the site root at build time. Drop images at `src/public/{path}.png` and reference them as `/{path}.png` in components. The `/campus-map` Photo mode + `/buildings/:id` photo slot both use this pattern with a graceful "asset missing" fallback so a missing file never throws.
+- Map of campus is available in four modes on `/campus-map`: Schematic (by-category zones), Geographic (lat/lng on a blank canvas), Photo (energy dots overlaid on the official KUA bird's-eye-view illustration at `/kua-campus-map.png`), Satellite (real Esri World Imagery via pigeon-maps with markers at each building's cited lat/lng). Building positions live in `src/data/buildingPositions.js` — they came off the official KUA campus map (provenance: cited, not GPS-surveyed).
 - Emission factors live in `src/data/scopeTotals.js` (Scope 1/3 + sinks + renewables) and `src/data/gridMix.js` (Scope 2). Admin forms in `src/pages/admin/*` read these via `useFactor` / `useTable` from `_shared.js`.
 - API handlers use `createRateLimit` + `getClientKey` from `src/utils/rateLimit.js` — token-bucket per IP. Mirror existing handlers when adding new ones.
