@@ -8,6 +8,7 @@ import { buildingPositions, allPositionsAreEstimated, allPositionsAreCitedOrBett
 import { toCsv, downloadCsv } from '../utils/csv.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { CampusPhotoMap } from '../components/CampusPhotoMap.js';
+import { CampusSatelliteMap } from '../components/CampusSatelliteMap.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -105,9 +106,10 @@ export default function CampusMap() {
   const [selectedId, setSelectedId] = useState(null);
   // null = "All (annualized)"; otherwise 'YYYY-MM'.
   const [selectedMonth, setSelectedMonth] = useState(null);
-  // 'schematic' = original by-category zones
+  // 'schematic'  = original by-category zones
   // 'geographic' = lat/lng projected onto a blank canvas
-  // 'photo' = energy-intensity dots overlaid on the official KUA campus map image
+  // 'photo'      = energy-intensity dots overlaid on the official KUA campus map image
+  // 'satellite'  = real satellite imagery of campus (Esri World Imagery) + markers
   const [layoutMode, setLayoutMode] = useState('schematic');
 
   const { rows, totalKwh, totalMt, monthsObserved, mode, availableMonths } = useMemo(
@@ -177,6 +179,14 @@ export default function CampusMap() {
           >
             Photo (official map)
           </button>
+          <button
+            type="button"
+            onClick={() => setLayoutMode('satellite')}
+            style={{ ...styles.monthBtn, ...(layoutMode === 'satellite' ? styles.monthBtnActive : {}) }}
+            title="Real satellite imagery of KUA campus with energy markers — pan + zoom enabled"
+          >
+            🛰 Satellite (real imagery)
+          </button>
           {layoutMode === 'geographic' && positionsCited && (
             <span style={styles.citedBadge} title="Positions taken from the official KUA campus map">cited positions</span>
           )}
@@ -237,6 +247,13 @@ export default function CampusMap() {
             onSelect={setSelectedId}
             intensityColorFor={intensityColor}
             noDataFill={NO_DATA_FILL}
+          />
+        ) : layoutMode === 'satellite' ? (
+          <CampusSatelliteMap
+            rows={rows}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            intensityColorFor={intensityColor}
           />
         ) : (
         <svg
