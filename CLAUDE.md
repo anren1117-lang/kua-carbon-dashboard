@@ -113,6 +113,21 @@ The `KUA2026` literal compare on the client is gone. The flow is now:
 
 Login Just Works on a fresh deploy without setting either — the fallbacks ship in the source. Threat model: "keep casual visitors out of /admin," not "keep determined attackers out." Set `ADMIN_TOKEN_SECRET` when you need the latter.
 
+### Public-facing student/staff pages (added Phases 218–262)
+
+The dashboard's public surface beyond the scope detail pages:
+- `/` — Net-balance hero + scope donut + peer comparison + news strip + dorm-leaderboard preview + quick-links pill row (FAQ, footprint calc, scenarios, share QR, methodology). The hero shows tangible equivalents (cars/homes/flights/trees).
+- `/your-footprint` — 5-input personal calculator with peer comparison (you vs typical day/US/international student of your type).
+- `/news` — environment news feed (24h cache, student-connection field, per-IP rate limit).
+- `/dorm-leaderboard` — annualized kWh-per-resident ranking across 11 dorms with champion card + monthly trend column.
+- `/challenge` — month-over-month dorm competition with two scoreboards (most efficient + biggest improvement) for RA-run challenges.
+- `/campus-map` — four modes: Schematic (by-category zones), Geographic (lat/lng on blank canvas), Photo (energy dots on official KUA bird's-eye illustration at `/kua-campus-map.png`), Satellite (real Esri World Imagery via pigeon-maps with markers at cited lat/lng).
+- `/buildings/:id` — per-building drill-down with photo slot (`/buildings/{id}.jpg`), monthly bar chart, peer ranking, BMS export panel, live API panel.
+- `/scenarios` — interactive what-if simulator with 4 sliders (electricity cuts, heat-pump electrification, solar PV, tree planting) + 4 named presets (SBTi 2030, all-in heat pumps, solar-first, behavioral-only).
+- `/faq` — 12 common questions accordion with deep-page links.
+- `/share` — printable QR code generator (8 preset destinations + custom URL, SVG/PNG download).
+- `/methodology`, `/credits`, `/sinks-os`, `/renewables-os`, `/drawdown`, `/scope-1`, `/scope-2`, `/scope-3` — canonical scope/methodology surfaces.
+
 ### Admin entry points
 
 Admin entry happens through the per-scope pages under `/admin/scope-1`, `/admin/scope-2`, `/admin/scope-3`, `/admin/sinks`, `/admin/renewables`. The legacy single-file `AdminPortal.js` was removed in Phase 84.
@@ -149,7 +164,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 1,099 tests across 71 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines, the personal-footprint calculator + peer-comparison helpers, the geographic-map projection + cited building positions, the viewport hook + Layout responsive behavior, the /scenarios reduction simulator math all under direct test):
+Vitest. 1,101 tests across 71 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines, the personal-footprint calculator + peer-comparison helpers, the geographic-map projection + cited building positions, the viewport hook + Layout responsive behavior, the /scenarios reduction simulator math all under direct test):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
