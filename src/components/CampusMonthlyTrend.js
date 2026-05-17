@@ -54,11 +54,21 @@ export function CampusMonthlyTrend({ monthlyTotals, selectedMonth, onSelect }) {
           const mt = Math.round(m.displayedTotal * ISO_NE_KG_PER_KWH / 1000);
           return (
             <g key={m.month}>
+              {/* Bar grows from the baseline up. transform-origin
+                  at the bottom of the bar so scale-in pivots
+                  correctly. Stagger 50ms per bar. */}
               <rect
                 x={x} y={y} width={barW} height={h}
                 fill={fill}
-                rx={2}
-                style={{ cursor: 'pointer', transition: 'fill 120ms' }}
+                rx={3}
+                className="kua-trend-bar"
+                style={{
+                  cursor: 'pointer',
+                  transition: 'fill 160ms ease',
+                  transformOrigin: `${x + barW / 2}px ${PAD_TOP + innerH}px`,
+                  animationDelay: `${i * 50}ms`,
+                  filter: isSelected ? 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.6))' : 'none',
+                }}
                 onClick={() => onSelect(isSelected ? null : m.month)}
               >
                 <title>{`${formatMonthLabel(m.month)}: ${m.displayedTotal.toLocaleString()} kWh · ~${mt} mt`}</title>

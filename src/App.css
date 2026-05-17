@@ -623,3 +623,15 @@ a:hover > .kua-back-arrow,
   a:hover > .kua-back-arrow,
   .kua-back-link:hover .kua-back-arrow { transform: none !important; }
 }
+
+/* CampusMonthlyTrend bars — scale-up from the baseline on mount */
+@keyframes kuaTrendBarGrow {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+.kua-trend-bar {
+  animation: kuaTrendBarGrow 500ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kua-trend-bar { animation: none !important; }
+}
