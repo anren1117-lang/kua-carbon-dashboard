@@ -4,6 +4,7 @@ import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { buildings, getBuilding } from '../data/buildings.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { buildingMonthlyHistory } from '../data/monthlyConsumption.js';
+import { toCsv, downloadCsv } from '../utils/csv.js';
 
 // /buildings/:id — single-building deep view. Links target this page
 // from the campus map's selected-building detail panel and from the
@@ -48,6 +49,22 @@ export default function BuildingDetail() {
         <div style={styles.toolbar}>
           <Link to="/campus-map" style={styles.toolBtn}>← Campus map</Link>
           <Link to="/buildings" style={styles.toolBtn}>All buildings</Link>
+          {months.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                const csv = toCsv(
+                  months.map((m) => ({ month: m, kwh: history[m] || 0 })),
+                  ['month', 'kwh'],
+                );
+                downloadCsv(`${id}_monthly_${new Date().toISOString().slice(0, 10)}.csv`, csv);
+              }}
+              style={styles.exportBtn}
+              title="Download this building's monthly kWh series as CSV"
+            >
+              ↓ Monthly CSV
+            </button>
+          )}
         </div>
       }
     >
@@ -151,6 +168,7 @@ function monthShort(ym) {
 const styles = {
   toolbar:        { display: 'flex', gap: 10 },
   toolBtn:        { padding: '6px 12px', background: '#0f172a', color: '#22d3ee', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none' },
+  exportBtn:      { padding: '6px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
 
   statGrid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 },
   stat:           { padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },

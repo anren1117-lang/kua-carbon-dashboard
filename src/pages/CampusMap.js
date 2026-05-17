@@ -5,6 +5,7 @@ import { CampusMonthlyTrend } from '../components/CampusMonthlyTrend.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { layoutBoxesGeo } from '../utils/geoLayout.js';
 import { buildingPositions, allPositionsAreEstimated } from '../data/buildingPositions.js';
+import { toCsv, downloadCsv } from '../utils/csv.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -117,6 +118,17 @@ export default function CampusMap() {
   const geo = useMemo(() => layoutBoxesGeo(rows, { width: W, height: GEO_H }), [rows]);
   const positionsEstimated = useMemo(() => allPositionsAreEstimated(), []);
 
+  function onExportCsv() {
+    const csv = toCsv(rows, [
+      'id', 'name', 'category', 'sqft', 'occupants',
+      'annualKwh', ...(mode === 'monthly' ? ['monthKwh'] : []),
+      'monthsCovered', 'mtCO2e', 'sharePercent', 'kgPerSqft',
+    ]);
+    const today = new Date().toISOString().slice(0, 10);
+    const suffix = mode === 'monthly' ? `_${selectedMonth}` : '';
+    downloadCsv(`kua_buildings${suffix}_${today}.csv`, csv);
+  }
+
   const top5 = [...rows].sort((a, b) => b.mtCO2e - a.mtCO2e).slice(0, 5);
   const hottest = [...rows].filter((r) => r.kgPerSqft > 0).sort((a, b) => b.kgPerSqft - a.kgPerSqft).slice(0, 5);
 
@@ -151,6 +163,10 @@ export default function CampusMap() {
             style={{ ...styles.monthBtn, ...(layoutMode === 'geographic' ? styles.monthBtnActive : {}) }}
           >
             Geographic{positionsEstimated ? ' (estimated)' : ''}
+          </button>
+          <span style={{ flex: 1 }} />
+          <button type="button" onClick={onExportCsv} style={styles.exportBtn} title="Download all 19 rows as CSV for board reports / AASHE STARS">
+            ↓ Download CSV
           </button>
         </div>
 
@@ -408,6 +424,7 @@ const styles = {
   monthBtn:       { padding: '4px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, color: '#94a3b8', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' },
   monthBtnActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 700 },
   estimatedBanner:{ marginBottom: 12, padding: '10px 14px', background: '#3a2a0e', border: '1px solid #92400e', borderLeft: '3px solid #fcd34d', borderRadius: 6, color: '#fcd34d', fontSize: 12, lineHeight: 1.6 },
+  exportBtn:      { padding: '4px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
 
   legendRow:   { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14, fontSize: 11, color: '#94a3b8' },
   legendLabel: { color: '#cbd5e1', fontWeight: 600 },
