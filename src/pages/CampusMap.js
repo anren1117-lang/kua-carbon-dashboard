@@ -87,8 +87,14 @@ function layoutBoxes(rows, width) {
 }
 
 export default function CampusMap() {
-  const { rows, totalKwh, totalMt, monthsObserved } = useMemo(() => computeBuildingEmissions(), []);
   const [selectedId, setSelectedId] = useState(null);
+  // null = "All (annualized)"; otherwise 'YYYY-MM'.
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  const { rows, totalKwh, totalMt, monthsObserved, mode, availableMonths } = useMemo(
+    () => computeBuildingEmissions({ month: selectedMonth }),
+    [selectedMonth],
+  );
   const selected = rows.find((r) => r.id === selectedId);
 
   const W = 920;
@@ -97,15 +103,37 @@ export default function CampusMap() {
   const top5 = [...rows].sort((a, b) => b.mtCO2e - a.mtCO2e).slice(0, 5);
   const hottest = [...rows].filter((r) => r.kgPerSqft > 0).sort((a, b) => b.kgPerSqft - a.kgPerSqft).slice(0, 5);
 
+  const subtitle = mode === 'monthly'
+    ? `Slice of campus emissions for ${formatMonthLabel(selectedMonth)}. Each box is sized by sqft and colored by per-sqft intensity for that month's reading. Click any building for detail.`
+    : `Where the ${totalMt.toLocaleString()} mtCO₂e of measured electricity emissions actually come from. Each box is one of KUA's ${rows.length} tracked buildings, sized by square footage and colored by per-sqft emissions intensity. Click any building for detail.`;
+
   return (
-    <ModulePage
-      title="Campus map — emissions distribution"
-      subtitle={`Where the ${totalMt.toLocaleString()} mtCO₂e of measured electricity emissions actually come from. Each box is one of KUA's ${rows.length} tracked buildings, sized by square footage and colored by per-sqft emissions intensity. Click any building for detail.`}
-    >
+    <ModulePage title="Campus map — emissions distribution" subtitle={subtitle}>
       <ModuleSection
         title="Campus zones"
-        hint={`Schematic layout grouped by category — not geographically accurate (we don't yet have building coordinates). Sizes are scaled by sqft. Colors show kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. Based on ${monthsObserved} months of measured BMS data, annualized.`}
+        hint={`Schematic layout grouped by category — not geographically accurate (we don't yet have building coordinates). Sizes are scaled by sqft. Colors show kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. Based on ${monthsObserved} months of measured BMS data${mode === 'monthly' ? ', currently viewing one month' : ', annualized'}.`}
       >
+        <div style={styles.controlsRow}>
+          <span style={styles.controlLabel}>Time window:</span>
+          <button
+            type="button"
+            onClick={() => setSelectedMonth(null)}
+            style={{ ...styles.monthBtn, ...(selectedMonth === null ? styles.monthBtnActive : {}) }}
+          >
+            All (annualized)
+          </button>
+          {availableMonths.map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setSelectedMonth(m)}
+              style={{ ...styles.monthBtn, ...(selectedMonth === m ? styles.monthBtnActive : {}) }}
+            >
+              {formatMonthShort(m)}
+            </button>
+          ))}
+        </div>
+
         <div style={styles.legendRow}>
           <span style={styles.legendLabel}>Intensity (kg CO₂e/sqft/yr):</span>
           <LegendChip color="#0e7490">&lt; 4 (very efficient)</LegendChip>
@@ -184,16 +212,25 @@ export default function CampusMap() {
               <button type="button" onClick={() => setSelectedId(null)} style={styles.detailClose}>✕</button>
             </div>
             <div style={styles.detailGrid}>
-              <DetailStat label="Annual electricity" value={`${selected.annualKwh.toLocaleString()} kWh`} />
-              <DetailStat label="Annual emissions"  value={`${selected.mtCO2e.toFixed(2)} mtCO₂e`} />
+              {mode === 'monthly' ? (
+                <>
+                  <DetailStat label={`${formatMonthLabel(selectedMonth)} electricity`} value={`${(selected.monthKwh || 0).toLocaleString()} kWh`} />
+                  <DetailStat label="Annualized equivalent"  value={`${selected.annualKwh.toLocaleString()} kWh/yr`} />
+                </>
+              ) : (
+                <DetailStat label="Annual electricity" value={`${selected.annualKwh.toLocaleString()} kWh`} />
+              )}
+              <DetailStat label={mode === 'monthly' ? 'Annualized emissions' : 'Annual emissions'} value={`${selected.mtCO2e.toFixed(2)} mtCO₂e`} />
               <DetailStat label="Share of campus"   value={`${selected.sharePercent}%`} />
               <DetailStat label="Square feet"       value={selected.sqft.toLocaleString()} />
               <DetailStat label="Daily occupants"   value={selected.occupants.toLocaleString()} />
               <DetailStat label="Intensity"         value={`${selected.kgPerSqft} kg/sqft/yr`} />
             </div>
             <div style={styles.detailNote}>
-              Measured over {selected.monthsCovered} month{selected.monthsCovered === 1 ? '' : 's'} of BMS data, annualized.
-              Emissions = kWh × 0.235 kg/kWh (ISO-NE 2024 effective).
+              {mode === 'monthly'
+                ? `Reading is for ${formatMonthLabel(selectedMonth)} alone. Annualized-equivalent figures use month × 12 so the color scale stays comparable across views.`
+                : `Measured over ${selected.monthsCovered} month${selected.monthsCovered === 1 ? '' : 's'} of BMS data, annualized.`}
+              {' '}Emissions = kWh × 0.235 kg/kWh (ISO-NE 2024 effective).
             </div>
           </div>
         )}
@@ -246,6 +283,19 @@ function Ranking({ rows, valueKey, suffix }) {
   );
 }
 
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function formatMonthLabel(ym) {
+  if (!ym) return '';
+  const [y, m] = ym.split('-').map(Number);
+  if (!Number.isFinite(y) || !Number.isFinite(m) || m < 1 || m > 12) return ym;
+  return `${MONTH_NAMES[m - 1]} ${y}`;
+}
+function formatMonthShort(ym) {
+  if (!ym) return '';
+  const [, m] = ym.split('-').map(Number);
+  return Number.isFinite(m) && m >= 1 && m <= 12 ? MONTH_NAMES[m - 1].slice(0, 3) : ym;
+}
+
 // Trim long building names for the in-box label.
 function shortName(name) {
   return name
@@ -254,6 +304,11 @@ function shortName(name) {
 }
 
 const styles = {
+  controlsRow:    { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 },
+  controlLabel:   { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginRight: 4 },
+  monthBtn:       { padding: '4px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, color: '#94a3b8', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' },
+  monthBtnActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 700 },
+
   legendRow:   { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14, fontSize: 11, color: '#94a3b8' },
   legendLabel: { color: '#cbd5e1', fontWeight: 600 },
   legendChip:  { display: 'inline-flex', alignItems: 'center', gap: 6 },

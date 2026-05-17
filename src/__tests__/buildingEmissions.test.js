@@ -107,6 +107,52 @@ describe('computeBuildingEmissions — emissions math + intensity', () => {
   });
 });
 
+describe('computeBuildingEmissions — month filter', () => {
+  const history = {
+    a: { '2026-01': 1000, '2026-02': 1500, '2026-03': 800 },
+    b: { '2026-01':  500, '2026-02':  600 }, // no March data
+    c: {},                                   // no data at all
+  };
+
+  it('returns mode: "annualized" when no month is set', () => {
+    const r = computeBuildingEmissions({ buildings: sampleBuildings, monthlyHistory: history });
+    expect(r.mode).toBe('annualized');
+    expect(r.selectedMonth).toBeNull();
+  });
+
+  it('returns mode: "monthly" with the picked month when filter is set', () => {
+    const r = computeBuildingEmissions({ buildings: sampleBuildings, monthlyHistory: history, month: '2026-02' });
+    expect(r.mode).toBe('monthly');
+    expect(r.selectedMonth).toBe('2026-02');
+  });
+
+  it('exposes that month\'s raw kWh on monthKwh + annualizes to ×12 on annualKwh', () => {
+    const r = computeBuildingEmissions({ buildings: sampleBuildings, monthlyHistory: history, month: '2026-02' });
+    const a = r.rows.find((row) => row.id === 'a');
+    expect(a.monthKwh).toBe(1500);
+    expect(a.annualKwh).toBe(18_000);
+  });
+
+  it('returns 0 for a building with no data for the selected month', () => {
+    const r = computeBuildingEmissions({ buildings: sampleBuildings, monthlyHistory: history, month: '2026-03' });
+    const b = r.rows.find((row) => row.id === 'b');
+    expect(b.monthKwh).toBe(0);
+    expect(b.annualKwh).toBe(0);
+    expect(b.mtCO2e).toBe(0);
+  });
+
+  it('ignores a malformed month string and falls back to annualized mode', () => {
+    const r = computeBuildingEmissions({ buildings: sampleBuildings, monthlyHistory: history, month: 'not-a-month' });
+    expect(r.mode).toBe('annualized');
+    expect(r.selectedMonth).toBeNull();
+  });
+
+  it('exposes the sorted list of available months', () => {
+    const r = computeBuildingEmissions({ buildings: sampleBuildings, monthlyHistory: history });
+    expect(r.availableMonths).toEqual(['2026-01', '2026-02', '2026-03']);
+  });
+});
+
 describe('computeBuildingEmissions — totals + share', () => {
   it('sharePercent sums to ~100 when buildings have measured data', () => {
     const { rows, totalKwh } = computeBuildingEmissions({

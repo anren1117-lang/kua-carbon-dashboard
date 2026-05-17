@@ -18,9 +18,10 @@ const ISO_NE_KG_PER_KWH = 0.235;
  * @property {string} category
  * @property {number} sqft
  * @property {number} occupants
- * @property {number} annualKwh        Sum of measured monthly readings (annualized from coverage).
- * @property {number} monthsCovered    How many distinct months had data for this building.
- * @property {number} mtCO2e           kWh × ISO-NE factor, in metric tons.
+ * @property {number} annualKwh        Annualized-equivalent kWh (in monthly mode this is monthKwh × 12 so the color scale stays comparable).
+ * @property {number=} monthKwh        Only set when a month filter is in effect — the raw kWh for that month.
+ * @property {number} monthsCovered    Months of measured data behind this building's number.
+ * @property {number} mtCO2e           annualKwh × ISO-NE factor, in metric tons.
  * @property {number} sharePercent     Percent of campus-total electricity emissions.
  * @property {number} kgPerSqft        Intensity (kg CO₂e / sqft / yr) for ranking.
  */
@@ -30,23 +31,34 @@ const ISO_NE_KG_PER_KWH = 0.235;
  * @param {Array}  [opts.buildings]                 Inject for tests.
  * @param {object} [opts.monthlyHistory]            { [buildingId]: { [YYYY-MM]: kwh } }, inject for tests.
  * @param {number} [opts.kgPerKwh]                  Override the grid factor.
- * @returns {{ rows: BuildingEmissions[], totalKwh: number, totalMt: number, monthsObserved: number }}
+ * @param {string} [opts.month]                     Optional 'YYYY-MM' filter — return that month's reading instead of the annualized average.
+ * @returns {{ rows: BuildingEmissions[], totalKwh: number, totalMt: number, monthsObserved: number, mode: 'annualized'|'monthly', selectedMonth: string|null }}
  */
 export function computeBuildingEmissions(opts = {}) {
   const buildingList = opts.buildings || buildings;
   const history = opts.monthlyHistory || buildingMonthlyHistory();
   const factor = opts.kgPerKwh ?? ISO_NE_KG_PER_KWH;
+  const month = typeof opts.month === 'string' && /^\d{4}-\d{2}$/.test(opts.month) ? opts.month : null;
 
-  // Annualize: each building has N months of measured data. Scale up
-  // to 12 months proportionally. If the months differ across buildings
-  // (e.g. a meter came online mid-year), each building scales by ITS
-  // own coverage so totals are honest.
+  // Per-building: monthly mode returns that month's reading × 12 so
+  // the color scale stays comparable to the annualized-average view.
+  // Annualized mode scales by however many months a building has
+  // (so a building with 2 months still gives a per-year estimate).
   const rows = buildingList.map((b) => {
     const bucket = history[b.id] || {};
-    const months = Object.keys(bucket).filter((k) => typeof bucket[k] === 'number');
-    const measuredKwh = months.reduce((s, m) => s + bucket[m], 0);
-    const monthsCovered = months.length;
-    const annualKwh = monthsCovered > 0 ? (measuredKwh / monthsCovered) * 12 : 0;
+    let monthKwh = 0;
+    let monthsCovered = 0;
+    let annualKwh = 0;
+    if (month) {
+      monthKwh = typeof bucket[month] === 'number' ? bucket[month] : 0;
+      monthsCovered = monthKwh > 0 ? 1 : 0;
+      annualKwh = monthKwh * 12;
+    } else {
+      const months = Object.keys(bucket).filter((k) => typeof bucket[k] === 'number');
+      const measuredKwh = months.reduce((s, m) => s + bucket[m], 0);
+      monthsCovered = months.length;
+      annualKwh = monthsCovered > 0 ? (measuredKwh / monthsCovered) * 12 : 0;
+    }
     const mtCO2e = (annualKwh * factor) / 1000;
     return {
       id: b.id,
@@ -55,6 +67,7 @@ export function computeBuildingEmissions(opts = {}) {
       sqft: b.sqft,
       occupants: b.occupants,
       annualKwh: Math.round(annualKwh),
+      ...(month ? { monthKwh: Math.round(monthKwh) } : {}),
       monthsCovered,
       mtCO2e: round2(mtCO2e),
       sharePercent: 0,             // filled in after totals
@@ -75,7 +88,15 @@ export function computeBuildingEmissions(opts = {}) {
     for (const m of Object.keys(bucket || {})) allMonths.add(m);
   }
 
-  return { rows, totalKwh: Math.round(totalKwh), totalMt, monthsObserved: allMonths.size };
+  return {
+    rows,
+    totalKwh: Math.round(totalKwh),
+    totalMt,
+    monthsObserved: allMonths.size,
+    mode: month ? 'monthly' : 'annualized',
+    selectedMonth: month,
+    availableMonths: [...allMonths].sort(),
+  };
 }
 
 function round2(n) { return Math.round(n * 100) / 100; }
