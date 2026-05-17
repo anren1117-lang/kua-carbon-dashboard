@@ -103,7 +103,13 @@ export function verifyAdminToken(token) {
   try { payload = JSON.parse(b64urlDecode(payloadB64).toString('utf8')); }
   catch { return { valid: false, reason: 'malformed payload' }; }
   const now = Math.floor(Date.now() / 1000);
-  if (typeof payload.exp !== 'number' || payload.exp < now) {
+  // Number.isFinite — NOT typeof === 'number' — so Infinity and NaN
+  // can't slip past the expiry check. JSON.parse turns "9e9999999"
+  // into Infinity, and Infinity < now is false, so a typeof check
+  // would accept a forged-with-Infinity-exp token as never-expiring.
+  // NaN < now is also false (every NaN comparison is). Mirrors the
+  // same defense in src/utils/googleJwt.js.
+  if (!Number.isFinite(payload.exp) || payload.exp < now) {
     return { valid: false, reason: 'expired' };
   }
   if (payload.role !== 'admin') {
