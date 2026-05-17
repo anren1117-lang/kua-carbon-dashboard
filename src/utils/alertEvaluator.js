@@ -176,8 +176,13 @@ export function alertSetSignature(alerts) {
 /**
  * Compose the email subject + HTML + plain-text body for a current
  * alert set. Pure function so it's easy to test.
+ *
+ * @param {Alert[]} alerts
+ * @param {object} [opts]
+ * @param {string} [opts.baseUrl]         Absolute origin for CTA + unsubscribe URLs.
+ * @param {string} [opts.unsubscribeUrl]  Per-recipient one-click unsubscribe link (already includes ?token=…). If provided, footer adds it.
  */
-export function composeAlertEmail(alerts, { baseUrl = '' } = {}) {
+export function composeAlertEmail(alerts, { baseUrl = '', unsubscribeUrl = '' } = {}) {
   const high = alerts.filter((a) => a.severity === 'high').length;
   const medium = alerts.filter((a) => a.severity === 'medium').length;
   const subject = alerts.length === 1
@@ -208,9 +213,9 @@ export function composeAlertEmail(alerts, { baseUrl = '' } = {}) {
 
       <p style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
         This email was sent because something the dashboard tracks went past
-        an expected update window. You're getting it because an admin added
-        your address at <code>/admin/alerts</code>. To stop, an admin can
-        remove you on the same page.
+        an expected update window. You're getting it because your address is
+        subscribed at <code>/admin/alerts</code>.
+        ${unsubscribeUrl ? `<br><a href="${unsubscribeUrl}" style="color: #0e7490;">Unsubscribe from these alerts</a> · One click, no login needed.` : 'To stop, an admin can remove you on that same page.'}
       </p>
     </div>
   `;
@@ -225,7 +230,9 @@ export function composeAlertEmail(alerts, { baseUrl = '' } = {}) {
     ].filter(Boolean).join('\n')),
     '',
     '—',
-    'You\'re receiving this because you subscribed at /admin/alerts. An admin can remove your address there.',
+    unsubscribeUrl
+      ? `Unsubscribe (one click): ${unsubscribeUrl}`
+      : 'You\'re receiving this because your address is subscribed at /admin/alerts.',
   ].join('\n\n');
 
   return { subject, html, text };

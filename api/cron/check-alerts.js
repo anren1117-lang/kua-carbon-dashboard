@@ -27,6 +27,7 @@ import { listSubscribers } from '../../src/storage/alertSubscribers.js';
 import { sendEmail } from '../../src/utils/sendEmail.js';
 import { getMeterAdapter } from '../../src/adapters/meter/index.js';
 import { getCronState, setCronState, _resetAlertCronStateStoreForTests } from '../../src/storage/alertCronState.js';
+import { signUnsubscribeToken } from '../../src/utils/unsubscribeToken.js';
 
 // Test-only escape hatch — clears the persistent (or memory-only)
 // dedup state between tests.
@@ -139,10 +140,15 @@ export default async function handler(req, res) {
     }
 
     const baseUrl = baseUrlFromReq(req);
-    const { subject, html, text } = composeAlertEmail(alerts, { baseUrl });
-    const results = await Promise.all(subscribers.map((s) =>
-      sendEmail({ to: s.email, subject, html, text }).then((r) => ({ email: s.email, ...r }))
-    ));
+    // Per-recipient compose so each subscriber's email carries an
+    // unsubscribe link tokenized to THEIR address (not a shared link
+    // that would unsubscribe whoever clicked first).
+    const results = await Promise.all(subscribers.map((s) => {
+      const token = signUnsubscribeToken(s.email);
+      const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${encodeURIComponent(token)}`;
+      const { subject, html, text } = composeAlertEmail(alerts, { baseUrl, unsubscribeUrl });
+      return sendEmail({ to: s.email, subject, html, text }).then((r) => ({ email: s.email, ...r }));
+    }));
     const notified = results.filter((r) => r.sent).length;
 
     const state = await setCronState(signature, checkedAt);

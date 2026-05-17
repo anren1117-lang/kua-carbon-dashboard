@@ -28,6 +28,7 @@ import DataAdmin           from '../pages/DataAdmin.js';
 import Dining              from '../pages/Dining.js';
 import Drawdown            from '../pages/Drawdown.js';
 import EnvironmentNews     from '../pages/EnvironmentNews.js';
+import Unsubscribe         from '../pages/Unsubscribe.js';
 import Hotspots            from '../pages/Hotspots.js';
 import Learn               from '../pages/Learn.js';
 import LessonEditor        from '../pages/LessonEditor.js';
@@ -76,6 +77,7 @@ const pages = [
   plain(Dining,              'Dining'),
   plain(Drawdown,            'Drawdown'),
   plain(EnvironmentNews,     'EnvironmentNews'),
+  plain(Unsubscribe,         'Unsubscribe'),
   plain(Hotspots,            'Hotspots'),
   plain(Learn,               'Learn'),
   plain(LessonEditor,        'LessonEditor'),
