@@ -12,6 +12,7 @@ import {
   SINKS_RANGE,
 } from '../data/geographicEstimates.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { carbonEquivalents } from '../utils/equivalents.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -149,6 +150,47 @@ const styles = {
 const fmt = (n) => Math.abs(n) >= 1000 ? n.toLocaleString(undefined, { maximumFractionDigits: 0 }) : n.toString();
 const fmtRange = (lo, hi) => lo === hi ? fmt(lo) : `${fmt(lo)} – ${fmt(hi)}`;
 
+// Tangible-equivalents bar — translates the abstract mtCO2e number
+// into things a human can actually picture. Renders nothing when
+// the input is zero/negative so the layout doesn't show a row of
+// "0 cars" boxes if upstream data is missing.
+function EquivalentsCallout({ grossMt }) {
+  if (!Number.isFinite(grossMt) || grossMt <= 0) return null;
+  const eq = carbonEquivalents(grossMt);
+  const items = [
+    { label: 'cars driven for a year',         value: eq.carYears.toLocaleString(),       icon: '🚗' },
+    { label: 'US homes powered for a year',    value: eq.homeYears.toLocaleString(),      icon: '🏠' },
+    { label: 'one-way transatlantic flights',  value: eq.transatFlights.toLocaleString(), icon: '✈️' },
+    { label: 'trees needed to absorb it (1 yr)', value: eq.treeYears.toLocaleString(),   icon: '🌳' },
+  ];
+  return (
+    <div style={equivStyles.wrap}>
+      <div style={equivStyles.label}>
+        That's roughly equivalent to…
+      </div>
+      <div style={equivStyles.grid}>
+        {items.map((it) => (
+          <div key={it.label} style={equivStyles.cell}>
+            <div style={equivStyles.icon}>{it.icon}</div>
+            <div style={equivStyles.value}>{it.value}</div>
+            <div style={equivStyles.text}>{it.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const equivStyles = {
+  wrap:   { marginTop: 24, padding: '16px 18px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10 },
+  label:  { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 12 },
+  grid:   { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 },
+  cell:   { textAlign: 'center', padding: '8px 6px' },
+  icon:   { fontSize: 22, marginBottom: 4 },
+  value:  { fontSize: 20, color: '#e5e7eb', fontWeight: 800, fontVariantNumeric: 'tabular-nums', marginBottom: 2 },
+  text:   { fontSize: 11, color: '#94a3b8', lineHeight: 1.3 },
+};
+
 export function NetEstimate() {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
@@ -205,6 +247,9 @@ export function NetEstimate() {
             <div style={styles.numBig}>~{fmt(Math.round(ANNUAL_SEQUESTRATION_MT))}<span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
         </div>
+
+        <EquivalentsCallout grossMt={heroGrossMid} />
+
 
         <button type="button" style={styles.detailsToggle} onClick={() => setShowBreakdown((v) => !v)}>
           {showBreakdown ? 'Hide breakdown' : 'Show line-by-line breakdown'}
