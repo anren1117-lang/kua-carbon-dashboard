@@ -47,6 +47,7 @@ const Plan = lazy(() => import('./pages/Plan'));
 const Drawdown = lazy(() => import('./pages/Drawdown'));
 const Waste = lazy(() => import('./pages/Waste'));
 const Procurement = lazy(() => import('./pages/Procurement'));
+const EnvironmentNews = lazy(() => import('./pages/EnvironmentNews'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin tree — also lazy. Most users never hit /admin.
@@ -119,6 +120,7 @@ root.render(
             <Route path="/methodology" element={<Methodology />} />
             <Route path="/credits" element={<CarbonCredits />} />
             <Route path="/learn" element={<Learn />} />
+            <Route path="/news" element={<EnvironmentNews />} />
             <Route path="/ask" element={<Assistant />} />
             <Route path="/hotspots" element={<Hotspots />} />
             <Route path="/actions" element={<Actions />} />

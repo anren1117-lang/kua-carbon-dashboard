@@ -41,6 +41,7 @@ const categoryItems = [
 ];
 
 const portalItems = [
+  { to: '/news',    label: 'News',    color: '#86efac' },
   { to: '/learn',   label: 'Learn',   color: '#fbbf24' },
   { to: '/ask',     label: 'Ask',     color: '#a855f7' },
   { to: '/teacher', label: 'Teacher', color: '#22c55e' },
