@@ -50,6 +50,7 @@ const Procurement = lazy(() => import('./pages/Procurement'));
 const EnvironmentNews = lazy(() => import('./pages/EnvironmentNews'));
 const Unsubscribe = lazy(() => import('./pages/Unsubscribe'));
 const PersonalFootprint = lazy(() => import('./pages/PersonalFootprint'));
+const CampusMap = lazy(() => import('./pages/CampusMap'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin tree — also lazy. Most users never hit /admin.
@@ -126,6 +127,7 @@ root.render(
             <Route path="/news" element={<EnvironmentNews />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/your-footprint" element={<PersonalFootprint />} />
+            <Route path="/campus-map" element={<CampusMap />} />
             <Route path="/ask" element={<Assistant />} />
             <Route path="/hotspots" element={<Hotspots />} />
             <Route path="/actions" element={<Actions />} />

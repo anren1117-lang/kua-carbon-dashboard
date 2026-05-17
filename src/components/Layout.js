@@ -15,6 +15,7 @@ const topItems = [
   { to: '/hotspots',  label: 'Hotspots' },
   { to: '/plan',      label: 'Plan' },         // Goals + Actions combined
   { to: '/buildings', label: 'Buildings' },
+  { to: '/campus-map', label: 'Campus Map' },
   { to: '/scope-1',   label: 'Scope 1' },
   { to: '/scope-2',   label: 'Scope 2' },
   { to: '/scope-3',   label: 'Scope 3' },
