@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { ModulePage, ModuleSection } from '../components/ModuleShell.js';
+
+// Convert a question string to a URL-safe anchor slug:
+// "How is this measured?" → "how-is-this-measured"
+function slugify(q) {
+  return q.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 // /faq — common questions for parents, prospective students, and
 // curious visitors. Each Q is collapsible (closed by default) and
@@ -157,6 +165,7 @@ const FAQ = [
 ];
 
 export default function Faq() {
+  const { hash } = useLocation();
   // Track open state per-question. Start with the first 3 open as
   // "preview" so first-time visitors see substance immediately;
   // they can close them and explore others.
@@ -167,6 +176,27 @@ export default function Faq() {
     return next;
   });
 
+  // Deep-link handling — if the URL has #slug matching a question,
+  // expand that question, collapse others, and smooth-scroll to it.
+  // Lets us link from other pages to a specific FAQ entry like
+  // /faq#how-is-this-measured.
+  useEffect(() => {
+    if (!hash) return;
+    const targetSlug = hash.replace(/^#/, '');
+    const idx = FAQ.findIndex((it) => slugify(it.q) === targetSlug);
+    if (idx === -1) return;
+    setOpen(new Set([idx]));
+    // Wait a frame so the answer DOM expansion is mounted before
+    // we measure + scroll. 60ms is enough to clear the React commit.
+    const t = setTimeout(() => {
+      const el = document.getElementById(`faq-${targetSlug}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+    return () => clearTimeout(t);
+  }, [hash]);
+
   return (
     <ModulePage
       title="Frequently asked questions"
@@ -176,8 +206,9 @@ export default function Faq() {
         <ol style={styles.list}>
           {FAQ.map((item, i) => {
             const isOpen = open.has(i);
+            const slug = slugify(item.q);
             return (
-              <li key={i} style={styles.item}>
+              <li key={i} id={`faq-${slug}`} style={styles.item}>
                 <button
                   type="button"
                   onClick={() => toggle(i)}
