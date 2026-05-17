@@ -1,15 +1,16 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Icon } from '../components/Icon.js';
 
 const QUICK_LINKS = [
-  { to: '/',            label: 'Home — net carbon balance' },
-  { to: '/scope-2',     label: 'Scope 2 — live electricity dashboard' },
-  { to: '/buildings',   label: 'Buildings — per-building energy' },
-  { to: '/hotspots',    label: 'Hotspots — where emissions concentrate' },
-  { to: '/plan',        label: 'Plan — goals + reduction actions' },
-  { to: '/learn',       label: 'Learn — guided walkthroughs' },
-  { to: '/methodology', label: 'Methodology — every emission factor' },
-  { to: '/admin',       label: 'Admin portal' },
+  { to: '/',                 label: 'Home — net carbon balance',                    icon: Icon.Chart },
+  { to: '/campus-map',       label: 'Campus map — energy by building',              icon: Icon.Map },
+  { to: '/your-footprint',   label: 'Your footprint — personal calculator',         icon: Icon.Leaf },
+  { to: '/dorm-leaderboard', label: 'Dorm leaderboard — who uses the least',         icon: Icon.Trophy },
+  { to: '/scenarios',        label: 'Scenarios — reduction simulator',               icon: Icon.Sparkles },
+  { to: '/plan',             label: 'Plan — goals + reduction actions',              icon: Icon.Bolt },
+  { to: '/methodology',      label: 'Methodology — every emission factor',           icon: Icon.HelpCircle },
+  { to: '/faq',              label: 'FAQ — common questions',                        icon: Icon.HelpCircle },
 ];
 
 export default function NotFound() {
@@ -25,9 +26,12 @@ export default function NotFound() {
           surfaces — pick one of these to get back on track:
         </p>
         <ul style={styles.list}>
-          {QUICK_LINKS.map(({ to, label }) => (
-            <li key={to} style={styles.item}>
-              <Link to={to} style={styles.link}>{label}</Link>
+          {QUICK_LINKS.map(({ to, label, icon: LinkIcon }) => (
+            <li key={to} style={styles.item} className="kua-card-hover">
+              <Link to={to} style={styles.link}>
+                <span style={styles.linkIcon}><LinkIcon size={14} /></span>
+                {label}
+              </Link>
               <span style={styles.path}>{to}</span>
             </li>
           ))}
@@ -51,7 +55,8 @@ const styles = {
   code: { background: '#0b1220', border: '1px solid #1f2937', padding: '1px 6px', borderRadius: 4, color: '#fbbf24', fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
   list: { marginTop: 18, listStyle: 'none', padding: 0, display: 'grid', gap: 6 },
   item: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '8px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, gap: 16 },
-  link: { color: '#22d3ee', textDecoration: 'none', fontWeight: 600, fontSize: 14 },
+  link: { color: '#22d3ee', textDecoration: 'none', fontWeight: 600, fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 10 },
+  linkIcon: { display: 'inline-flex', opacity: 0.8 },
   path: { color: '#64748b', fontSize: 11, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
   hint: { marginTop: 18, color: '#64748b', fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' },
 };
