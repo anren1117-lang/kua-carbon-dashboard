@@ -297,7 +297,16 @@ export default function CampusMap() {
               <DetailStat label="Share of campus"   value={`${selected.sharePercent}%`} />
               <DetailStat label="Square feet"       value={selected.sqft.toLocaleString()} />
               <DetailStat label="Daily occupants"   value={selected.occupants.toLocaleString()} />
-              <DetailStat label="Intensity"         value={`${selected.kgPerSqft} kg/sqft/yr`} />
+              <DetailStat
+                label="Intensity"
+                value={`${selected.kgPerSqft} kg/sqft/yr`}
+                sub={(() => {
+                  const peers = rows.filter((r) => r.category === selected.category);
+                  if (peers.length < 2) return null;
+                  const rank = [...peers].sort((a, b) => b.kgPerSqft - a.kgPerSqft).findIndex((r) => r.id === selected.id) + 1;
+                  return `Rank #${rank} of ${peers.length} ${selected.category}${peers.length === 1 ? '' : 's'}`;
+                })()}
+              />
             </div>
             <div style={styles.detailNote}>
               {mode === 'monthly'
@@ -371,11 +380,12 @@ function LegendChip({ color, children }) {
   );
 }
 
-function DetailStat({ label, value }) {
+function DetailStat({ label, value, sub }) {
   return (
     <div style={styles.stat}>
       <div style={styles.statLabel}>{label}</div>
       <div style={styles.statValue}>{value}</div>
+      {sub && <div style={styles.statSub}>{sub}</div>}
     </div>
   );
 }
@@ -441,6 +451,7 @@ const styles = {
   stat:        { padding: '8px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
   statLabel:   { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: 700 },
   statValue:   { fontSize: 16, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums', marginTop: 4 },
+  statSub:     { fontSize: 10, color: '#64748b', fontWeight: 600, marginTop: 4 },
   detailNote:  { marginTop: 12, fontSize: 11, color: '#64748b', lineHeight: 1.6 },
   detailLink:  { display: 'inline-block', marginTop: 10, padding: '6px 12px', background: '#0e3a5f', color: '#22d3ee', border: '1px solid #22d3ee', borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none' },
 
