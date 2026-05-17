@@ -35,6 +35,7 @@ import BuildingDetail      from '../pages/BuildingDetail.js';
 import DormLeaderboard     from '../pages/DormLeaderboard.js';
 import EnergyChallenge     from '../pages/EnergyChallenge.js';
 import Faq                 from '../pages/Faq.js';
+import Share               from '../pages/Share.js';
 import Hotspots            from '../pages/Hotspots.js';
 import Learn               from '../pages/Learn.js';
 import LessonEditor        from '../pages/LessonEditor.js';
@@ -94,6 +95,7 @@ const pages = [
   plain(DormLeaderboard,     'DormLeaderboard'),
   plain(EnergyChallenge,     'EnergyChallenge'),
   plain(Faq,                 'Faq'),
+  plain(Share,               'Share'),
   plain(Hotspots,            'Hotspots'),
   plain(Learn,               'Learn'),
   plain(LessonEditor,        'LessonEditor'),

@@ -47,6 +47,7 @@ const categoryItems = [
   { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
   { to: '/challenge',        label: 'Dorm challenge (monthly)' },
   { to: '/faq',              label: 'FAQ' },
+  { to: '/share',            label: 'Share (QR code)' },
 ];
 
 const portalItems = [

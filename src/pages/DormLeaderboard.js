@@ -4,6 +4,7 @@ import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { buildingMonthlyHistory, monthlyReports } from '../data/monthlyConsumption.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { energyEquivalents } from '../utils/equivalents.js';
 
 // /dorm-leaderboard — apples-to-apples kWh-per-resident ranking
 // across the 11 student dorms. Larger dorms ALWAYS use more
@@ -72,12 +73,25 @@ export default function DormLeaderboard() {
         <ModuleSection title="This year's most efficient dorm" hint="">
           <div style={styles.championCard}>
             <div style={styles.championRank}>🏆 #1</div>
-            <div>
+            <div style={{ flex: 1 }}>
               <div style={styles.championName}>{champion.name}</div>
               <div style={styles.championMeta}>
                 {champion.kwhAnnualPerResident.toLocaleString()} kWh per resident per year
                 {' '}· {champion.occupants} residents · {champion.sqft.toLocaleString()} sqft
               </div>
+              {(() => {
+                // Per-resident kWh → tangible equivalents (iPhone
+                // charges + light-bulb hours). Lands the abstract
+                // kWh number in something a student can picture.
+                const eq = energyEquivalents(champion.kwhAnnualPerResident);
+                return (
+                  <div style={styles.championEquiv}>
+                    ≈ {eq.iphoneCharges.toLocaleString()} iPhone charges
+                    {' · '}
+                    {eq.bulbHours.toLocaleString()} hours of a 60W bulb
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </ModuleSection>
@@ -218,6 +232,7 @@ const styles = {
   championRank: { fontSize: 32, fontWeight: 800, color: '#86efac', minWidth: 80, textAlign: 'center' },
   championName: { fontSize: 22, fontWeight: 800, color: '#dcfce7' },
   championMeta: { fontSize: 13, color: '#bbf7d0', marginTop: 4 },
+  championEquiv: { fontSize: 12, color: '#86efac', marginTop: 8, fontStyle: 'italic' },
 
   controls: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap' },
   controlLabel: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginRight: 4 },
