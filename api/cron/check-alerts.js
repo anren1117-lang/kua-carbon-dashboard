@@ -28,6 +28,7 @@ import { sendEmail } from '../../src/utils/sendEmail.js';
 import { getMeterAdapter } from '../../src/adapters/meter/index.js';
 import { getCronState, setCronState, _resetAlertCronStateStoreForTests } from '../../src/storage/alertCronState.js';
 import { signUnsubscribeToken } from '../../src/utils/unsubscribeToken.js';
+import { recordAlertSend } from '../../src/storage/alertHistory.js';
 
 // Test-only escape hatch — clears the persistent (or memory-only)
 // dedup state between tests.
@@ -150,8 +151,20 @@ export default async function handler(req, res) {
       return sendEmail({ to: s.email, subject, html, text }).then((r) => ({ email: s.email, ...r }));
     }));
     const notified = results.filter((r) => r.sent).length;
+    const noProvider = results.some((r) => r.reason === 'no_provider');
 
     const state = await setCronState(signature, checkedAt);
+    // Audit-trail this run so the admin can see "we emailed about
+    // these on this date" later on /admin/alerts.
+    const history = await recordAlertSend({
+      sentAt: checkedAt,
+      signature,
+      alertCount: alerts.length,
+      alerts,
+      subscriberCount: subscribers.length,
+      deliveredCount: notified,
+      noProvider,
+    });
 
     return res.status(200).json({
       ok: true,
@@ -163,7 +176,8 @@ export default async function handler(req, res) {
       notified,
       attempted: subscribers.length,
       statePersisted: state.persisted,
-      noProvider: results.some((r) => r.reason === 'no_provider'),
+      historyPersisted: history.persisted,
+      noProvider,
     });
   } catch (err) {
     return res.status(500).json({ error: 'server_error', details: String(err?.message || err) });

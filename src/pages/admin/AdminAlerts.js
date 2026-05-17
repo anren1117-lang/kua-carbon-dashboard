@@ -19,6 +19,8 @@ export default function AdminAlerts() {
   const [testResult, setTestResult]   = useState(null);
   const [preview, setPreview]         = useState(null);
   const [previewing, setPreviewing]   = useState(false);
+  const [history, setHistory]         = useState(null);
+  const [historyError, setHistoryError] = useState(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -35,7 +37,20 @@ export default function AdminAlerts() {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  const loadHistory = useCallback(async () => {
+    setHistoryError(null);
+    try {
+      const r = await adminFetch('/api/admin/alert-history?limit=20');
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setHistory(body.entries || []);
+    } catch (err) {
+      setHistoryError(err.message || 'Could not load history');
+      setHistory([]);
+    }
+  }, []);
+
+  useEffect(() => { refresh(); loadHistory(); }, [refresh, loadHistory]);
 
   async function onAdd(e) {
     e.preventDefault();
@@ -248,6 +263,44 @@ export default function AdminAlerts() {
         )}
       </ModuleSection>
 
+      <ModuleSection title="Past alerts sent" hint="Audit trail of every email batch the daily cron has actually dispatched. Empty until the first real alert fires.">
+        {historyError && <div role="alert" style={styles.error}>{historyError}</div>}
+        {history === null && <div style={styles.loading}>Loading…</div>}
+        {history !== null && history.length === 0 && (
+          <div style={styles.empty}>No alerts have been emailed yet. When the cron detects something unusual, the send will be recorded here.</div>
+        )}
+        {history && history.length > 0 && (
+          <ul style={styles.historyList}>
+            {history.map((h, i) => (
+              <li key={i} style={styles.historyItem}>
+                <div style={styles.historyHead}>
+                  <span style={styles.historyDate}>{new Date(h.sentAt).toLocaleString()}</span>
+                  <span style={styles.historyCount}>
+                    {h.alertCount} alert{h.alertCount === 1 ? '' : 's'} · {h.deliveredCount}/{h.subscriberCount} delivered
+                  </span>
+                  {h.noProvider && (
+                    <Pill kind="warn">no provider</Pill>
+                  )}
+                </div>
+                {h.alerts && h.alerts.length > 0 && (
+                  <details style={styles.historyDetails}>
+                    <summary style={styles.historySummary}>Show what fired</summary>
+                    <ul style={styles.historyAlerts}>
+                      {h.alerts.map((a, j) => (
+                        <li key={j}>
+                          <span style={{ color: a.severity === 'high' ? '#fca5a5' : '#fcd34d', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>{a.severity}</span>{' '}
+                          {a.title}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </ModuleSection>
+
       <ModuleSection title="What triggers an alert?" hint="The cron fires daily at 8 AM ET and emails subscribers if any of these rules trip. Same deterministic rules — no LLM-judgment alerts that could fire on noise:">
         <ul style={styles.bullets}>
           <li><strong>Stale data table</strong> — when an admin table (heating oil deliveries, fuel bills, meter readings) hasn't been updated past its expected cadence (e.g. nothing in 60+ days during heating season).</li>
@@ -289,6 +342,14 @@ const styles = {
   alertTitle:  { fontSize: 14, color: '#e5e7eb', fontWeight: 700, marginBottom: 2 },
   alertDesc:   { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 },
   alertCta:    { display: 'inline-block', marginTop: 4, fontSize: 11, color: '#22d3ee', textDecoration: 'none', fontWeight: 600 },
+  historyList: { listStyle: 'none', padding: 0, margin: 0 },
+  historyItem: { padding: '12px 0', borderBottom: '1px solid #1f2937' },
+  historyHead: { display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' },
+  historyDate: { fontSize: 13, color: '#e5e7eb', fontWeight: 700 },
+  historyCount: { fontSize: 12, color: '#94a3b8' },
+  historyDetails: { marginTop: 8 },
+  historySummary: { cursor: 'pointer', fontSize: 12, color: '#94a3b8' },
+  historyAlerts: { margin: '8px 0 0', paddingLeft: 20, color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 },
   bullets:     { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 14, lineHeight: 1.7 },
   note:        { marginTop: 12, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 },
 };
