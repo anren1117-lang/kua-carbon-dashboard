@@ -17,6 +17,8 @@ export default function AdminAlerts() {
   const [submitting, setSubmitting]   = useState(false);
   const [flash, setFlash]             = useState(null);
   const [testResult, setTestResult]   = useState(null);
+  const [preview, setPreview]         = useState(null);
+  const [previewing, setPreviewing]   = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -86,6 +88,21 @@ export default function AdminAlerts() {
       setTestResult(body);
     } catch (err) {
       setTestResult({ error: err.message });
+    }
+  }
+
+  async function onPreview() {
+    setPreviewing(true);
+    setPreview(null);
+    try {
+      const r = await adminFetch('/api/admin/alerts-preview', { method: 'POST' });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setPreview(body);
+    } catch (err) {
+      setPreview({ error: err.message });
+    } finally {
+      setPreviewing(false);
     }
   }
 
@@ -178,7 +195,60 @@ export default function AdminAlerts() {
         )}
       </ModuleSection>
 
-      <ModuleSection title="What triggers an alert?" hint="The detection logic ships in Phase 222 — until then, only the manual test send fires email. These are the deterministic rules that will run on the daily cron:">
+      <ModuleSection title="Run alert check now" hint="Runs the same evaluator the daily cron uses against your current data + meters, and shows what would have fired — without actually emailing anyone. Useful for verifying the rules + checking that an issue you just fixed has cleared.">
+        <button type="button" onClick={onPreview} disabled={previewing} style={styles.previewBtn}>
+          {previewing ? 'Checking…' : '↻ Run alert check'}
+        </button>
+        {preview && (
+          <div style={styles.previewBox}>
+            {preview.error ? (
+              <span style={{ color: '#fca5a5' }}>Error: {preview.error}</span>
+            ) : (
+              <>
+                <div style={{ marginBottom: 8 }}>
+                  Checked <strong>{preview.tablesChecked}</strong> data table{preview.tablesChecked === 1 ? '' : 's'}
+                  {preview.meterAdapterUsed && <> + <strong>{preview.metersChecked}</strong> meter{preview.metersChecked === 1 ? '' : 's'}</>}
+                  . {' '}
+                  {preview.alerts.length === 0
+                    ? <Pill kind="good">all clear</Pill>
+                    : <Pill kind="warn">{preview.alerts.length} alert{preview.alerts.length === 1 ? '' : 's'}</Pill>}
+                </div>
+
+                {!preview.supabaseConfigured && (
+                  <div style={{ color: '#fcd34d', fontSize: 12, marginBottom: 10 }}>
+                    ⚠ Supabase is not configured on this deploy — table-staleness alerts are skipped.
+                  </div>
+                )}
+
+                {preview.alerts.length > 0 && (
+                  <ul style={styles.alertList}>
+                    {preview.alerts.map((a) => (
+                      <li key={a.id} style={styles.alertItem}>
+                        <span style={{ color: a.severity === 'high' ? '#fca5a5' : '#fcd34d', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {a.severity}
+                        </span>
+                        <div style={{ flex: 1 }}>
+                          <div style={styles.alertTitle}>{a.title}</div>
+                          <div style={styles.alertDesc}>{a.description}</div>
+                          {a.cta && (
+                            <a href={a.cta} style={styles.alertCta}>Open {a.tableLabel || a.meterId || 'page'} →</a>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div style={{ marginTop: 10, fontSize: 11, color: '#64748b' }}>
+                  This was a preview — no emails were sent. The daily cron will send emails if this same alert set is detected.
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </ModuleSection>
+
+      <ModuleSection title="What triggers an alert?" hint="The cron fires daily at 8 AM ET and emails subscribers if any of these rules trip. Same deterministic rules — no LLM-judgment alerts that could fire on noise:">
         <ul style={styles.bullets}>
           <li><strong>Stale data table</strong> — when an admin table (heating oil deliveries, fuel bills, meter readings) hasn't been updated past its expected cadence (e.g. nothing in 60+ days during heating season).</li>
           <li><strong>Dead meter</strong> — when a meter that should report hourly has gone silent for 3+ days.</li>
@@ -212,6 +282,13 @@ const styles = {
   removeBtn:   { padding: '6px 10px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
   testBtn:     { padding: '10px 16px', background: '#0e3a5f', color: '#22d3ee', border: '1px solid #22d3ee', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
   testResult:  { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#cbd5e1', fontSize: 13 },
+  previewBtn:  { padding: '10px 16px', background: '#3a2a0e', color: '#fcd34d', border: '1px solid #fcd34d', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  previewBox:  { marginTop: 14, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#cbd5e1', fontSize: 13 },
+  alertList:   { listStyle: 'none', padding: 0, margin: 0 },
+  alertItem:   { display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid #1f2937', alignItems: 'flex-start' },
+  alertTitle:  { fontSize: 14, color: '#e5e7eb', fontWeight: 700, marginBottom: 2 },
+  alertDesc:   { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 },
+  alertCta:    { display: 'inline-block', marginTop: 4, fontSize: 11, color: '#22d3ee', textDecoration: 'none', fontWeight: 600 },
   bullets:     { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 14, lineHeight: 1.7 },
   note:        { marginTop: 12, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 },
 };

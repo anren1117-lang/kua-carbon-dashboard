@@ -32,6 +32,7 @@ import adminPlanItemAlts     from '../../api/admin/plan-item-alternatives.js';
 import adminPlanItemChat     from '../../api/admin/plan-item-chat.js';
 import adminAiIngestion      from '../../api/admin/ai-ingestion.js';
 import adminPlanDiff         from '../../api/admin/plan-diff.js';
+import adminAlertsPreview    from '../../api/admin/alerts-preview.js';
 import { signAdminToken, verifyAdminToken } from '../utils/adminToken.js';
 import { _resetForTests }    from '../data/quizLedger.js';
 import { verifyGoogleIdToken } from '../utils/googleJwt.js';
@@ -971,6 +972,7 @@ describe('admin AI endpoints — auth gate shape regression (Phase 146)', () => 
     { name: 'plan-item-chat',       fn: adminPlanItemChat,  body: { item: { title: 'x' }, context: {}, messages: [{ role: 'user', content: 'hi' }] } },
     { name: 'ai-ingestion',         fn: adminAiIngestion,   body: { text: 'sample heating oil 100 gal on 2026-04-15' } },
     { name: 'plan-diff',            fn: adminPlanDiff,      body: { priorPlan: [], newPlan: { plan: [{ title: 'x', expectedMtPerYear: 10 }] }, context: {} } },
+    { name: 'alerts-preview',       fn: adminAlertsPreview, body: {} },
   ];
 
   beforeAll(() => {
