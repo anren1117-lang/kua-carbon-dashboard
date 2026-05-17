@@ -1,5 +1,6 @@
 import React from 'react';
 import { energyEquivalents } from '../utils/equivalents.js';
+import { AnimatedNumber } from './AnimatedNumber.js';
 
 // Eclypse-style "Equal to charging X Teslas / Y iPhones / Z bulbs" card.
 // Mirrors the pattern from the campus BMS dashboard so faculty/staff have
@@ -12,19 +13,19 @@ export function EnergyEquivalents({ kwh, label = 'Equivalent to' }) {
     <div style={styles.wrap}>
       <div style={styles.label}>{label}: <strong style={{ color: '#fbbf24' }}>{Math.round(safeKwh).toLocaleString()} kWh</strong></div>
       <div style={styles.grid}>
-        <div style={styles.cell}>
+        <div style={styles.cell} className="kua-card-hover">
           <div style={styles.icon}>🔋</div>
-          <div style={styles.value}>{eq.teslaCharges.toLocaleString()}</div>
+          <div style={styles.value}><AnimatedNumber value={eq.teslaCharges} duration={900} /></div>
           <div style={styles.unit}>full Tesla Model 3 charges</div>
         </div>
-        <div style={styles.cell}>
+        <div style={styles.cell} className="kua-card-hover">
           <div style={styles.icon}>📱</div>
-          <div style={styles.value}>{eq.iphoneCharges.toLocaleString()}</div>
+          <div style={styles.value}><AnimatedNumber value={eq.iphoneCharges} duration={900} /></div>
           <div style={styles.unit}>iPhone 17 Pro Max charges</div>
         </div>
-        <div style={styles.cell}>
+        <div style={styles.cell} className="kua-card-hover">
           <div style={styles.icon}>💡</div>
-          <div style={styles.value}>{eq.bulbHours.toLocaleString()}</div>
+          <div style={styles.value}><AnimatedNumber value={eq.bulbHours} duration={900} /></div>
           <div style={styles.unit}>hours of a 60 W bulb</div>
         </div>
       </div>
