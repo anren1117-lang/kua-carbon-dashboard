@@ -62,11 +62,20 @@ const tablesToSurvey = [
 
 const styles = {
   wrap: { maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' },
-  card: { padding: '24px 28px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 14, borderLeft: '3px solid #06b6d4' },
-  head: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 },
-  badge: { fontSize: 10, padding: '3px 8px', borderRadius: 4, background: '#155e75', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
-  title: { fontSize: 18, fontWeight: 600, color: '#e5e7eb' },
-  body: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.7 },
+  card: {
+    padding: '24px 28px',
+    // Gentle cyan-to-navy gradient so the AI card reads as "alive"
+    // without being noisy. Border-left accent retained as the
+    // signature color identifier.
+    background: 'linear-gradient(135deg, rgba(8, 51, 68, 0.4) 0%, #0f172a 70%)',
+    border: '1px solid #1f2937',
+    borderRadius: 14,
+    borderLeft: '3px solid #06b6d4',
+  },
+  head: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 },
+  badge: { fontSize: 10, padding: '4px 10px', borderRadius: 999, background: 'rgba(34, 211, 238, 0.12)', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 800, border: '1px solid rgba(34, 211, 238, 0.3)' },
+  title: { fontSize: 18, fontWeight: 700, color: '#e5e7eb', letterSpacing: '-0.005em' },
+  body: { fontSize: 15, color: '#cbd5e1', lineHeight: 1.75 },
   toggle: { marginTop: 12, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', padding: '6px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer' },
   calc: { marginTop: 12, padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, color: '#94a3b8', lineHeight: 1.6 },
   footnote: { marginTop: 12, fontSize: 11, color: '#64748b', fontStyle: 'italic' },
@@ -110,7 +119,7 @@ export function AISummary() {
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card}>
+      <section style={styles.card} className="kua-card-hover">
         <div style={styles.head}>
           <span style={styles.badge}>AI-generated · grounded</span>
           <span style={styles.title}>In plain English</span>
