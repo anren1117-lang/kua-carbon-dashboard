@@ -8,7 +8,7 @@ import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 // session so the page paints instantly after the first call.
 
 const STORAGE_KEY = 'kua_env_news_cache_v1';
-const CLIENT_TTL_MS = 6 * 60 * 60 * 1000; // 6h — matches server cache
+const CLIENT_TTL_MS = 24 * 60 * 60 * 1000; // 24h — matches server cache
 
 const TOPIC_STYLE = {
   climate:      { color: '#fbbf24', label: 'Climate' },

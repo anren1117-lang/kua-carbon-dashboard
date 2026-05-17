@@ -3,9 +3,10 @@
 // Calls Anthropic with the web_search tool to pull 5-8 currently
 // newsworthy environmental items, and caches the response in process
 // memory so subsequent visitors on the same warm Vercel instance
-// don't re-bill the LLM. Cache TTL is generous (6h) because news
-// items don't need to be minute-fresh; the page also offers a manual
-// refresh button that bypasses the cache for force=true requests.
+// don't re-bill the LLM. Cache TTL is 24h — world environmental news
+// doesn't change minute-to-minute, and one daily fetch per warm
+// instance is the sweet spot for cost. The page also offers a manual
+// refresh button that bypasses the cache via force=true.
 //
 // Cost guardrail: rate-limited 6 requests/min/IP (generous for normal
 // student traffic, hard wall on scripted abuse). Each fresh fetch is
@@ -16,7 +17,7 @@ import { createRateLimit, getClientKey } from '../src/utils/rateLimit.js';
 
 const limiter = createRateLimit({ capacity: 6, refillPerSec: 6 / 60 });
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 let cached = null; // { payload, generatedAt: number }
 
 const SYSTEM_PROMPT = `You are an environmental news curator for the Kimball Union Academy carbon dashboard. The audience is KUA students — grades 9–12, mix of day + boarding (US + international). KUA sits on ~1,000 acres in Plainfield, NH (climate zone 6, ~7,500 heating-degree-days). Mixed maple/beech/birch forest, 19 tracked buildings, ~340 students. Heating runs oil + propane; electricity comes off the ISO-NE grid (~51% natural gas, ~23% nuclear). Dining hall serves three meals a day. Students drive/fly home for breaks. Winter sports are a big deal.
