@@ -18,6 +18,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 import AdminAIIngestion  from '../pages/admin/AdminAIIngestion.js';
 import AdminActions      from '../pages/admin/AdminActions.js';
+import AdminAlerts       from '../pages/admin/AdminAlerts.js';
 import AdminAuditLog     from '../pages/admin/AdminAuditLog.js';
 import AdminBmsExport    from '../pages/admin/AdminBmsExport.js';
 import AdminDataQuality  from '../pages/admin/AdminDataQuality.js';
@@ -36,6 +37,7 @@ const pages = [
   ['AdminHome',         AdminHome,         '/admin'],
   ['AdminAIIngestion',  AdminAIIngestion,  '/admin/ai-ingestion'],
   ['AdminActions',      AdminActions,      '/admin/actions'],
+  ['AdminAlerts',       AdminAlerts,       '/admin/alerts'],
   ['AdminAuditLog',     AdminAuditLog,     '/admin/audit-log'],
   ['AdminBmsExport',    AdminBmsExport,    '/admin/bms-export'],
   ['AdminDataQuality',  AdminDataQuality,  '/admin/data-quality'],

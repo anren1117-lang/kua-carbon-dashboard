@@ -67,6 +67,7 @@ const AdminStagePlanner = lazy(() => import('./pages/admin/AdminStagePlanner'));
 const AdminFacilities = lazy(() => import('./pages/admin/AdminFacilities'));
 const AdminBmsExport = lazy(() => import('./pages/admin/AdminBmsExport'));
 const AdminAIIngestion = lazy(() => import('./pages/admin/AdminAIIngestion'));
+const AdminAlerts = lazy(() => import('./pages/admin/AdminAlerts'));
 const HeatingOil = lazy(() => import('./pages/admin/scope1/HeatingOil'));
 const Propane = lazy(() => import('./pages/admin/scope1/Propane'));
 const Refrigerants = lazy(() => import('./pages/admin/scope1/Refrigerants'));
@@ -185,6 +186,7 @@ root.render(
             <Route path="stage-planner" element={<AdminStagePlanner />} />
             <Route path="facilities" element={<AdminFacilities />} />
             <Route path="bms-export" element={<AdminBmsExport />} />
+            <Route path="alerts" element={<AdminAlerts />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           </Routes>
