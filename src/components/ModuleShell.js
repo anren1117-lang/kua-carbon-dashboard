@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatedNumber } from './AnimatedNumber.js';
 
 // Shared layout primitives for the OS module pages. Centralizing the
 // header/section/card patterns keeps the new pages visually consistent
@@ -44,28 +45,59 @@ export function ModuleSection({ title, hint, children, collapsible, defaultOpen 
 export function MetricGrid({ metrics }) {
   return (
     <div style={styles.metricGrid}>
-      {metrics.map((m, i) => (
-        <div
-          key={i}
-          className="kua-metric-card kua-card-hover"
-          style={{
-            ...styles.metricCard,
-            borderLeftColor: m.accent || '#22d3ee',
-            // Stagger each card's fade-in by 80ms so the grid
-            // populates left-to-right instead of all at once.
-            animationDelay: `${i * 80}ms`,
-          }}
-        >
-          <div style={styles.metricLabel}>{m.label}</div>
-          <div style={styles.metricValue}>
-            {m.value}
-            {m.unit && <span style={styles.metricUnit}>{m.unit}</span>}
+      {metrics.map((m, i) => {
+        // Auto-detect a numeric value (or a string that parses to a
+        // number) and animate it via AnimatedNumber. Strings that
+        // aren't numeric (like "—" or "Lagging") render as-is. Numbers
+        // with commas are stripped + reparsed before tweening.
+        const numericValue = parseNumericValue(m.value);
+        const isAnimatable = numericValue !== null;
+        return (
+          <div
+            key={i}
+            className="kua-metric-card kua-card-hover"
+            style={{
+              ...styles.metricCard,
+              borderLeftColor: m.accent || '#22d3ee',
+              // Stagger each card's fade-in by 80ms so the grid
+              // populates left-to-right instead of all at once.
+              animationDelay: `${i * 80}ms`,
+            }}
+          >
+            <div style={styles.metricLabel}>{m.label}</div>
+            <div style={styles.metricValue}>
+              {isAnimatable
+                ? <AnimatedNumber value={numericValue} decimals={numericDecimals(m.value)} duration={900} />
+                : m.value}
+              {m.unit && <span style={styles.metricUnit}>{m.unit}</span>}
+            </div>
+            {m.note && <div style={styles.metricNote}>{m.note}</div>}
           </div>
-          {m.note && <div style={styles.metricNote}>{m.note}</div>}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
+}
+
+// Try to coerce a metric value to a number. Returns null when not
+// numeric so the renderer falls back to the raw string (works for
+// "—", "Lagging", etc.). Strips commas + percent / unit suffixes.
+function parseNumericValue(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v !== 'string') return null;
+  const cleaned = v.replace(/,/g, '').trim();
+  if (cleaned === '' || cleaned === '—') return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Count decimals in the source string so AnimatedNumber renders the
+// same precision the static value would have shown ("2.5" → 1
+// decimal, "1,500" → 0).
+function numericDecimals(v) {
+  if (typeof v !== 'string') return 0;
+  const m = v.match(/\.(\d+)$/);
+  return m ? m[1].length : 0;
 }
 
 export function Pill({ kind = 'neutral', children }) {
