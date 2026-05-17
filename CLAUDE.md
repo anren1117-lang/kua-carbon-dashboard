@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 738 tests across 42 files (every routed page has at least a mount-smoke test as of Phase 200):
+Vitest. 835 tests across 50 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, and the security-critical components are under direct test):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -161,9 +161,15 @@ Vitest. 738 tests across 42 files (every routed page has at least a mount-smoke 
 - `src/__tests__/anthropicStream.test.js` (22) — server-side streaming: createItemExtractor + tryParseJsonLoose + streamAnthropicJson (text/thinking/usage/progress/delta/item events, mocked fetch).
 - `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
 - `src/__tests__/csv.test.js` (19) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
+- `src/__tests__/adminToken.test.js` (17) — HMAC token sign + verify; Infinity/NaN exp defense; verifyAdminRequest header handling.
 - `src/__tests__/anomaly.test.js` (16) — meter anomaly detection: spike/flat/gap/stale detectors + qualityScore penalty curve.
+- `src/__tests__/lessonStore.test.js` (15) — teacher-lesson save/list/delete + createdAt-desc sort + missing-timestamp fallback.
+- `src/__tests__/rateLimit.test.js` (14) — token-bucket consume/refill/cap + retryAfterMs + getClientKey precedence.
+- `src/__tests__/quizLedger.test.js` (13) — quiz-attempt ledger + storage wrapper (per-class rollup, lesson filter, per-student results).
 - `src/__tests__/comparison.test.js` (13) — percentChange / trendKind bands / yoyMonthly month-join.
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
+- `src/__tests__/PasswordGate.test.js` (13) — admin auth gate: server login flow, session restore, expired/malformed session rejects, logout.
+- `src/__tests__/chatbotMatch.test.js` (12) — keyword-scoring chatbot matcher + QUIZ_BANK invariants.
 - `src/__tests__/bmsExportMapping.test.js` (12) — BMS meter→building localStorage map: default merge, override/delete, reverse lookup.
 - `src/__tests__/sseClient.test.js` (11) — client-side parseSSE wire protocol (delta / progress / thinking / done / error).
 - `src/__tests__/hotspots.test.js` (11) — buildingHotspots severity/sort + rankActions scoring.
@@ -175,6 +181,7 @@ Vitest. 738 tests across 42 files (every routed page has at least a mount-smoke 
 - `src/__tests__/ThinkingPanel.test.js` (10) — shared extended-thinking panel: suppression, expand/collapse, char-count formatting.
 - `src/__tests__/MockMeterAdapter.test.js` (10) — synthetic meter generator: determinism, interval count, getBuildingEnergy rollup.
 - `src/__tests__/BmsExportMeterAdapter.test.js` (9) — BMS export synthesis: the honest-synthesis invariant (hourly sums to daily total) + mock fallback.
+- `src/__tests__/useMeasuredScopeTotals.test.js` (8) — composer hook: gross/net identities + measuredScopes [1,4] bounds + scope2 constant.
 - `src/__tests__/hash.test.js` (8) — quickHash/hashUserId determinism + per-role domain-prefix collision avoidance.
 - `src/__tests__/aiUsageTally.test.js` (8) — session-wide token usage tally on AdminHome.
 - `src/__tests__/meterAdapterFactory.test.js` (7) — getMeterAdapter source selection + cache lifecycle.
@@ -183,6 +190,7 @@ Vitest. 738 tests across 42 files (every routed page has at least a mount-smoke 
 - `src/__tests__/BmsMeterAdapter.test.js` (7) — Eclypse REST adapter config contract + read-only guarantee.
 - `src/__tests__/auditLogPaging.test.js` (6) — fetchAllAuditLog progress + maxRows ceiling + error short-circuit.
 - `src/__tests__/measuredCache.test.js` (6) — promise-cache dedupe + invalidate.
+- `src/__tests__/supabaseServer.test.js` (5) — cached server client: no-env null, race-condition Promise cache, reset.
 - `src/__tests__/Renewables.test.js` (4) — public /renewables measured-flip rendering.
 - `src/__tests__/Goals.test.js` (3) — provenance pill flip on Goals.
 - `src/__tests__/Executive.test.js` (3) — cohort row + ScopeRow pills.
