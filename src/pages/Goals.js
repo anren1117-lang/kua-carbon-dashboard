@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
 import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
@@ -196,6 +197,16 @@ export default function Goals() {
           <li>Sub-targets (Scope 2 by 2027, dining by 2028) are <strong>milestones</strong>, not the whole picture — they're tracked because they're where KUA has the most direct control.</li>
           <li>"Approved" means the Board of Trustees has ratified the figure. Until then everything on this page is <strong>preliminary</strong> and shouldn't appear in external reporting.</li>
         </ul>
+      </ModuleSection>
+
+      <ModuleSection title="What would it take to hit these?">
+        <p style={{ fontSize: 14, color: '#cbd5e1', lineHeight: 1.7 }}>
+          The simulator at <Link to="/scenarios" style={{ color: '#22d3ee', textDecoration: 'none', fontWeight: 700 }}>/scenarios →</Link>
+          {' '}lets you move four sliders (electricity reduction, heat-pump electrification, solar PV,
+          forest planting) and see live whether the combined lever moves are big enough to close
+          the gap to a target. Useful for asking "is the 2030 target reachable without a heat pump
+          program?" — turn that one to 0 and look at the modified net.
+        </p>
       </ModuleSection>
     </ModulePage>
   );
