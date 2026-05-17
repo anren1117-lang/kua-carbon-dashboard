@@ -76,7 +76,7 @@ export function ScopeDonut() {
 
         <div style={narrow ? styles.bodyMobile : styles.body}>
           <svg viewBox="0 0 260 260" style={{ width: '100%', maxWidth: 260, height: 'auto' }}>
-            {arcs.map((a) => {
+            {arcs.map((a, i) => {
               const dim = hover && hover !== a.key;
               return (
                 <path
@@ -84,7 +84,10 @@ export function ScopeDonut() {
                   d={a.d}
                   fill={a.color}
                   opacity={dim ? 0.28 : 1}
-                  style={{ cursor: 'pointer', transition: 'opacity 120ms' }}
+                  className="kua-donut-segment"
+                  // Stagger: each segment fades+scales in 180ms after
+                  // the previous one (~600ms total reveal for 3 arcs).
+                  style={{ cursor: 'pointer', transition: 'opacity 120ms', animationDelay: `${i * 180}ms` }}
                   onMouseEnter={() => setHover(a.key)}
                   onMouseLeave={() => setHover(null)}
                   onFocus={() => setHover(a.key)}

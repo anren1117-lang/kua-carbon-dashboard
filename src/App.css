@@ -247,3 +247,57 @@ a[href="#admin-main"]:focus {
 .kua-pulse {
   animation: kuaPulse 2.4s ease-in-out infinite;
 }
+
+/* Donut chart segment-by-segment reveal. Each <path> in the donut
+   gets a staggered animation-delay so the segments appear in sequence
+   instead of all at once. */
+@keyframes kuaDonutReveal {
+  0%   { opacity: 0; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.kua-donut-segment {
+  transform-origin: 130px 130px; /* matches cx/cy in ScopeDonut */
+  animation: kuaDonutReveal 600ms ease-out backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kua-donut-segment { animation: none !important; }
+}
+
+/* Button micro-interactions — subtle press response (scales 97% on
+   active). Keep at 80ms so it feels snappy not laggy. */
+@keyframes kuaButtonPress { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.97); } }
+
+button:not(:disabled):active,
+a.kua-card-hover:active {
+  transform: scale(0.98);
+}
+
+button, a {
+  transition: transform 80ms ease, color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+/* NavLink in the header — subtle background tint on hover for inactive items */
+header nav a:hover:not([aria-current="page"]) {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+/* Tighten focus rings — default browser outline is harsh on dark UI */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Slider thumbs feel responsive on press */
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+input[type="range"]::-webkit-slider-thumb {
+  transition: transform 100ms ease;
+}
