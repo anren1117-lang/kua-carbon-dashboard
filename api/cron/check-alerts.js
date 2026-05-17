@@ -26,14 +26,12 @@ import { evaluateAlerts, alertSetSignature, composeAlertEmail } from '../../src/
 import { listSubscribers } from '../../src/storage/alertSubscribers.js';
 import { sendEmail } from '../../src/utils/sendEmail.js';
 import { getMeterAdapter } from '../../src/adapters/meter/index.js';
+import { getCronState, setCronState, _resetAlertCronStateStoreForTests } from '../../src/storage/alertCronState.js';
 
-let lastSignature = null;
-let lastEmailedAt = null;
-
-// Test-only escape hatch so the dedup state can be wiped between tests.
+// Test-only escape hatch — clears the persistent (or memory-only)
+// dedup state between tests.
 export function _resetAlertCronStateForTests() {
-  lastSignature = null;
-  lastEmailedAt = null;
+  _resetAlertCronStateStoreForTests();
 }
 
 function safeEqual(a, b) {
@@ -83,11 +81,12 @@ export default async function handler(req, res) {
       await evaluateAlerts({ supabase, meterAdapter });
 
     const signature = alertSetSignature(alerts);
+    const prior = await getCronState();
 
     // Nothing to alert about — nothing to do.
     if (alerts.length === 0) {
-      const sameAsLast = signature === lastSignature;
-      lastSignature = signature;
+      const sameAsLast = signature === prior.signature;
+      const state = await setCronState(signature, prior.emailedAt);
       return res.status(200).json({
         ok: true,
         checkedAt,
@@ -98,11 +97,12 @@ export default async function handler(req, res) {
         alertCount: 0,
         action: sameAsLast ? 'no_change' : 'cleared',
         notified: 0,
+        statePersisted: state.persisted,
       });
     }
 
     // Same alert set as last successful run → no email (dedup).
-    if (signature === lastSignature) {
+    if (signature === prior.signature) {
       return res.status(200).json({
         ok: true,
         checkedAt,
@@ -113,7 +113,8 @@ export default async function handler(req, res) {
         alertCount: alerts.length,
         action: 'no_change',
         notified: 0,
-        lastEmailedAt,
+        lastEmailedAt: prior.emailedAt,
+        stateSource: prior.source,
       });
     }
 
@@ -122,7 +123,7 @@ export default async function handler(req, res) {
     if (subscribers.length === 0) {
       // Update signature even when nobody's subscribed so the very
       // first subscriber doesn't get spammed about pre-existing alerts.
-      lastSignature = signature;
+      const state = await setCronState(signature, prior.emailedAt);
       return res.status(200).json({
         ok: true,
         checkedAt,
@@ -133,6 +134,7 @@ export default async function handler(req, res) {
         alertCount: alerts.length,
         action: 'no_subscribers',
         notified: 0,
+        statePersisted: state.persisted,
       });
     }
 
@@ -143,8 +145,7 @@ export default async function handler(req, res) {
     ));
     const notified = results.filter((r) => r.sent).length;
 
-    lastSignature = signature;
-    lastEmailedAt = checkedAt;
+    const state = await setCronState(signature, checkedAt);
 
     return res.status(200).json({
       ok: true,
@@ -155,6 +156,7 @@ export default async function handler(req, res) {
       action: 'emailed',
       notified,
       attempted: subscribers.length,
+      statePersisted: state.persisted,
       noProvider: results.some((r) => r.reason === 'no_provider'),
     });
   } catch (err) {
