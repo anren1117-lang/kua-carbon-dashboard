@@ -49,6 +49,9 @@ export default function BuildingDetail() {
         <div style={styles.toolbar}>
           <Link to="/campus-map" style={styles.toolBtn}>← Campus map</Link>
           <Link to="/buildings" style={styles.toolBtn}>All buildings</Link>
+          {building.category === 'Dorm' && (
+            <Link to="/dorm-leaderboard" style={styles.toolBtn}>Dorm leaderboard</Link>
+          )}
           {months.length > 0 && (
             <button
               type="button"

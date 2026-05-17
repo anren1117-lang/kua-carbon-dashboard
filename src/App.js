@@ -71,7 +71,36 @@ function App() {
         </Link>
       </div>
 
-      <p style={{ textAlign: 'center', color: '#64748b', fontSize: 14, lineHeight: 1.7, marginTop: 56, paddingTop: 24, borderTop: '1px solid #1f2937', maxWidth: 880, marginLeft: 'auto', marginRight: 'auto' }}>
+      <div style={{ maxWidth: 1100, margin: '40px auto 0', padding: '0 16px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, fontSize: 13 }}>
+          {[
+            { to: '/faq',           label: 'FAQ' },
+            { to: '/your-footprint', label: 'Calculate your footprint' },
+            { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
+            { to: '/scenarios',     label: 'Reduction simulator' },
+            { to: '/methodology',   label: 'Methodology' },
+            { to: '/share',         label: 'Share via QR' },
+          ].map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              style={{
+                padding: '8px 14px',
+                background: '#0f172a',
+                border: '1px solid #1f2937',
+                borderRadius: 999,
+                color: '#cbd5e1',
+                textDecoration: 'none',
+                fontWeight: 500,
+              }}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <p style={{ textAlign: 'center', color: '#64748b', fontSize: 14, lineHeight: 1.7, marginTop: 40, paddingTop: 24, borderTop: '1px solid #1f2937', maxWidth: 880, marginLeft: 'auto', marginRight: 'auto' }}>
         Looking for the live electricity counter, the ISO-NE grid mix breakdown, or the
         per-building energy data? It moved to <Link to="/scope-2" style={{ color: '#22d3ee', fontWeight: 600 }}>Scope 2</Link>,
         where it actually belongs in the GHG Protocol scope structure.
