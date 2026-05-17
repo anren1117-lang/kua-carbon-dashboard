@@ -3,6 +3,8 @@ import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { CampusMonthlyTrend } from '../components/CampusMonthlyTrend.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
+import { layoutBoxesGeo } from '../utils/geoLayout.js';
+import { buildingPositions, allPositionsAreEstimated } from '../data/buildingPositions.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -100,6 +102,8 @@ export default function CampusMap() {
   const [selectedId, setSelectedId] = useState(null);
   // null = "All (annualized)"; otherwise 'YYYY-MM'.
   const [selectedMonth, setSelectedMonth] = useState(null);
+  // 'schematic' = original by-category zones; 'geographic' = lat/lng projected.
+  const [layoutMode, setLayoutMode] = useState('schematic');
 
   const { rows, totalKwh, totalMt, monthsObserved, mode, availableMonths } = useMemo(
     () => computeBuildingEmissions({ month: selectedMonth }),
@@ -109,6 +113,9 @@ export default function CampusMap() {
 
   const W = 920;
   const { zones, totalHeight } = useMemo(() => layoutBoxes(rows, W), [rows]);
+  const GEO_H = 520;
+  const geo = useMemo(() => layoutBoxesGeo(rows, { width: W, height: GEO_H }), [rows]);
+  const positionsEstimated = useMemo(() => allPositionsAreEstimated(), []);
 
   const top5 = [...rows].sort((a, b) => b.mtCO2e - a.mtCO2e).slice(0, 5);
   const hottest = [...rows].filter((r) => r.kgPerSqft > 0).sort((a, b) => b.kgPerSqft - a.kgPerSqft).slice(0, 5);
@@ -128,6 +135,34 @@ export default function CampusMap() {
           selectedMonth={selectedMonth}
           onSelect={setSelectedMonth}
         />
+
+        <div style={styles.controlsRow}>
+          <span style={styles.controlLabel}>Layout:</span>
+          <button
+            type="button"
+            onClick={() => setLayoutMode('schematic')}
+            style={{ ...styles.monthBtn, ...(layoutMode === 'schematic' ? styles.monthBtnActive : {}) }}
+          >
+            Schematic (by category)
+          </button>
+          <button
+            type="button"
+            onClick={() => setLayoutMode('geographic')}
+            style={{ ...styles.monthBtn, ...(layoutMode === 'geographic' ? styles.monthBtnActive : {}) }}
+          >
+            Geographic{positionsEstimated ? ' (estimated)' : ''}
+          </button>
+        </div>
+
+        {layoutMode === 'geographic' && positionsEstimated && (
+          <div style={styles.estimatedBanner}>
+            ⚠ Building positions are <strong>estimated</strong> (anchored to KUA's
+            Plainfield NH campus center with rough offsets). For surveyed
+            positions, update <code>src/data/buildingPositions.js</code> with real
+            lat/lng from Facilities and flip each <code>provenance</code> to
+            <code> 'measured'</code>.
+          </div>
+        )}
 
         <div style={styles.controlsRow}>
           <span style={styles.controlLabel}>Time window:</span>
@@ -164,7 +199,7 @@ export default function CampusMap() {
         </div>
 
         <svg
-          viewBox={`0 0 ${W} ${totalHeight}`}
+          viewBox={`0 0 ${W} ${layoutMode === 'geographic' ? GEO_H : totalHeight}`}
           style={styles.svg}
           role="img"
           aria-label="KUA campus map showing per-building emissions intensity"
@@ -179,61 +214,49 @@ export default function CampusMap() {
               <line x1="0" y1="0" x2="0" y2="6" stroke="#334155" strokeWidth="2" />
             </pattern>
           </defs>
-          {zones.map((z) => (
-            <g key={z.category} transform={`translate(0, ${z.y})`}>
-              <rect
-                x={0} y={0} width={W} height={z.height}
-                fill="#0b1220"
-                stroke="#1f2937"
-                strokeWidth={1}
-                rx={8}
-              />
+
+          {layoutMode === 'geographic' ? (
+            <>
+              {/* Faint backdrop so the geographic canvas reads as a "map area" */}
+              <rect x={0} y={0} width={W} height={GEO_H} fill="#0b1220" stroke="#1f2937" strokeWidth={1} rx={8} />
               <text
-                x={ZONE_PADDING} y={18}
-                style={{ fontSize: 12, fontWeight: 700, fill: categoryAccent(z.category), textTransform: 'uppercase', letterSpacing: 0.8 }}
+                x={16} y={20}
+                style={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8 }}
               >
-                {z.category}
+                KUA Plainfield NH · {geo.boxes.length}/{rows.length} positioned
               </text>
-              {z.boxes.map((b) => {
-                const colorFill = intensityColor(b.row.kgPerSqft);
-                const hasData = colorFill !== null;
-                const fill = hasData ? colorFill : NO_DATA_FILL;
-                const stroke = selectedId === b.row.id ? '#fff' : (hasData ? '#1f2937' : NO_DATA_BORDER);
-                return (
-                  <g
-                    key={b.row.id}
-                    transform={`translate(${b.x}, ${b.y})`}
-                    onClick={() => setSelectedId(b.row.id === selectedId ? null : b.row.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <rect
-                      x={0} y={0} width={b.w} height={b.h}
-                      fill={fill}
-                      stroke={stroke}
-                      strokeWidth={selectedId === b.row.id ? 2.5 : 1}
-                      strokeDasharray={!hasData && selectedId !== b.row.id ? '4 3' : undefined}
-                      rx={4}
-                      style={{ transition: 'fill 300ms ease, stroke 120ms ease, stroke-width 120ms ease' }}
-                    />
-                    <text
-                      x={b.w / 2} y={b.h / 2 - 4}
-                      textAnchor="middle"
-                      style={{ fontSize: 10, fontWeight: 700, fill: '#0b1220', pointerEvents: 'none' }}
-                    >
-                      {shortName(b.row.name)}
-                    </text>
-                    <text
-                      x={b.w / 2} y={b.h / 2 + 10}
-                      textAnchor="middle"
-                      style={{ fontSize: 9, fill: '#0b1220', pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}
-                    >
-                      {b.row.mtCO2e > 0 ? `${b.row.mtCO2e.toFixed(1)} mt` : '—'}
-                    </text>
-                  </g>
-                );
-              })}
-            </g>
-          ))}
+              {/* North arrow */}
+              <g transform={`translate(${W - 40}, 28)`}>
+                <line x1="0" y1="14" x2="0" y2="-14" stroke="#94a3b8" strokeWidth="1.5" />
+                <polygon points="0,-16 -4,-8 4,-8" fill="#94a3b8" />
+                <text x="0" y="28" textAnchor="middle" style={{ fontSize: 10, fill: '#94a3b8' }}>N</text>
+              </g>
+              {geo.boxes.map((b) => (
+                <BuildingBox key={b.row.id} box={b} selectedId={selectedId} onSelect={setSelectedId} />
+              ))}
+            </>
+          ) : (
+            zones.map((z) => (
+              <g key={z.category} transform={`translate(0, ${z.y})`}>
+                <rect
+                  x={0} y={0} width={W} height={z.height}
+                  fill="#0b1220"
+                  stroke="#1f2937"
+                  strokeWidth={1}
+                  rx={8}
+                />
+                <text
+                  x={ZONE_PADDING} y={18}
+                  style={{ fontSize: 12, fontWeight: 700, fill: categoryAccent(z.category), textTransform: 'uppercase', letterSpacing: 0.8 }}
+                >
+                  {z.category}
+                </text>
+                {z.boxes.map((b) => (
+                  <BuildingBox key={b.row.id} box={b} selectedId={selectedId} onSelect={setSelectedId} />
+                ))}
+              </g>
+            ))
+          )}
         </svg>
 
         {selected && (
@@ -278,6 +301,45 @@ export default function CampusMap() {
         <Ranking rows={hottest} valueKey="kgPerSqft" suffix=" kg/sqft" />
       </ModuleSection>
     </ModulePage>
+  );
+}
+
+function BuildingBox({ box, selectedId, onSelect }) {
+  const b = box;
+  const colorFill = intensityColor(b.row.kgPerSqft);
+  const hasData = colorFill !== null;
+  const fill = hasData ? colorFill : NO_DATA_FILL;
+  const stroke = selectedId === b.row.id ? '#fff' : (hasData ? '#1f2937' : NO_DATA_BORDER);
+  return (
+    <g
+      transform={`translate(${b.x}, ${b.y})`}
+      onClick={() => onSelect(b.row.id === selectedId ? null : b.row.id)}
+      style={{ cursor: 'pointer' }}
+    >
+      <rect
+        x={0} y={0} width={b.w} height={b.h}
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={selectedId === b.row.id ? 2.5 : 1}
+        strokeDasharray={!hasData && selectedId !== b.row.id ? '4 3' : undefined}
+        rx={4}
+        style={{ transition: 'fill 300ms ease, stroke 120ms ease, stroke-width 120ms ease' }}
+      />
+      <text
+        x={b.w / 2} y={b.h / 2 - 4}
+        textAnchor="middle"
+        style={{ fontSize: 10, fontWeight: 700, fill: '#0b1220', pointerEvents: 'none' }}
+      >
+        {shortName(b.row.name)}
+      </text>
+      <text
+        x={b.w / 2} y={b.h / 2 + 10}
+        textAnchor="middle"
+        style={{ fontSize: 9, fill: '#0b1220', pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}
+      >
+        {b.row.mtCO2e > 0 ? `${b.row.mtCO2e.toFixed(1)} mt` : '—'}
+      </text>
+    </g>
   );
 }
 
@@ -342,6 +404,7 @@ const styles = {
   controlLabel:   { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginRight: 4 },
   monthBtn:       { padding: '4px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, color: '#94a3b8', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' },
   monthBtnActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 700 },
+  estimatedBanner:{ marginBottom: 12, padding: '10px 14px', background: '#3a2a0e', border: '1px solid #92400e', borderLeft: '3px solid #fcd34d', borderRadius: 6, color: '#fcd34d', fontSize: 12, lineHeight: 1.6 },
 
   legendRow:   { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14, fontSize: 11, color: '#94a3b8' },
   legendLabel: { color: '#cbd5e1', fontWeight: 600 },
