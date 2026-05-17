@@ -82,7 +82,7 @@ export function NewsStrip() {
           const topicColor = TOPIC_COLOR[item.topic] || TOPIC_COLOR.climate;
           const host = hostnameFromUrl(item.sourceUrl);
           return (
-            <Link key={i} to="/news" style={styles.card}>
+            <Link key={i} to="/news" style={styles.card} className="kua-card-hover">
               <div style={{ ...styles.topic, color: topicColor }}>{item.topic}</div>
               <div style={styles.headline}>{item.headline}</div>
               {item.studentConnection && (

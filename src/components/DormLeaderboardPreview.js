@@ -52,7 +52,7 @@ export function DormLeaderboardPreview() {
 
         <ol style={styles.list}>
           {top3.map((d, i) => (
-            <li key={d.id} style={isNarrow ? styles.rowNarrow : styles.row}>
+            <li key={d.id} style={isNarrow ? styles.rowNarrow : styles.row} className="kua-card-hover">
               <span style={styles.medal}>{['🥇','🥈','🥉'][i]}</span>
               <Link to={`/buildings/${d.id}`} style={styles.dormName}>
                 {d.name}

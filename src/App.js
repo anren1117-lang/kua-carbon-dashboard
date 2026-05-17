@@ -46,6 +46,7 @@ function App() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
         <Link
           to="/learn"
+          className="kua-card-hover"
           style={{
             display: 'block',
             padding: '24px 28px',
@@ -84,6 +85,7 @@ function App() {
             <Link
               key={l.to}
               to={l.to}
+              className="kua-card-hover"
               style={{
                 padding: '8px 14px',
                 background: '#0f172a',

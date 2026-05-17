@@ -160,3 +160,90 @@ a[href="#admin-main"]:focus {
   .plan-print .no-print { display: none !important; }
 }
 
+
+/* ─────────────────────────────────────────────────────────────────
+   Animation primitives (Phase 266+ visual polish)
+   ───────────────────────────────────────────────────────────────── */
+
+/* Slow ambient gradient drift for hero cards. Subtle — should feel
+   like the page is breathing, not flashing. */
+@keyframes kuaHeroGradient {
+  0%, 100% { background-position:   0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+.kua-hero-card {
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #0b1220 25%,
+    #0a1827 50%,
+    #0b1220 75%,
+    #0f172a 100%
+  );
+  background-size: 300% 300%;
+  animation: kuaHeroGradient 18s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Faint glow that follows the gradient — adds depth without
+   demanding attention. */
+.kua-hero-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -10%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.07) 0%, transparent 60%);
+  pointer-events: none;
+  animation: kuaHeroGradient 22s ease-in-out infinite reverse;
+}
+
+/* Page fade-in on route mount. Inside the Layout's <main>, every
+   page wrapper picks this up via .page-fade-in. */
+@keyframes kuaPageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-fade-in {
+  animation: kuaPageFadeIn 0.35s ease-out;
+}
+
+/* Reduced motion: respect the user's OS preference. Disable
+   everything that animates positions or opacity over time. */
+@media (prefers-reduced-motion: reduce) {
+  .kua-hero-card,
+  .kua-hero-card::before,
+  .page-fade-in,
+  .kua-card-hover,
+  .kua-shimmer-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Card hover lift — every component card uses inline styles, so we
+   wire this via a className the components opt into. */
+.kua-card-hover {
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.kua-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: #334155 !important;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6),
+              0 0 0 1px rgba(34, 211, 238, 0.15);
+}
+
+/* Pulse for accent dots / live indicators. */
+@keyframes kuaPulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(1.15); }
+}
+
+.kua-pulse {
+  animation: kuaPulse 2.4s ease-in-out infinite;
+}

@@ -393,7 +393,13 @@ function Layout() {
       {isNarrow && <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />}
       <main id="main" ref={mainRef} style={isNarrow ? styles.mainNarrow : styles.main} tabIndex="-1">
         <ErrorBoundary>
-          <Outlet />
+          {/* `key={pathname}` re-mounts the wrapper on route change,
+              which retriggers the page-fade-in CSS animation so every
+              navigation gets a fresh fade rather than just the first
+              page load. */}
+          <div key={pathname} className="page-fade-in">
+            <Outlet />
+          </div>
         </ErrorBoundary>
       </main>
       <footer style={styles.footer}>

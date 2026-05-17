@@ -13,6 +13,7 @@ import {
 } from '../data/geographicEstimates.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
+import { AnimatedNumber } from './AnimatedNumber.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -120,7 +121,9 @@ const summary = {
 
 const styles = {
   wrap: { maxWidth: 1100, margin: '0 auto', padding: '0 16px' },
-  card: { padding: 'clamp(20px, 4vw, 36px) clamp(20px, 4vw, 40px)', background: 'linear-gradient(160deg, #0f172a 0%, #0b1220 100%)', border: '1px solid #1f2937', borderRadius: 16, boxShadow: '0 1px 0 rgba(245, 158, 11, 0.05) inset' },
+  // background lives in .kua-hero-card (App.css) so the gradient
+  // can animate. The CSS class wins over this inline declaration.
+  card: { padding: 'clamp(20px, 4vw, 36px) clamp(20px, 4vw, 40px)', border: '1px solid #1f2937', borderRadius: 16, boxShadow: '0 1px 0 rgba(245, 158, 11, 0.05) inset' },
   badge: { fontSize: 11, padding: '5px 12px', borderRadius: 4, background: '#3a2a0d', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 700, border: '1px solid #92400e', display: 'inline-block' },
   hero: { marginTop: 22 },
   heroLabel: { fontSize: 13, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.6, fontWeight: 600 },
@@ -220,12 +223,13 @@ export function NetEstimate() {
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card}>
+      <section style={styles.card} className="kua-hero-card">
+        <div style={{ position: 'relative', zIndex: 1 }}>
         <span style={styles.badge}>{heroBadge}</span>
         <div style={styles.hero}>
           <div style={styles.heroLabel}>Net annual carbon balance</div>
           <div style={styles.heroValue}>
-            {fmt(heroNetMid)}
+            <AnimatedNumber value={heroNetMid} duration={1400} />
             <span style={styles.heroUnit}>mtCO₂e / yr</span>
           </div>
           <div style={styles.heroRange}>
@@ -236,15 +240,15 @@ export function NetEstimate() {
         <div style={styles.numbers}>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Per student</div>
-            <div style={styles.numBig}>~{heroPerStudentMid}<span style={styles.numUnit}>mtCO₂e</span></div>
+            <div style={styles.numBig}>~<AnimatedNumber value={heroPerStudentMid} decimals={1} duration={1200} /><span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Gross emissions</div>
-            <div style={styles.numBig}>~{fmt(heroGrossMid)}<span style={styles.numUnit}>mtCO₂e</span></div>
+            <div style={styles.numBig}>~<AnimatedNumber value={heroGrossMid} duration={1200} /><span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
           <div style={styles.numCell}>
             <div style={styles.numLabel}>Sequestration</div>
-            <div style={styles.numBig}>~{fmt(Math.round(ANNUAL_SEQUESTRATION_MT))}<span style={styles.numUnit}>mtCO₂e</span></div>
+            <div style={styles.numBig}>~<AnimatedNumber value={Math.round(ANNUAL_SEQUESTRATION_MT)} duration={1200} /><span style={styles.numUnit}>mtCO₂e</span></div>
           </div>
         </div>
 
@@ -315,6 +319,7 @@ export function NetEstimate() {
             )}
           </div>
         )}
+        </div>
       </section>
     </div>
   );
