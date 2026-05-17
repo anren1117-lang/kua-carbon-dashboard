@@ -52,9 +52,19 @@ function lessonToRow(l) {
 /** @param {object} lesson */
 export async function saveLesson(lesson) {
   // Build the persisted record. Caller passes a partial; we fill in id + timestamp.
+  const id = lesson.id || `lesson_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const existingIdx = memStore.findIndex((l) => l.id === id);
+  // Preserve the original createdAt across updates — "createdAt" is a
+  // creation timestamp, not "lastSaved." If a caller saves an edited
+  // lesson without re-passing createdAt, the earlier `lesson.createdAt
+  // || new Date()` reset it to "now" on every edit. Same fix pattern
+  // as saveStagePlan + saveCustomAction.
+  const createdAt = existingIdx >= 0
+    ? memStore[existingIdx].createdAt
+    : (lesson.createdAt || new Date().toISOString());
   const persisted = {
-    id: lesson.id || `lesson_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    createdAt: lesson.createdAt || new Date().toISOString(),
+    id,
+    createdAt,
     createdByHash: lesson.createdByHash,
     title: lesson.title,
     topic: lesson.topic,
@@ -67,7 +77,6 @@ export async function saveLesson(lesson) {
   };
 
   // Memory: replace if existing id, else push.
-  const existingIdx = memStore.findIndex((l) => l.id === persisted.id);
   if (existingIdx >= 0) memStore[existingIdx] = persisted;
   else memStore.push(persisted);
 

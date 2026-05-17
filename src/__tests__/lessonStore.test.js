@@ -51,6 +51,18 @@ describe('saveLesson — defaults + persistence', () => {
     expect(list[0].title).toBe('second');
   });
 
+  it('preserves the original createdAt on update (regression)', async () => {
+    // Earlier code did `lesson.createdAt || new Date()` even on the
+    // update path, so editing a lesson without re-passing createdAt
+    // bumped the creation timestamp to "now."
+    const first = await saveLesson(fixture({ id: 'edit-me' }));
+    const original = first.createdAt;
+    await new Promise((r) => setTimeout(r, 5));
+    const updated = await saveLesson(fixture({ id: 'edit-me', title: 'rewritten' }));
+    expect(updated.createdAt).toBe(original);
+    expect((await getLesson('edit-me')).createdAt).toBe(original);
+  });
+
   it('defaults questions to [] when omitted', async () => {
     const out = await saveLesson(fixture({ questions: undefined }));
     expect(out.questions).toEqual([]);
