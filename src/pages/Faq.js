@@ -184,11 +184,26 @@ export default function Faq() {
                   style={{ ...styles.qBtn, color: isOpen ? '#22d3ee' : '#e5e7eb' }}
                   aria-expanded={isOpen}
                 >
-                  <span style={styles.qArrow}>{isOpen ? '▼' : '▶'}</span>
+                  {/* Rotating chevron — cleaner than ▼/▶ unicode
+                      and rotates with a 200ms transition for a
+                      satisfying expand feel. */}
+                  <svg
+                    width="14" height="14" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round"
+                    style={{
+                      ...styles.qArrow,
+                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 200ms ease',
+                    }}
+                    aria-hidden="true"
+                  >
+                    <polyline points="9 6 15 12 9 18" />
+                  </svg>
                   <span style={styles.qText}>{item.q}</span>
                 </button>
                 {isOpen && (
-                  <div style={styles.answer}>
+                  <div style={styles.answer} className="kua-faq-answer">
                     {item.a}
                   </div>
                 )}
@@ -227,7 +242,7 @@ const styles = {
     fontSize: 15,
     fontWeight: 600,
   },
-  qArrow: { fontSize: 10, color: '#64748b', width: 12 },
+  qArrow: { color: '#64748b', flexShrink: 0, transformOrigin: 'center' },
   qText:  { flex: 1 },
   answer: { padding: '4px 22px 14px 22px', fontSize: 14, color: '#cbd5e1', lineHeight: 1.7 },
   fineprint: { fontSize: 14, color: '#94a3b8', lineHeight: 1.7 },

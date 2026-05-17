@@ -421,3 +421,18 @@ header > div a[aria-label*="portal"]:hover {
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-1px);
 }
+
+/* FAQ answer drop-down — slides in from above when expanded */
+@keyframes kuaFaqExpand {
+  from { opacity: 0; transform: translateY(-4px); max-height: 0; }
+  to   { opacity: 1; transform: translateY(0);  max-height: 400px; }
+}
+
+.kua-faq-answer {
+  overflow: hidden;
+  animation: kuaFaqExpand 250ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kua-faq-answer { animation: none !important; }
+}
