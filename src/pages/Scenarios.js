@@ -12,6 +12,36 @@ import { runScenario } from '../utils/scenarioModel.js';
 // shows the live impact on net mtCO2e + a side-by-side bar
 // comparison. Every input's math is exposed inline.
 
+// Named slider presets — represent commonly-discussed reduction
+// strategies. Visitor clicks one to load all 4 sliders at once
+// instead of manually tuning. Adjustable after loading.
+const PRESETS = [
+  {
+    key: 'sbti2030',
+    label: 'SBTi 2030 path',
+    description: 'Science-Based Targets initiative recommendation for educational institutions: ~50% reduction by 2030 via aggressive efficiency + electrification + solar.',
+    inputs: { electricityReductionPct: 25, heatingElectrifyPct: 50, solarKw: 250, treePlantingAcres: 20 },
+  },
+  {
+    key: 'electrification',
+    label: 'All-in heat pumps',
+    description: 'Maximum heating-fuel electrification with no other reduction effort — tests how much heat pumps alone can move the needle.',
+    inputs: { electricityReductionPct: 0, heatingElectrifyPct: 100, solarKw: 0, treePlantingAcres: 0 },
+  },
+  {
+    key: 'solar',
+    label: 'Solar-first',
+    description: 'Big PV installation (500 kW) + modest other moves — assumes the school invests primarily in on-site renewables.',
+    inputs: { electricityReductionPct: 10, heatingElectrifyPct: 25, solarKw: 500, treePlantingAcres: 0 },
+  },
+  {
+    key: 'conservative',
+    label: 'Behavioral-only',
+    description: 'No capital projects — just efficiency + scheduling. Tests how far KUA can get without big spend.',
+    inputs: { electricityReductionPct: 20, heatingElectrifyPct: 0, solarKw: 0, treePlantingAcres: 0 },
+  },
+];
+
 export default function Scenarios() {
   // Slider state — all knobs start at 0 so initial render shows
   // "no change" (modified = baseline). The visitor explores
@@ -38,6 +68,25 @@ export default function Scenarios() {
     setTreePlantingAcres(0);
   };
 
+  const applyPreset = (inputs) => {
+    setElectricityReductionPct(inputs.electricityReductionPct);
+    setHeatingElectrifyPct(inputs.heatingElectrifyPct);
+    setSolarKw(inputs.solarKw);
+    setTreePlantingAcres(inputs.treePlantingAcres);
+  };
+
+  // Detect whether the current slider configuration matches a
+  // preset exactly so we can highlight it as "active." A user who
+  // tweaks any slider after picking a preset will fall out of
+  // active-match (no highlight) — that's intentional, signals the
+  // configuration is a custom modification, not a named preset.
+  const activePresetKey = PRESETS.find((p) => (
+    p.inputs.electricityReductionPct === electricityReductionPct
+    && p.inputs.heatingElectrifyPct === heatingElectrifyPct
+    && p.inputs.solarKw === solarKw
+    && p.inputs.treePlantingAcres === treePlantingAcres
+  ))?.key ?? null;
+
   const hasChanges = electricityReductionPct + heatingElectrifyPct + solarKw + treePlantingAcres > 0;
 
   return (
@@ -45,6 +94,25 @@ export default function Scenarios() {
       title="Reduction scenarios — interactive what-if"
       subtitle="Move the sliders to model what would happen to KUA's net carbon balance under different reduction strategies. Every step exposes its math — no black-box answers."
     >
+      <ModuleSection title="Try a named strategy" hint="Each preset loads a commonly-discussed reduction strategy across all 4 sliders. Adjust after loading to see how the math shifts.">
+        <div style={styles.presetGrid}>
+          {PRESETS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => applyPreset(p.inputs)}
+              style={{
+                ...styles.presetBtn,
+                ...(activePresetKey === p.key ? styles.presetBtnActive : {}),
+              }}
+            >
+              <div style={styles.presetLabel}>{p.label}</div>
+              <div style={styles.presetDesc}>{p.description}</div>
+            </button>
+          ))}
+        </div>
+      </ModuleSection>
+
       <ModuleSection title="Turn the knobs" hint="Each slider changes one lever. Math is honest — heat-pump electrification trades Scope 1 for Scope 2 at COP 3, solar offsets Scope 2 at NH typical capacity, etc.">
         <Slider
           label="Cut overall electricity use by"
@@ -288,4 +356,10 @@ const styles = {
 
   fineprint: { fontSize: 13, color: '#94a3b8', lineHeight: 1.7, marginTop: 18 },
   link: { color: '#22d3ee', textDecoration: 'none' },
+
+  presetGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 },
+  presetBtn:  { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, color: '#cbd5e1', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', gap: 6 },
+  presetBtnActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee' },
+  presetLabel: { fontSize: 14, fontWeight: 700 },
+  presetDesc:  { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 },
 };
