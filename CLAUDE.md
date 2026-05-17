@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 889 tests across 53 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, the security-critical components, the localStorage state stores, and the trajectory math are under direct test):
+Vitest. 996 tests across 60 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, security-critical components, localStorage state stores, trajectory math, news + alert pipelines all under direct test):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -170,6 +170,11 @@ Vitest. 889 tests across 53 files (every routed page has at least a mount-smoke 
 - `src/__tests__/rateLimit.test.js` (14) — token-bucket consume/refill/cap + retryAfterMs + getClientKey precedence.
 - `src/__tests__/quizLedger.test.js` (13) — quiz-attempt ledger + storage wrapper (per-class rollup, lesson filter, per-student results).
 - `src/__tests__/comparison.test.js` (13) — percentChange / trendKind bands / yoyMonthly month-join.
+- `src/__tests__/unsubscribeToken.test.js` (12) — HMAC-signed unsubscribe tokens + token-based unsubscribe endpoint.
+- `src/__tests__/environmentNews.test.js` (14) — /api/environment-news Anthropic+web_search wrapper, cache, force-refresh, studentConnection validation.
+- `src/__tests__/alertCron.test.js` (21) — alert evaluator (stale-table + dead-meter), email composition, cron handler auth.
+- `src/__tests__/alertsApi.test.js` (27) — subscribe/unsubscribe/list endpoints, sendEmail Resend wrapper, isLikelyEmail.
+- `src/__tests__/alertCronState.test.js` (6) — persistent alert dedup state (memory fallback + Supabase upsert).
 - `src/__tests__/adminFetch.test.js` (13) — token-expiry detection in the browser fetch wrapper.
 - `src/__tests__/PasswordGate.test.js` (13) — admin auth gate: server login flow, session restore, expired/malformed session rejects, logout.
 - `src/__tests__/chatbotMatch.test.js` (12) — keyword-scoring chatbot matcher + QUIZ_BANK invariants.
