@@ -47,23 +47,29 @@ function App() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
         <Link
           to="/learn"
-          className="kua-card-hover"
+          className="kua-card-hover kua-cta-card"
           style={{
             display: 'block',
             padding: '24px 28px',
-            background: 'linear-gradient(160deg, #0f172a 0%, #0b1220 100%)',
+            background: 'linear-gradient(135deg, rgba(8, 51, 68, 0.6) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(11, 18, 32, 1) 100%)',
             border: '1px solid #1f2937',
             borderLeft: '3px solid #06b6d4',
             borderRadius: 14,
             textDecoration: 'none',
             color: '#e5e7eb',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <div style={{ fontSize: 11, padding: '4px 10px', borderRadius: 4, background: '#155e75', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 700, border: '1px solid #0e7490', display: 'inline-block' }}>
+          <div style={{ fontSize: 11, padding: '4px 10px', borderRadius: 4, background: '#155e75', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 700, border: '1px solid #0e7490', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Icon.Sparkles size={12} />
             AI learning agent
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 14, color: '#e5e7eb' }}>
-            Take the interactive tour →
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 14, color: '#e5e7eb', display: 'flex', alignItems: 'center', gap: 10 }}>
+            Take the interactive tour
+            <span className="kua-cta-arrow" style={{ display: 'inline-flex' }}>
+              <Icon.ArrowRight size={22} />
+            </span>
           </div>
           <div style={{ fontSize: 15, color: '#cbd5e1', marginTop: 8, lineHeight: 1.6 }}>
             Eight short paths with quizzes — Intro paths for any grade, Standard paths
