@@ -340,3 +340,33 @@ input[type="range"]::-webkit-slider-thumb {
 @media (prefers-reduced-motion: reduce) {
   .kua-champion-glow { animation: none !important; }
 }
+
+/* Ambient particles — drift upward + sway slightly */
+@keyframes kuaParticleRise {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10%, 90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--kua-particle-drift, 0), -120%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.kua-particle {
+  position: absolute;
+  bottom: -20px;
+  border-radius: 50%;
+  filter: blur(0.5px);
+  animation-name: kuaParticleRise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kua-particle { animation: none !important; display: none; }
+}

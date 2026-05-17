@@ -14,6 +14,7 @@ import {
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 import { AnimatedNumber } from './AnimatedNumber.js';
+import { AmbientParticles } from './AmbientParticles.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -241,6 +242,7 @@ export function NetEstimate() {
   return (
     <div style={styles.wrap}>
       <section style={styles.card} className="kua-hero-card">
+        <AmbientParticles />
         <div style={{ position: 'relative', zIndex: 1 }}>
         <span style={styles.badge}>{heroBadge}</span>
         <div style={styles.hero}>
