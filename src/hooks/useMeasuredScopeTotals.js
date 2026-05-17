@@ -21,7 +21,7 @@ import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
  *   grossMt: number,
  *   netMt: number,
  *   loading: boolean,
- *   measuredScopes: number,    // 0..4 — how many scope rows flipped to measured
+ *   measuredScopes: number,    // 1..4 — Scope 2 is always counted (BMS-measured kWh × cited factors); the other three flip as their tables fill in
  *   scope1Measured: boolean,
  *   scope3Measured: boolean,
  *   sinksMeasured: boolean,
