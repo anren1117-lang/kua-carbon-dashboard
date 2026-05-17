@@ -72,14 +72,19 @@ export function getCustomActions() {
  */
 export function saveCustomAction(action) {
   const all = getCustomActions();
+  const id = action.id || makeId('cu');
+  const idx = all.findIndex((a) => a.id === id);
+  // Preserve createdAt across updates — the field is "createdAt", not
+  // "updatedAt". The earlier code spread `persisted` (with a fresh
+  // `new Date()`) over the existing row on update, overwriting the
+  // original timestamp every save. Mirrors saveStagePlan's handling.
+  const createdAt = idx >= 0 ? all[idx].createdAt : (action.createdAt || new Date().toISOString());
   const persisted = {
-    id: action.id || makeId('cu'),
-    createdAt: new Date().toISOString(),
-    status: action.status || 'proposed',
     ...action,
+    id,
+    createdAt,
+    status: action.status || 'proposed',
   };
-  // Upsert by id.
-  const idx = all.findIndex((a) => a.id === persisted.id);
   if (idx >= 0) all[idx] = { ...all[idx], ...persisted };
   else all.push(persisted);
   saveJson(ACTIONS_KEY, all);
