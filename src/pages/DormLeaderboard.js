@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { buildingMonthlyHistory, monthlyReports } from '../data/monthlyConsumption.js';
+import { useIsNarrow } from '../hooks/useViewport.js';
 
 // /dorm-leaderboard — apples-to-apples kWh-per-resident ranking
 // across the 11 student dorms. Larger dorms ALWAYS use more
@@ -14,6 +15,7 @@ import { buildingMonthlyHistory, monthlyReports } from '../data/monthlyConsumpti
 // per-resident, so a small dorm can show real improvement.
 
 export default function DormLeaderboard() {
+  const isNarrow = useIsNarrow();
   const { rows } = useMemo(() => computeBuildingEmissions(), []);
   const dormRows = rows.filter((r) => r.category === 'Dorm' && r.occupants > 0);
 
@@ -106,6 +108,26 @@ export default function DormLeaderboard() {
             const value = view === 'latest_month' ? d.thisMonthPerResident : d.kwhAnnualPerResident;
             const widthPct = (value / maxValue) * 100;
             const trend = d.pctChange;
+            const showTrend = view === 'latest_month' && previousMonth && trend !== null;
+            if (isNarrow) {
+              return (
+                <li key={d.id} style={styles.cardRow}>
+                  <div style={styles.cardHead}>
+                    <span style={styles.cardRank}>#{i + 1}</span>
+                    <Link to={`/buildings/${d.id}`} style={styles.cardName}>{d.name}</Link>
+                    {showTrend && <span style={styles.cardTrend}><TrendBadge pct={trend} /></span>}
+                  </div>
+                  <div style={styles.cardMeta}>{d.occupants} residents</div>
+                  <div style={styles.cardBarWrap}>
+                    <span style={{ ...styles.barFill, width: `${widthPct}%`, background: barColor(i, ranked.length) }} />
+                  </div>
+                  <div style={styles.cardValue}>
+                    {value.toLocaleString()}{' '}
+                    <span style={styles.valueUnit}>kWh/resident{view === 'latest_month' ? '/mo' : '/yr'}</span>
+                  </div>
+                </li>
+              );
+            }
             return (
               <li key={d.id} style={styles.row}>
                 <span style={styles.rankCol}>#{i + 1}</span>
@@ -123,9 +145,7 @@ export default function DormLeaderboard() {
                   <span style={styles.valueUnit}>kWh/resident{view === 'latest_month' ? '/mo' : '/yr'}</span>
                 </span>
                 <span style={styles.trendCol}>
-                  {view === 'latest_month' && previousMonth && trend !== null ? (
-                    <TrendBadge pct={trend} />
-                  ) : view === 'annual' ? '—' : '—'}
+                  {showTrend ? <TrendBadge pct={trend} /> : '—'}
                 </span>
               </li>
             );
@@ -225,4 +245,14 @@ const styles = {
 
   fineprint: { fontSize: 13, color: '#94a3b8', lineHeight: 1.7, margin: '8px 0' },
   link: { color: '#22d3ee', textDecoration: 'none' },
+
+  // Mobile card layout (one card per dorm, info stacks vertically)
+  cardRow: { padding: '12px 12px', borderBottom: '1px solid #1f2937', display: 'flex', flexDirection: 'column', gap: 8 },
+  cardHead: { display: 'flex', alignItems: 'center', gap: 10 },
+  cardRank: { color: '#64748b', fontWeight: 800, fontSize: 14, minWidth: 30 },
+  cardName: { color: '#e5e7eb', fontWeight: 700, fontSize: 15, textDecoration: 'none', flex: 1 },
+  cardTrend: { textAlign: 'right' },
+  cardMeta: { color: '#94a3b8', fontSize: 12, fontVariantNumeric: 'tabular-nums' },
+  cardBarWrap: { height: 8, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 3, overflow: 'hidden' },
+  cardValue: { color: '#e5e7eb', fontWeight: 700, fontSize: 14, fontVariantNumeric: 'tabular-nums' },
 };
