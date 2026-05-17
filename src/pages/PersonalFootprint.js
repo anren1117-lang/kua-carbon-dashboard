@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { estimatePersonalFootprint, FOOTPRINT_REFERENCE, typicalFootprintFor, allTypicalFootprints } from '../utils/personalFootprint.js';
+import { AnimatedNumber } from '../components/AnimatedNumber.js';
 
 // /your-footprint — a public student-facing personal carbon estimator.
 // Five inputs, transparent math, three reference comparisons, and
@@ -106,7 +107,9 @@ export default function PersonalFootprint() {
 
       <ModuleSection title="Your estimate">
         <div style={styles.hero}>
-          <div style={styles.heroNumber}>{result.totalMt.toFixed(2)}</div>
+          <div style={styles.heroNumber}>
+            <AnimatedNumber value={result.totalMt} decimals={2} duration={1000} />
+          </div>
           <div style={styles.heroUnit}>mtCO₂e / year</div>
         </div>
 
@@ -315,7 +318,21 @@ const styles = {
   radioActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 600 },
   radioInput: { margin: 0 },
   hero: { textAlign: 'center', padding: '24px 0' },
-  heroNumber: { fontSize: 56, fontWeight: 800, color: '#22d3ee', lineHeight: 1 },
+  heroNumber: {
+    fontSize: 62,
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: '-0.02em',
+    // Same gold-amber gradient + glow treatment as the homepage hero
+    // for cross-page consistency.
+    background: 'linear-gradient(135deg, #67e8f9 0%, #22d3ee 50%, #06b6d4 100%)',
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    color: 'transparent',
+    WebkitTextFillColor: 'transparent',
+    filter: 'drop-shadow(0 0 16px rgba(34, 211, 238, 0.25))',
+    display: 'inline-block',
+  },
   heroUnit: { fontSize: 14, color: '#94a3b8', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 600 },
   compare: { display: 'grid', gap: 18, marginTop: 20 },
   compareRow: { },
