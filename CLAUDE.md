@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 835 tests across 50 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, and the security-critical components are under direct test):
+Vitest. 889 tests across 53 files (every routed page has at least a mount-smoke test as of Phase 200; every /api/* handler, all of src/utils/, src/storage/, src/adapters/meter/, the security-critical components, the localStorage state stores, and the trajectory math are under direct test):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -162,8 +162,11 @@ Vitest. 835 tests across 50 files (every routed page has at least a mount-smoke 
 - `src/__tests__/freshness.test.js` (21) — daysSince + cadence-aware freshnessBucket buckets.
 - `src/__tests__/csv.test.js` (19) — toCsv + parseCsv round-trip + RFC-4180 escaping + downloadCsv plumbing.
 - `src/__tests__/adminToken.test.js` (17) — HMAC token sign + verify; Infinity/NaN exp defense; verifyAdminRequest header handling.
+- `src/__tests__/targets.test.js` (17) — linear trajectory math + on_track/lagging/off_track bands + reductionTargets invariants.
 - `src/__tests__/anomaly.test.js` (16) — meter anomaly detection: spike/flat/gap/stale detectors + qualityScore penalty curve.
-- `src/__tests__/lessonStore.test.js` (15) — teacher-lesson save/list/delete + createdAt-desc sort + missing-timestamp fallback.
+- `src/__tests__/lessonStore.test.js` (16) — teacher-lesson save/list/delete + createdAt-preserve regression.
+- `src/__tests__/assetInventory.test.js` (16) — seed + edits + decommissioned + added layers, seed-id collision throw, provenance tagging.
+- `src/__tests__/customActions.test.js` (20) — admin custom-action + stage-plan localStorage CRUD + rollupPlan math + createdAt-preserve regression.
 - `src/__tests__/rateLimit.test.js` (14) — token-bucket consume/refill/cap + retryAfterMs + getClientKey precedence.
 - `src/__tests__/quizLedger.test.js` (13) — quiz-attempt ledger + storage wrapper (per-class rollup, lesson filter, per-student results).
 - `src/__tests__/comparison.test.js` (13) — percentChange / trendKind bands / yoyMonthly month-join.
