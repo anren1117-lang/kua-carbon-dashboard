@@ -145,11 +145,14 @@ const styles = {
     borderRadius: 6,
     fontSize: 14,
     color: isActive ? '#0b1220' : color,
-    background: isActive ? color : 'transparent',
+    // Faint tinted background even when inactive — gives the
+    // button visible weight without competing with the cyan brand.
+    background: isActive ? color : `${color}14`, // hex alpha 0x14 = ~8%
     textDecoration: 'none',
     fontWeight: 600,
-    border: `1px solid ${color}`,
+    border: `1px solid ${isActive ? color : `${color}66`}`, // 0x66 = ~40%
     whiteSpace: 'nowrap',
+    transition: 'background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
   }),
   main: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' },
   mainNarrow: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '20px 14px', width: '100%', boxSizing: 'border-box' },

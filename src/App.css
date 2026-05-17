@@ -411,3 +411,13 @@ footer a:hover {
   -webkit-backdrop-filter: saturate(140%) blur(12px);
   box-shadow: 0 2px 12px -6px rgba(0, 0, 0, 0.5);
 }
+
+/* Portal buttons (News / Learn / Ask / Teacher / Admin) fill in
+   on hover. Each one's color comes from inline style on the
+   NavLink — using the per-link inline `border-color` value lets
+   the hover state work without per-color CSS classes. */
+header nav + div a[aria-label*="portal"]:hover,
+header > div a[aria-label*="portal"]:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
