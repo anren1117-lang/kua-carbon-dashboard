@@ -129,6 +129,7 @@ const styles = {
   badgeRow: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   liveBadge: { fontSize: 10, padding: '4px 10px', borderRadius: 999, background: 'rgba(34, 197, 94, 0.1)', color: '#86efac', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 800, border: '1px solid #14532d', display: 'inline-flex', alignItems: 'center', gap: 6 },
   liveDot: { width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px rgba(34, 197, 94, 0.8)' },
+  freshBadge: { fontSize: 11, padding: '4px 10px', borderRadius: 4, background: '#0b1220', color: '#94a3b8', border: '1px solid #1f2937', fontWeight: 600, display: 'inline-block' },
   hero: { marginTop: 22 },
   heroLabel: { fontSize: 13, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.6, fontWeight: 600 },
   heroValue: {
@@ -173,6 +174,16 @@ const styles = {
 
 const fmt = (n) => Math.abs(n) >= 1000 ? n.toLocaleString(undefined, { maximumFractionDigits: 0 }) : n.toString();
 const fmtRange = (lo, hi) => lo === hi ? fmt(lo) : `${fmt(lo)} – ${fmt(hi)}`;
+
+// "2026-05-04" → "May 4". Used by the freshness badge so the
+// date reads as casual context, not a system timestamp.
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function formatFreshDate(ymd) {
+  if (typeof ymd !== 'string' || ymd.length < 10) return ymd || '';
+  const [, mm, dd] = ymd.split('-').map((s) => parseInt(s, 10));
+  if (!Number.isFinite(mm) || mm < 1 || mm > 12) return ymd;
+  return `${MONTH_SHORT[mm - 1]} ${dd}`;
+}
 
 // Tangible-equivalents bar — translates the abstract mtCO2e number
 // into things a human can actually picture. Renders nothing when
@@ -252,6 +263,9 @@ export function NetEstimate() {
           <span style={styles.liveBadge}>
             <span style={styles.liveDot} className="kua-pulse" aria-hidden="true" />
             LIVE
+          </span>
+          <span style={styles.freshBadge} title={`Most recent BMS capture used: ${COMPOSED_YTD_AS_OF}`}>
+            Data fresh as of {formatFreshDate(COMPOSED_YTD_AS_OF)}
           </span>
         </div>
         <div style={styles.hero}>

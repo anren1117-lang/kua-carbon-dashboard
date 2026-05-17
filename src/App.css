@@ -548,3 +548,29 @@ input[type="radio"],
 input[type="checkbox"] {
   accent-color: #22d3ee;
 }
+
+/* Themed scrollbars. Webkit/Blink get the ::-webkit-scrollbar set;
+   Firefox uses scrollbar-color + scrollbar-width. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0b1220;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0b1220;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 5px;
+  border: 2px solid #0b1220;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+::-webkit-scrollbar-corner {
+  background: #0b1220;
+}
