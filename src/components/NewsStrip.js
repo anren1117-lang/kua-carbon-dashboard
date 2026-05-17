@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NewsCardSkeleton } from './Skeleton.js';
+import { Icon } from './Icon.js';
 
 // Homepage strip showing the top 3 current environmental-news
 // headlines from /api/environment-news, with a "See all" link to
@@ -66,7 +67,12 @@ export function NewsStrip() {
     <div style={styles.wrap}>
       <div style={styles.head}>
         <span style={styles.heading}>What's happening in the world</span>
-        <Link to="/news" style={styles.seeAll}>See all stories →</Link>
+        <Link to="/news" style={styles.seeAll} className="kua-cta-card">
+          See all stories
+          <span className="kua-cta-arrow" style={{ display: 'inline-flex', marginLeft: 4, verticalAlign: 'middle' }}>
+            <Icon.ArrowRight size={12} />
+          </span>
+        </Link>
       </div>
       <div style={styles.grid}>
         {loading ? (

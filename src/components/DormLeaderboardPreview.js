@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { Icon } from './Icon.js';
 
 // Homepage preview of /dorm-leaderboard. Shows the top 3 most
 // efficient dorms (by annualized kWh per resident) so a student
@@ -45,8 +46,11 @@ export function DormLeaderboardPreview() {
               a 48-person dorm).
             </p>
           </div>
-          <Link to="/dorm-leaderboard" style={styles.cta}>
-            See all {total} dorms →
+          <Link to="/dorm-leaderboard" style={styles.cta} className="kua-cta-card">
+            See all {total} dorms
+            <span className="kua-cta-arrow" style={{ display: 'inline-flex', marginLeft: 6 }}>
+              <Icon.ArrowRight size={14} />
+            </span>
           </Link>
         </div>
 
