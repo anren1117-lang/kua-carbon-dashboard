@@ -5,6 +5,7 @@ import { EducationalCard } from '../components/EducationalCard';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { runScenario } from '../utils/scenarioModel.js';
+import { AnimatedNumber } from '../components/AnimatedNumber.js';
 
 // /scenarios — interactive what-if simulator. Pulls KUA's canonical
 // baseline emissions, lets the visitor turn four knobs (cut
@@ -261,8 +262,8 @@ function ResultPanel({ result }) {
       <div style={styles.headlineRow}>
         <div>
           <div style={styles.headlineLabel}>Modified net emissions</div>
-          <div style={{ ...styles.headlineValue, color: isReduction ? '#86efac' : isSame ? '#e5e7eb' : '#fca5a5' }}>
-            {modified.netMt.toFixed(1)} mt
+          <div style={{ ...styles.headlineValue, color: isReduction ? '#86efac' : isSame ? '#e5e7eb' : '#fca5a5', filter: `drop-shadow(0 0 12px ${isReduction ? 'rgba(134, 239, 172, 0.25)' : isSame ? 'rgba(229, 231, 235, 0.15)' : 'rgba(252, 165, 165, 0.25)'})` }}>
+            <AnimatedNumber value={modified.netMt} decimals={1} duration={700} /> mt
           </div>
           <div style={styles.headlineSub}>
             vs baseline {baseline.netMt.toFixed(1)} mt
