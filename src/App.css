@@ -2,6 +2,39 @@
    inline styles (no CSS framework), but a few global rules make every page
    substantially more device-friendly without component-by-component changes. */
 
+/* ─────────────────────────────────────────────────────────────────
+   Design tokens. Inline-style React components hard-code these
+   literals (CSS custom props don't work in React's `style={...}`
+   prop without extra plumbing), but the CSS layer reads them via
+   var(--token) where useful. Documenting them here is the
+   single source of truth.
+   ───────────────────────────────────────────────────────────────── */
+:root {
+  /* Surface */
+  --kua-bg:          #0b1220;
+  --kua-bg-raised:   #0f172a;
+  --kua-bg-sunken:   #0a121f;
+  --kua-border:      #1f2937;
+  --kua-border-soft: #334155;
+
+  /* Text */
+  --kua-text:        #e5e7eb;
+  --kua-text-soft:   #cbd5e1;
+  --kua-text-muted:  #94a3b8;
+  --kua-text-faint:  #64748b;
+
+  /* Accents (same six used throughout components) */
+  --kua-cyan:        #22d3ee;
+  --kua-cyan-dim:    #0e7490;
+  --kua-green:       #22c55e;
+  --kua-green-light: #86efac;
+  --kua-amber:       #fbbf24;
+  --kua-amber-light: #fcd34d;
+  --kua-red:         #ef4444;
+  --kua-red-light:   #fca5a5;
+  --kua-purple:      #a855f7;
+}
+
 * {
   box-sizing: border-box;
 }
