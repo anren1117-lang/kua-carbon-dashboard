@@ -9,6 +9,7 @@ import { toCsv, downloadCsv } from '../utils/csv.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { CampusPhotoMap } from '../components/CampusPhotoMap.js';
 import { CampusSatelliteMap } from '../components/CampusSatelliteMap.js';
+import { Icon } from '../components/Icon.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -160,32 +161,36 @@ export default function CampusMap() {
           <button
             type="button"
             onClick={() => setLayoutMode('schematic')}
-            style={{ ...styles.monthBtn, ...(layoutMode === 'schematic' ? styles.monthBtnActive : {}) }}
+            style={{ ...styles.modeBtn, ...(layoutMode === 'schematic' ? styles.modeBtnActive : {}) }}
           >
-            Schematic (by category)
+            <Icon.Chart size={13} />
+            <span style={{ marginLeft: 6 }}>Schematic</span>
           </button>
           <button
             type="button"
             onClick={() => setLayoutMode('geographic')}
-            style={{ ...styles.monthBtn, ...(layoutMode === 'geographic' ? styles.monthBtnActive : {}) }}
+            style={{ ...styles.modeBtn, ...(layoutMode === 'geographic' ? styles.modeBtnActive : {}) }}
           >
-            Geographic{positionsEstimated ? ' (estimated)' : ''}
+            <Icon.Map size={13} />
+            <span style={{ marginLeft: 6 }}>Geographic{positionsEstimated ? ' (est.)' : ''}</span>
           </button>
           <button
             type="button"
             onClick={() => setLayoutMode('photo')}
-            style={{ ...styles.monthBtn, ...(layoutMode === 'photo' ? styles.monthBtnActive : {}) }}
+            style={{ ...styles.modeBtn, ...(layoutMode === 'photo' ? styles.modeBtnActive : {}) }}
             title="Overlay energy-intensity dots on top of the official KUA campus map image"
           >
-            Photo (official map)
+            <Icon.Leaf size={13} />
+            <span style={{ marginLeft: 6 }}>Photo</span>
           </button>
           <button
             type="button"
             onClick={() => setLayoutMode('satellite')}
-            style={{ ...styles.monthBtn, ...(layoutMode === 'satellite' ? styles.monthBtnActive : {}) }}
+            style={{ ...styles.modeBtn, ...(layoutMode === 'satellite' ? styles.modeBtnActive : {}) }}
             title="Real satellite imagery of KUA campus with energy markers — pan + zoom enabled"
           >
-            🛰 Satellite (real imagery)
+            <Icon.Sparkles size={13} />
+            <span style={{ marginLeft: 6 }}>Satellite</span>
           </button>
           {layoutMode === 'geographic' && positionsCited && (
             <span style={styles.citedBadge} title="Positions taken from the official KUA campus map">cited positions</span>
@@ -493,6 +498,8 @@ const styles = {
   controlLabel:   { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.7, marginRight: 4 },
   monthBtn:       { padding: '4px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, color: '#94a3b8', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' },
   monthBtnActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 700 },
+  modeBtn:        { padding: '6px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, color: '#94a3b8', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', fontWeight: 600 },
+  modeBtnActive:  { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 700 },
   estimatedBanner:{ marginBottom: 12, padding: '10px 14px', background: '#3a2a0e', border: '1px solid #92400e', borderLeft: '3px solid #fcd34d', borderRadius: 6, color: '#fcd34d', fontSize: 12, lineHeight: 1.6 },
   citedBadge:     { padding: '2px 8px', background: '#052e16', border: '1px solid #16a34a', borderRadius: 999, color: '#86efac', fontSize: 11, fontWeight: 700, marginLeft: 4 },
   exportBtn:      { padding: '4px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
