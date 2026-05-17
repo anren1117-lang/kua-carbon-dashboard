@@ -11,6 +11,8 @@ const sources = [
   { domain: 'Tree sequestration', source: 'Nowak et al. (2013), Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage, 0.28 kg C/m²/yr sequestration' },
   { domain: 'Soil & forest carbon', source: 'Morin et al. (2020), USDA NH forest inventory; Birdsey (1992)', use: 'Land-use-weighted soil carbon baselines' },
   { domain: 'AI ingestion', source: 'Dagdelen et al. (2024), Nature Communications', use: 'LLM-based structured extraction approach' },
+  { domain: 'Heat pumps (scenarios)', source: 'NREL cold-climate heat pump field data + DOE technical reports', use: 'COP 3.0 conservative cold-climate seasonal average — used by the /scenarios "electrify heating" lever' },
+  { domain: 'Solar PV (scenarios)', source: 'NREL PVWatts for NH fixed-tilt + NHEC interconnection data', use: '1,300 kWh/kW/yr typical NH capacity factor — used by the /scenarios "install solar" lever' },
 ];
 
 const principles = [

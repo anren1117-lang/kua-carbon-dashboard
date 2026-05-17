@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { buildings, getBuilding } from '../data/buildings.js';
@@ -68,6 +68,8 @@ export default function BuildingDetail() {
         </div>
       }
     >
+      <BuildingPhoto buildingId={id} buildingName={building.name} />
+
       {row ? (
         <ModuleSection title="Headline numbers" hint="Annualized from the months of measured BMS data this building has.">
           <div style={styles.statGrid}>
@@ -149,6 +151,45 @@ export default function BuildingDetail() {
   );
 }
 
+// Building photo with graceful fallback. Looks for an image at
+// /buildings/{id}.jpg (or .png). If not present, renders nothing.
+// To add a photo for a building, drop the file at
+// src/public/buildings/{id}.jpg — Vite copies /src/public to the
+// site root at build, so /buildings/{id}.jpg resolves automatically.
+// No code change needed when photos arrive.
+function BuildingPhoto({ buildingId, buildingName }) {
+  const [status, setStatus] = useState('loading'); // loading | loaded | missing
+  const [src, setSrc] = useState(`/buildings/${buildingId}.jpg`);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const jpg = new Image();
+    jpg.onload = () => { if (!cancelled) { setSrc(`/buildings/${buildingId}.jpg`); setStatus('loaded'); } };
+    jpg.onerror = () => {
+      // Fall back to .png if .jpg fails
+      const png = new Image();
+      png.onload = () => { if (!cancelled) { setSrc(`/buildings/${buildingId}.png`); setStatus('loaded'); } };
+      png.onerror = () => { if (!cancelled) setStatus('missing'); };
+      png.src = `/buildings/${buildingId}.png`;
+    };
+    jpg.src = `/buildings/${buildingId}.jpg`;
+    return () => { cancelled = true; };
+  }, [buildingId]);
+
+  if (status === 'missing' || status === 'loading') return null;
+
+  return (
+    <div style={styles.photoWrap}>
+      <img
+        src={src}
+        alt={`Photo of ${buildingName}`}
+        style={styles.photo}
+        draggable={false}
+      />
+    </div>
+  );
+}
+
 function Stat({ label, value }) {
   return (
     <div style={styles.stat}>
@@ -192,4 +233,7 @@ const styles = {
 
   fineprint:      { fontSize: 13, color: '#94a3b8', lineHeight: 1.7 },
   link:           { color: '#22d3ee', textDecoration: 'none' },
+
+  photoWrap: { width: '100%', maxWidth: 800, margin: '0 auto 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10, overflow: 'hidden', lineHeight: 0 },
+  photo:     { width: '100%', height: 'auto', maxHeight: 400, objectFit: 'cover', display: 'block' },
 };
