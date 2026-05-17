@@ -12,6 +12,7 @@ import { freshnessBucket } from '../../utils/freshness.js';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { formatUsage } from './AdminPlanAgent.js';
 import { recordUsage, getTally, formatTally, AI_USAGE_UPDATED_EVENT } from '../../utils/aiUsageTally.js';
+import { AdminAlertSummary } from '../../components/AdminAlertSummary.js';
 
 const formatBriefUsage = (usage) => formatUsage(usage, 'claude-sonnet-4-6');
 
@@ -432,6 +433,7 @@ export default function AdminHome() {
 
       <AdminHomeBrief brief={brief} busy={briefBusy} onRefresh={() => setBriefRefreshTick((n) => n + 1)} />
       {planSummary && <PlanSummaryCard summary={planSummary} grossMt={grossEffective} />}
+      <AdminAlertSummary />
       <FreshnessAlert freshness={freshness} />
 
       <Section title="Quick actions" hint="The four most-used admin starting points.">
