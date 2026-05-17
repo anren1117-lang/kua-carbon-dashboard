@@ -13,41 +13,60 @@ import { useIsNarrow } from '../hooks/useViewport.js';
 // On narrow viewports (< 720px) all three tiers collapse into a single
 // hamburger drawer so the header doesn't horizontally overflow on phones.
 
+// Top nav — kept tight so the public header doesn't overflow.
+// Phase 273 trim: dropped Hotspots (rolled up under Executive),
+// Sinks (covered by Methodology + Scope rollups), and Report
+// (linked from Executive). Scope 1/2/3 still live up here because
+// they're the canonical GHG Protocol structure most visitors look for.
 const topItems = [
-  { to: '/',          label: 'Overview', end: true },
-  { to: '/executive', label: 'Executive' },
-  { to: '/hotspots',  label: 'Hotspots' },
-  { to: '/plan',      label: 'Plan' },         // Goals + Actions combined
-  { to: '/buildings', label: 'Buildings' },
+  { to: '/',           label: 'Overview', end: true },
+  { to: '/executive',  label: 'Executive' },
+  { to: '/plan',       label: 'Plan' },         // Goals + Actions combined
   { to: '/campus-map', label: 'Campus Map' },
-  { to: '/scope-1',   label: 'Scope 1' },
-  { to: '/scope-2',   label: 'Scope 2' },
-  { to: '/scope-3',   label: 'Scope 3' },
-  { to: '/sinks-os',  label: 'Sinks' },
+  { to: '/buildings',  label: 'Buildings' },
+  { to: '/scope-1',    label: 'Scope 1' },
+  { to: '/scope-2',    label: 'Scope 2' },
+  { to: '/scope-3',    label: 'Scope 3' },
   { to: '/methodology', label: 'Methodology' },
-  { to: '/report',    label: 'Report' },
-  // /lessons (the published catalog) is reachable via the Learn portal
-  // and via the "Open the full catalog" link on /learn. Keeping it out
-  // of the top nav so the public bar doesn't grow unbounded.
 ];
 
+// Categories dropdown — Phase 273 cut from 16 items to 5. Now
+// strictly the student/staff-facing TOOLS the dashboard ships:
+// the calculator, the simulator, the two dorm pages, and the FAQ.
+// Everything else moved out:
+//   • Dining/Transportation/Waste/Procurement → reachable from /scope-3
+//   • Goals/Actions (standalone) → already inside /plan tabs
+//   • Drawdown/Renewables/Sinks → reachable from /scope-1 + /methodology
+//   • Carbon Credits → from /plan
+//   • Trend Builder → power-user, reachable from /admin
+//   • Share (QR) → footer + /faq
+//   • Hotspots / Sinks / Report → footer + Executive
 const categoryItems = [
+  { to: '/your-footprint',   label: 'Your footprint (calculator)' },
+  { to: '/scenarios',        label: 'Reduction simulator' },
+  { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
+  { to: '/challenge',        label: 'Dorm challenge (monthly)' },
+  { to: '/faq',              label: 'FAQ' },
+];
+
+// Routes that moved out of the visible nav in Phase 273 but still
+// resolve as URLs. The footer "More" row links to them so they're
+// discoverable; deep links to the bare paths continue to work.
+const moreItems = [
+  { to: '/hotspots',       label: 'Hotspots' },
+  { to: '/sinks-os',       label: 'Sinks' },
+  { to: '/report',         label: 'Annual report' },
+  { to: '/drawdown',       label: 'Drawdown' },
+  { to: '/credits',        label: 'Carbon credits' },
+  { to: '/renewables-os',  label: 'Renewables' },
+  { to: '/goals',          label: 'Goals (standalone)' },
+  { to: '/actions',        label: 'Actions (standalone)' },
   { to: '/dining',         label: 'Dining' },
   { to: '/transportation', label: 'Transportation' },
   { to: '/waste',          label: 'Waste' },
   { to: '/procurement',    label: 'Procurement' },
-  { to: '/drawdown',       label: 'Drawdown — Renewables + Sinks' },
-  { to: '/credits',        label: 'Carbon Credits' },
-  { to: '/scenarios',      label: 'Scenarios' },
-  { to: '/renewables-os',  label: 'Renewables (standalone)' },
-  { to: '/goals',          label: 'Goals (standalone)' },
-  { to: '/actions',        label: 'Actions (standalone)' },
   { to: '/trends',         label: 'Trend Builder' },
-  { to: '/your-footprint', label: 'Your footprint (calculator)' },
-  { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
-  { to: '/challenge',        label: 'Dorm challenge (monthly)' },
-  { to: '/faq',              label: 'FAQ' },
-  { to: '/share',            label: 'Share (QR code)' },
+  { to: '/share',          label: 'Share (QR)' },
 ];
 
 const portalItems = [
@@ -112,7 +131,10 @@ const styles = {
   }),
   main: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '32px 24px', width: '100%', boxSizing: 'border-box' },
   mainNarrow: { flex: 1, maxWidth: 1200, margin: '0 auto', padding: '20px 14px', width: '100%', boxSizing: 'border-box' },
-  footer: { borderTop: '1px solid #1f2937', padding: '20px 24px', textAlign: 'center', fontSize: 12, color: '#64748b' },
+  footer: { borderTop: '1px solid #1f2937', padding: '24px 24px 28px', fontSize: 12, color: '#64748b' },
+  footerLinks: { maxWidth: 1100, margin: '0 auto 18px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, fontSize: 11 },
+  footerLink: { padding: '5px 10px', color: '#94a3b8', textDecoration: 'none', borderRadius: 4, transition: 'background 120ms, color 120ms' },
+  footerTag: { textAlign: 'center', color: '#64748b' },
   skipLink: { position: 'absolute', left: -9999, top: 8, padding: '8px 12px', background: '#22d3ee', color: '#0b1220', textDecoration: 'none', borderRadius: 4, fontWeight: 700, zIndex: 100 },
 
   // Hamburger + drawer
@@ -240,7 +262,7 @@ function CategoriesMenu() {
         aria-haspopup="true"
         aria-expanded={open}
       >
-        Categories ▾
+        Tools ▾
       </button>
       {open && (
         <div style={styles.catMenu} role="menu">
@@ -303,8 +325,17 @@ function MobileDrawer({ open, onClose }) {
         </div>
 
         <div>
-          <div style={styles.drawerSectionLabel}>Categories</div>
+          <div style={styles.drawerSectionLabel}>Tools</div>
           {categoryItems.map(({ to, label }) => (
+            <NavLink key={to} to={to} style={styles.drawerLink}>
+              {label}
+            </NavLink>
+          ))}
+        </div>
+
+        <div>
+          <div style={styles.drawerSectionLabel}>More</div>
+          {moreItems.map(({ to, label }) => (
             <NavLink key={to} to={to} style={styles.drawerLink}>
               {label}
             </NavLink>
@@ -411,7 +442,16 @@ function Layout() {
         </ErrorBoundary>
       </main>
       <footer style={styles.footer}>
-        Kimball Union Academy · Net Carbon Dashboard · methodology and source code public on GitHub
+        <div style={styles.footerLinks}>
+          {moreItems.map(({ to, label }) => (
+            <NavLink key={to} to={to} style={styles.footerLink}>
+              {label}
+            </NavLink>
+          ))}
+        </div>
+        <div style={styles.footerTag}>
+          Kimball Union Academy · Net Carbon Dashboard · methodology and source code public on GitHub
+        </div>
       </footer>
     </div>
   );

@@ -65,7 +65,10 @@ describe('Layout — narrow viewport', () => {
     expect(drawer).toBeTruthy();
     expect(drawer.textContent).toMatch(/Portals/);
     expect(drawer.textContent).toMatch(/Dashboard/);
-    expect(drawer.textContent).toMatch(/Categories/);
+    // Phase 273: "Categories" renamed to "Tools" + a new "More"
+    // section added for the routes that moved out of the visible nav.
+    expect(drawer.textContent).toMatch(/Tools/);
+    expect(drawer.textContent).toMatch(/More/);
     // Spot-check a few high-traffic routes are reachable from the drawer.
     expect(drawer.textContent).toMatch(/Dorm leaderboard/);
     expect(drawer.textContent).toMatch(/Your footprint/);
