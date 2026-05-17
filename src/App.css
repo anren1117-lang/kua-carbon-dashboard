@@ -607,3 +607,19 @@ input[type="checkbox"] {
 ::-webkit-scrollbar-corner {
   background: #0b1220;
 }
+
+/* "Back" link arrow — opposite direction of the forward CTA arrow.
+   Slides 6px LEFT on hover. Used for breadcrumb-style back nav. */
+.kua-back-arrow {
+  display: inline-flex;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+a:hover > .kua-back-arrow,
+.kua-back-link:hover .kua-back-arrow {
+  transform: translateX(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kua-back-arrow { transition: none !important; }
+  a:hover > .kua-back-arrow,
+  .kua-back-link:hover .kua-back-arrow { transform: none !important; }
+}
