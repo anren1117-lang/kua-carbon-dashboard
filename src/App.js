@@ -5,6 +5,7 @@ import { PeerComparison } from './components/PeerComparison';
 import { ScopeDonut } from './components/ScopeDonut';
 import { ScopeExplainer } from './components/ScopeExplainer';
 import { AISummary } from './components/AISummary';
+import { NewsStrip } from './components/NewsStrip';
 import { SectionHeader } from './components/SectionHeader';
 import './App.css';
 
@@ -33,6 +34,9 @@ function App() {
 
       <SectionHeader label="Context" title="How KUA compares" />
       <PeerComparison />
+
+      <SectionHeader label="World" title="What's happening right now" />
+      <NewsStrip />
 
       <SectionHeader label="Learn" title="Want a guided walkthrough?" />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
