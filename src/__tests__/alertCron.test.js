@@ -127,6 +127,60 @@ describe('evaluateAlerts', () => {
       }
     }
   });
+
+  // ─── Meter-adapter branch (Phase 223) ───────────────────────────
+
+  it('returns no alerts when neither supabase nor meterAdapter is provided', async () => {
+    const r = await evaluateAlerts({});
+    expect(r).toMatchObject({ alerts: [], supabaseConfigured: false, meterAdapterUsed: false });
+  });
+
+  it('flags a dead meter via the adapter quality report (high severity)', async () => {
+    const meterAdapter = {
+      getQuality: async () => ([
+        { meterId: 'm_oil_campus', issues: [{ kind: 'stale', description: 'Last reading was 96 hours old.' }] },
+        { meterId: 'm_other',      issues: [] },
+      ]),
+    };
+    const { alerts, meterAdapterUsed, metersChecked } = await evaluateAlerts({ meterAdapter });
+    expect(meterAdapterUsed).toBe(true);
+    expect(metersChecked).toBe(2);
+    const dead = alerts.find((a) => a.id === 'deadmeter:m_oil_campus');
+    expect(dead).toMatchObject({ kind: 'dead_meter', severity: 'high', meterId: 'm_oil_campus' });
+  });
+
+  it('flags a flat (stuck-sensor) meter at medium severity', async () => {
+    const meterAdapter = {
+      getQuality: async () => ([
+        { meterId: 'm_x', issues: [{ kind: 'flat', description: '8 identical readings in a row.' }] },
+      ]),
+    };
+    const { alerts } = await evaluateAlerts({ meterAdapter });
+    expect(alerts[0]).toMatchObject({ id: 'flat:m_x', kind: 'flat_meter', severity: 'medium' });
+  });
+
+  it('emits at most one dead-meter alert per meter, even with multiple stale issues', async () => {
+    const meterAdapter = {
+      getQuality: async () => ([
+        { meterId: 'm_a', issues: [{ kind: 'stale' }, { kind: 'stale' }, { kind: 'flat' }] },
+      ]),
+    };
+    const { alerts } = await evaluateAlerts({ meterAdapter });
+    expect(alerts.filter((a) => a.meterId === 'm_a')).toHaveLength(1);
+  });
+
+  it('tolerates a meter adapter that throws — logs, returns 0 meter alerts, no crash', async () => {
+    const meterAdapter = { getQuality: async () => { throw new Error('BMS offline'); } };
+    const r = await evaluateAlerts({ meterAdapter });
+    expect(r.meterAdapterUsed).toBe(true);
+    expect(r.alerts.filter((a) => a.kind === 'dead_meter' || a.kind === 'flat_meter')).toEqual([]);
+  });
+
+  it('skips meter detection cleanly when adapter has no getQuality method', async () => {
+    const r = await evaluateAlerts({ meterAdapter: {} });
+    expect(r.meterAdapterUsed).toBe(false);
+    expect(r.metersChecked).toBe(0);
+  });
 });
 
 // ─── alertSetSignature ────────────────────────────────────────────

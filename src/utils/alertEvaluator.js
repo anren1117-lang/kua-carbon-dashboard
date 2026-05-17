@@ -17,82 +17,140 @@ import { freshnessBucket, daysSince } from './freshness.js';
 
 /**
  * @param {object} args
- * @param {object|null} args.supabase  A Supabase server client, or null. When null the evaluator returns no alerts.
- * @param {Date=} args.now             Override "now" for tests.
- * @returns {Promise<{ alerts: Alert[], checkedAt: string, tablesChecked: number, supabaseConfigured: boolean }>}
+ * @param {object|null} args.supabase     A Supabase server client, or null. When null, table alerts are skipped.
+ * @param {object|null} args.meterAdapter Optional meter adapter (MeterDataAdapter shape). When provided, evaluator also flags dead meters via the adapter's getQuality() output.
+ * @param {Date=} args.now                Override "now" for tests.
+ * @returns {Promise<{ alerts: Alert[], checkedAt: string, tablesChecked: number, supabaseConfigured: boolean, meterAdapterUsed: boolean, metersChecked: number }>}
  *
  * @typedef {Object} Alert
- * @property {string} id           Stable id, e.g. "stale:scope1_heating_oil"
- * @property {'stale_table'|'empty_table'} kind
+ * @property {string} id           Stable id, e.g. "stale:scope1_heating_oil" / "deadmeter:m_oil_campus"
+ * @property {'stale_table'|'empty_table'|'dead_meter'|'flat_meter'} kind
  * @property {'high'|'medium'} severity
  * @property {string} title
  * @property {string} description
- * @property {string} table
- * @property {string} tableLabel
- * @property {string} scope
+ * @property {string=} table       Set for table-based alerts.
+ * @property {string=} tableLabel
+ * @property {string=} scope
+ * @property {string=} meterId     Set for meter-based alerts.
  * @property {number|null} daysSince
  * @property {string=} cta
  */
-export async function evaluateAlerts({ supabase, now } = {}) {
+export async function evaluateAlerts({ supabase, meterAdapter, now } = {}) {
   const checkedAt = (now instanceof Date ? now : new Date()).toISOString();
-  if (!supabase) {
-    return { alerts: [], checkedAt, tablesChecked: 0, supabaseConfigured: false };
-  }
-
-  // Query every admin-known table in parallel for count + last timestamp.
-  const stats = await Promise.all(
-    ADMIN_TABLE_SOURCES.map(async (src) => {
-      try {
-        const [{ count }, { data }] = await Promise.all([
-          supabase.from(src.table).select('*', { count: 'exact', head: true }),
-          supabase.from(src.table).select(src.tsCol).order(src.tsCol, { ascending: false }).limit(1),
-        ]);
-        const lastUpdated = Array.isArray(data) && data.length > 0 ? data[0][src.tsCol] : null;
-        return { src, count: count ?? 0, lastUpdated, error: null };
-      } catch (err) {
-        return { src, count: 0, lastUpdated: null, error: err?.message || 'fetch failed' };
-      }
-    })
-  );
+  const out = { alerts: [], checkedAt, tablesChecked: 0, supabaseConfigured: false, meterAdapterUsed: false, metersChecked: 0 };
+  if (!supabase && !meterAdapter) return out;
 
   const alerts = [];
-  for (const { src, count, lastUpdated, error } of stats) {
-    if (error) continue;  // Don't alert on transient query failures.
 
-    const bucket = freshnessBucket({ count, lastUpdated }, src.cadence, now);
-    const days = lastUpdated ? daysSince(lastUpdated, now) : null;
+  // ─── Stale/empty data tables (Supabase-backed) ────────────────────
+  if (supabase) {
+    out.supabaseConfigured = true;
+    out.tablesChecked = ADMIN_TABLE_SOURCES.length;
 
-    if (bucket === 'stale') {
-      // The table has rows but the newest is past the cadence window.
-      alerts.push({
-        id: `stale:${src.table}`,
-        kind: 'stale_table',
-        severity: 'high',
-        title: `${src.tableLabel || src.label || src.table} hasn't been updated in ${days ?? 'a while'} days`,
-        description: `The "${src.label || src.table}" table is past its expected ${src.cadence} update cadence. Last entry was ${days ?? '?'} days ago — your ${src.scope} numbers on the dashboard may be drifting.`,
-        table: src.table,
-        tableLabel: src.label || src.table,
-        scope: src.scope,
-        daysSince: days,
-        cta: src.cta,
-      });
-    } else if (bucket === 'empty') {
-      // The table has no rows at all — only flag this as an alert for
-      // tables we'd expect to have data by now (skip 'irregular'
-      // cadence which is intentionally event-driven).
-      if (src.cadence === 'irregular') continue;
-      alerts.push({
-        id: `empty:${src.table}`,
-        kind: 'empty_table',
-        severity: 'medium',
-        title: `${src.label || src.table} table has no data yet`,
-        description: `The "${src.label || src.table}" table is empty. Without it, ${src.scope} is computed from the estimated placeholder rather than measured data — your dashboard is missing this scope's real numbers.`,
-        table: src.table,
-        tableLabel: src.label || src.table,
-        scope: src.scope,
-        daysSince: null,
-        cta: src.cta,
-      });
+    const stats = await Promise.all(
+      ADMIN_TABLE_SOURCES.map(async (src) => {
+        try {
+          const [{ count }, { data }] = await Promise.all([
+            supabase.from(src.table).select('*', { count: 'exact', head: true }),
+            supabase.from(src.table).select(src.tsCol).order(src.tsCol, { ascending: false }).limit(1),
+          ]);
+          const lastUpdated = Array.isArray(data) && data.length > 0 ? data[0][src.tsCol] : null;
+          return { src, count: count ?? 0, lastUpdated, error: null };
+        } catch (err) {
+          return { src, count: 0, lastUpdated: null, error: err?.message || 'fetch failed' };
+        }
+      })
+    );
+
+    for (const { src, count, lastUpdated, error } of stats) {
+      if (error) continue;  // Don't alert on transient query failures.
+      const bucket = freshnessBucket({ count, lastUpdated }, src.cadence, now);
+      const days = lastUpdated ? daysSince(lastUpdated, now) : null;
+
+      if (bucket === 'stale') {
+        // The table has rows but the newest is past the cadence window.
+        alerts.push({
+          id: `stale:${src.table}`,
+          kind: 'stale_table',
+          severity: 'high',
+          title: `${src.tableLabel || src.label || src.table} hasn't been updated in ${days ?? 'a while'} days`,
+          description: `The "${src.label || src.table}" table is past its expected ${src.cadence} update cadence. Last entry was ${days ?? '?'} days ago — your ${src.scope} numbers on the dashboard may be drifting.`,
+          table: src.table,
+          tableLabel: src.label || src.table,
+          scope: src.scope,
+          daysSince: days,
+          cta: src.cta,
+        });
+      } else if (bucket === 'empty') {
+        // The table has no rows at all — only flag this as an alert for
+        // tables we'd expect to have data by now (skip 'irregular'
+        // cadence which is intentionally event-driven).
+        if (src.cadence === 'irregular') continue;
+        alerts.push({
+          id: `empty:${src.table}`,
+          kind: 'empty_table',
+          severity: 'medium',
+          title: `${src.label || src.table} table has no data yet`,
+          description: `The "${src.label || src.table}" table is empty. Without it, ${src.scope} is computed from the estimated placeholder rather than measured data — your dashboard is missing this scope's real numbers.`,
+          table: src.table,
+          tableLabel: src.label || src.table,
+          scope: src.scope,
+          daysSince: null,
+          cta: src.cta,
+        });
+      }
+    }
+  }
+
+  // ─── Meter quality (BMS/CSV adapter, optional) ────────────────────
+  // Walks the meter adapter's getQuality output and flags any meter
+  // reporting a 'stale' (dead — no data for 24h+) or 'flat' (stuck
+  // sensor) issue from the last week.
+  if (meterAdapter && typeof meterAdapter.getQuality === 'function') {
+    out.meterAdapterUsed = true;
+    const nowMs = (now instanceof Date ? now : new Date()).getTime();
+    const start = new Date(nowMs - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const end   = new Date(nowMs).toISOString();
+    try {
+      const reports = await meterAdapter.getQuality({ start, end });
+      if (Array.isArray(reports)) {
+        out.metersChecked = reports.length;
+        for (const report of reports) {
+          if (!report || !Array.isArray(report.issues)) continue;
+          for (const issue of report.issues) {
+            if (issue.kind === 'stale') {
+              alerts.push({
+                id: `deadmeter:${report.meterId}`,
+                kind: 'dead_meter',
+                severity: 'high',
+                title: `Meter ${report.meterId} has gone silent`,
+                description: `${issue.description || 'No readings for over 24 hours.'} If this is an electricity meter, the building's measured kWh figure is stuck at the last good reading.`,
+                meterId: report.meterId,
+                daysSince: null,
+                cta: '/admin/data-quality',
+              });
+              break; // One dead-meter alert per meter, not per issue.
+            } else if (issue.kind === 'flat') {
+              alerts.push({
+                id: `flat:${report.meterId}`,
+                kind: 'flat_meter',
+                severity: 'medium',
+                title: `Meter ${report.meterId} appears stuck`,
+                description: `${issue.description || 'Many consecutive identical readings.'} The sensor may be frozen; the kWh you see for that meter may not be moving.`,
+                meterId: report.meterId,
+                daysSince: null,
+                cta: '/admin/data-quality',
+              });
+              break;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // Adapter failure (BMS unreachable, env not configured) — don't
+      // turn that into an alert and don't crash the cron.
+      // eslint-disable-next-line no-console
+      console.warn('[evaluateAlerts] meterAdapter.getQuality failed:', err?.message || err);
     }
   }
 
@@ -103,12 +161,7 @@ export async function evaluateAlerts({ supabase, now } = {}) {
     return a.id.localeCompare(b.id);
   });
 
-  return {
-    alerts,
-    checkedAt,
-    tablesChecked: ADMIN_TABLE_SOURCES.length,
-    supabaseConfigured: true,
-  };
+  return { ...out, alerts };
 }
 
 /**

@@ -25,6 +25,7 @@ import { getSupabaseServer } from '../../src/storage/supabaseServer.js';
 import { evaluateAlerts, alertSetSignature, composeAlertEmail } from '../../src/utils/alertEvaluator.js';
 import { listSubscribers } from '../../src/storage/alertSubscribers.js';
 import { sendEmail } from '../../src/utils/sendEmail.js';
+import { getMeterAdapter } from '../../src/adapters/meter/index.js';
 
 let lastSignature = null;
 let lastEmailedAt = null;
@@ -70,7 +71,16 @@ export default async function handler(req, res) {
 
   try {
     const supabase = await getSupabaseServer();
-    const { alerts, checkedAt, tablesChecked, supabaseConfigured } = await evaluateAlerts({ supabase });
+    // Meter adapter is best-effort — a missing BMS env shouldn't kill
+    // the cron, so wrap the factory call. The evaluator itself also
+    // catches getQuality failures, but the factory can throw on
+    // unconfigured BMS.
+    let meterAdapter = null;
+    try { meterAdapter = getMeterAdapter(); }
+    catch (err) { console.warn('[cron/check-alerts] meter adapter unavailable:', err?.message || err); }
+
+    const { alerts, checkedAt, tablesChecked, supabaseConfigured, meterAdapterUsed, metersChecked } =
+      await evaluateAlerts({ supabase, meterAdapter });
 
     const signature = alertSetSignature(alerts);
 
@@ -83,6 +93,8 @@ export default async function handler(req, res) {
         checkedAt,
         tablesChecked,
         supabaseConfigured,
+        meterAdapterUsed,
+        metersChecked,
         alertCount: 0,
         action: sameAsLast ? 'no_change' : 'cleared',
         notified: 0,
@@ -96,6 +108,8 @@ export default async function handler(req, res) {
         checkedAt,
         tablesChecked,
         supabaseConfigured,
+        meterAdapterUsed,
+        metersChecked,
         alertCount: alerts.length,
         action: 'no_change',
         notified: 0,
@@ -114,6 +128,8 @@ export default async function handler(req, res) {
         checkedAt,
         tablesChecked,
         supabaseConfigured,
+        meterAdapterUsed,
+        metersChecked,
         alertCount: alerts.length,
         action: 'no_subscribers',
         notified: 0,
