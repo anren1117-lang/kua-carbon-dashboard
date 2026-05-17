@@ -54,6 +54,7 @@ const CampusMap = lazy(() => import('./pages/CampusMap'));
 const BuildingDetail = lazy(() => import('./pages/BuildingDetail'));
 const DormLeaderboard = lazy(() => import('./pages/DormLeaderboard'));
 const EnergyChallenge = lazy(() => import('./pages/EnergyChallenge'));
+const Faq = lazy(() => import('./pages/Faq'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin tree — also lazy. Most users never hit /admin.
@@ -134,6 +135,7 @@ root.render(
             <Route path="/buildings/:id" element={<BuildingDetail />} />
             <Route path="/dorm-leaderboard" element={<DormLeaderboard />} />
             <Route path="/challenge" element={<EnergyChallenge />} />
+            <Route path="/faq" element={<Faq />} />
             <Route path="/ask" element={<Assistant />} />
             <Route path="/hotspots" element={<Hotspots />} />
             <Route path="/actions" element={<Actions />} />

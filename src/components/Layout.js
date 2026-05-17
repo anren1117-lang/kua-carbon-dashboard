@@ -46,6 +46,7 @@ const categoryItems = [
   { to: '/your-footprint', label: 'Your footprint (calculator)' },
   { to: '/dorm-leaderboard', label: 'Dorm leaderboard' },
   { to: '/challenge',        label: 'Dorm challenge (monthly)' },
+  { to: '/faq',              label: 'FAQ' },
 ];
 
 const portalItems = [
