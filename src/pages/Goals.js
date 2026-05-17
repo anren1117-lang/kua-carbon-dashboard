@@ -107,6 +107,15 @@ export default function Goals() {
         const reductionNeeded   = target.percentReduction;
         const progressPct = Math.max(0, Math.min(100, (reductionAchieved / reductionNeeded) * 100));
 
+        // Where SHOULD the bar be by this point in time? Linear
+        // interpolation from baselineYear to targetYear. Drawn as
+        // a tick on the progress bar so the viewer can read
+        // "we're ahead" / "behind" without thinking.
+        const yearsTotal   = target.targetYear - target.baselineYear;
+        const yearsElapsed = Math.max(0, Math.min(yearsTotal, CURRENT_YEAR - target.baselineYear));
+        const expectedProgressPct = yearsTotal > 0 ? (yearsElapsed / yearsTotal) * 100 : 0;
+        const aheadOfPace = progressPct >= expectedProgressPct;
+
         return (
           <ModuleSection
             key={target.id}
@@ -133,6 +142,22 @@ export default function Goals() {
                   </div>
                   <div style={styles.progressTrack}>
                     <div style={{ ...styles.progressFill, width: `${progressPct}%`, background: accent }} />
+                    {/* "Expected by now" marker — vertical tick + label.
+                        Shows where the linear trajectory says we
+                        should be at CURRENT_YEAR. */}
+                    <div
+                      style={{ ...styles.expectedMarker, left: `${expectedProgressPct}%` }}
+                      title={`Expected by ${CURRENT_YEAR}: ${expectedProgressPct.toFixed(0)}% of the reduction. Linear trajectory ${target.baselineYear} → ${target.targetYear}.`}
+                    />
+                  </div>
+                  <div style={styles.progressFootRow}>
+                    <span style={{ ...styles.progressFootBadge, color: aheadOfPace ? '#86efac' : '#fbbf24' }}>
+                      {aheadOfPace ? '✓ Ahead of pace' : '⚠ Behind pace'}
+                    </span>
+                    <span style={styles.progressFootText}>
+                      {progressPct.toFixed(0)}% achieved vs {expectedProgressPct.toFixed(0)}% expected by {CURRENT_YEAR}
+                      {' '}({yearsElapsed} of {yearsTotal} years elapsed)
+                    </span>
                   </div>
                 </div>
 
@@ -198,10 +223,24 @@ const styles = {
   statUnit: { fontSize: 10, color: '#94a3b8', marginLeft: 4, fontWeight: 500 },
   statSub: { fontSize: 11, color: '#64748b', marginTop: 4 },
 
-  progressWrap: { marginBottom: 10 },
+  progressWrap: { marginBottom: 14 },
   progressLabel: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 6 },
-  progressTrack: { height: 12, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6, overflow: 'hidden' },
-  progressFill: { height: '100%' },
+  progressTrack: { position: 'relative', height: 12, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 6, overflow: 'visible' },
+  progressFill: { height: '100%', borderRadius: 5 },
+  expectedMarker: {
+    position: 'absolute',
+    top: -4,
+    bottom: -4,
+    width: 3,
+    background: '#e5e7eb',
+    borderRadius: 1,
+    boxShadow: '0 0 0 1px rgba(0,0,0,0.6)',
+    pointerEvents: 'auto',
+    cursor: 'help',
+  },
+  progressFootRow: { marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  progressFootBadge: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 },
+  progressFootText: { fontSize: 11, color: '#94a3b8' },
 
   meta: { display: 'flex', gap: 16, fontSize: 12, color: '#94a3b8', flexWrap: 'wrap' },
   chart: {},
