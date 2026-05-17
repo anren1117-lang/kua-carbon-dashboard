@@ -492,3 +492,59 @@ input[type="range"]:hover::-moz-range-thumb,
 input[type="range"]:active::-moz-range-thumb {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(34, 211, 238, 0.25);
 }
+
+/* Unified dark-theme input + select styling. Components can still
+   override via inline styles if they need a specific look. */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="password"],
+textarea,
+select {
+  background: #0b1220;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+input[type="email"]:hover,
+input[type="url"]:hover,
+input[type="search"]:hover,
+input[type="password"]:hover,
+textarea:hover,
+select:hover {
+  border-color: #334155;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+  background: #0f172a;
+}
+
+/* Placeholders read as a hint, not as content */
+input::placeholder,
+textarea::placeholder {
+  color: #475569;
+}
+
+/* Radio + checkbox custom accent */
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #22d3ee;
+}
