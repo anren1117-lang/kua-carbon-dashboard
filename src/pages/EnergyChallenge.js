@@ -204,7 +204,7 @@ function ChampionCard({ kind, title, dorm, metric, subline }) {
     improvement: '#7dd3fc',
   };
   return (
-    <div style={{ ...styles.championCard, background: gradients[kind], borderLeftColor: accents[kind] }}>
+    <div className="kua-champion-glow" style={{ ...styles.championCard, background: gradients[kind], borderLeftColor: accents[kind] }}>
       <div style={styles.championTitle}>{title}</div>
       <Link to={`/buildings/${dorm.id}`} style={{ ...styles.championName, color: accents[kind] }}>
         {dorm.name}

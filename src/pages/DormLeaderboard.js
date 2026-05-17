@@ -71,7 +71,7 @@ export default function DormLeaderboard() {
     >
       {champion && (
         <ModuleSection title="This year's most efficient dorm" hint="">
-          <div style={styles.championCard}>
+          <div style={styles.championCard} className="kua-champion-glow">
             <div style={styles.championRank}>🏆 #1</div>
             <div style={{ flex: 1 }}>
               <div style={styles.championName}>{champion.name}</div>
@@ -133,7 +133,15 @@ export default function DormLeaderboard() {
                   </div>
                   <div style={styles.cardMeta}>{d.occupants} residents</div>
                   <div style={styles.cardBarWrap}>
-                    <span style={{ ...styles.barFill, width: `${widthPct}%`, background: barColor(i, ranked.length) }} />
+                    <span
+                      className="kua-bar-grow"
+                      style={{
+                        ...styles.barFill,
+                        background: barColor(i, ranked.length),
+                        '--kua-bar-target': `${widthPct}%`,
+                        '--kua-bar-delay': `${i * 60}ms`,
+                      }}
+                    />
                   </div>
                   <div style={styles.cardValue}>
                     {value.toLocaleString()}{' '}
@@ -152,7 +160,15 @@ export default function DormLeaderboard() {
                   {d.occupants} residents
                 </span>
                 <span style={styles.barCol}>
-                  <span style={{ ...styles.barFill, width: `${widthPct}%`, background: barColor(i, ranked.length) }} />
+                  <span
+                    className="kua-bar-grow"
+                    style={{
+                      ...styles.barFill,
+                      background: barColor(i, ranked.length),
+                      '--kua-bar-target': `${widthPct}%`,
+                      '--kua-bar-delay': `${i * 60}ms`,
+                    }}
+                  />
                 </span>
                 <span style={styles.valueCol}>
                   {value.toLocaleString()}{' '}
