@@ -289,6 +289,9 @@ export default function CampusMap() {
                 : `Measured over ${selected.monthsCovered} month${selected.monthsCovered === 1 ? '' : 's'} of BMS data, annualized.`}
               {' '}Emissions = kWh × 0.235 kg/kWh (ISO-NE 2024 effective).
             </div>
+            <a href={`/buildings/${selected.id}`} style={styles.detailLink}>
+              Open {selected.name} detail →
+            </a>
           </div>
         )}
       </ModuleSection>
@@ -422,6 +425,7 @@ const styles = {
   statLabel:   { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: 700 },
   statValue:   { fontSize: 16, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums', marginTop: 4 },
   detailNote:  { marginTop: 12, fontSize: 11, color: '#64748b', lineHeight: 1.6 },
+  detailLink:  { display: 'inline-block', marginTop: 10, padding: '6px 12px', background: '#0e3a5f', color: '#22d3ee', border: '1px solid #22d3ee', borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none' },
 
   rankList:    { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 },
   rankRow:     { display: 'grid', gridTemplateColumns: '36px 1fr 200px 100px', gap: 12, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1f2937', fontSize: 13 },
