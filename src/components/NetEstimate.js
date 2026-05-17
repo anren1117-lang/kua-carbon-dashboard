@@ -193,10 +193,10 @@ function EquivalentsCallout({ grossMt }) {
   if (!Number.isFinite(grossMt) || grossMt <= 0) return null;
   const eq = carbonEquivalents(grossMt);
   const items = [
-    { label: 'cars driven for a year',         value: eq.carYears.toLocaleString(),       icon: '🚗' },
-    { label: 'US homes powered for a year',    value: eq.homeYears.toLocaleString(),      icon: '🏠' },
-    { label: 'one-way transatlantic flights',  value: eq.transatFlights.toLocaleString(), icon: '✈️' },
-    { label: 'trees needed to absorb it (1 yr)', value: eq.treeYears.toLocaleString(),   icon: '🌳' },
+    { label: 'cars driven for a year',           rawValue: eq.carYears,       icon: '🚗' },
+    { label: 'US homes powered for a year',      rawValue: eq.homeYears,      icon: '🏠' },
+    { label: 'one-way transatlantic flights',    rawValue: eq.transatFlights, icon: '✈️' },
+    { label: 'trees needed to absorb it (1 yr)', rawValue: eq.treeYears,      icon: '🌳' },
   ];
   return (
     <div style={equivStyles.wrap}>
@@ -205,9 +205,11 @@ function EquivalentsCallout({ grossMt }) {
       </div>
       <div style={equivStyles.grid}>
         {items.map((it) => (
-          <div key={it.label} style={equivStyles.cell}>
+          <div key={it.label} style={equivStyles.cell} className="kua-card-hover">
             <div style={equivStyles.icon}>{it.icon}</div>
-            <div style={equivStyles.value}>{it.value}</div>
+            <div style={equivStyles.value}>
+              <AnimatedNumber value={it.rawValue} duration={1200} />
+            </div>
             <div style={equivStyles.text}>{it.label}</div>
           </div>
         ))}
@@ -220,7 +222,7 @@ const equivStyles = {
   wrap:   { marginTop: 24, padding: '16px 18px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 10 },
   label:  { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 12 },
   grid:   { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 },
-  cell:   { textAlign: 'center', padding: '8px 6px' },
+  cell:   { textAlign: 'center', padding: '12px 8px', borderRadius: 8, border: '1px solid transparent' },
   icon:   { fontSize: 22, marginBottom: 4 },
   value:  { fontSize: 20, color: '#e5e7eb', fontWeight: 800, fontVariantNumeric: 'tabular-nums', marginBottom: 2 },
   text:   { fontSize: 11, color: '#94a3b8', lineHeight: 1.3 },
