@@ -149,7 +149,7 @@ UX patterns to mirror when adding new AI endpoints:
 
 ## Tests
 
-Vitest. 659 tests across 37 files:
+Vitest. 738 tests across 42 files (every routed page has at least a mount-smoke test as of Phase 200):
 
 - `src/__tests__/dataLayer.test.js` (130) — composer math: Scope 1/3 + sinks + renewables + per-component helpers (compose*Mt + composeSolar/Geothermal/WindFromRecords).
 - `src/__tests__/apiRoutes.test.js` (107) — every `/api/*` handler incl. admin auth flow (login 503/400/401/200/429, token verify, expired/tampered/fresh) + audit-log GET pagination/filter params.
@@ -187,11 +187,13 @@ Vitest. 659 tests across 37 files:
 - `src/__tests__/Goals.test.js` (3) — provenance pill flip on Goals.
 - `src/__tests__/Executive.test.js` (3) — cohort row + ScopeRow pills.
 - `src/__tests__/ErrorBoundary.test.js` (3) — fallback rendering on caught errors.
+- `src/__tests__/AdminPlanAgent.test.js` (2) — TDZ regression guard for the keyboard-shortcuts deps array (Phase 197).
 - `src/App.test.js` (1) — top-level smoke test.
+- **Page sweeps** — `publicPagesRender.test.js` (32), `adminSubPagesRender.test.js` (20), `adminPagesRender.test.js` (15) mount every routed page (admin + public + per-scope sub-route) and assert non-empty content. Net under future deps-array TDZ / undefined-import / render-time crashes — these caught the Phase 197 plan-agent crash that had shipped since Phase 128.
 
 When adding a measured-data path, mirror the existing test shape: empty/null fallback, math sanity, skip-invalid-row, factor-table exposure, round-trip with the placeholder version.
 
-`src/utils/`, `src/storage/`, and every adapter in `src/adapters/meter/` are fully covered. The thinnest remaining surface is the React pages/components under `src/pages/`.
+`src/utils/`, `src/storage/`, every adapter in `src/adapters/meter/`, every `/api/*` handler, and every routed page are under test. The thinnest remaining surface is `src/components/` (interactive child components reached only by user action — page smoke tests mount the top-level but don't click through to children).
 
 ## Conventions
 
