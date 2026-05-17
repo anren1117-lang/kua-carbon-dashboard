@@ -91,7 +91,22 @@ export const buildingPositions = POSITIONS_PCT.map((p) => ({
   provenance: 'cited',
 }));
 
+// Also export the raw (x%, y%) coordinates — the "Photo" map mode
+// uses them directly to overlay clickable dots on top of the
+// official KUA campus map image. Geographic mode uses the lat/lng
+// version above.
+/** @type {{id: string, xPct: number, yPct: number}[]} */
+export const buildingPositionsPct = POSITIONS_PCT.map((p) => ({
+  id: p.id, xPct: p.xPct, yPct: p.yPct,
+}));
+
 const positionById = Object.fromEntries(buildingPositions.map((p) => [p.id, p]));
+const positionPctById = Object.fromEntries(buildingPositionsPct.map((p) => [p.id, p]));
+
+/** Look up the (x%, y%) position for the photo-overlay map mode. */
+export function getBuildingPositionPct(buildingId) {
+  return positionPctById[buildingId] || null;
+}
 
 /** Look up a position. Returns null if the building has no coordinates set. */
 export function getBuildingPosition(buildingId) {

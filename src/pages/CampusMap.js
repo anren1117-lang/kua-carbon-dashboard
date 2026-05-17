@@ -7,6 +7,7 @@ import { layoutBoxesGeo } from '../utils/geoLayout.js';
 import { buildingPositions, allPositionsAreEstimated, allPositionsAreCitedOrBetter } from '../data/buildingPositions.js';
 import { toCsv, downloadCsv } from '../utils/csv.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { CampusPhotoMap } from '../components/CampusPhotoMap.js';
 
 // /campus-map — schematic SVG layout of all 19 KUA buildings, grouped
 // by category zone (Academic / Athletic / Dorm / Other), each box
@@ -104,7 +105,9 @@ export default function CampusMap() {
   const [selectedId, setSelectedId] = useState(null);
   // null = "All (annualized)"; otherwise 'YYYY-MM'.
   const [selectedMonth, setSelectedMonth] = useState(null);
-  // 'schematic' = original by-category zones; 'geographic' = lat/lng projected.
+  // 'schematic' = original by-category zones
+  // 'geographic' = lat/lng projected onto a blank canvas
+  // 'photo' = energy-intensity dots overlaid on the official KUA campus map image
   const [layoutMode, setLayoutMode] = useState('schematic');
 
   const { rows, totalKwh, totalMt, monthsObserved, mode, availableMonths } = useMemo(
@@ -166,6 +169,14 @@ export default function CampusMap() {
           >
             Geographic{positionsEstimated ? ' (estimated)' : ''}
           </button>
+          <button
+            type="button"
+            onClick={() => setLayoutMode('photo')}
+            style={{ ...styles.monthBtn, ...(layoutMode === 'photo' ? styles.monthBtnActive : {}) }}
+            title="Overlay energy-intensity dots on top of the official KUA campus map image"
+          >
+            Photo (official map)
+          </button>
           {layoutMode === 'geographic' && positionsCited && (
             <span style={styles.citedBadge} title="Positions taken from the official KUA campus map">cited positions</span>
           )}
@@ -219,6 +230,15 @@ export default function CampusMap() {
           </span>
         </div>
 
+        {layoutMode === 'photo' ? (
+          <CampusPhotoMap
+            rows={rows}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            intensityColorFor={intensityColor}
+            noDataFill={NO_DATA_FILL}
+          />
+        ) : (
         <svg
           viewBox={`0 0 ${W} ${layoutMode === 'geographic' ? GEO_H : totalHeight}`}
           style={styles.svg}
@@ -279,6 +299,7 @@ export default function CampusMap() {
             ))
           )}
         </svg>
+        )}
 
         {selected && (
           <div style={styles.detail}>
