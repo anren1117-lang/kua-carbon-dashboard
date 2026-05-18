@@ -55,6 +55,16 @@ export default function PersonalFootprint() {
     <ModulePage
       title="Your personal footprint"
       subtitle="A quick estimate of YOUR annual carbon footprint at KUA, based on five things you actually control. All math is transparent — every row shows its assumption inline."
+      toolbar={
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{ padding: '8px 14px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}
+          title="Print your footprint result"
+        >
+          🖨 Print my result
+        </button>
+      }
     >
       <ModuleSection title="Tell us about your year" hint="Update any field — the estimate recomputes live.">
         <form style={styles.form} onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>

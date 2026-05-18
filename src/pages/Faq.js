@@ -201,6 +201,20 @@ export default function Faq() {
     <ModulePage
       title="Frequently asked questions"
       subtitle="Answers to the things parents, prospective students, and curious visitors ask most often. Each answer is short, with a link to the page where the full detail lives."
+      toolbar={
+        <button
+          type="button"
+          onClick={() => {
+            // Expand all questions before print so paper readers see every answer
+            setOpen(new Set(FAQ.map((_, i) => i)));
+            setTimeout(() => window.print(), 100);
+          }}
+          style={{ padding: '8px 14px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}
+          title="Print all FAQs as a handout"
+        >
+          🖨 Print all
+        </button>
+      }
     >
       <ModuleSection title="" hint="">
         <ol style={styles.list}>

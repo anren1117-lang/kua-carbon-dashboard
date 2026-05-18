@@ -68,6 +68,16 @@ export default function DormLeaderboard() {
     <ModulePage
       title="Dorm energy leaderboard"
       subtitle={`Ranking the ${dormRows.length} student dorms by electricity per resident — the only fair comparison since a 48-person dorm always uses more total kWh than a 14-person dorm. Lower = better.`}
+      toolbar={
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{ padding: '8px 14px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}
+          title="Print the leaderboard as a bulletin-board handout"
+        >
+          🖨 Print leaderboard
+        </button>
+      }
     >
       {champion && (
         <ModuleSection title="This year's most efficient dorm" hint="">
