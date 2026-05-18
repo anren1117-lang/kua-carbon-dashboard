@@ -124,8 +124,13 @@ The dashboard's public surface beyond the scope detail pages:
 - `/campus-map` — four modes: Schematic (by-category zones), Geographic (lat/lng on blank canvas), Photo (energy dots on official KUA bird's-eye illustration at `/kua-campus-map.png`), Satellite (real Esri World Imagery via pigeon-maps with markers at cited lat/lng).
 - `/buildings/:id` — per-building drill-down with photo slot (`/buildings/{id}.jpg`), monthly bar chart, peer ranking, BMS export panel, live API panel.
 - `/scenarios` — interactive what-if simulator with 4 sliders (electricity cuts, heat-pump electrification, solar PV, tree planting) + 4 named presets (SBTi 2030, all-in heat pumps, solar-first, behavioral-only).
-- `/faq` — 12 common questions accordion with deep-page links.
+- `/faq` — 12 common questions accordion with deep-page links + #anchor deep-linking.
 - `/share` — printable QR code generator (8 preset destinations + custom URL, SVG/PNG download).
+- `/digest` — auto-generated monthly highlights (most efficient dorm, biggest improver, top emitter, campus delta vs prior month). Printable. Designed for parent newsletter / dorm bulletin / faculty meeting hand-out.
+- `/dorm-posters` — printable sheet of QR codes, one per dorm, each linking to that dorm's /buildings/:id detail. RAs print + cut + post on dorm doors so residents can scan to see their dorm's stats.
+- `/carbon-math` — 8 interactive practice problems (intro / standard / AP difficulty) using KUA-specific numbers + cited factors. Teachers project + students work through them. "Show work" toggle on each. Printable as a worksheet.
+- `/compare` — pick any two captured months, see campus delta + dorm rank movement. Two-champion callouts (biggest improver / biggest regression).
+- `/compare-buildings` — pick any two of KUA's 19 tracked buildings, see them side-by-side (sqft, kWh, mt, intensity, occupants) with winner-per-metric highlighting.
 - `/methodology`, `/credits`, `/sinks-os`, `/renewables-os`, `/drawdown`, `/scope-1`, `/scope-2`, `/scope-3` — canonical scope/methodology surfaces.
 
 ### Admin entry points
