@@ -130,8 +130,8 @@ export function TimeSeriesChart({
           </text>
         ))}
 
-        {/* Area + line */}
-        <path d={areaPath} fill={fill} stroke="none" />
+        {/* Area + line — area fades in on mount via .kua-spark-area */}
+        <path d={areaPath} fill={fill} stroke="none" className="kua-spark-area" />
         <path d={linePath} fill="none" stroke={color} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
 
         {/* Per-point provenance dots: solid = measured, hollow = projected.
