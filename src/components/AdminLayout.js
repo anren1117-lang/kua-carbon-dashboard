@@ -205,6 +205,23 @@ function GroupMenu({ group }) {
   );
 }
 
+// Small SVG chevron separator. Replaces the unicode "›" — crisper
+// rendering across browsers + matches the chevron used by ModuleSection
+// + FAQ.
+function BreadcrumbSep() {
+  return (
+    <svg
+      width="10" height="10" viewBox="0 0 24 24"
+      fill="none" stroke="#475569" strokeWidth="2.5"
+      strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true"
+      style={{ flexShrink: 0 }}
+    >
+      <polyline points="9 6 15 12 9 18" />
+    </svg>
+  );
+}
+
 // Breadcrumb resolves the current path against NAV_GROUPS so every
 // admin sub-page automatically shows "Admin › <Group> › <Page>"
 // without each page having to declare it.
@@ -217,10 +234,10 @@ function Breadcrumb() {
       return (
         <div style={styles.breadcrumb}>
           <NavLink to="/admin" style={styles.crumbLink}>Admin</NavLink>
-          <span style={styles.crumbSep}>›</span>
+          <BreadcrumbSep />
           <span style={styles.crumbCurrent}>{group.label}</span>
-          <span style={styles.crumbSep}>›</span>
-          <span style={styles.crumbCurrent}>{item.label}</span>
+          <BreadcrumbSep />
+          <span style={{ ...styles.crumbCurrent, color: '#cbd5e1', fontWeight: 600 }}>{item.label}</span>
         </div>
       );
     }
