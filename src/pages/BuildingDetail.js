@@ -81,6 +81,8 @@ export default function BuildingDetail() {
     >
       <BuildingPhoto buildingId={id} buildingName={building.name} />
 
+      {building.category === 'Dorm' && row && <DormSpotlight id={id} row={row} rows={rows} occupants={building.occupants} />}
+
       {row ? (
         <ModuleSection title="Headline numbers" hint="Annualized from the months of measured BMS data this building has.">
           <div style={styles.statGrid}>
@@ -161,6 +163,65 @@ export default function BuildingDetail() {
     </ModulePage>
   );
 }
+
+// Dorm-only spotlight callout above the standard headline numbers.
+// Shows this dorm's rank in the per-resident leaderboard with a
+// gold/silver/bronze flavor and links to the full leaderboard.
+function DormSpotlight({ id, row, rows, occupants }) {
+  const dorms = rows
+    .filter((r) => r.category === 'Dorm' && r.occupants > 0)
+    .map((d) => ({ ...d, perResident: d.annualKwh / d.occupants }))
+    .sort((a, b) => a.perResident - b.perResident);
+  const rank = dorms.findIndex((d) => d.id === id) + 1;
+  const total = dorms.length;
+  if (rank === 0 || total === 0) return null;
+  const perResident = Math.round(row.annualKwh / Math.max(1, occupants));
+  const isTop3 = rank <= 3;
+  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
+
+  return (
+    <div style={spotlightStyles.wrap} className="kua-card-hover kua-champion-glow">
+      <div style={spotlightStyles.eyebrow}>🏆 Dorm leaderboard</div>
+      <div style={spotlightStyles.head}>
+        {medal && <span style={spotlightStyles.medal}>{medal}</span>}
+        <div>
+          <div style={spotlightStyles.rank}>
+            #{rank} <span style={spotlightStyles.rankTotal}>of {total} dorms</span>
+          </div>
+          <div style={spotlightStyles.sub}>
+            {perResident.toLocaleString()} kWh per resident per year (annualized)
+          </div>
+        </div>
+      </div>
+      <div style={spotlightStyles.footer}>
+        {isTop3
+          ? '🎉 This dorm is in the top 3 most efficient — keep doing whatever you\'re doing differently.'
+          : `${dorms[0].name} leads at ${Math.round(dorms[0].perResident).toLocaleString()} kWh/resident — that's the bar.`}
+        {' '}
+        <Link to="/dorm-leaderboard" style={spotlightStyles.link}>See full leaderboard →</Link>
+      </div>
+    </div>
+  );
+}
+
+const spotlightStyles = {
+  wrap: {
+    marginBottom: 24,
+    padding: '20px 24px',
+    background: 'linear-gradient(135deg, rgba(8, 51, 24, 0.6) 0%, #0f172a 70%)',
+    border: '1px solid #16a34a',
+    borderLeft: '4px solid #86efac',
+    borderRadius: 12,
+  },
+  eyebrow: { fontSize: 11, color: '#86efac', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 800, marginBottom: 12 },
+  head: { display: 'flex', alignItems: 'center', gap: 18 },
+  medal: { fontSize: 44, lineHeight: 1 },
+  rank: { fontSize: 32, fontWeight: 800, color: '#dcfce7', lineHeight: 1 },
+  rankTotal: { fontSize: 14, color: '#bbf7d0', fontWeight: 600, marginLeft: 6 },
+  sub: { fontSize: 13, color: '#bbf7d0', marginTop: 6 },
+  footer: { marginTop: 14, fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 },
+  link: { color: '#86efac', textDecoration: 'none', fontWeight: 700 },
+};
 
 // "Share stats" button — copies a tweet-length building summary
 // to clipboard so the user can paste into a dorm chat / Slack /
