@@ -100,6 +100,16 @@ export default function Executive() {
     <ModulePage
       title="Executive Dashboard"
       subtitle="The numbers a head of school or trustee should see first. Each card links to the OS module that owns the underlying data."
+      toolbar={
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{ padding: '8px 14px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          title="Print this page or save it as a PDF"
+        >
+          🖨 Print / Save PDF
+        </button>
+      }
     >
       <MetricGrid metrics={[
         { label: 'Net annual emissions', value: Math.round(NET_MT).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: `${perStudent.toFixed(2)} per student` },

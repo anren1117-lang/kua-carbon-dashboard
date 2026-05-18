@@ -75,6 +75,16 @@ export default function Goals() {
     <ModulePage
       title="Goals & Targets"
       subtitle="The reduction pathway KUA is committing to. Each target shows the linear trajectory between baseline and target year, plus the most recent measured value plotted against it."
+      toolbar={
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{ padding: '8px 14px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}
+          title="Print this page or save it as a PDF"
+        >
+          🖨 Print / Save PDF
+        </button>
+      }
     >
       <MetricGrid metrics={[
         { label: 'Active targets',  value: reductionTargets.length, accent: '#22d3ee' },

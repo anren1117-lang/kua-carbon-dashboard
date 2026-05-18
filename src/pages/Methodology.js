@@ -38,6 +38,16 @@ const styles = {
 function Methodology() {
   return (
     <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }} className="no-print">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{ padding: '8px 14px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}
+          title="Print this page or save it as a PDF"
+        >
+          🖨 Print / Save PDF
+        </button>
+      </div>
       <h1 style={styles.title}>Methodology</h1>
       <p style={styles.subtitle}>
         Every emission factor, framework choice, and data boundary used by this dashboard,
