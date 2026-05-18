@@ -283,7 +283,7 @@ export default function BuildingsPage() {
           {sorted.map((b) => {
             const isOpen = expanded === b.id;
             return (
-              <div key={b.id} style={styles.row(CATEGORY_COLORS[b.category])}>
+              <div key={b.id} style={styles.row(CATEGORY_COLORS[b.category])} className="kua-card-hover">
                 <button
                   type="button"
                   style={{ ...styles.head, background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
@@ -491,7 +491,7 @@ function BuildingCategoryCard({ building, maxIntensity, denominatorLabel }) {
   const isSnapshot = building.source === 'snapshot';
   const dailyMax = isMeasured ? Math.max(...building.daily.map((d) => d.kwh)) : 0;
   return (
-    <div style={styles.dormCard}>
+    <div style={styles.dormCard} className="kua-card-hover">
       <div style={styles.dormHead}>
         <div style={styles.dormName}>
           {building.name}
@@ -573,7 +573,7 @@ function DormCard({ dorm, maxPerStudent }) {
   const isSnapshot = dorm.source === 'snapshot';
   const dailyMax = isMeasured ? Math.max(...dorm.daily.map((d) => d.kwh)) : 0;
   return (
-    <div style={styles.dormCard}>
+    <div style={styles.dormCard} className="kua-card-hover">
       <div style={styles.dormHead}>
         <div style={styles.dormName}>
           {dorm.name}
