@@ -39,6 +39,7 @@ import Share               from '../pages/Share.js';
 import MonthlyDigest       from '../pages/MonthlyDigest.js';
 import DormPosters         from '../pages/DormPosters.js';
 import CarbonMath          from '../pages/CarbonMath.js';
+import MonthCompare        from '../pages/MonthCompare.js';
 import Hotspots            from '../pages/Hotspots.js';
 import Learn               from '../pages/Learn.js';
 import LessonEditor        from '../pages/LessonEditor.js';
@@ -102,6 +103,7 @@ const pages = [
   plain(MonthlyDigest,       'MonthlyDigest'),
   plain(DormPosters,         'DormPosters'),
   plain(CarbonMath,          'CarbonMath'),
+  plain(MonthCompare,        'MonthCompare'),
   plain(Hotspots,            'Hotspots'),
   plain(Learn,               'Learn'),
   plain(LessonEditor,        'LessonEditor'),

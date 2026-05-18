@@ -61,6 +61,7 @@ const moreGroups = [
     icon: Icon.Chart,
     items: [
       { to: '/digest',         label: 'Monthly digest' },
+      { to: '/compare',        label: 'Compare two months' },
       { to: '/hotspots',       label: 'Hotspots' },
       { to: '/sinks-os',       label: 'Sinks' },
       { to: '/report',         label: 'Annual report' },
