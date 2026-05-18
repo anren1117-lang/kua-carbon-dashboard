@@ -47,7 +47,7 @@ function ActionRow({ a, color }) {
   const [show, setShow] = useState(false);
   const hasProof = (a.data && a.data.length) || (a.math && a.math.length);
   return (
-    <div style={styles.actionRow}>
+    <div style={styles.actionRow} className="kua-card-hover">
       <div style={styles.actionHead}>
         <div style={styles.actionName}>{a.action}</div>
         <div style={styles.actionImpact(color)}>{a.impact}</div>
@@ -100,7 +100,7 @@ function ActionRow({ a, color }) {
 export function ScopePageInfo({ color, estimate, references, actions }) {
   return (
     <div style={styles.wrap}>
-      <section style={styles.card(color)}>
+      <section style={styles.card(color)} className="kua-card-hover">
         <h2 style={styles.cardTitle}>
           KUA's preliminary estimate
           {estimate.provenance
@@ -148,7 +148,7 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
         )}
       </section>
 
-      <section style={styles.card(color)}>
+      <section style={styles.card(color)} className="kua-card-hover">
         <h2 style={styles.cardTitle}>References</h2>
         <ul style={styles.refList}>
           {references.map((r, i) => (
@@ -161,7 +161,7 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
         </ul>
       </section>
 
-      <section style={styles.card(color)}>
+      <section style={styles.card(color)} className="kua-card-hover">
         <h2 style={styles.cardTitle}>How action changes KUA's number</h2>
         <p style={{ fontSize: 16, color: '#94a3b8', marginTop: 0, marginBottom: 16, lineHeight: 1.7 }}>
           Estimated annual impact of each lever, ordered roughly by magnitude. Click "Show data
