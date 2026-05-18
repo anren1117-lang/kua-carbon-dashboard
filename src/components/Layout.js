@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './ErrorBoundary.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { Icon } from './Icon.js';
+import { BackToTop } from './BackToTop.js';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -507,6 +508,7 @@ function Layout() {
           </div>
         </ErrorBoundary>
       </main>
+      <BackToTop />
       <footer style={styles.footer}>
         <div style={styles.footerInner}>
           <div style={styles.footerCols}>
