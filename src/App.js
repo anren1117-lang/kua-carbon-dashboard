@@ -19,7 +19,7 @@ function App() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <div style={styles.logo}><span style={styles.logoText}>KUA</span></div>
+        <div style={styles.logo} className="kua-logo-enter"><span style={styles.logoText}>KUA</span></div>
         <h1 style={styles.title}>Kimball Union Academy</h1>
         <h2 style={styles.subtitle}>
           <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 6, color: '#22d3ee' }}>
