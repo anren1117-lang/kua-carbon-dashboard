@@ -107,7 +107,7 @@ const styles = {
   totalCell: { },
   totalLabel: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 },
   totalValue: { fontSize: 18, color: '#e5e7eb', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
-  chevron: (open) => ({ color: '#64748b', fontSize: 14, transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }),
+  chevron: (open) => ({ color: '#64748b', display: 'inline-flex', alignItems: 'center', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 200ms ease, color 200ms ease' }),
   body: { padding: '14px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 },
   bodyMobile: { padding: '14px 18px', display: 'grid', gap: 18 },
   section: { },
@@ -124,7 +124,7 @@ function ScopeCard({ s, color }) {
   const [open, setOpen] = useState(false);
   const isMobile = useIsNarrow(760);
   return (
-    <div style={styles.card(color)}>
+    <div style={styles.card(color)} className="kua-card-hover">
       <div
         style={{ ...styles.head, ...(open ? styles.headOpen : {}) }}
         onClick={() => setOpen((v) => !v)}
@@ -150,7 +150,11 @@ function ScopeCard({ s, color }) {
             <div style={styles.totalValue}>{s.kuaPerStudent > 0 ? '+' : ''}{s.kuaPerStudent}</div>
           </div>
         </div>
-        <span style={styles.chevron(open)}>▸</span>
+        <span style={styles.chevron(open)} aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+        </span>
       </div>
       {open && (
         <div style={isMobile ? styles.bodyMobile : styles.body}>
