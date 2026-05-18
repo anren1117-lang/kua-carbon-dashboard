@@ -167,7 +167,7 @@ const styles = {
   footerColTitle: { fontSize: 11, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, marginBottom: 6 },
   footerLink: { padding: '4px 0', color: '#94a3b8', textDecoration: 'none', fontSize: 12, transition: 'color 120ms' },
   footerTag: { textAlign: 'center', color: '#64748b', borderTop: '1px solid #1f2937', paddingTop: 18, marginTop: 6 },
-  skipLink: { position: 'absolute', left: -9999, top: 8, padding: '8px 12px', background: '#22d3ee', color: '#0b1220', textDecoration: 'none', borderRadius: 4, fontWeight: 700, zIndex: 100 },
+  skipLink: { position: 'absolute', left: -9999, top: 8, padding: '10px 16px', background: 'linear-gradient(135deg, #22d3ee, #06b6d4)', color: '#0b1220', textDecoration: 'none', borderRadius: 6, fontWeight: 800, zIndex: 100, fontSize: 13, letterSpacing: 0.4, boxShadow: '0 4px 14px -2px rgba(34, 211, 238, 0.5)' },
 
   // Hamburger + drawer
   hamburger: {
