@@ -258,6 +258,14 @@ function AdminLayout() {
   // users get a fresh reading position. Mirrors the public Layout.
   useEffect(() => {
     if (mainRef.current) mainRef.current.focus({ preventScroll: true });
+    // Smooth scroll-to-top on route change — same behavior as the
+    // public Layout (Phase 269) so deeply-scrolled admin pages
+    // don't carry their scroll position across navigation.
+    if (typeof window !== 'undefined') {
+      const reduceMotion = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
   }, [pathname]);
 
   // Sync document.title on route change. Walks the admin NAV_GROUPS
