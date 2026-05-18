@@ -59,6 +59,7 @@ const moreGroups = [
     title: 'Insights',
     icon: Icon.Chart,
     items: [
+      { to: '/digest',         label: 'Monthly digest' },
       { to: '/hotspots',       label: 'Hotspots' },
       { to: '/sinks-os',       label: 'Sinks' },
       { to: '/report',         label: 'Annual report' },
