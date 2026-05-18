@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { estimatePersonalFootprint, FOOTPRINT_REFERENCE, typicalFootprintFor, allTypicalFootprints } from '../utils/personalFootprint.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
+import { carbonEquivalents } from '../utils/equivalents.js';
 
 // /your-footprint — a public student-facing personal carbon estimator.
 // Five inputs, transparent math, three reference comparisons, and
@@ -163,6 +165,9 @@ export default function PersonalFootprint() {
         </ModuleSection>
       )}
 
+      <CampusAmplification yourComponents={result.components} />
+
+
       <ModuleSection title="What about everything else?" hint="">
         <p style={styles.fineprint}>
           This estimator covers what you personally control day-to-day. It doesn't include
@@ -177,6 +182,72 @@ export default function PersonalFootprint() {
         </p>
       </ModuleSection>
     </ModulePage>
+  );
+}
+
+// Amplification: if every KUA student adopted YOUR biggest reducible
+// change, how much would the school cut? Multiplies the user's most
+// impactful component by TOTAL_STUDENTS and translates the result
+// into tangible equivalents. Ties personal action to institutional
+// impact, which is the deepest motivational frame for this calculator.
+function CampusAmplification({ yourComponents }) {
+  if (!Array.isArray(yourComponents) || yourComponents.length === 0) return null;
+  // Pick the biggest mt row that's reducible (excludes structural rows
+  // like "no commute" with mt=0).
+  const top = yourComponents
+    .filter((c) => c.mt > 0.1)
+    .sort((a, b) => b.mt - a.mt)[0];
+  if (!top) return null;
+
+  // If every student matched your biggest row's footprint AND reduced
+  // by 30% (a realistic single-change target), the campus saves...
+  const perStudentReduction = top.mt * 0.30;
+  const campusReduction = perStudentReduction * TOTAL_STUDENTS;
+  const eq = carbonEquivalents(campusReduction);
+
+  return (
+    <ModuleSection
+      title="What if every student did this?"
+      hint={`Your biggest reducible category is "${top.label}" at ${top.mt.toFixed(2)} mt. If every one of KUA's ${TOTAL_STUDENTS} students cut that by 30%…`}
+    >
+      <div style={amp.wrap}>
+        <div style={amp.headline}>
+          <div style={amp.headlineLabel}>Campus reduction</div>
+          <div style={amp.headlineValue}>
+            <AnimatedNumber value={campusReduction} decimals={0} duration={1100} />
+            <span style={amp.headlineUnit}> mtCO₂e / yr</span>
+          </div>
+          <div style={amp.headlineSub}>
+            {perStudentReduction.toFixed(2)} mt × {TOTAL_STUDENTS.toLocaleString()} students = {campusReduction.toFixed(0)} mt
+          </div>
+        </div>
+
+        <div style={amp.equivGrid}>
+          <div style={amp.equivCell} className="kua-card-hover">
+            <div style={amp.equivIcon}>🚗</div>
+            <div style={amp.equivValue}><AnimatedNumber value={eq.carYears} duration={1300} /></div>
+            <div style={amp.equivText}>cars off the road for a year</div>
+          </div>
+          <div style={amp.equivCell} className="kua-card-hover">
+            <div style={amp.equivIcon}>🌳</div>
+            <div style={amp.equivValue}><AnimatedNumber value={eq.treeYears} duration={1300} /></div>
+            <div style={amp.equivText}>trees planted (1 yr of growth)</div>
+          </div>
+          <div style={amp.equivCell} className="kua-card-hover">
+            <div style={amp.equivIcon}>⛽</div>
+            <div style={amp.equivValue}><AnimatedNumber value={eq.galsGasoline} duration={1300} /></div>
+            <div style={amp.equivText}>gallons of gasoline not burned</div>
+          </div>
+        </div>
+
+        <p style={amp.footer}>
+          One person's choice doesn't move KUA's footprint visibly — but multiply by every
+          student and the same choice rivals a real reduction project on the institutional plan.
+          The same scaling logic appears on <Link to="/scenarios" style={styles.link}>/scenarios →</Link>
+          {' '}for whole-campus levers.
+        </p>
+      </div>
+    </ModuleSection>
   );
 }
 
@@ -350,6 +421,42 @@ const styles = {
   suggestion: { padding: '12px 16px', background: '#052e16', border: '1px solid #14532d', borderLeft: '3px solid #86efac', borderRadius: 6, color: '#dcfce7', fontSize: 14, lineHeight: 1.6 },
   fineprint: { fontSize: 13, color: '#94a3b8', lineHeight: 1.7, margin: '8px 0' },
   link: { color: '#22d3ee', textDecoration: 'none' },
+};
+
+const amp = {
+  wrap: {},
+  headline: {
+    padding: '20px 22px',
+    background: 'linear-gradient(135deg, rgba(8, 51, 68, 0.5) 0%, rgba(15, 23, 42, 0.95) 100%)',
+    border: '1px solid #1f2937',
+    borderLeft: '4px solid #22d3ee',
+    borderRadius: 10,
+    marginBottom: 18,
+  },
+  headlineLabel: { fontSize: 11, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 800, marginBottom: 8 },
+  headlineValue: {
+    fontSize: 'clamp(40px, 8vw, 56px)',
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: '-0.02em',
+    background: 'linear-gradient(135deg, #67e8f9 0%, #22d3ee 50%, #06b6d4 100%)',
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    color: 'transparent',
+    WebkitTextFillColor: 'transparent',
+    filter: 'drop-shadow(0 0 14px rgba(34, 211, 238, 0.25))',
+    display: 'inline-block',
+  },
+  headlineUnit: { fontSize: 18, color: '#94a3b8', marginLeft: 8, fontWeight: 500, WebkitBackgroundClip: 'initial', WebkitTextFillColor: 'initial', background: 'none', filter: 'none' },
+  headlineSub: { fontSize: 13, color: '#94a3b8', marginTop: 10 },
+
+  equivGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 },
+  equivCell: { textAlign: 'center', padding: '14px 10px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
+  equivIcon: { fontSize: 24, marginBottom: 6 },
+  equivValue: { fontSize: 22, color: '#e5e7eb', fontWeight: 800, fontVariantNumeric: 'tabular-nums', marginBottom: 4 },
+  equivText: { fontSize: 11, color: '#94a3b8', lineHeight: 1.3 },
+
+  footer: { fontSize: 13, color: '#94a3b8', lineHeight: 1.7, marginTop: 14 },
 };
 
 const spectrum = {
