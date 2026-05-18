@@ -701,3 +701,12 @@ section details[open] > summary::before {
 @media (prefers-reduced-motion: reduce) {
   .kua-logo-enter { animation: none !important; }
 }
+
+/* Dropdown menus open with a quick scale + fade from the anchor */
+@keyframes kuaMenuOpen {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes kuaMenuOpen { from, to { opacity: 1; transform: none; } }
+}

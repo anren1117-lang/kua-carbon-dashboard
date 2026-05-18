@@ -127,7 +127,7 @@ const styles = {
     fontWeight: active ? 600 : 400,
     whiteSpace: 'nowrap',
   }),
-  catMenu: { position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 8, padding: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.35)', minWidth: 240, zIndex: 100 },
+  catMenu: { position: 'absolute', top: '100%', left: 0, marginTop: 6, background: 'rgba(15, 23, 42, 0.96)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #1f2937', borderRadius: 10, padding: 6, boxShadow: '0 12px 32px -4px rgba(0,0,0,0.6), 0 0 0 1px rgba(34, 211, 238, 0.08)', minWidth: 260, zIndex: 100, animation: 'kuaMenuOpen 180ms cubic-bezier(0.22, 1, 0.36, 1)' },
   catItem: ({ isActive }) => ({
     display: 'flex',
     alignItems: 'center',
