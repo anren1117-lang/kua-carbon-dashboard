@@ -19,7 +19,7 @@ const styles = {
 // `body` can be a string or an array of strings (rendered as bullets).
 export function EducationalCard({ title, sections }) {
   return (
-    <div style={styles.card}>
+    <div style={styles.card} className="kua-card-hover">
       <div style={styles.head}>
         <span style={styles.badge}>Learn</span>
         <span style={styles.title}>{title}</span>
