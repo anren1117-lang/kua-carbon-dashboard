@@ -57,6 +57,7 @@ const categoryItems = [
 const moreGroups = [
   {
     title: 'Insights',
+    icon: Icon.Chart,
     items: [
       { to: '/hotspots',       label: 'Hotspots' },
       { to: '/sinks-os',       label: 'Sinks' },
@@ -66,6 +67,7 @@ const moreGroups = [
   },
   {
     title: 'Plan & finance',
+    icon: Icon.Bolt,
     items: [
       { to: '/goals',          label: 'Goals (standalone)' },
       { to: '/actions',        label: 'Actions (standalone)' },
@@ -76,6 +78,7 @@ const moreGroups = [
   },
   {
     title: 'Operations',
+    icon: Icon.Refresh,
     items: [
       { to: '/dining',         label: 'Dining' },
       { to: '/transportation', label: 'Transportation' },
@@ -514,7 +517,14 @@ function Layout() {
           <div style={styles.footerCols}>
             {moreGroups.map((g) => (
               <div key={g.title} style={styles.footerCol}>
-                <div style={styles.footerColTitle}>{g.title}</div>
+                <div style={styles.footerColTitle}>
+                  {g.icon && (
+                    <span style={{ display: 'inline-flex', marginRight: 6, verticalAlign: 'middle' }}>
+                      <g.icon size={11} />
+                    </span>
+                  )}
+                  {g.title}
+                </div>
                 {g.items.map(({ to, label }) => (
                   <NavLink key={to} to={to} style={styles.footerLink}>
                     {label}
