@@ -24,7 +24,7 @@ export function ModuleSection({ title, hint, children, collapsible, defaultOpen 
     return (
       <section style={styles.section}>
         <details open={defaultOpen} style={{ display: 'block' }}>
-          <summary style={{ cursor: 'pointer', listStyle: 'revert', outline: 'none' }}>
+          <summary style={{ cursor: 'pointer', outline: 'none' }}>
             {title && <h2 style={{ ...styles.sectionTitle, display: 'inline' }}>{title}</h2>}
           </summary>
           {hint && <p style={styles.hint}>{hint}</p>}

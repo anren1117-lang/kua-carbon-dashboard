@@ -661,3 +661,30 @@ a:hover > .kua-back-arrow,
 @media (prefers-reduced-motion: reduce) {
   .kua-detail-slide { animation: none !important; }
 }
+
+/* ModuleSection <details> custom marker. Hide the default ▶ + add
+   a styled SVG via ::before on the summary that rotates when open. */
+section details > summary {
+  list-style: none;
+  position: relative;
+  padding-left: 22px;
+}
+section details > summary::-webkit-details-marker {
+  display: none;
+}
+section details > summary::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 6 15 12 9 18'/></svg>");
+  background-repeat: no-repeat;
+  background-size: 10px;
+  transform: translateY(-50%) rotate(0deg);
+  transition: transform 220ms ease;
+}
+section details[open] > summary::before {
+  transform: translateY(-50%) rotate(90deg);
+}
