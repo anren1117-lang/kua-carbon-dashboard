@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ADMIN_AUTH_EXPIRED_EVENT } from '../utils/adminFetch.js';
 import { ErrorBoundary } from './ErrorBoundary.js';
+import { Icon } from './Icon.js';
 
 // Grouped admin navigation. The flat 14-tab bar that lived here was
 // hard to scan; admins had to read every label to find the page they
@@ -79,7 +80,7 @@ const styles = {
   skipLink: { position: 'absolute', left: -9999, top: 8, padding: '8px 12px', background: '#22d3ee', color: '#0b1220', textDecoration: 'none', borderRadius: 4, fontWeight: 700, zIndex: 100 },
   header: { borderBottom: '1px solid #1f2937', background: '#0f172a', position: 'sticky', top: 0, zIndex: 10 },
   headerInner: { maxWidth: 1200, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' },
-  brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap' },
+  brand: { fontWeight: 700, fontSize: 18, letterSpacing: 0.2, color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center' },
   badge: { padding: '2px 8px', fontSize: 11, fontWeight: 600, borderRadius: 4, background: '#f59e0b', color: '#0b1220', textTransform: 'uppercase', letterSpacing: 0.6 },
   nav: { display: 'flex', gap: 4, flex: 1, minWidth: 0, flexWrap: 'wrap' },
   link: ({ isActive }) => ({
@@ -353,6 +354,9 @@ function AdminLayout() {
       <header style={styles.header}>
         <div style={styles.headerInner}>
           <NavLink to="/admin" style={styles.brand}>
+            <span style={{ display: 'inline-flex', marginRight: 8, filter: 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.35))' }}>
+              <Icon.Leaf size={18} />
+            </span>
             KUA Carbon <span style={styles.badge}>Admin</span>
           </NavLink>
           <nav style={styles.nav} aria-label="Admin">
@@ -366,7 +370,11 @@ function AdminLayout() {
       <main id="admin-main" ref={mainRef} tabIndex="-1" style={styles.main}>
         <Breadcrumb />
         <ErrorBoundary>
-          <Outlet />
+          {/* Re-mount on route change so the fade animation
+              re-triggers — matches the public Layout. */}
+          <div key={pathname} className="page-fade-in">
+            <Outlet />
+          </div>
         </ErrorBoundary>
       </main>
     </div>
