@@ -167,6 +167,8 @@ export default function PersonalFootprint() {
 
       <CampusAmplification yourComponents={result.components} />
 
+      <PledgeSection totalMt={result.totalMt} components={result.components} studentType={studentType} />
+
 
       <ModuleSection title="What about everything else?" hint="">
         <p style={styles.fineprint}>
@@ -184,6 +186,115 @@ export default function PersonalFootprint() {
     </ModulePage>
   );
 }
+
+// Personal pledge: pick the biggest reducible row and commit to a
+// 30% reduction. Saves the chosen pledge to localStorage so it
+// survives reloads, and offers a "copy to clipboard" share string
+// the user can post on a bulletin board or paste into a group chat.
+function PledgeSection({ totalMt, components, studentType }) {
+  const [copied, setCopied] = React.useState(false);
+  const [pledged, setPledged] = React.useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kua-footprint-pledge') || 'null');
+    } catch { return null; }
+  });
+
+  // Top reducible row drives the suggested pledge focus.
+  const top = (components || [])
+    .filter((c) => c.mt > 0.1)
+    .sort((a, b) => b.mt - a.mt)[0];
+
+  function savePledge() {
+    if (!top) return;
+    const pledge = {
+      focus: top.label,
+      currentMt: top.mt,
+      targetReductionPct: 30,
+      reductionMt: +(top.mt * 0.30).toFixed(2),
+      newTotalMt: +(totalMt - top.mt * 0.30).toFixed(2),
+      pledgedAt: new Date().toISOString(),
+      studentType,
+    };
+    try { localStorage.setItem('kua-footprint-pledge', JSON.stringify(pledge)); } catch {}
+    setPledged(pledge);
+  }
+
+  function clearPledge() {
+    try { localStorage.removeItem('kua-footprint-pledge'); } catch {}
+    setPledged(null);
+  }
+
+  function copyShare() {
+    if (!pledged) return;
+    const text =
+      `I pledged to cut my ${pledged.focus.toLowerCase()} by 30% this year — that's `
+      + `~${pledged.reductionMt} mtCO₂e off my personal carbon footprint. `
+      + `What's yours? Calculate at kua-carbon-dashboard.vercel.app/your-footprint`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2400);
+      });
+    }
+  }
+
+  if (!top) return null;
+
+  return (
+    <ModuleSection title="Make a pledge" hint="Save your commitment to your browser, share it with friends or your dorm.">
+      {!pledged ? (
+        <div style={pledgeStyles.wrap}>
+          <p style={pledgeStyles.intro}>
+            Your biggest reducible row is <strong style={{ color: '#cbd5e1' }}>{top.label}</strong>{' '}
+            at <strong style={{ color: '#cbd5e1' }}>{top.mt.toFixed(2)} mtCO₂e</strong>.
+            Pledge a 30% cut and we'll save it to your browser — no account, no email.
+          </p>
+          <button type="button" onClick={savePledge} style={pledgeStyles.cta} className="kua-cta-card">
+            ✓ I'll cut my {top.label.toLowerCase()} by 30%
+          </button>
+          <p style={pledgeStyles.note}>
+            Saved locally only. Clearing your browser data wipes it. No personal info leaves your device.
+          </p>
+        </div>
+      ) : (
+        <div style={pledgeStyles.wrap}>
+          <div style={pledgeStyles.savedCard} className="kua-card-hover">
+            <div style={pledgeStyles.savedBadge}>✓ Pledge saved</div>
+            <div style={pledgeStyles.savedTitle}>
+              Cut "{pledged.focus}" by 30% this year
+            </div>
+            <div style={pledgeStyles.savedMeta}>
+              That's ~{pledged.reductionMt} mtCO₂e off your footprint
+              {' '}({pledged.currentMt.toFixed(2)} → {pledged.newTotalMt.toFixed(2)} mtCO₂e total).
+            </div>
+            <div style={pledgeStyles.btnRow}>
+              <button type="button" onClick={copyShare} style={pledgeStyles.shareBtn}>
+                {copied ? '✓ Copied!' : '📋 Copy share text'}
+              </button>
+              <button type="button" onClick={clearPledge} style={pledgeStyles.clearBtn}>
+                Clear pledge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </ModuleSection>
+  );
+}
+
+const pledgeStyles = {
+  wrap: {},
+  intro: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.7, marginTop: 0, marginBottom: 14 },
+  cta: { padding: '12px 18px', background: 'linear-gradient(135deg, #052e16 0%, #14532d 100%)', color: '#86efac', border: '1px solid #16a34a', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' },
+  note: { fontSize: 11, color: '#64748b', marginTop: 12, fontStyle: 'italic' },
+  savedCard: { padding: '20px 22px', background: 'linear-gradient(135deg, #052e16 0%, #14532d 100%)', border: '1px solid #16a34a', borderLeft: '4px solid #86efac', borderRadius: 10 },
+  savedBadge: { fontSize: 11, color: '#86efac', textTransform: 'uppercase', letterSpacing: 1.4, fontWeight: 800, marginBottom: 10 },
+  savedTitle: { fontSize: 18, color: '#dcfce7', fontWeight: 700, marginBottom: 6 },
+  savedMeta: { fontSize: 13, color: '#bbf7d0', lineHeight: 1.6, marginBottom: 14 },
+  btnRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
+  shareBtn: { padding: '8px 14px', background: '#0b1220', color: '#86efac', border: '1px solid #14532d', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  clearBtn: { padding: '8px 14px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 6, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' },
+};
 
 // Amplification: if every KUA student adopted YOUR biggest reducible
 // change, how much would the school cut? Multiplies the user's most
