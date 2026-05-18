@@ -324,7 +324,7 @@ export default function CampusMap() {
         )}
 
         {selected && (
-          <div style={styles.detail}>
+          <div style={styles.detail} key={selected.id} className="kua-detail-slide">
             <div style={styles.detailHead}>
               <h3 style={styles.detailName}>{selected.name}</h3>
               <Pill kind="neutral">

@@ -647,3 +647,17 @@ a:hover > .kua-back-arrow,
 @media (prefers-reduced-motion: reduce) {
   .kua-spark-area { animation: none !important; }
 }
+
+/* Detail panel slide-in — used by the /campus-map selected-building
+   panel + similar in-page expansion patterns. Bigger max-height
+   than .kua-faq-answer since detail panels can be tall. */
+@keyframes kuaDetailSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kua-detail-slide {
+  animation: kuaDetailSlideIn 280ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kua-detail-slide { animation: none !important; }
+}
