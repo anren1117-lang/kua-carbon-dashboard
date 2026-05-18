@@ -95,6 +95,10 @@ export default function CompareBuildings() {
               {b.name} detail →
             </Link>
           </div>
+          <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 16, marginBottom: 0 }}>
+            Want to compare two MONTHS for the same building instead?
+            {' '}<Link to="/compare" style={styles.deepLink}>Open the month comparison →</Link>
+          </p>
         </ModuleSection>
       )}
     </ModulePage>

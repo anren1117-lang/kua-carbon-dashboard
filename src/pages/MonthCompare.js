@@ -160,6 +160,11 @@ export default function MonthCompare() {
         )}
       </div>
 
+      <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 20, marginBottom: 0 }}>
+        Want to compare two BUILDINGS instead of two months?
+        {' '}<Link to="/compare-buildings" style={styles.link}>Open the building comparison →</Link>
+      </p>
+
       <ModuleSection title="Every dorm, sorted by change" hint="Click any dorm to drill into its full monthly trend.">
         <ol style={styles.list}>
           {[...dormDeltas].sort((x, y) => {
