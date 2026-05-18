@@ -7,6 +7,7 @@ import { ScopeExplainer } from './components/ScopeExplainer';
 import { AISummary } from './components/AISummary';
 import { NewsStrip } from './components/NewsStrip';
 import { DormLeaderboardPreview } from './components/DormLeaderboardPreview';
+import { DailyTip } from './components/DailyTip';
 import { SectionHeader } from './components/SectionHeader';
 import { Icon } from './components/Icon';
 import './App.css';
@@ -41,6 +42,9 @@ function App() {
 
       <SectionHeader label="Context" title="How KUA compares" icon={Icon.HelpCircle} />
       <PeerComparison />
+
+      <SectionHeader label="Today" title="One thing you can do" icon={Icon.Sparkles} />
+      <DailyTip />
 
       <SectionHeader label="World" title="What's happening right now" icon={Icon.Leaf} />
       <NewsStrip />
