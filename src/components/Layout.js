@@ -4,6 +4,7 @@ import { ErrorBoundary } from './ErrorBoundary.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { Icon } from './Icon.js';
 import { BackToTop } from './BackToTop.js';
+import { CommandPalette } from './CommandPalette.js';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -262,6 +263,45 @@ const styles = {
   },
 };
 
+// Small "⌘K" hint button that dispatches a synthetic Cmd+K
+// keyboard event so users on touch / mouse-only can still open
+// the command palette without knowing the shortcut.
+function CmdkButton() {
+  function onClick() {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Open command palette"
+      title="Quick navigation (⌘K / Ctrl+K)"
+      style={{
+        padding: '6px 10px',
+        background: '#0b1220',
+        border: '1px solid #1f2937',
+        borderRadius: 6,
+        color: '#94a3b8',
+        fontSize: 12,
+        fontFamily: 'inherit',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        transition: 'background 120ms, color 120ms, border-color 120ms',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#22d3ee'; e.currentTarget.style.color = '#22d3ee'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#1f2937'; e.currentTarget.style.color = '#94a3b8'; }}
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <kbd style={{ fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', background: '#1f2937', padding: '1px 5px', borderRadius: 3, color: '#cbd5e1' }}>⌘K</kbd>
+    </button>
+  );
+}
+
 function CategoriesMenu() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
@@ -495,6 +535,7 @@ function Layout() {
               <CategoriesMenu />
             </nav>
             <div style={styles.rightGroup}>
+              <CmdkButton />
               {portalItems.map(({ to, label, color }) => (
                 <NavLink key={to} to={to} style={styles.portalLink(color)} aria-label={`${label} portal`}>
                   {label}
@@ -517,6 +558,7 @@ function Layout() {
         </ErrorBoundary>
       </main>
       <BackToTop />
+      <CommandPalette />
       <footer style={styles.footer}>
         <div style={styles.footerInner}>
           <div style={styles.footerCols}>

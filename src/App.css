@@ -710,3 +710,13 @@ section details[open] > summary::before {
 @media (prefers-reduced-motion: reduce) {
   @keyframes kuaMenuOpen { from, to { opacity: 1; transform: none; } }
 }
+
+/* Command palette open animations */
+@keyframes kuaCmdkBackdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes kuaCmdkPanel {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
