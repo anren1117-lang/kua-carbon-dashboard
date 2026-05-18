@@ -11,6 +11,7 @@ import { carbonEquivalents } from '../utils/equivalents.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { Icon } from '../components/Icon.js';
 
 // Trustee / parent-facing annual summary. Designed to print cleanly:
 // no nav, no flashy interactions, every section uses 11pt body type
@@ -56,7 +57,10 @@ export default function AnnualReport() {
         <button type="button" style={styles.printBtn} onClick={() => window.print()}>
           🖨 Print or save as PDF
         </button>
-        <Link to="/executive" style={styles.backLink}>← Back to dashboard</Link>
+        <Link to="/executive" style={styles.backLink} className="kua-back-link">
+          <span className="kua-back-arrow" style={{ marginRight: 6 }}><Icon.ArrowLeft size={13} /></span>
+          Back to dashboard
+        </Link>
       </div>
 
       <header style={styles.header}>
@@ -333,7 +337,7 @@ const styles = {
   page: { maxWidth: 820, margin: '0 auto', padding: '24px 32px', background: '#fff', color: '#1f2937', fontFamily: 'Georgia, "Times New Roman", serif', lineHeight: 1.6 },
   controls: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   printBtn: { padding: '8px 16px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'inherit' },
-  backLink: { color: '#0e7490', textDecoration: 'none', fontSize: 14 },
+  backLink: { color: '#0e7490', textDecoration: 'none', fontSize: 14, display: 'inline-flex', alignItems: 'center' },
 
   header: { textAlign: 'center', marginBottom: 32, paddingBottom: 16, borderBottom: '2px solid #1f2937' },
   brand: { fontSize: 14, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.6, fontWeight: 700 },
