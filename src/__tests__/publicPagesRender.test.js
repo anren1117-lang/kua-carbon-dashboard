@@ -40,6 +40,7 @@ import MonthlyDigest       from '../pages/MonthlyDigest.js';
 import DormPosters         from '../pages/DormPosters.js';
 import CarbonMath          from '../pages/CarbonMath.js';
 import MonthCompare        from '../pages/MonthCompare.js';
+import CompareBuildings    from '../pages/CompareBuildings.js';
 import Hotspots            from '../pages/Hotspots.js';
 import Learn               from '../pages/Learn.js';
 import LessonEditor        from '../pages/LessonEditor.js';
@@ -104,6 +105,7 @@ const pages = [
   plain(DormPosters,         'DormPosters'),
   plain(CarbonMath,          'CarbonMath'),
   plain(MonthCompare,        'MonthCompare'),
+  plain(CompareBuildings,    'CompareBuildings'),
   plain(Hotspots,            'Hotspots'),
   plain(Learn,               'Learn'),
   plain(LessonEditor,        'LessonEditor'),

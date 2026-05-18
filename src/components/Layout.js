@@ -60,8 +60,9 @@ const moreGroups = [
     title: 'Insights',
     icon: Icon.Chart,
     items: [
-      { to: '/digest',         label: 'Monthly digest' },
-      { to: '/compare',        label: 'Compare two months' },
+      { to: '/digest',           label: 'Monthly digest' },
+      { to: '/compare',          label: 'Compare two months' },
+      { to: '/compare-buildings', label: 'Compare two buildings' },
       { to: '/hotspots',       label: 'Hotspots' },
       { to: '/sinks-os',       label: 'Sinks' },
       { to: '/report',         label: 'Annual report' },
