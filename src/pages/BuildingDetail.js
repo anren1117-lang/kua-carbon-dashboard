@@ -73,6 +73,8 @@ export default function BuildingDetail() {
               <span style={{ marginLeft: 6 }}>Monthly CSV</span>
             </button>
           )}
+          <ShareStatsButton building={building} row={row} />
+
         </div>
       }
     >
@@ -156,6 +158,55 @@ export default function BuildingDetail() {
         </div>
       </ModuleSection>
     </ModulePage>
+  );
+}
+
+// "Share stats" button — copies a tweet-length building summary
+// to clipboard so the user can paste into a dorm chat / Slack /
+// IG story. Shows "Copied!" feedback for 2 seconds. No share when
+// there's no measured data row yet (would be empty stats).
+function ShareStatsButton({ building, row }) {
+  const [copied, setCopied] = useState(false);
+  if (!row) return null;
+  function onClick() {
+    const url = (typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'https://kua-carbon-dashboard.vercel.app') + `/buildings/${building.id}`;
+    const text =
+      `${building.name} (${building.category}) at KUA: `
+      + `${row.annualKwh.toLocaleString()} kWh/yr, `
+      + `${row.mtCO2e.toFixed(1)} mtCO₂e, `
+      + `${row.kgPerSqft} kg/sqft. `
+      + `See live: ${url}`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2200);
+      });
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: '6px 12px',
+        background: copied ? '#052e16' : '#0f172a',
+        color: copied ? '#86efac' : '#22d3ee',
+        border: `1px solid ${copied ? '#16a34a' : '#1f2937'}`,
+        borderRadius: 6,
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+      title="Copy a tweet-length summary of this building's stats to your clipboard"
+    >
+      <Icon.Share size={12} />
+      <span style={{ marginLeft: 6 }}>{copied ? 'Copied!' : 'Share stats'}</span>
+    </button>
   );
 }
 
