@@ -86,6 +86,7 @@ const moreGroups = [
       { to: '/waste',          label: 'Waste' },
       { to: '/procurement',    label: 'Procurement' },
       { to: '/share',          label: 'Share (QR)' },
+      { to: '/dorm-posters',   label: 'Dorm QR posters' },
     ],
   },
 ];
