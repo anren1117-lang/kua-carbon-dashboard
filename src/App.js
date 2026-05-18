@@ -21,7 +21,12 @@ function App() {
       <header style={styles.header}>
         <div style={styles.logo}><span style={styles.logoText}>KUA</span></div>
         <h1 style={styles.title}>Kimball Union Academy</h1>
-        <h2 style={styles.subtitle}>Campus Carbon Emissions Dashboard</h2>
+        <h2 style={styles.subtitle}>
+          <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 6, color: '#22d3ee' }}>
+            <Icon.Leaf size={14} />
+          </span>
+          Campus Carbon Emissions Dashboard
+        </h2>
       </header>
 
       <SectionHeader label="The number" title="Net annual carbon footprint" icon={Icon.Chart} />
@@ -124,11 +129,31 @@ function App() {
 
 const styles = {
   container: { minHeight: '100vh', backgroundColor: '#0b1220', padding: '20px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#e5e7eb' },
-  header: { textAlign: 'center', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid #1f2937' },
-  logo: { width: 60, height: 60, backgroundColor: '#b91c1c', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' },
-  logoText: { color: 'white', fontWeight: 700, fontSize: '1.2rem' },
-  title: { fontSize: '1.8rem', color: '#22c55e', marginBottom: 5 },
-  subtitle: { fontSize: '1rem', color: '#94a3b8', marginBottom: 0 },
+  header: { textAlign: 'center', marginBottom: 40, paddingBottom: 28, borderBottom: '1px solid #1f2937' },
+  logo: {
+    width: 64, height: 64,
+    backgroundColor: '#b91c1c',
+    borderRadius: 10,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 14px',
+    boxShadow: '0 4px 16px -4px rgba(185, 28, 28, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset',
+  },
+  logoText: { color: 'white', fontWeight: 800, fontSize: '1.3rem', letterSpacing: '0.02em' },
+  title: {
+    fontSize: '2rem',
+    color: '#22c55e',
+    marginBottom: 6,
+    fontWeight: 700,
+    letterSpacing: '-0.015em',
+  },
+  subtitle: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+    marginBottom: 0,
+    fontWeight: 500,
+  },
 };
 
 export default App;
