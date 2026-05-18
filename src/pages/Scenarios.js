@@ -102,6 +102,7 @@ export default function Scenarios() {
               key={p.key}
               type="button"
               onClick={() => applyPreset(p.inputs)}
+              className="kua-card-hover"
               style={{
                 ...styles.presetBtn,
                 ...(activePresetKey === p.key ? styles.presetBtnActive : {}),
@@ -363,8 +364,8 @@ const styles = {
   link: { color: '#22d3ee', textDecoration: 'none' },
 
   presetGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 },
-  presetBtn:  { padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, color: '#cbd5e1', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', gap: 6 },
-  presetBtnActive: { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee' },
+  presetBtn:  { padding: '14px 16px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8, color: '#cbd5e1', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', gap: 6, transition: 'all 200ms ease' },
+  presetBtnActive: { background: 'linear-gradient(135deg, #0e3a5f 0%, #0b1220 100%)', borderColor: '#22d3ee', color: '#22d3ee', boxShadow: '0 4px 12px -4px rgba(34, 211, 238, 0.4)' },
   presetLabel: { fontSize: 14, fontWeight: 700 },
   presetDesc:  { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 },
 };

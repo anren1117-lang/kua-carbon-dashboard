@@ -208,7 +208,7 @@ export default function Faq() {
             const isOpen = open.has(i);
             const slug = slugify(item.q);
             return (
-              <li key={i} id={`faq-${slug}`} style={styles.item}>
+              <li key={i} id={`faq-${slug}`} style={styles.item} className="kua-card-hover">
                 <button
                   type="button"
                   onClick={() => toggle(i)}
