@@ -197,7 +197,8 @@ export default function CampusMap() {
           )}
           <span style={{ flex: 1 }} />
           <button type="button" onClick={onExportCsv} style={styles.exportBtn} title="Download all 19 rows as CSV for board reports / AASHE STARS">
-            ↓ Download CSV
+            <Icon.Download size={12} />
+            <span style={{ marginLeft: 6 }}>Download CSV</span>
           </button>
         </div>
 
@@ -502,7 +503,7 @@ const styles = {
   modeBtnActive:  { background: '#0e3a5f', borderColor: '#22d3ee', color: '#22d3ee', fontWeight: 700 },
   estimatedBanner:{ marginBottom: 12, padding: '10px 14px', background: '#3a2a0e', border: '1px solid #92400e', borderLeft: '3px solid #fcd34d', borderRadius: 6, color: '#fcd34d', fontSize: 12, lineHeight: 1.6 },
   citedBadge:     { padding: '2px 8px', background: '#052e16', border: '1px solid #16a34a', borderRadius: 999, color: '#86efac', fontSize: 11, fontWeight: 700, marginLeft: 4 },
-  exportBtn:      { padding: '4px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  exportBtn:      { padding: '4px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center' },
 
   legendRow:   { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14, fontSize: 11, color: '#94a3b8' },
   legendLabel: { color: '#cbd5e1', fontWeight: 600 },

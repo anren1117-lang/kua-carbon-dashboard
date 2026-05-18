@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import qrcode from 'qrcode-generator';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection } from '../components/ModuleShell.js';
+import { Icon } from '../components/Icon.js';
 
 // /share — generates a QR code linking to any page on the dashboard.
 // Useful for printing on dorm bulletin board flyers, school events,
@@ -132,10 +133,12 @@ export default function Share() {
 
         <div style={styles.downloadRow}>
           <button type="button" onClick={downloadSvg} style={styles.downloadBtn} disabled={!svgString}>
-            ↓ Download SVG (best for print)
+            <Icon.Download size={13} />
+            <span style={{ marginLeft: 7 }}>Download SVG (best for print)</span>
           </button>
           <button type="button" onClick={downloadPng} style={styles.downloadBtn} disabled={!svgString}>
-            ↓ Download PNG (best for slides)
+            <Icon.Download size={13} />
+            <span style={{ marginLeft: 7 }}>Download PNG (best for slides)</span>
           </button>
         </div>
       </ModuleSection>
@@ -193,7 +196,7 @@ const styles = {
   urlCode:      { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11, color: '#0b1220', wordBreak: 'break-all' },
 
   downloadRow:  { marginTop: 16, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' },
-  downloadBtn:  { padding: '10px 16px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  downloadBtn:  { padding: '10px 16px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center' },
 
   tips:         { paddingLeft: 20, fontSize: 14, color: '#cbd5e1', lineHeight: 1.8, margin: '8px 0' },
   fineprint:    { fontSize: 12, color: '#64748b', marginTop: 18, fontStyle: 'italic' },

@@ -69,7 +69,8 @@ export default function BuildingDetail() {
               style={styles.exportBtn}
               title="Download this building's monthly kWh series as CSV"
             >
-              ↓ Monthly CSV
+              <Icon.Download size={12} />
+              <span style={{ marginLeft: 6 }}>Monthly CSV</span>
             </button>
           )}
         </div>
@@ -216,7 +217,7 @@ function monthShort(ym) {
 const styles = {
   toolbar:        { display: 'flex', gap: 10 },
   toolBtn:        { padding: '6px 12px', background: '#0f172a', color: '#22d3ee', border: '1px solid #1f2937', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' },
-  exportBtn:      { padding: '6px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
+  exportBtn:      { padding: '6px 12px', background: '#052e16', color: '#86efac', border: '1px solid #16a34a', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center' },
 
   statGrid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 },
   stat:           { padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6 },
