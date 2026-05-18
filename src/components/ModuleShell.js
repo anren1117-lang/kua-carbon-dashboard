@@ -101,12 +101,15 @@ function numericDecimals(v) {
 }
 
 export function Pill({ kind = 'neutral', children }) {
+  // Palette doubles the accent color in the glow so the pill reads
+  // as having weight without being a solid block. Subtle inset
+  // gradient for depth.
   const palette = {
-    neutral: { bg: '#1e293b', fg: '#cbd5e1', border: '#334155' },
-    good:    { bg: '#052e1a', fg: '#86efac', border: '#14532d' },
-    warn:    { bg: '#3a2a0d', fg: '#fbbf24', border: '#92400e' },
-    bad:     { bg: '#3a0d12', fg: '#fca5a5', border: '#7f1d1d' },
-    info:    { bg: '#0c2a3a', fg: '#67e8f9', border: '#0e7490' },
+    neutral: { bg: '#1e293b', fg: '#cbd5e1', border: '#334155', glow: 'rgba(203, 213, 225, 0.10)' },
+    good:    { bg: '#052e1a', fg: '#86efac', border: '#14532d', glow: 'rgba(134, 239, 172, 0.18)' },
+    warn:    { bg: '#3a2a0d', fg: '#fbbf24', border: '#92400e', glow: 'rgba(251, 191, 36, 0.18)' },
+    bad:     { bg: '#3a0d12', fg: '#fca5a5', border: '#7f1d1d', glow: 'rgba(252, 165, 165, 0.18)' },
+    info:    { bg: '#0c2a3a', fg: '#67e8f9', border: '#0e7490', glow: 'rgba(103, 232, 249, 0.18)' },
   };
   const c = palette[kind] || palette.neutral;
   return (
@@ -115,12 +118,13 @@ export function Pill({ kind = 'neutral', children }) {
       fontSize: 11,
       padding: '3px 10px',
       borderRadius: 999,
-      letterSpacing: 0.6,
+      letterSpacing: 0.7,
       textTransform: 'uppercase',
       fontWeight: 700,
       background: c.bg,
       color: c.fg,
       border: `1px solid ${c.border}`,
+      boxShadow: `0 0 0 1px ${c.glow} inset`,
     }}>{children}</span>
   );
 }
