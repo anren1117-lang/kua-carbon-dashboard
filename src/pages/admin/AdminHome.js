@@ -772,7 +772,7 @@ function Section({ title, hint, accent, children }) {
 
 function Stat({ label, value, unit, accent }) {
   return (
-    <div style={{ ...styles.stat, borderLeftColor: accent }}>
+    <div className="kua-card-hover kua-metric-card" style={{ ...styles.stat, borderLeftColor: accent }}>
       <div style={styles.statLabel}>{label}</div>
       <div style={styles.statValue}>{value}</div>
       {unit && <div style={styles.statUnit}>{unit}</div>}
