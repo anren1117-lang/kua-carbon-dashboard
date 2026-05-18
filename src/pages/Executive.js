@@ -272,7 +272,7 @@ export default function Executive() {
 
         <div style={styles.personalList}>
           {personalRanked.map(({ action, campusMt }, i) => (
-            <Link key={action.id} to="/actions" style={styles.personalRow}>
+            <Link key={action.id} to="/actions" style={styles.personalRow} className="kua-card-hover">
               <div style={styles.personalRank}>#{i + 1}</div>
               <div style={{ flex: 1 }}>
                 <div style={styles.personalTitle}>{action.title}</div>
@@ -385,7 +385,7 @@ function scopeMonthlySeries(scopeKey, total) {
 function ScopeRow({ to, label, mt, share, color, sinks, scopeKey, measured }) {
   const series = scopeKey ? scopeMonthlySeries(scopeKey, Math.abs(mt)) : null;
   return (
-    <Link to={to} style={{ ...styles.scopeRow, borderLeftColor: color }}>
+    <Link to={to} style={{ ...styles.scopeRow, borderLeftColor: color }} className="kua-card-hover">
       <div style={{ flex: 1 }}>
         <div style={styles.scopeLabel}>
           {label}
