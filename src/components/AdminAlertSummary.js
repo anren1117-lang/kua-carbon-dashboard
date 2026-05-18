@@ -45,7 +45,7 @@ export function AdminAlertSummary() {
   const accentText = highCount > 0 ? '#fca5a5' : '#fcd34d';
 
   return (
-    <div style={{ ...styles.banner, background: accentBg, borderColor: accent }}>
+    <div style={{ ...styles.banner, background: accentBg, borderColor: accent }} className="kua-card-hover">
       <div style={styles.head}>
         <span style={{ ...styles.icon, color: accent }} aria-hidden="true">⚠</span>
         <div style={{ flex: 1 }}>
