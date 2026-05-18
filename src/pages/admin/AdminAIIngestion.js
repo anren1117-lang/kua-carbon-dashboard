@@ -666,14 +666,17 @@ function AdminAIIngestion() {
 
   return (
     <div>
-      <div style={{ fontSize: 12, color: '#64748b', letterSpacing: 1, textTransform: 'uppercase' }}>Admin · AI ingestion agent</div>
-      <h1 style={styles.title}>Document → Structured rows</h1>
+      <div style={{ fontSize: 12, color: '#22d3ee', letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: 800 }}>📥 Easiest way to enter data</div>
+      <h1 style={styles.title}>Drop documents — the AI does the rest</h1>
       <p style={styles.subtitle}>
-        Drop a heating-oil invoice, vendor PO, travel itinerary, or any
-        emissions-related document. The agent reads the text, identifies
-        which canonical admin table the data belongs in, and proposes
-        structured rows for your review. Accept directly, send to the
-        review queue, or reject.
+        Drag any <strong style={{ color: '#cbd5e1' }}>PDF invoice</strong>,
+        {' '}<strong style={{ color: '#cbd5e1' }}>spreadsheet</strong>,
+        {' '}<strong style={{ color: '#cbd5e1' }}>receipt photo</strong>,
+        or <strong style={{ color: '#cbd5e1' }}>travel itinerary</strong> into the box below.
+        The AI reads the document, figures out which scope the data belongs to (heating fuel,
+        electricity, travel, waste, etc.), and proposes clean rows for you to review.
+        You can accept directly, send to the review queue for a second look, or reject anything
+        that looks off. No manual data entry required for most documents.
       </p>
 
       {stashedDraft && !result && (
@@ -716,11 +719,15 @@ function AdminAIIngestion() {
       )}
 
       <div style={styles.card}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Source document</h2>
+        <h2 style={{ margin: 0, fontSize: 18 }}>📥 Drop your document here</h2>
         <div
           style={{
             ...styles.upload,
             marginTop: 14,
+            // Bigger, more inviting drop zone — easier target for
+            // non-technical staff dragging from Finder/Explorer.
+            padding: '48px 24px',
+            background: dragOver ? undefined : 'linear-gradient(180deg, #0b1220 0%, #0a131f 100%)',
             ...(dragOver ? styles.uploadDragOver : null),
           }}
           onDragOver={onDragOver}
@@ -730,6 +737,22 @@ function AdminAIIngestion() {
           role="region"
           aria-label="File drop zone"
         >
+          {/* Big cloud-upload icon for visual anchor */}
+          <div style={{ marginBottom: 14, color: dragOver ? '#22d3ee' : '#475569', transition: 'color 160ms ease' }} aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto', display: 'block' }}>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </div>
+          <div style={{ fontSize: 16, color: dragOver ? '#22d3ee' : '#cbd5e1', fontWeight: 600, marginBottom: 6 }}>
+            {dragOver
+              ? '⬇ Release to upload'
+              : (fileName ? `Loaded: ${fileName}` : 'Drag a file here or click below to browse')}
+          </div>
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
+            PDF · spreadsheet (CSV) · plain text · photo (PNG/JPG) — multiple files OK
+          </div>
           <input
             type="file"
             accept=".txt,.md,.csv,.json,.pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
@@ -739,11 +762,6 @@ function AdminAIIngestion() {
             multiple
             style={{ display: 'block', margin: '0 auto' }}
           />
-          <div style={{ marginTop: 10, fontSize: 13 }}>
-            {dragOver
-              ? '⬇ Release to upload'
-              : (fileName ? `Loaded: ${fileName}` : 'PDF, .txt, .md, .csv, .json, or image (PNG/JPG/GIF/WebP) — drag & drop or click above.')}
-          </div>
         </div>
 
         {images.length > 0 && (

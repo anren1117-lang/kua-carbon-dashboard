@@ -25,10 +25,10 @@ const formatBriefUsage = (usage) => formatUsage(usage, 'claude-sonnet-4-6');
 // strip from Supabase at the bottom.
 
 const QUICK_LINKS = [
-  { to: '/admin/scope-3',       icon: '📥', label: 'Log Scope 3 data',    desc: 'Tabbed entry: student travel, faculty trips, waste, purchased goods, commuting — one place for all of it.' },
+  { to: '/admin/ai-ingestion',  icon: '📥', label: 'Drop a document',     desc: 'EASIEST WAY — drag any invoice, spreadsheet, photo, or PDF. AI extracts the data automatically.' },
+  { to: '/admin/scope-3',       icon: '✎',  label: 'Log Scope 3 by hand', desc: 'Tabbed entry: student travel, faculty trips, waste, purchased goods, commuting.' },
   { to: '/admin/plan-agent',    icon: '🧭', label: 'Generate a plan',     desc: 'AI-driven 5-7 step plan from your fiscal context.' },
   { to: '/admin/stage-planner', icon: '📋', label: 'Compose stages',      desc: 'Build a phased reduction plan from custom + library actions.' },
-  { to: '/admin/actions',       icon: '✎',  label: 'Add a custom action', desc: 'Type an action; AI estimates carbon impact + cost.' },
 ];
 
 // Short labels for the bottom-of-page record-counts grid. The

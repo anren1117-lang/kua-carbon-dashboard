@@ -37,8 +37,9 @@ export const NAV_GROUPS = [
     key: 'data',
     label: 'Data entry',
     accent: '#22d3ee',
-    blurb: 'Per-scope structured CRUD forms.',
+    blurb: 'Drop documents OR fill in structured forms.',
     items: [
+      { to: '/admin/ai-ingestion', label: '📥 Drop documents', desc: 'EASIEST WAY — drag any PDF invoice, spreadsheet, photo, or receipt and the AI extracts the data automatically. Review + save.' },
       { to: '/admin/scope-1',    label: 'Scope 1',    desc: 'Heating fuel, refrigerants, fleet vehicles.' },
       { to: '/admin/scope-2',    label: 'Scope 2',    desc: 'Electricity meter readings, Liberty Utilities bills.' },
       { to: '/admin/scope-3',    label: 'Scope 3',    desc: 'Tabbed entry hub for student travel, faculty trips, waste, purchased goods, commuting — replaces the legacy portal.' },
@@ -51,11 +52,10 @@ export const NAV_GROUPS = [
     key: 'sources',
     label: 'Sources',
     accent: '#fbbf24',
-    blurb: 'Asset inventory + ingestion layer.',
+    blurb: 'Asset inventory + raw data integrations.',
     items: [
       { to: '/admin/facilities',   label: 'Facilities',   desc: 'Buildings, meters, forest stands, soil samples — edit / decommission / add.' },
       { to: '/admin/bms-export',   label: 'BMS Export',   desc: 'Map Distech Eclypse Power-Meter devices to KUA buildings; flips estimates → measured.' },
-      { to: '/admin/ai-ingestion', label: 'AI Agent',     desc: 'PDF / spreadsheet / email ingestion pipeline (Phase-3 staging area).' },
     ],
   },
   {
