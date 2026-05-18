@@ -178,6 +178,8 @@ export default function PersonalFootprint() {
 
       <CampusAmplification yourComponents={result.components} />
 
+      <FootprintHistory currentMt={result.totalMt} studentType={studentType} />
+
       <PledgeSection totalMt={result.totalMt} components={result.components} studentType={studentType} />
 
 
@@ -197,6 +199,132 @@ export default function PersonalFootprint() {
     </ModulePage>
   );
 }
+
+// History: store each computed footprint in localStorage with a
+// timestamp + student type, then show the user their trend over
+// time. Closes the "I'm trying to reduce" loop — every visit
+// shows whether they've actually moved their number.
+function FootprintHistory({ currentMt, studentType }) {
+  const [history, setHistory] = React.useState(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('kua-footprint-history') || '[]');
+      return Array.isArray(raw) ? raw : [];
+    } catch { return []; }
+  });
+
+  function saveSnapshot() {
+    const entry = { mt: +currentMt.toFixed(2), at: new Date().toISOString(), studentType };
+    const next = [...history, entry].slice(-12); // keep last 12 snapshots
+    try { localStorage.setItem('kua-footprint-history', JSON.stringify(next)); } catch {}
+    setHistory(next);
+  }
+
+  function clearHistory() {
+    try { localStorage.removeItem('kua-footprint-history'); } catch {}
+    setHistory([]);
+  }
+
+  const last = history.length > 0 ? history[history.length - 1] : null;
+  const first = history.length > 1 ? history[0] : null;
+  const trend = (last && first) ? last.mt - first.mt : null;
+  const trendPct = (last && first && first.mt > 0) ? ((last.mt - first.mt) / first.mt) * 100 : null;
+
+  return (
+    <ModuleSection
+      title="Your footprint history"
+      hint="Snapshot your current number. The dashboard saves it to your browser only — no account, no email. Take another snapshot in a few weeks to see your trend."
+    >
+      <div style={historyStyles.actions}>
+        <button type="button" onClick={saveSnapshot} style={historyStyles.saveBtn} className="kua-cta-card">
+          ✓ Save today's number ({currentMt.toFixed(2)} mt)
+        </button>
+        {history.length > 0 && (
+          <button type="button" onClick={clearHistory} style={historyStyles.clearBtn}>
+            Clear history
+          </button>
+        )}
+      </div>
+
+      {history.length === 0 ? (
+        <p style={historyStyles.empty}>
+          No snapshots yet. Save your current number above to start tracking your trend.
+        </p>
+      ) : (
+        <>
+          {trend !== null && Math.abs(trend) > 0.01 && (
+            <div style={historyStyles.trendBox}>
+              <Pill kind={trend < 0 ? 'good' : 'warn'}>
+                {trend < 0 ? '↓' : '↑'} {Math.abs(trendPct).toFixed(0)}% since your first snapshot
+              </Pill>
+              <span style={historyStyles.trendText}>
+                {trend < 0
+                  ? `You've cut ${Math.abs(trend).toFixed(2)} mt off your footprint since you started tracking. 🎉`
+                  : `Your footprint is ${trend.toFixed(2)} mt higher than your first snapshot — what changed?`}
+              </span>
+            </div>
+          )}
+
+          <ol style={historyStyles.list}>
+            {[...history].reverse().map((entry, i) => {
+              const date = new Date(entry.at);
+              const dateLabel = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+              const prev = history[history.length - 2 - i];
+              const delta = prev ? entry.mt - prev.mt : null;
+              return (
+                <li key={entry.at} style={historyStyles.row} className="kua-card-hover">
+                  <span style={historyStyles.rowDate}>{dateLabel}</span>
+                  <span style={historyStyles.rowMt}>
+                    <strong>{entry.mt.toFixed(2)}</strong> mt
+                  </span>
+                  <span style={historyStyles.rowDelta}>
+                    {delta === null
+                      ? <Pill kind="neutral">first</Pill>
+                      : Math.abs(delta) < 0.01
+                        ? <Pill kind="neutral">no change</Pill>
+                        : delta < 0
+                          ? <Pill kind="good">↓ {Math.abs(delta).toFixed(2)} mt</Pill>
+                          : <Pill kind="warn">↑ {delta.toFixed(2)} mt</Pill>}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+
+          <p style={historyStyles.note}>
+            Stored locally in your browser only — never sent to any server.
+            Saves up to your last 12 snapshots; older entries get dropped automatically.
+          </p>
+        </>
+      )}
+    </ModuleSection>
+  );
+}
+
+const historyStyles = {
+  actions: { display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 },
+  saveBtn: { padding: '10px 16px', background: 'linear-gradient(135deg, #052e16 0%, #14532d 100%)', color: '#86efac', border: '1px solid #16a34a', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' },
+  clearBtn: { padding: '10px 16px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' },
+  empty: { fontSize: 13, color: '#94a3b8', fontStyle: 'italic' },
+  trendBox: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 6, marginBottom: 14, flexWrap: 'wrap' },
+  trendText: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 },
+  list: { listStyle: 'none', padding: 0, margin: 0 },
+  row: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 120px 120px',
+    gap: 12,
+    alignItems: 'center',
+    padding: '10px 14px',
+    background: '#0b1220',
+    border: '1px solid #1f2937',
+    borderRadius: 6,
+    marginBottom: 6,
+    fontSize: 13,
+  },
+  rowDate: { color: '#cbd5e1' },
+  rowMt: { color: '#e5e7eb', fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
+  rowDelta: { textAlign: 'right' },
+  note: { fontSize: 11, color: '#64748b', fontStyle: 'italic', marginTop: 14 },
+};
 
 // Personal pledge: pick the biggest reducible row and commit to a
 // 30% reduction. Saves the chosen pledge to localStorage so it
