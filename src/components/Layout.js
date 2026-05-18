@@ -48,6 +48,7 @@ const categoryItems = [
   { to: '/scenarios',        label: 'Reduction simulator',         icon: Icon.Sparkles },
   { to: '/dorm-leaderboard', label: 'Dorm leaderboard',            icon: Icon.Trophy },
   { to: '/challenge',        label: 'Dorm challenge (monthly)',    icon: Icon.Bolt },
+  { to: '/carbon-math',      label: 'Carbon math practice',        icon: Icon.Chart },
   { to: '/faq',              label: 'FAQ',                          icon: Icon.HelpCircle },
 ];
 
