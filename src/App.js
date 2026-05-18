@@ -95,7 +95,9 @@ function App() {
             { to: '/your-footprint',   label: 'Calculate your footprint',  icon: Icon.Leaf },
             { to: '/dorm-leaderboard', label: 'Dorm leaderboard',          icon: Icon.Trophy },
             { to: '/scenarios',        label: 'Reduction simulator',       icon: Icon.Sparkles },
-            { to: '/methodology',      label: 'Methodology',               icon: Icon.Chart },
+            { to: '/digest',           label: 'This month at KUA',         icon: Icon.Bolt },
+            { to: '/carbon-math',      label: 'Carbon math practice',      icon: Icon.Chart },
+            { to: '/methodology',      label: 'Methodology',               icon: Icon.HelpCircle },
             { to: '/share',            label: 'Share via QR',              icon: Icon.Share },
           ].map((l) => (
             <Link
