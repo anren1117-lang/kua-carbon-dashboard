@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { estimatePersonalFootprint, FOOTPRINT_REFERENCE, typicalFootprintFor, allTypicalFootprints } from '../utils/personalFootprint.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
+import { CopyButton } from '../components/CopyButton.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 
@@ -192,7 +193,6 @@ export default function PersonalFootprint() {
 // survives reloads, and offers a "copy to clipboard" share string
 // the user can post on a bulletin board or paste into a group chat.
 function PledgeSection({ totalMt, components, studentType }) {
-  const [copied, setCopied] = React.useState(false);
   const [pledged, setPledged] = React.useState(() => {
     try {
       return JSON.parse(localStorage.getItem('kua-footprint-pledge') || 'null');
@@ -224,19 +224,11 @@ function PledgeSection({ totalMt, components, studentType }) {
     setPledged(null);
   }
 
-  function copyShare() {
-    if (!pledged) return;
-    const text =
-      `I pledged to cut my ${pledged.focus.toLowerCase()} by 30% this year — that's `
+  const shareText = pledged
+    ? `I pledged to cut my ${pledged.focus.toLowerCase()} by 30% this year — that's `
       + `~${pledged.reductionMt} mtCO₂e off my personal carbon footprint. `
-      + `What's yours? Calculate at kua-carbon-dashboard.vercel.app/your-footprint`;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2400);
-      });
-    }
-  }
+      + `What's yours? Calculate at kua-carbon-dashboard.vercel.app/your-footprint`
+    : '';
 
   if (!top) return null;
 
@@ -268,9 +260,13 @@ function PledgeSection({ totalMt, components, studentType }) {
               {' '}({pledged.currentMt.toFixed(2)} → {pledged.newTotalMt.toFixed(2)} mtCO₂e total).
             </div>
             <div style={pledgeStyles.btnRow}>
-              <button type="button" onClick={copyShare} style={pledgeStyles.shareBtn}>
-                {copied ? '✓ Copied!' : '📋 Copy share text'}
-              </button>
+              <CopyButton
+                text={shareText}
+                label="📋 Copy share text"
+                copiedLabel="✓ Copied!"
+                title="Copy a share-ready blurb to your clipboard"
+                style={{ color: '#86efac', borderColor: '#14532d' }}
+              />
               <button type="button" onClick={clearPledge} style={pledgeStyles.clearBtn}>
                 Clear pledge
               </button>
@@ -292,7 +288,6 @@ const pledgeStyles = {
   savedTitle: { fontSize: 18, color: '#dcfce7', fontWeight: 700, marginBottom: 6 },
   savedMeta: { fontSize: 13, color: '#bbf7d0', lineHeight: 1.6, marginBottom: 14 },
   btnRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
-  shareBtn: { padding: '8px 14px', background: '#0b1220', color: '#86efac', border: '1px solid #14532d', borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' },
   clearBtn: { padding: '8px 14px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 6, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' },
 };
 
