@@ -539,7 +539,24 @@ function Layout() {
             ))}
           </div>
           <div style={styles.footerTag}>
-            Kimball Union Academy · Net Carbon Dashboard · methodology and source code public on GitHub
+            Kimball Union Academy · Net Carbon Dashboard ·{' '}
+            <a
+              href="https://github.com/anren1117-lang/kua-carbon-dashboard"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#94a3b8', textDecoration: 'underline', textUnderlineOffset: 2 }}
+            >
+              source on GitHub
+            </a>
+            {' · '}
+            <a
+              href="https://github.com/anren1117-lang/kua-carbon-dashboard/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#94a3b8', textDecoration: 'underline', textUnderlineOffset: 2 }}
+            >
+              suggest a feature
+            </a>
           </div>
         </div>
       </footer>
