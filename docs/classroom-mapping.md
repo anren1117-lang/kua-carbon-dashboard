@@ -27,7 +27,7 @@
 | Math: Algebra II → Calc BC | [§2.6](#26-math--algebra-ii--precalculus--calculus-ab--calculus-bc) |
 | AP Stats / Prob & Stats & Data Science (H) | [§2.7](#27-math--ap-statistics--probability-statistics--data-science-h) |
 | Intro CS / AP CS A | [§2.8](#28-computer-science--intro-cs--ap-cs-a) |
-| **10th-Grade Sustainability** *(every sophomore)* | [§2.9](#29-tenth-grade-sustainability-gosselin-learning-center--every-sophomore) |
+| Advisory / freshman seminar / cross-grade sustainability unit | [§2.9](#29-advisory--freshman-seminar--any-cross-grade-sustainability-slot) |
 | AP Macro / Micro / Global Econ | [§2.10](#210-history--social-sciences--ap-macroeconomics-ap-microeconomics-global-economics) |
 | AP US Gov · AP US History · Geopolitics | [§2.11](#211-history--social-sciences--ap-us-government-ap-us-history-geopolitics) |
 | Writer's Workshop (H) · AP Lang | [§2.12](#212-english--writers-workshop-h-ap-language--composition) |
@@ -242,30 +242,37 @@ source on GitHub.
   dashboard, fix it, and open a pull request. Real open-source
   contribution; their name lands in the commit history.
 
-### 2.9 Tenth-Grade Sustainability (Gosselin Learning Center) — every sophomore
+### 2.9 Advisory / freshman seminar / any cross-grade sustainability slot
 
-This course is the single biggest classroom audience for the dashboard.
-Every KUA sophomore takes it for one trimester, and the stated focus is
-"sustainable resource use and renewable energy across the 280-acre
-campus."
+> **Correction note (2026-05-19):** an earlier draft of this doc claimed
+> "10th Grade Sustainability" was a required course for every KUA
+> sophomore. A primary-source check against the **2025–26 School
+> Profile** and the live **kua.org/student-life/sustainability** page
+> did not find such a course. The Gosselin Learning Center exists as a
+> department in the catalog dropdown, but its actual course list could
+> not be verified from the public web. Until a faculty member confirms
+> the course exists, treat this section as guidance for *any* advisory
+> block, freshman seminar, or interdisciplinary slot where a teacher
+> wants a multi-week dashboard-driven unit.
 
-**Recommended trimester arc using the dashboard:**
+**Suggested 7-week arc** (works in advisory, a science-elective intro
+unit, or a Global Scholar / STEM Scholar seminar):
 
-- **Week 1:** intro — every student reads the user guide
-  ([docs/user-guide.md](./user-guide.md)) and visits the homepage.
-  Discuss: what does the "net 1,720 mtCO₂e" number actually mean?
-- **Week 2:** scope deep-dive (one class per scope across three
-  classes). Read `/scope-1`, `/scope-2`, `/scope-3`. Compare with peers.
-- **Week 3–4:** personal footprint. Each student uses `/your-footprint`
-  to compute their own, then writes a one-page reduction plan.
+- **Week 1:** intro — students read [user-guide.md](./user-guide.md)
+  and visit the homepage. Discuss: what does the "net 1,720 mtCO₂e"
+  number actually mean?
+- **Week 2:** scope deep-dive — one class per scope. Read `/scope-1`,
+  `/scope-2`, `/scope-3`. Compare with peers.
+- **Week 3–4:** personal footprint. Each student uses
+  `/your-footprint`, then writes a one-page reduction plan.
 - **Week 5:** dorm leaderboard. Discuss why per-resident is the only
   fair metric. Run an in-class challenge against the live data.
 - **Week 6:** policy lever. Use `/scenarios` to model what it would
-  take to hit net-zero by 2040. Argue which lever they'd push first.
-- **Week 7:** culminating mini-project — pair work — pick one piece of
-  the dashboard, propose a real improvement, and present to class.
+  take to hit net-zero by 2040.
+- **Week 7:** culminating mini-project — pairs pick one piece of the
+  dashboard, propose a real improvement, and present to class.
 
-The dashboard team is open to having sophomore proposals folded into
+The dashboard team is open to having student proposals folded into
 real product work; talk to the maintainer.
 
 ### 2.10 History / Social Sciences — AP Macroeconomics, AP Microeconomics, Global Economics
@@ -332,13 +339,13 @@ This pairs with the EU ETS / California cap-and-trade unit perfectly.
 JPGs; they get folded into the next deploy with a credit line in the
 commit. Real publication credit for student work.
 
-### 2.14 STEM Scholar Capstone (Giles Family STEM Scholar Program)
+### 2.14 STEM Scholar Capstone (and Arts Scholar / Global Scholar)
 
 This dashboard *is* a STEM Scholar capstone — built by one capstone
 student over 2025–26. Future STEM Scholars can either:
 
 - **Take over maintenance** (the `docs/successor-guide.md` is written
-  for exactly this). Adds one data feed, one chart, one analytical
+  for exactly this). Add one data feed, one chart, one analytical
   finding. Light-touch, one-trimester project.
 - **Extend it analytically.** Examples that would qualify:
   - Tag 10 real source documents and run the AI ingestion benchmark
@@ -351,9 +358,27 @@ student over 2025–26. Future STEM Scholars can either:
   dataset is already cited, provenance-tagged, and open source —
   cheaper than collecting your own.
 
-Scholar Program leads (per public site): **Elysia Burroughs** (Science
-chair) and **Ryan McKeon, Ph.D.** (STEM Director). Reach out via
-`firstinitial + lastname @ kua.org`.
+**Capstone format (verified against the 2025–26 School Profile):**
+
+> *"Available to pursue an in-depth independent study project ·
+> 2000/4000 word required research paper · Mentored by a faculty
+> member as well as an expert in the field."*
+
+The School Profile does not specify a poster session or oral defense.
+If your year requires one, that's a program-level addition, not a
+documented requirement.
+
+**Arts Scholar** and **Global Scholar** programs share the same
+two-year structure, six evening seminars, community service
+requirement, and the same senior capstone format. Global Scholar adds
+**28 days of overseas study/travel** as a hard requirement; Arts
+Scholar adds significant off-campus work in the arts.
+
+**Scholar Program leads (per kua.org/academics/scholar-programs):**
+**Elysia Burroughs** (Science Department Chair) and **Ryan McKeon,
+Ph.D.** (STEM Director, Computer Science teacher). Reach out via
+`firstinitial + lastname @ kua.org` (confirmed convention; e.g.
+`golson@kua.org` is Director of College Advising).
 
 ---
 
@@ -429,22 +454,51 @@ incorporate:
 
 ---
 
-## Appendix — what we couldn't verify
+## Appendix — sourcing + what we couldn't verify
 
-The original research (May 2026) could not confirm the following from
-the public web. If any of these matter to your use of the dashboard,
-check internally before relying on them:
+### What was verified directly from primary sources (2026-05-19)
 
-- A published "Kool 2025" climate action plan.
-- An explicit "Sustainability Coordinator" job title at KUA (the
-  program appears to be led by the chair of environmental studies).
-- A published rubric for STEM Scholar capstone defenses beyond
-  "paper + poster + presentation."
-- The exact names of the required English I / II / III sequence (the
-  advanced English courses *are* listed in the School Profile;
-  the introductory ones are not).
-- A published long-block "lab day" — labs appear to happen inside the
-  regular 60-minute period.
+Directly fetched and quoted/paraphrased from the listed source:
+
+| Claim | Source |
+|---|---|
+| Trimester structure + 5 cores/term + sixth core with Dean approval | [2025–26 School Profile](https://bbk12e1-cdn.myschoolcdn.com/ftpimages/169/misc/misc_238096.pdf) p.2 |
+| 19 credits to graduate (English 4 / History 3 / Math 3 / Sci 3 / Lang 3 / Arts 1) | School Profile p.1 |
+| STEM Scholar program structure + 6 evening seminars + community service | School Profile p.2 |
+| Capstone format: *"2000/4000 word required research paper, mentored by a faculty member as well as an expert in the field"* | School Profile p.2 (verbatim) |
+| Arts Scholar + Global Scholar exist with same structure (Global = 28 days overseas) | School Profile p.2 |
+| Cullman Scholarship (~6% juniors, <1% sophomores, environmental awareness) | School Profile p.2 |
+| Scholar Program directors: Elysia Burroughs + Ryan McKeon Ph.D. | [kua.org/academics/scholar-programs](https://www.kua.org/academics/scholar-programs) |
+| Advanced course list per department (English / Sciences / Math / WL / History / Arts) | School Profile p.2 |
+| 220 kW solar, 15 kW wind (Charlotte's Windmill, 2013), Beekeeping, Farm Team, Pork Project, Sugar House | [kua.org/student-life/sustainability-and-the-outdoors](https://www.kua.org/student-life/sustainability-and-the-outdoors) |
+| Sustainability-relevant courses: AP Env Sci, Environment and Anthropology (Decarbonize Your Life), Environmental Chemistry, Environmental Studies, Marine Bio, Sustainability, Sustainable Food and Ag, Wildlife Bio | Sustainability page (verbatim list) |
+| Faculty email convention: `firstinitial+lastname@kua.org` | School Profile (golson, dgueldenzoph, cprudden, dpsomas all visible) |
+| Blaine Kopp — Louis Munro '57 Chair of Environmental Studies | [kua.org/academics](https://www.kua.org/academics) (quoted on page) |
+
+### What this doc could NOT verify
+
+If any of these matter to your use of the dashboard, check internally
+before relying on them:
+
+- A published "Kool 2025" climate action plan. (Not indexed on
+  kua.org; the dashboard references it from internal conversation.)
+- An explicit "Sustainability Coordinator" job title. The
+  Environmental Studies chair (Blaine Kopp) appears to lead the
+  program; there's no separate coordinator title visible on the
+  public site.
+- **A required 10th-grade sustainability course.** Earlier drafts of
+  this doc claimed every sophomore takes one; the School Profile and
+  Sustainability page do not corroborate. The Gosselin Learning
+  Center exists as a department, but its course list is JS-rendered
+  and could not be fetched. Removed from §2.9 pending confirmation.
+- **Capstone deliverable beyond the paper itself.** The School
+  Profile lists *only* the 2000/4000 word paper + dual mentorship.
+  No published poster session, oral defense, or rubric.
+- The exact names of the required English I / II / III sequence.
+  Advanced English courses *are* in the School Profile; introductory
+  ones are not publicly listed.
+- A published long-block "lab day." Labs appear to happen inside the
+  regular ~60-minute period.
 
 When the dashboard is wrong about any of the above, the fix is to
 update both the relevant page and this appendix.
