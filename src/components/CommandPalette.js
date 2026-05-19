@@ -15,6 +15,56 @@ import { Icon } from './Icon.js';
 //
 // Mounted once at the Layout level so every page can summon it.
 
+// Action items run a function instead of navigating. Mixed in with
+// the nav items so a user typing "print" gets the action right
+// alongside any matching pages.
+const ACTIONS = [
+  {
+    key: 'print',
+    title: 'Print this page',
+    group: 'Actions',
+    icon: Icon.Download,
+    hint: 'Save as PDF or print the current page',
+    run: () => window.print(),
+  },
+  {
+    key: 'github-issue',
+    title: 'Suggest a feature',
+    group: 'Actions',
+    icon: Icon.HelpCircle,
+    hint: 'Open the GitHub issue tracker in a new tab',
+    run: () => window.open('https://github.com/anren1117-lang/kua-carbon-dashboard/issues/new', '_blank', 'noopener,noreferrer'),
+  },
+  {
+    key: 'github-source',
+    title: 'View source code on GitHub',
+    group: 'Actions',
+    icon: Icon.Share,
+    hint: 'Open the public repo',
+    run: () => window.open('https://github.com/anren1117-lang/kua-carbon-dashboard', '_blank', 'noopener,noreferrer'),
+  },
+  {
+    key: 'copy-link',
+    title: 'Copy current page URL',
+    group: 'Actions',
+    icon: Icon.Share,
+    hint: 'Share this exact view with someone',
+    run: () => {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href);
+      }
+    },
+  },
+  {
+    key: 'scroll-top',
+    title: 'Scroll to top',
+    group: 'Actions',
+    icon: Icon.ArrowLeft,
+    hint: 'Jump to the top of the current page',
+    run: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+  },
+];
+
 const ITEMS = [
   // Most-used public surfaces first
   { path: '/',                 title: 'Overview',                  group: 'Public',    icon: Icon.Chart,       hint: 'Homepage — net carbon balance' },
@@ -105,12 +155,29 @@ export function CommandPalette() {
   }, [open]);
 
   const results = useMemo(() => {
-    return ITEMS
+    // Merge nav items + action items into the same searchable list,
+    // ranked by fuzzy score. Actions and nav items have the same
+    // visual treatment in the results list; only their `run` vs
+    // `path` distinguishes them at activation time.
+    return [...ITEMS, ...ACTIONS]
       .map((item) => ({ ...item, _score: fuzzyScore(query, item) }))
       .filter((item) => item._score > 0)
       .sort((a, b) => b._score - a._score)
       .slice(0, 12);
   }, [query]);
+
+  function activate(item) {
+    if (!item) return;
+    setOpen(false);
+    if (item.run) {
+      // Defer slightly so the palette dismisses before any modal
+      // (print dialog, new tab) opens — feels cleaner than the
+      // palette + dialog being on screen simultaneously.
+      setTimeout(() => item.run(), 50);
+    } else if (item.path) {
+      navigate(item.path);
+    }
+  }
 
   // Reset active index when results change
   useEffect(() => { setActiveIdx(0); }, [query]);
@@ -133,11 +200,7 @@ export function CommandPalette() {
       setActiveIdx((i) => Math.max(0, i - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const item = results[activeIdx];
-      if (item) {
-        navigate(item.path);
-        setOpen(false);
-      }
+      activate(results[activeIdx]);
     }
   }
 
@@ -176,10 +239,10 @@ export function CommandPalette() {
               const ItemIcon = item.icon;
               return (
                 <button
-                  key={item.path}
+                  key={item.path || item.key}
                   type="button"
                   onMouseEnter={() => setActiveIdx(i)}
-                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  onClick={() => activate(item)}
                   style={{ ...styles.row, ...(Active ? styles.rowActive : {}) }}
                 >
                   <span style={styles.rowIcon}>{ItemIcon && <ItemIcon size={16} />}</span>
