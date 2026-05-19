@@ -98,12 +98,12 @@ describe('apUnitMap — data integrity', () => {
     expect(AP_COURSES_COVERED.length).toBe(apUnitMap.length);
   });
 
-  it('map covers at least 5 AP courses', () => {
-    expect(apUnitMap.length).toBeGreaterThanOrEqual(5);
+  it('map covers at least 15 AP courses', () => {
+    expect(apUnitMap.length).toBeGreaterThanOrEqual(15);
   });
 
-  it('at least 30 units across all courses have a defensible hook (direct or tangential)', () => {
-    expect(totalCoveredUnits()).toBeGreaterThanOrEqual(30);
+  it('at least 50 units across all courses have a defensible hook (direct or tangential)', () => {
+    expect(totalCoveredUnits()).toBeGreaterThanOrEqual(50);
   });
 });
 
