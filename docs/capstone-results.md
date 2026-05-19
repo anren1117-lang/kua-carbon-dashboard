@@ -76,6 +76,8 @@ Once any of these flips, the per-scope `provenance` field on the breakdown row +
 
 Kool et al. (2025) report that at boarding secondary schools where Scope 3 student travel has been measured directly, travel typically emerges as the single largest emissions category (often >50% of Scope 3 and >25% of gross). This is the strongest "boarding schools are different" finding in the recent K-12 sustainability literature.
 
+> **Sourcing note (added 2026-05-19):** A 2026 web audit of `kua.org` did not turn up a publicly indexed "Kool 2025" report. The reference is being used here in its generic literature sense (Kool et al., boarding-school carbon accounting). If a reviewer asks for a direct citation, point them at the broader independent-school carbon accounting literature rather than at a specific KUA-published document.
+
 ### Headline answer for KUA
 
 **At KUA's current accounting, student travel is NOT the largest single emission source.** The ranked breakdown (from `composeScope3()` in `src/data/scopeTotals.js:362`):

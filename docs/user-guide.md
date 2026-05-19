@@ -33,6 +33,13 @@ This guide is organized **by role**. Find your role below and read just that sec
 
 ## 👩‍🏫 If you're a KUA teacher
 
+> **There's a richer course-by-course mapping in
+> [docs/classroom-mapping.md](./classroom-mapping.md)** that walks
+> through every KUA department (Science, Math, CS, History, English,
+> Visual Arts, Tenth-Grade Sustainability, STEM Scholar capstone) with
+> concrete classroom hooks for each. Start there if you teach a
+> specific course.
+
 **For class use:**
 
 1. **`/carbon-math`** — Project this on the smart-board; eight problems (Intro / Standard / AP difficulty). "Show work" toggles reveal step-by-step reasoning. Hit "🖨 Print as worksheet" for a paper copy.
