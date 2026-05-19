@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from './Icon.js';
+import { toast } from './Toast.js';
 
 // Cmd+K / Ctrl+K command palette. Spotlight-style overlay that
 // indexes every public + admin route, surfaces them via fuzzy
@@ -52,6 +53,7 @@ const ACTIONS = [
     run: () => {
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
         navigator.clipboard.writeText(window.location.href);
+        toast('Page URL copied', { kind: 'good' });
       }
     },
   },
