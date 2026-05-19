@@ -65,6 +65,7 @@ const moreGroups = [
       { to: '/digest',           label: 'Monthly digest' },
       { to: '/compare',          label: 'Compare two months' },
       { to: '/compare-buildings', label: 'Compare two buildings' },
+      { to: '/whats-new',        label: 'What\'s new' },
       { to: '/hotspots',       label: 'Hotspots' },
       { to: '/sinks-os',       label: 'Sinks' },
       { to: '/report',         label: 'Annual report' },

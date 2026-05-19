@@ -61,6 +61,7 @@ const DormPosters = lazy(() => import('./pages/DormPosters'));
 const CarbonMath = lazy(() => import('./pages/CarbonMath'));
 const MonthCompare = lazy(() => import('./pages/MonthCompare'));
 const CompareBuildings = lazy(() => import('./pages/CompareBuildings'));
+const WhatsNew = lazy(() => import('./pages/WhatsNew'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin tree — also lazy. Most users never hit /admin.
@@ -148,6 +149,7 @@ root.render(
             <Route path="/carbon-math" element={<CarbonMath />} />
             <Route path="/compare" element={<MonthCompare />} />
             <Route path="/compare-buildings" element={<CompareBuildings />} />
+            <Route path="/whats-new" element={<WhatsNew />} />
             <Route path="/ask" element={<Assistant />} />
             <Route path="/hotspots" element={<Hotspots />} />
             <Route path="/actions" element={<Actions />} />
