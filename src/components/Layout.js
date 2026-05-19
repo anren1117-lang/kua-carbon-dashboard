@@ -586,24 +586,32 @@ function Layout() {
             ))}
           </div>
           <div style={styles.footerTag}>
-            Kimball Union Academy · Net Carbon Dashboard ·{' '}
-            <a
-              href="https://github.com/anren1117-lang/kua-carbon-dashboard"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#94a3b8', textDecoration: 'underline', textUnderlineOffset: 2 }}
-            >
-              source on GitHub
-            </a>
-            {' · '}
-            <a
-              href="https://github.com/anren1117-lang/kua-carbon-dashboard/issues/new"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#94a3b8', textDecoration: 'underline', textUnderlineOffset: 2 }}
-            >
-              suggest a feature
-            </a>
+            <div style={{ marginBottom: 8 }}>
+              Kimball Union Academy · Net Carbon Dashboard ·{' '}
+              <a
+                href="https://github.com/anren1117-lang/kua-carbon-dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#94a3b8', textDecoration: 'underline', textUnderlineOffset: 2 }}
+              >
+                source on GitHub
+              </a>
+              {' · '}
+              <a
+                href="https://github.com/anren1117-lang/kua-carbon-dashboard/issues/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#94a3b8', textDecoration: 'underline', textUnderlineOffset: 2 }}
+              >
+                suggest a feature
+              </a>
+            </div>
+            <div style={{ fontSize: 11, color: '#475569' }}>
+              Press <kbd style={{ fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', background: '#0b1220', border: '1px solid #1f2937', padding: '1px 5px', borderRadius: 3, color: '#94a3b8' }}>⌘K</kbd>{' '}
+              <span style={{ color: '#64748b' }}>(or </span>
+              <kbd style={{ fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', background: '#0b1220', border: '1px solid #1f2937', padding: '1px 5px', borderRadius: 3, color: '#94a3b8' }}>Ctrl+K</kbd>
+              <span style={{ color: '#64748b' }}>)</span> anywhere to search + jump
+            </div>
           </div>
         </div>
       </footer>
