@@ -1,0 +1,227 @@
+{
+  "capturedAt": "2026-05-19T02:24:00.738Z",
+  "composedYtdAsOf": "2026-05-04",
+  "totalStudents": 340,
+  "totalForestAcres": 1000,
+  "scopes": {
+    "scope1": {
+      "totalMt": 1350,
+      "provenance": "estimated",
+      "breakdown": [
+        {
+          "source": "Heating oil + propane",
+          "mt": 1290,
+          "provenance": "estimated",
+          "method": "290K sqft × NH-CZ6 intensity (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Real KUA delivery invoices not yet integrated."
+        },
+        {
+          "source": "Fleet vehicles",
+          "mt": 54,
+          "provenance": "estimated",
+          "method": "KUA fleet registry: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans + 1 truck × actual annualMiles ÷ mpg × EPA Mobile Combustion. Real fuel-card records not yet integrated."
+        },
+        {
+          "source": "Refrigerant leakage",
+          "mt": 7,
+          "provenance": "estimated",
+          "method": "~80 lb HVAC charge × 5–15%/yr leak rate × IPCC AR6 GWP100. Real service-report mass balance not yet integrated."
+        }
+      ]
+    },
+    "scope2": {
+      "totalMt": 385,
+      "provenance": "cited",
+      "method": "Composed YTD 650,695 kWh through 2026-05-04 (124 days) × ISO-NE 2024 per-fuel grid factors × 2.52 seasonal annualize.",
+      "ytdKwh": 650695,
+      "annualKwh": 1642293,
+      "ytdMtco2e": 152.55,
+      "annualMtco2e": 385,
+      "gridMix": [
+        {
+          "source": "Natural Gas",
+          "mixPercent": 51,
+          "kwhUsed": 331093,
+          "emissionFactor": 0.0004,
+          "mtCO2e": 132.44,
+          "percentOfEmissions": 86.8,
+          "color": "#ef4444"
+        },
+        {
+          "source": "Nuclear",
+          "mixPercent": 23,
+          "kwhUsed": 149316,
+          "emissionFactor": 0,
+          "mtCO2e": 0,
+          "percentOfEmissions": 0,
+          "color": "#8b5cf6"
+        },
+        {
+          "source": "Renewables (Solar, Wind, Biomass)",
+          "mixPercent": 12,
+          "kwhUsed": 77904,
+          "emissionFactor": 0,
+          "mtCO2e": 0,
+          "percentOfEmissions": 0,
+          "color": "#22c55e"
+        },
+        {
+          "source": "Hydropower",
+          "mixPercent": 6,
+          "kwhUsed": 38952,
+          "emissionFactor": 0,
+          "mtCO2e": 0,
+          "percentOfEmissions": 0,
+          "color": "#3b82f6"
+        },
+        {
+          "source": "Net Imports (NY, Quebec, New Brunswick)",
+          "mixPercent": 7,
+          "kwhUsed": 45444,
+          "emissionFactor": 0.0003,
+          "mtCO2e": 13.63,
+          "percentOfEmissions": 8.9,
+          "color": "#06b6d4"
+        },
+        {
+          "source": "Oil",
+          "mixPercent": 1,
+          "kwhUsed": 6492,
+          "emissionFactor": 0.00078,
+          "mtCO2e": 5.06,
+          "percentOfEmissions": 3.3,
+          "color": "#f97316"
+        },
+        {
+          "source": "Coal",
+          "mixPercent": 0.23,
+          "kwhUsed": 1493,
+          "emissionFactor": 0.00095,
+          "mtCO2e": 1.42,
+          "percentOfEmissions": 0.9,
+          "color": "#6b7280"
+        }
+      ]
+    },
+    "scope3": {
+      "totalMt": 2635,
+      "provenance": "estimated",
+      "breakdown": [
+        {
+          "source": "Purchased goods (non-dining)",
+          "mt": 1315,
+          "provenance": "estimated",
+          "method": "EPA EEIO v2.0 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors."
+        },
+        {
+          "source": "Student travel (international + boarder)",
+          "mt": 760,
+          "provenance": "estimated",
+          "method": "Yale-style cohort method × KUA fingerprint: 100 day commuters local Upper Valley + 190 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA factors with radiative forcing. Travel office records not yet integrated."
+        },
+        {
+          "source": "Dining (food production)",
+          "mt": 235,
+          "provenance": "estimated",
+          "method": "Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated."
+        },
+        {
+          "source": "Upstream fuel",
+          "mt": 230,
+          "provenance": "estimated",
+          "method": "~17% upstream uplift on bottom-up Scope 1 (refinery + transport for heating oil + propane + fleet fuels)."
+        },
+        {
+          "source": "Commuting",
+          "mt": 90,
+          "provenance": "estimated",
+          "method": "52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated."
+        },
+        {
+          "source": "Waste",
+          "mt": 5,
+          "provenance": "estimated",
+          "method": "420 people × per-day generation × diversion-split scenarios × EPA WARM v15.1 net factors. Hauler invoices (tons by stream) not yet integrated."
+        }
+      ]
+    }
+  },
+  "gross": {
+    "totalMt": 4370,
+    "perStudentMt": 12.85
+  },
+  "sinks": {
+    "totalMt": 2650,
+    "provenance": "cited",
+    "method": "Sum over forestStands: acres × per-acre mtCO2e/yr (Birdsey 1992 / Nowak 2013 rates).",
+    "stands": [
+      {
+        "id": "stand_north",
+        "name": "North Hill — mixed hardwood",
+        "acres": 320,
+        "type": "mixed_hardwood",
+        "ageClass": "mature",
+        "mtco2eAcreYr": 2.8
+      },
+      {
+        "id": "stand_potato",
+        "name": "Potato Patch — pine + transitional",
+        "acres": 180,
+        "type": "transitional",
+        "ageClass": "intermediate",
+        "mtco2eAcreYr": 3.2
+      },
+      {
+        "id": "stand_chellis",
+        "name": "Chellis Pond riparian",
+        "acres": 60,
+        "type": "mixed_hardwood",
+        "ageClass": "mature",
+        "mtco2eAcreYr": 2.4
+      },
+      {
+        "id": "stand_south",
+        "name": "South ridge — softwood",
+        "acres": 240,
+        "type": "softwood",
+        "ageClass": "mature",
+        "mtco2eAcreYr": 1.9
+      },
+      {
+        "id": "stand_open",
+        "name": "Open-grown campus trees",
+        "acres": 40,
+        "type": "open_grown",
+        "ageClass": "mature",
+        "mtco2eAcreYr": 4.2
+      },
+      {
+        "id": "stand_athletic",
+        "name": "Athletic-fields buffer",
+        "acres": 100,
+        "type": "transitional",
+        "ageClass": "young",
+        "mtco2eAcreYr": 2.6
+      },
+      {
+        "id": "stand_french",
+        "name": "French's Ledges — slope hardwood",
+        "acres": 60,
+        "type": "mixed_hardwood",
+        "ageClass": "mature",
+        "mtco2eAcreYr": 2.5
+      }
+    ]
+  },
+  "renewables": {
+    "solar": {
+      "annualKwh": 16777,
+      "measuredAprilKwh": 1692,
+      "provenance": "cited",
+      "method": "Measured April 2026 BMS production (1 of 3 arrays reporting reliably) / PVWatts April share of year."
+    }
+  },
+  "net": {
+    "totalMt": 1720,
+    "perStudentMt": 5.06
+  }
+}
