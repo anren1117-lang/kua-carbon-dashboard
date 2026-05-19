@@ -16,6 +16,7 @@ import { carbonEquivalents } from '../utils/equivalents.js';
 import { AnimatedNumber } from './AnimatedNumber.js';
 import { AmbientParticles } from './AmbientParticles.js';
 import { useCardTilt } from '../hooks/useCardTilt.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 
 // Scope 2 row recomputes from the composed YTD: ±5% around the
 // annualized figure. When a new monthly capture or fresh CSV lands,
@@ -233,6 +234,7 @@ export function NetEstimate() {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const heroTiltRef = useCardTilt({ max: 4, scale: 1.005 });
+  useSpotlight(heroTiltRef);
   const live = useMeasuredScopeTotals();
   // Override the hero + per-student with live measured values when any
   // scope flipped to measured. The breakdown table below still shows
@@ -259,7 +261,7 @@ export function NetEstimate() {
 
   return (
     <div style={styles.wrap}>
-      <section ref={heroTiltRef} style={styles.card} className="kua-hero-card kua-tilt">
+      <section ref={heroTiltRef} style={styles.card} className="kua-hero-card kua-tilt kua-spotlight">
         <AmbientParticles />
         <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={styles.badgeRow}>
