@@ -13,6 +13,14 @@ import {
   matchesQuery,
 } from '../data/lessonLibrary.js';
 import { apUnitMap, countByFit, totalCoveredUnits } from '../data/apUnitMap.js';
+import {
+  teachingResources,
+  SUBJECTS,
+  RESOURCE_FORMATS,
+  resourceMatches,
+  countByFormat as resCountByFormat,
+  countBySubject as resCountBySubject,
+} from '../data/teachingResources.js';
 
 // Teacher Portal — searchable lesson library + class progress + KUA-
 // specific discussion prompts. The library replaces the previous
@@ -291,6 +299,8 @@ function TeacherContent() {
 
       <ApUnitMapSection lessonById={Object.fromEntries(lessonLibrary.map((l) => [l.id, l]))} />
 
+      <TeachingResourcesSection />
+
       <ModuleSection
         title={liveRollup && liveRollup.length > 0 ? 'Class learning progress (live)' : 'Class learning progress'}
         hint={
@@ -474,6 +484,156 @@ function apFitPillStyle(fit) {
   };
 }
 
+// General teaching resources — content with no required dashboard
+// tie. Worked examples, practice problems, rubrics, writing templates
+// for any KUA AP teacher's week-to-week needs. Filterable like the
+// carbon-tied library above.
+function TeachingResourcesSection() {
+  const [query, setQuery] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState('all');
+  const [formatFilter, setFormatFilter] = useState('all');
+  const [expanded, setExpanded] = useState(null);
+
+  const filtered = useMemo(() => {
+    return teachingResources.filter((r) => {
+      if (subjectFilter !== 'all' && r.subject !== subjectFilter) return false;
+      if (formatFilter !== 'all' && r.format !== formatFilter) return false;
+      if (!resourceMatches(r, query)) return false;
+      return true;
+    });
+  }, [query, subjectFilter, formatFilter]);
+
+  const formatCounts = useMemo(() => resCountByFormat(), []);
+  const subjectCounts = useMemo(() => resCountBySubject(), []);
+
+  return (
+    <ModuleSection
+      title="General teaching resources"
+      hint="Worked examples, quick references, writing templates, rubrics — CED-aligned content for KUA AP teachers. No dashboard tie required; use these for any week of the year."
+    >
+      <div style={{ ...styles.guideCallout, background: 'rgba(134, 239, 172, 0.06)', borderColor: 'rgba(134, 239, 172, 0.25)' }}>
+        <strong style={{ color: '#86efac' }}>Not just carbon.</strong>{' '}
+        These {teachingResources.length} resources cover {new Set(teachingResources.map((r) => r.course)).size} AP
+        courses end-to-end — stoichiometry to scansion. Drop any one into class without prep.
+      </div>
+
+      <div style={styles.filterBar}>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by topic, course, technique…"
+          style={styles.searchInput}
+          aria-label="Search teaching resources"
+        />
+
+        <select
+          value={subjectFilter}
+          onChange={(e) => setSubjectFilter(e.target.value)}
+          style={styles.select}
+          aria-label="Filter by subject"
+        >
+          <option value="all">All subjects ({teachingResources.length})</option>
+          {SUBJECTS.filter((s) => subjectCounts[s] > 0).map((s) => (
+            <option key={s} value={s}>{s} ({subjectCounts[s]})</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={styles.chipRow}>
+        <button
+          type="button"
+          onClick={() => setFormatFilter('all')}
+          style={chipStyle(formatFilter === 'all')}
+        >
+          All formats ({formatCounts.all})
+        </button>
+        {RESOURCE_FORMATS.filter((f) => formatCounts[f] > 0).map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFormatFilter(f)}
+            style={chipStyle(formatFilter === f)}
+          >
+            {f} ({formatCounts[f]})
+          </button>
+        ))}
+      </div>
+
+      <div style={styles.resultsMeta}>
+        Showing <strong style={{ color: '#e5e7eb' }}>{filtered.length}</strong> of{' '}
+        {teachingResources.length} resources
+        {(query || subjectFilter !== 'all' || formatFilter !== 'all') && (
+          <button
+            type="button"
+            onClick={() => { setQuery(''); setSubjectFilter('all'); setFormatFilter('all'); }}
+            style={styles.clearFiltersBtn}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div style={styles.emptyState}>
+          No resources match those filters. Try{' '}
+          <button
+            type="button"
+            onClick={() => { setQuery(''); setSubjectFilter('all'); setFormatFilter('all'); }}
+            style={styles.emptyResetBtn}
+          >
+            clearing the filters
+          </button>{' '}
+          or{' '}
+          <a
+            href="https://github.com/anren1117-lang/kua-carbon-dashboard/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.emptyLink}
+          >
+            request a resource
+          </a>.
+        </div>
+      ) : (
+        <div style={styles.lessonGrid}>
+          {filtered.map((r) => {
+            const isOpen = expanded === r.id;
+            return (
+              <div key={r.id} style={styles.lessonCard}>
+                <button
+                  type="button"
+                  onClick={() => setExpanded(isOpen ? null : r.id)}
+                  aria-expanded={isOpen}
+                  style={styles.lessonHeadBtn}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={styles.lessonTitle}>{r.title}</div>
+                    <div style={styles.lessonMeta}>
+                      <Pill kind="info">{r.format}</Pill>
+                      <Pill kind="ok">{r.durationMin} min</Pill>
+                      <span style={styles.lessonDept}>{r.course} · {r.cedUnit}</span>
+                    </div>
+                    <div style={styles.resSummary}>{r.summary}</div>
+                  </div>
+                  <span style={{ ...styles.arrow, transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                    ▶
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div style={styles.lessonBody}>
+                    <pre style={styles.resContent}>{r.content}</pre>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </ModuleSection>
+  );
+}
+
 const SAMPLE_CLASS_ROWS = [
   { class: 'APES — Period 3', students: 18, completed: 16, avgScore: 84, lastTopic: 'Scope 1/2/3' },
   { class: 'Biology — Period 5', students: 22, completed: 19, avgScore: 78, lastTopic: 'Food emissions' },
@@ -642,6 +802,22 @@ const styles = {
     textDecoration: 'none',
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
     fontWeight: 600,
+  },
+
+  resSummary: { fontSize: 13, color: '#94a3b8', marginTop: 8, lineHeight: 1.5 },
+  resContent: {
+    margin: 0,
+    padding: '14px 16px',
+    background: '#0f172a',
+    border: '1px solid #1f2937',
+    borderRadius: 6,
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+    fontSize: 13,
+    color: '#e5e7eb',
+    lineHeight: 1.7,
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowX: 'auto',
   },
 
   // AP unit map — one card per AP course, expandable to a vertical
