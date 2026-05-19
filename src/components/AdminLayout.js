@@ -65,6 +65,7 @@ export const NAV_GROUPS = [
     blurb: 'Methodology + legacy tools.',
     items: [
       { to: '/admin/methodology',   label: 'Methodology',   desc: 'Every emission factor + framework choice + citation used by the dashboard.' },
+      { to: '/admin/ai-accuracy',   label: 'AI Accuracy',   desc: 'Capstone Q3 — accuracy + per-field breakdown for the AI ingestion agent, scored against a hand-tagged benchmark.' },
       { to: '/admin/data-quality',  label: 'Data Quality',  desc: 'Single-page summary of measured-vs-estimated state across every scope and table.' },
       { to: '/admin/audit-log',     label: 'Audit Log',     desc: 'Every admin write recorded for AASHE STARS reporting and "who-changed-this" debugging.' },
       { to: '/admin/alerts',        label: 'Alerts',        desc: 'Email addresses that get notified when the dashboard detects something unusual (stale data, dead meter, anomaly).' },

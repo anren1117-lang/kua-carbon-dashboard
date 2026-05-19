@@ -27,6 +27,9 @@ import { benchmarkCases, scoreCase } from '../src/data/aiIngestionBenchmark.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
 const RESULTS_PATH = path.join(REPO_ROOT, 'docs', 'ai-ingestion-benchmark-results.json');
+// Also written to src/public/ so /admin/ai-accuracy can fetch it
+// as a static asset at runtime (Vite copies src/public/* to site root).
+const PUBLIC_RESULTS_PATH = path.join(REPO_ROOT, 'src', 'public', 'ai-ingestion-benchmark-results.json');
 
 const API_BASE = process.env.API_BASE || 'http://localhost:5173';
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
@@ -116,6 +119,12 @@ async function main() {
   await fs.mkdir(path.dirname(RESULTS_PATH), { recursive: true });
   await fs.writeFile(RESULTS_PATH, JSON.stringify(summary, null, 2));
   console.log(`Wrote ${path.relative(REPO_ROOT, RESULTS_PATH)}`);
+
+  // Also drop a copy in src/public/ so /admin/ai-accuracy can fetch
+  // it as a static asset.
+  await fs.mkdir(path.dirname(PUBLIC_RESULTS_PATH), { recursive: true });
+  await fs.writeFile(PUBLIC_RESULTS_PATH, JSON.stringify(summary, null, 2));
+  console.log(`Wrote ${path.relative(REPO_ROOT, PUBLIC_RESULTS_PATH)} (for /admin/ai-accuracy)`);
 
   const passed = summary.pass.routine && (summary.pass.safetyCritical !== false);
   process.exit(passed ? 0 : 1);

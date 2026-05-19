@@ -81,6 +81,7 @@ const AdminStagePlanner = lazy(() => import('./pages/admin/AdminStagePlanner'));
 const AdminFacilities = lazy(() => import('./pages/admin/AdminFacilities'));
 const AdminBmsExport = lazy(() => import('./pages/admin/AdminBmsExport'));
 const AdminAIIngestion = lazy(() => import('./pages/admin/AdminAIIngestion'));
+const AdminAIAccuracy = lazy(() => import('./pages/admin/AdminAIAccuracy'));
 const AdminAlerts = lazy(() => import('./pages/admin/AdminAlerts'));
 const HeatingOil = lazy(() => import('./pages/admin/scope1/HeatingOil'));
 const Propane = lazy(() => import('./pages/admin/scope1/Propane'));
@@ -175,6 +176,7 @@ root.render(
             <Route index element={<AdminHome />} />
             <Route path="framework" element={<AdminFramework />} />
             <Route path="ai-ingestion" element={<AdminAIIngestion />} />
+            <Route path="ai-accuracy" element={<AdminAIAccuracy />} />
 
             <Route path="scope-1" element={<AdminScope1 />} />
             <Route path="scope-1/heating-oil" element={<HeatingOil />} />

@@ -17,6 +17,7 @@ import { render, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 import AdminAIIngestion  from '../pages/admin/AdminAIIngestion.js';
+import AdminAIAccuracy   from '../pages/admin/AdminAIAccuracy.js';
 import AdminActions      from '../pages/admin/AdminActions.js';
 import AdminAlerts       from '../pages/admin/AdminAlerts.js';
 import AdminAuditLog     from '../pages/admin/AdminAuditLog.js';
@@ -36,6 +37,7 @@ import AdminStagePlanner from '../pages/admin/AdminStagePlanner.js';
 const pages = [
   ['AdminHome',         AdminHome,         '/admin'],
   ['AdminAIIngestion',  AdminAIIngestion,  '/admin/ai-ingestion'],
+  ['AdminAIAccuracy',   AdminAIAccuracy,   '/admin/ai-accuracy'],
   ['AdminActions',      AdminActions,      '/admin/actions'],
   ['AdminAlerts',       AdminAlerts,       '/admin/alerts'],
   ['AdminAuditLog',     AdminAuditLog,     '/admin/audit-log'],
