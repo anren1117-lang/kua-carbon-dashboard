@@ -5,6 +5,7 @@ import { useIsNarrow } from '../hooks/useViewport.js';
 import { Icon } from './Icon.js';
 import { BackToTop } from './BackToTop.js';
 import { CommandPalette } from './CommandPalette.js';
+import { RouteProgress } from './RouteProgress.js';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -501,6 +502,7 @@ function Layout() {
 
   return (
     <div style={styles.shell}>
+      <RouteProgress />
       <a href="#main" style={styles.skipLink}>Skip to main content</a>
       <header style={styles.header} className={scrolled ? 'kua-header-scrolled' : ''}>
         {isNarrow ? (
