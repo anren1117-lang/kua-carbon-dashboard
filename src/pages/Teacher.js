@@ -12,6 +12,7 @@ import {
   bucketDuration,
   matchesQuery,
 } from '../data/lessonLibrary.js';
+import { apUnitMap, countByFit, totalCoveredUnits } from '../data/apUnitMap.js';
 
 // Teacher Portal — searchable lesson library + class progress + KUA-
 // specific discussion prompts. The library replaces the previous
@@ -109,9 +110,9 @@ function TeacherContent() {
 
       <MetricGrid metrics={[
         { label: 'Lessons in library',  value: lessonLibrary.length,                accent: '#22d3ee' },
-        { label: 'Departments covered', value: new Set(lessonLibrary.map((l) => l.department)).size, accent: '#fbbf24' },
-        { label: 'KUA courses tagged',  value: new Set(lessonLibrary.flatMap((l) => l.courses)).size, accent: '#86efac' },
-        { label: 'Knowledge articles',  value: knowledgeArticles.length,            accent: '#ef4444' },
+        { label: 'KUA courses tagged',  value: new Set(lessonLibrary.flatMap((l) => l.courses)).size, accent: '#fbbf24' },
+        { label: 'AP unit-map courses', value: apUnitMap.length,                    accent: '#86efac' },
+        { label: 'AP units mapped',     value: totalCoveredUnits(),                 accent: '#ef4444' },
       ]} />
 
       <ModuleSection
@@ -288,6 +289,8 @@ function TeacherContent() {
         )}
       </ModuleSection>
 
+      <ApUnitMapSection lessonById={Object.fromEntries(lessonLibrary.map((l) => [l.id, l]))} />
+
       <ModuleSection
         title={liveRollup && liveRollup.length > 0 ? 'Class learning progress (live)' : 'Class learning progress'}
         hint={
@@ -370,6 +373,105 @@ function TeacherContent() {
       </ModuleSection>
     </ModulePage>
   );
+}
+
+// Per-CED-unit dashboard hooks for the highest-fit APs. Each AP
+// course renders as a collapsible card; expanded view shows every
+// CED unit with a fit pill + suggested 5-min hook + linked lessons.
+function ApUnitMapSection({ lessonById }) {
+  const [expandedCourse, setExpandedCourse] = useState(null);
+
+  return (
+    <ModuleSection
+      title="AP unit-by-unit map"
+      hint="For the highest-fit AP courses, every CED unit is tagged with a fit rating (direct / tangential / none) plus a 5-minute classroom hook where one exists. Units with fit='none' are honest gaps — skip those on the dashboard."
+    >
+      <div style={styles.apCourseGrid}>
+        {apUnitMap.map((course) => {
+          const isOpen = expandedCourse === course.courseId;
+          const fitCounts = countByFit(course);
+          return (
+            <div key={course.courseId} style={styles.apCourseCard}>
+              <button
+                type="button"
+                onClick={() => setExpandedCourse(isOpen ? null : course.courseId)}
+                aria-expanded={isOpen}
+                style={styles.apCourseHeadBtn}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={styles.apCourseTitle}>{course.courseId}</div>
+                  <div style={styles.apCourseMeta}>
+                    <span style={apFitPillStyle('direct')}>{fitCounts.direct} direct</span>
+                    <span style={apFitPillStyle('tangential')}>{fitCounts.tangential} tangential</span>
+                    <span style={apFitPillStyle('none')}>{fitCounts.none} no fit</span>
+                    <span style={styles.apCedYear}>CED {course.cedYear}</span>
+                  </div>
+                </div>
+                <span style={{ ...styles.arrow, transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                  ▶
+                </span>
+              </button>
+
+              {isOpen && (
+                <div style={styles.apCourseBody}>
+                  <div style={styles.apOverallFit}>{course.overallFit}</div>
+                  <div style={styles.apUnitList}>
+                    {course.units.map((u) => (
+                      <div key={u.num} style={styles.apUnitRow}>
+                        <div style={styles.apUnitHeader}>
+                          <span style={styles.apUnitNum}>Unit {u.num}</span>
+                          <span style={styles.apUnitName}>{u.name}</span>
+                          <span style={apFitPillStyle(u.fit)}>{u.fit}</span>
+                        </div>
+                        {u.hook && <div style={styles.apUnitHook}>{u.hook}</div>}
+                        {u.note && <div style={styles.apUnitNote}>⚠ {u.note}</div>}
+                        {u.dashboardPages.length > 0 && (
+                          <div style={styles.apUnitPages}>
+                            {u.dashboardPages.map((p) => (
+                              <Link key={p} to={p} style={styles.pageLink}>{p}</Link>
+                            ))}
+                          </div>
+                        )}
+                        {u.linkedLessonIds.length > 0 && (
+                          <div style={styles.apUnitLessons}>
+                            <span style={styles.apUnitLessonsLabel}>Full lessons:</span>
+                            {u.linkedLessonIds.map((id) => {
+                              const l = lessonById[id];
+                              if (!l) return null;
+                              return <span key={id} style={styles.apUnitLessonChip}>{l.title}</span>;
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </ModuleSection>
+  );
+}
+
+function apFitPillStyle(fit) {
+  const colors = {
+    direct:     { bg: 'rgba(34, 197, 94, 0.12)',   fg: '#22c55e', border: 'rgba(34, 197, 94, 0.4)' },
+    tangential: { bg: 'rgba(251, 191, 36, 0.12)',  fg: '#fbbf24', border: 'rgba(251, 191, 36, 0.4)' },
+    none:       { bg: 'rgba(100, 116, 139, 0.12)', fg: '#94a3b8', border: 'rgba(100, 116, 139, 0.4)' },
+  };
+  const c = colors[fit] || colors.none;
+  return {
+    padding: '2px 8px',
+    background: c.bg,
+    border: `1px solid ${c.border}`,
+    borderRadius: 999,
+    fontSize: 11,
+    color: c.fg,
+    fontWeight: 600,
+    textTransform: 'lowercase',
+  };
 }
 
 const SAMPLE_CLASS_ROWS = [
@@ -539,6 +641,68 @@ const styles = {
     color: '#22d3ee',
     textDecoration: 'none',
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+    fontWeight: 600,
+  },
+
+  // AP unit map — one card per AP course, expandable to a vertical
+  // list of CED units with fit pill + hook + linked-lesson chips.
+  apCourseGrid: { display: 'grid', gap: 10 },
+  apCourseCard: {
+    padding: '14px 16px',
+    background: '#0b1220',
+    border: '1px solid #1f2937',
+    borderRadius: 8,
+  },
+  apCourseHeadBtn: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 10,
+    width: '100%',
+    background: 'transparent',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    textAlign: 'left',
+    color: 'inherit',
+  },
+  apCourseTitle: { fontSize: 15, color: '#e5e7eb', fontWeight: 700 },
+  apCourseMeta: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' },
+  apCedYear: { fontSize: 11, color: '#64748b', marginLeft: 6 },
+  apCourseBody: { marginTop: 14, paddingTop: 12, borderTop: '1px solid #1f2937' },
+  apOverallFit: {
+    padding: '8px 12px',
+    background: '#0f172a',
+    borderLeft: '3px solid #22d3ee',
+    borderRadius: 4,
+    fontSize: 12,
+    color: '#cbd5e1',
+    lineHeight: 1.6,
+    marginBottom: 14,
+    fontStyle: 'italic',
+  },
+  apUnitList: { display: 'grid', gap: 12 },
+  apUnitRow: {
+    padding: 12,
+    background: '#0f172a',
+    border: '1px solid #1f2937',
+    borderRadius: 6,
+  },
+  apUnitHeader: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 },
+  apUnitNum: { fontSize: 12, color: '#64748b', fontWeight: 700 },
+  apUnitName: { fontSize: 13, color: '#e5e7eb', fontWeight: 600, flex: 1 },
+  apUnitHook: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 },
+  apUnitNote: { fontSize: 12, color: '#fbbf24', lineHeight: 1.5, marginTop: 6, fontStyle: 'italic' },
+  apUnitPages: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  apUnitLessons: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8, alignItems: 'center' },
+  apUnitLessonsLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700 },
+  apUnitLessonChip: {
+    padding: '3px 9px',
+    background: 'rgba(34, 197, 94, 0.08)',
+    border: '1px solid rgba(34, 197, 94, 0.3)',
+    borderRadius: 4,
+    fontSize: 11,
+    color: '#86efac',
     fontWeight: 600,
   },
 
