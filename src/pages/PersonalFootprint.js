@@ -4,6 +4,7 @@ import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { estimatePersonalFootprint, FOOTPRINT_REFERENCE, typicalFootprintFor, allTypicalFootprints } from '../utils/personalFootprint.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
 import { CopyButton } from '../components/CopyButton.js';
+import { toast } from '../components/Toast.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 
@@ -217,6 +218,7 @@ function FootprintHistory({ currentMt, studentType }) {
     const next = [...history, entry].slice(-12); // keep last 12 snapshots
     try { localStorage.setItem('kua-footprint-history', JSON.stringify(next)); } catch {}
     setHistory(next);
+    toast(`Snapshot saved (${entry.mt} mt)`, { kind: 'good' });
   }
 
   function clearHistory() {
@@ -355,6 +357,7 @@ function PledgeSection({ totalMt, components, studentType }) {
     };
     try { localStorage.setItem('kua-footprint-pledge', JSON.stringify(pledge)); } catch {}
     setPledged(pledge);
+    toast(`Pledge saved — you'll cut ~${pledge.reductionMt} mt this year`, { kind: 'good', duration: 4000 });
   }
 
   function clearPledge() {
