@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
 import { Icon } from '../components/Icon.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { buildingMonthlyHistory, monthlyReports, campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
@@ -29,6 +30,7 @@ function formatMonth(ym) {
 const ISO_NE_KG_PER_KWH = 0.235;
 
 export default function MonthlyDigest() {
+  const heroSpotRef = useSpotlight();
   const monthly = campusMonthlyTotals().sort((a, b) => a.month.localeCompare(b.month));
   const latest  = monthly[monthly.length - 1] || null;
   const prior   = monthly[monthly.length - 2] || null;
@@ -102,7 +104,7 @@ export default function MonthlyDigest() {
       }
     >
       <ModuleSection title="Campus electricity this month" hint="">
-        <div style={styles.heroCard} className="kua-card-hover">
+        <div ref={heroSpotRef} style={{ ...styles.heroCard, position: 'relative' }} className="kua-card-hover kua-spotlight">
           <div style={styles.heroLabel}>{formatMonth(latest.month).toUpperCase()}</div>
           <div style={styles.heroValue}>
             <AnimatedNumber value={latest.displayedTotal} duration={1300} />
