@@ -78,6 +78,20 @@ describe('lessonLibrary — data integrity', () => {
     const fmts = new Set(lessonLibrary.map((l) => l.format));
     expect(fmts.size).toBeGreaterThanOrEqual(6);
   });
+
+  it('every AP course in VERIFIED_COURSES is covered by at least one lesson', () => {
+    const apCourses = VERIFIED_COURSES.filter((c) => c.startsWith('AP '));
+    const taggedCourses = new Set(lessonLibrary.flatMap((l) => l.courses));
+    const uncovered = apCourses.filter((c) => !taggedCourses.has(c));
+    expect(
+      uncovered,
+      `AP courses without any lesson: ${uncovered.join(', ')} — add a lesson or remove from VERIFIED_COURSES`,
+    ).toEqual([]);
+  });
+
+  it('library has at least 25 lessons (regression guard against accidental deletion)', () => {
+    expect(lessonLibrary.length).toBeGreaterThanOrEqual(25);
+  });
 });
 
 describe('lessonLibrary — helper functions', () => {
