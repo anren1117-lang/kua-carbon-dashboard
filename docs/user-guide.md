@@ -1,11 +1,29 @@
 # KUA Carbon Dashboard — User Guide
 
-**Live at:** `https://kua-carbon-dashboard.vercel.app`
-**Last updated:** Phase 362 (2026-05-19)
+> **How to use this guide (30 seconds)**
+>
+> 1. **Pick your role from the table below.** Don't read the others.
+> 2. **Each role section is 2–4 minutes.** It tells you the 3–5 pages worth visiting and one thing you can do today.
+> 3. **Two universal shortcuts work everywhere:** `⌘K` / `Ctrl+K` opens a search palette · the "KUA Carbon" wordmark is always home.
 
-This guide is organized **by role**. Find your role below and read just that section. Most sections are 2–4 minutes. You don't need to read the rest.
+### Jump to your role
 
-> **Two universal shortcuts:** Press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) anywhere on the dashboard to open a search palette that jumps you to any page instantly. The big "KUA Carbon" wordmark in the upper-left always takes you home.
+| If you're a… | Section | Reading time |
+|---|---|---|
+| 👨‍🎓 KUA student | [§1](#-if-youre-a-kua-student) | 3 min |
+| 👩‍🏫 KUA teacher | [§2](#-if-youre-a-kua-teacher) | 3 min |
+| 👨‍👩‍👧 KUA parent | [§3](#-if-youre-a-kua-parent) | 2 min |
+| 🏠 RA / dorm proctor | [§4](#-if-youre-an-ra--dorm-proctor) | 2 min |
+| 👔 Trustee / Head of School | [§5](#-if-youre-a-trustee--head-of-school) | 5 min |
+| 🎓 STEM Scholar capstone reviewer | [§6](#-if-youre-a-stem-scholar-capstone-reviewer) | 4 min |
+| 👩‍💻 Facilities / IT staff | [§7](#-if-youre-a-kua-facilities--it-staff-member) | 3 min |
+
+| | |
+|---|---|
+| **Live site** | `https://kua-carbon-dashboard.vercel.app` |
+| **Source code** | [github.com/anren1117-lang/kua-carbon-dashboard](https://github.com/anren1117-lang/kua-carbon-dashboard) |
+| **Last updated** | Phase 363 (2026-05-19) |
+| **Teaching a specific course?** | See [classroom-mapping.md](./classroom-mapping.md) for per-department detail |
 
 ---
 

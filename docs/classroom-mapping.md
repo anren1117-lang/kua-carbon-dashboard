@@ -1,18 +1,40 @@
-# KUA classroom mapping — how to use the dashboard in class
+# KUA classroom mapping
 
-A course-by-course map of how every department at Kimball Union Academy
-can pull material from the KUA Carbon Dashboard, plus the practical
-mechanics of *getting* the material into a lesson plan, Google Classroom,
-a printed worksheet, or a smart-board.
+> **How to use this guide (60 seconds)**
+>
+> 1. **Don't read it end-to-end.** This is a reference. Jump straight to your course.
+> 2. **Each course block has three things:** pages to use · one classroom hook · estimated lesson time.
+> 3. **You'll need ~30 seconds per course block** to decide if it fits your week.
+> 4. **The dashboard is live and free.** No login for any course-use page; the admin pages need a token.
 
-**Last updated:** 2026-05-19 (researched against the public kua.org
-catalog and the 2025–26 School Profile).
+| | |
+|---|---|
+| **Live site** | [kua-carbon-dashboard.vercel.app](https://kua-carbon-dashboard.vercel.app) |
+| **Source code** | [github.com/anren1117-lang/kua-carbon-dashboard](https://github.com/anren1117-lang/kua-carbon-dashboard) |
+| **Audience** | Any KUA faculty member; chairs of Science, Math, History, English, Visual Arts, Gosselin |
+| **Researched** | 2026-05-19, against the live kua.org catalog + 2025–26 School Profile |
+| **Companion doc** | [user-guide.md](./user-guide.md) (general dashboard tour, not course-specific) |
 
-**Audience:** any KUA faculty member, plus the chairs of Science,
-Math, History, English, Visual Arts, and the Gosselin Learning Center.
+### Jump to your course
 
-**Live site:** [kua-carbon-dashboard.vercel.app](https://kua-carbon-dashboard.vercel.app)
-**Source:** [github.com/anren1117-lang/kua-carbon-dashboard](https://github.com/anren1117-lang/kua-carbon-dashboard)
+| Department | Section |
+|---|---|
+| Physics (all levels + AP C) | [§2.1](#21-science--conceptual-physics--physics--physics-honors--ap-physics-c) |
+| Biology (all levels + AP) | [§2.2](#22-science--biology--biology-honors--ap-biology) |
+| Chemistry (all levels + AP) | [§2.3](#23-science--chemistry--chemistry-honors--ap-chemistry) |
+| **AP Environmental Science** *(highest fit)* | [§2.4](#24-science--ap-environmental-science) |
+| Marine Bio · Wildlife Bio · Sustainable Food & Ag · Decarbonize Your Life | [§2.5](#25-science--marine-biology--wildlife-biology--sustainable-food-and-agriculture--environment-and-anthropology-decarbonize-your-life) |
+| Math: Algebra II → Calc BC | [§2.6](#26-math--algebra-ii--precalculus--calculus-ab--calculus-bc) |
+| AP Stats / Prob & Stats & Data Science (H) | [§2.7](#27-math--ap-statistics--probability-statistics--data-science-h) |
+| Intro CS / AP CS A | [§2.8](#28-computer-science--intro-cs--ap-cs-a) |
+| **10th-Grade Sustainability** *(every sophomore)* | [§2.9](#29-tenth-grade-sustainability-gosselin-learning-center--every-sophomore) |
+| AP Macro / Micro / Global Econ | [§2.10](#210-history--social-sciences--ap-macroeconomics-ap-microeconomics-global-economics) |
+| AP US Gov · AP US History · Geopolitics | [§2.11](#211-history--social-sciences--ap-us-government-ap-us-history-geopolitics) |
+| Writer's Workshop (H) · AP Lang | [§2.12](#212-english--writers-workshop-h-ap-language--composition) |
+| Visual Arts (Digital Photo · Film · Fabrication) | [§2.13](#213-visual-arts--digital-photography-i-film--video-production-digital-fabrication) |
+| **STEM Scholar Capstone** | [§2.14](#214-stem-scholar-capstone-giles-family-stem-scholar-program) |
+| **How to get material into a lesson** | [§3](#3-how-teachers-get-the-material-into-a-lesson-plan) |
+| Logistics + honest disclosure | [§4](#4-logistics) |
 
 ---
 
@@ -337,89 +359,22 @@ chair) and **Ryan McKeon, Ph.D.** (STEM Director). Reach out via
 
 ## 3. How teachers get the material into a lesson plan
 
-The dashboard isn't a textbook — it's a live web app. Here are the
-practical ways to pull material out of it.
+Pick the path that matches what you're doing this week:
 
-### 3.1 Direct linking (the easiest path)
+| If you want to… | Use | Time to set up |
+|---|---|---|
+| Drop a link in Google Classroom / Schoology | Stable URL — every page has one | < 1 min |
+| Print a paper handout | 🖨 button on `/faq`, `/methodology`, `/dorm-leaderboard`, `/carbon-math`, `/methodology/glossary` | < 1 min |
+| Project on the smart-board | Any page (dark theme, scales to 1080p/4K). Avoid satellite-view campus map at low projector res. | < 1 min |
+| Embed a chart in a slide deck | Right-click chart → Save image. Or screen-record with QuickTime / Game Bar. | 2 min |
+| Pre-built lessons with learning goals | `/teacher` — 4 modules (15–40 min each) | 5 min |
+| Student-paced quizzes | `/learn` — 8 paths × 10–20 min, Intro / Standard / AP tiers | 5 min |
+| Let students ask questions outside class | `/ask` — AI tutor trained on dashboard methodology | 0 min |
+| Pull raw data for a custom assignment | `/src/data/*.js` on GitHub (open source); for BMS export ask the maintainer for a read-only token to `/admin/bms-export` | 10 min |
 
-Every page has a stable URL. Drop any of these straight into a Google
-Classroom assignment, a Schoology post, or an email:
+**Deep-linking trick:** the FAQ supports anchors — `/faq#how-is-this-measured` jumps straight to that question. Useful for "read this specific thing before class" prompts.
 
-- `https://kua-carbon-dashboard.vercel.app/scope-2`
-- `https://kua-carbon-dashboard.vercel.app/your-footprint`
-- `https://kua-carbon-dashboard.vercel.app/scenarios`
-- `https://kua-carbon-dashboard.vercel.app/carbon-math`
-- `https://kua-carbon-dashboard.vercel.app/methodology`
-- (etc — every nav item)
-
-Some pages deep-link further. Example: the FAQ supports
-`/faq#how-is-this-measured` to jump straight to a specific question.
-
-### 3.2 Print-as-handout
-
-These pages have a working **🖨 Print** button in their top toolbar:
-
-- `/faq` — prints all 13 questions as a single handout
-- `/methodology` — prints the full factors-and-citations bibliography
-- `/dorm-leaderboard` — prints the leaderboard as a wall poster
-- `/carbon-math` — prints all 8 problems as a worksheet
-- `/methodology/glossary` — vocabulary handout
-
-The browser's own Print-to-PDF works on every other page. Set Chrome
-to "Background graphics: ON" for the dashboard's dark theme to render.
-
-### 3.3 Smart-board / projector use
-
-Every page is built for high-contrast projector use (white-on-dark by
-default). The text scales correctly at 1080p and 4K. Avoid the campus
-map in satellite mode at low projector resolution — switch to the
-"category" view instead.
-
-### 3.4 Embed in a slide deck
-
-- Right-click any chart → "Save image as…" (most browsers support this
-  for SVG charts).
-- For interactive demos, screen-record the page using QuickTime
-  (Mac) or the Windows Game Bar.
-- The dashboard is happy to add per-chart "Download PNG" buttons on
-  request — open an issue on GitHub.
-
-### 3.5 Assign through the Teacher portal (`/teacher`)
-
-The existing `/teacher` page already has four pre-built lesson modules
-with learning goals, durations, and "fits with" annotations:
-
-1. Climate change in 5 minutes (15–20 min)
-2. Scope 1 / 2 / 3 — what KUA actually emits (25–30 min)
-3. Food and carbon — the dining-hall lever (20–25 min)
-4. Reading a grid mix (30–40 min)
-
-You can assign these to a roster and see (mocked, today; real once
-the school SSO is wired up) student results.
-
-### 3.6 Send students to the Learn portal (`/learn`)
-
-Eight curated learning paths with quizzes, ranging from "Intro for any
-grade" through "AP-level deep dives in chem / bio / physics / stats."
-Each path takes 10–20 minutes of student time and produces a quiz
-score the dashboard can track.
-
-### 3.7 The Ask portal (`/ask`)
-
-For student research questions, the Ask portal is an AI tutor trained
-on the dashboard's methodology, factors, and data. Cite-as-you-go.
-It's not a substitute for the teacher, but it answers "what does ISO-
-NE mean?" without 30 follow-up emails.
-
-### 3.8 If you want real data for a custom assignment
-
-The dashboard ships its source data as static JavaScript modules in
-`/src/data/` on GitHub. Anything in there is yours to import into a
-Google Sheet, a Jupyter notebook, or a custom student tool.
-
-For richer feeds (BMS export, per-month per-building kWh), the admin
-portal has download buttons at `/admin/bms-export`. Ask the dashboard
-maintainer for a read-only token.
+**Browser-print tip:** for any page without a 🖨 button, the browser's own Print-to-PDF works. Set Chrome to "Background graphics: ON" so the dark theme renders.
 
 ---
 
