@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Icon } from './Icon.js';
+import { toast } from './Toast.js';
 
 // Small reusable "copy to clipboard" button. Three places already
 // use this pattern (Pledge / Share QR / BuildingDetail share); this
@@ -35,6 +36,9 @@ export function CopyButton({
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
+      // Also fire a global toast so the feedback is visible even
+      // if the user's eye is elsewhere on the page.
+      toast('Copied to clipboard', { kind: 'good' });
     });
   }
 

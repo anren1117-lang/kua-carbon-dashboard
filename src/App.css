@@ -745,3 +745,39 @@ section details[open] > summary::before {
 @media (prefers-reduced-motion: reduce) {
   .kua-tilt { transform: none !important; transition: none !important; }
 }
+
+/* Cursor-following spotlight on hero cards. JS updates --kua-mx /
+   --kua-my CSS custom properties on the parent; this rule paints
+   a soft radial cyan glow that tracks the cursor. */
+.kua-spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--kua-mx, 50%) var(--kua-my, 50%),
+    rgba(34, 211, 238, 0.10) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 220ms ease;
+  border-radius: inherit;
+}
+.kua-spotlight:hover::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kua-spotlight::after { display: none; }
+}
+
+/* Toast entrance animation — slides up from below + fades in */
+@keyframes kuaToastEnter {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.kua-toast-enter {
+  animation: kuaToastEnter 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kua-toast-enter { animation: none !important; }
+}

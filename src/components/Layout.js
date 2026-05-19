@@ -6,6 +6,7 @@ import { Icon } from './Icon.js';
 import { BackToTop } from './BackToTop.js';
 import { CommandPalette } from './CommandPalette.js';
 import { RouteProgress } from './RouteProgress.js';
+import { ToastHost } from './Toast.js';
 
 // Three-tier nav:
 //   1. Top — the audience-agnostic "what's KUA's number?" set, visible always.
@@ -562,6 +563,7 @@ function Layout() {
       </main>
       <BackToTop />
       <CommandPalette />
+      <ToastHost />
       <footer style={styles.footer}>
         <div style={styles.footerInner}>
           <div style={styles.footerCols}>
