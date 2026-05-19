@@ -91,6 +91,11 @@ function App() {
       <div style={{ maxWidth: 1100, margin: '40px auto 0', padding: '0 16px' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, fontSize: 13 }}>
           {[
+            // First pill is the user-guide hook for new visitors. External
+            // link because docs/user-guide.md lives in the repo, not as a
+            // dashboard route. Distinct cyan tint so it reads as the
+            // "start here" affordance.
+            { to: 'https://github.com/anren1117-lang/kua-carbon-dashboard/blob/main/docs/user-guide.md', label: 'New here? Start guide', icon: Icon.Sparkles, external: true, primary: true },
             { to: '/faq',              label: 'FAQ',                       icon: Icon.HelpCircle },
             { to: '/your-footprint',   label: 'Calculate your footprint',  icon: Icon.Leaf },
             { to: '/dorm-leaderboard', label: 'Dorm leaderboard',          icon: Icon.Trophy },
@@ -99,28 +104,34 @@ function App() {
             { to: '/carbon-math',      label: 'Carbon math practice',      icon: Icon.Chart },
             { to: '/methodology',      label: 'Methodology',               icon: Icon.HelpCircle },
             { to: '/share',            label: 'Share via QR',              icon: Icon.Share },
-          ].map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              className="kua-card-hover"
-              style={{
-                padding: '8px 14px',
-                background: '#0f172a',
-                border: '1px solid #1f2937',
-                borderRadius: 999,
-                color: '#cbd5e1',
-                textDecoration: 'none',
-                fontWeight: 500,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <l.icon size={14} />
-              {l.label}
-            </Link>
-          ))}
+          ].map((l) => {
+            const sharedStyle = {
+              padding: '8px 14px',
+              background: l.primary ? 'rgba(34, 211, 238, 0.12)' : '#0f172a',
+              border: `1px solid ${l.primary ? 'rgba(34, 211, 238, 0.5)' : '#1f2937'}`,
+              borderRadius: 999,
+              color: l.primary ? '#22d3ee' : '#cbd5e1',
+              textDecoration: 'none',
+              fontWeight: l.primary ? 700 : 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+            };
+            if (l.external) {
+              return (
+                <a key={l.to} href={l.to} target="_blank" rel="noopener noreferrer" className="kua-card-hover" style={sharedStyle}>
+                  <l.icon size={14} />
+                  {l.label}
+                </a>
+              );
+            }
+            return (
+              <Link key={l.to} to={l.to} className="kua-card-hover" style={sharedStyle}>
+                <l.icon size={14} />
+                {l.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
 

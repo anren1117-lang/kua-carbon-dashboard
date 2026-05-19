@@ -25,6 +25,24 @@ const codeStyle = { background: '#0b1220', padding: '1px 6px', borderRadius: 3, 
 
 const FAQ = [
   {
+    q: "How do I get started? (I'm new here.)",
+    a: (
+      <>
+        Depends on your role. The full user guide is on GitHub and breaks it down
+        by role — student / teacher / parent / RA / trustee / capstone reviewer /
+        Facilities staff. Pick yours and read just that section (2–4 minutes each).
+        {' '}<a href="https://github.com/anren1117-lang/kua-carbon-dashboard/blob/main/docs/user-guide.md" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+          Open the user guide →
+        </a>
+        <br /><br />
+        <strong style={{ color: '#cbd5e1' }}>Two universal shortcuts:</strong>{' '}
+        Press <code style={codeStyle}>⌘K</code> (Mac) or <code style={codeStyle}>Ctrl+K</code> (Win/Linux)
+        anywhere to open a search palette that jumps you to any page instantly.
+        The "KUA Carbon" wordmark in the upper-left is always home.
+      </>
+    ),
+  },
+  {
     q: "What's a carbon footprint?",
     a: (
       <>
