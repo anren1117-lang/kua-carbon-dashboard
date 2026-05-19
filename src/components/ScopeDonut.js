@@ -3,6 +3,7 @@ import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { useAnimatedNumber } from './AnimatedNumber.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut
@@ -48,6 +49,7 @@ const styles = {
 export function ScopeDonut() {
   const narrow = useIsNarrow();
   const [hover, setHover] = useState(null);
+  const spotRef = useSpotlight();
 
   // Build arc segments
   const cx = 130, cy = 130, rO = 110, rI = 70;
@@ -71,7 +73,7 @@ export function ScopeDonut() {
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card} className="kua-card-hover">
+      <section ref={spotRef} style={{ ...styles.card, position: 'relative' }} className="kua-card-hover kua-spotlight">
         <h2 style={styles.title}>KUA emissions by scope</h2>
         <p style={styles.blurb}>
           Where the ~{grossTotal.toLocaleString()} mtCO₂e of gross annual emissions actually come

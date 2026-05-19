@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 
@@ -84,6 +85,7 @@ const styles = {
 export function AISummary() {
   const [records, setRecords] = useState({ totalRecords: 0, tables: {} });
   const [showCalc, setShowCalc] = useState(false);
+  const spotRef = useSpotlight();
 
   useEffect(() => {
     let cancelled = false;
@@ -119,7 +121,7 @@ export function AISummary() {
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card} className="kua-card-hover">
+      <section ref={spotRef} style={{ ...styles.card, position: 'relative' }} className="kua-card-hover kua-spotlight">
         <div style={styles.head}>
           <span style={styles.badge}>AI-generated · grounded</span>
           <span style={styles.title}>In plain English</span>

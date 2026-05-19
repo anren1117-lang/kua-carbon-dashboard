@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -203,12 +204,13 @@ function Bar({ p }) {
 
 export function PeerComparison() {
   const isNarrow = useIsNarrow();
+  const spotRef = useSpotlight();
   // Axis tick values for context.
   const ticks = [Math.ceil(axisMin), 0, Math.round(axisMax / 2), Math.round(axisMax)];
 
   return (
     <div style={styles.wrap}>
-      <section style={styles.card} className="kua-card-hover">
+      <section ref={spotRef} style={{ ...styles.card, position: 'relative' }} className="kua-card-hover kua-spotlight">
         <div style={styles.head}>
           <h2 style={styles.title}>Per-student emissions by scope, with offsets and sinks</h2>
           <p style={styles.blurb}>
