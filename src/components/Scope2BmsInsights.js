@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ProvenancePill } from './ProvenancePill.js';
-import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportSep2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
@@ -644,10 +644,10 @@ function TimePatternsSection() {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Pattern across time scales</h3>
       <p style={styles.cardHint}>
-        Same campus electricity, three resolutions. Switch tabs to see daily samples (from the CSV),
-        weekly totals (rolled up from those days), and monthly totals (full-month BMS captures Jan–Apr
-        + partial May from the CSV). Each view comes with a what-and-why analysis built from the data
-        itself.
+        Same campus electricity, three resolutions. Daily and Weekly are rolled up from the latest
+        Meter Trends export (the operational window shown above). Monthly shows the full-month
+        master-meter captures on record (Jan–Apr). Each view comes with a what-and-why analysis built
+        from the data itself.
       </p>
       <div style={styles.tabRow}>
         <button type="button" onClick={() => setView('day')}   style={{ ...styles.tab,   ...(view === 'day'   ? styles.tabActive : {}) }}>Daily</button>
@@ -773,7 +773,7 @@ function DailyView({ data }) {
         bullets={[
           {
             label: 'Peak day',
-            text: `${peakDay.date} at ${peakDay.kwh.toLocaleString()} kWh — the actual highest-load day in the window. Likely driven by colder weather + full occupancy.`
+            text: `${peakDay.date} at ${peakDay.kwh.toLocaleString()} kWh — the actual highest-load day in the window. In a late-summer / term-start window this tracks cooling load plus rising occupancy as students return.`
           },
           {
             label: 'Lowest day',
@@ -783,7 +783,7 @@ function DailyView({ data }) {
             label: 'Weekend dip',
             text: weekendDip > 1
               ? `weekday mean ${Math.round(weekdayMean).toLocaleString()} kWh vs weekend mean ${Math.round(weekendMean).toLocaleString()} kWh — that's a ${weekendDip.toFixed(1)}% weekend dip. Modest, because boarder population stays on campus and dorm HVAC + always-on equipment dominate the load curve. Academic + dining cycles drive the visible swing on top of that base.`
-              : `weekend load matches weekday load — heating + always-on equipment dominate, academic schedule has minimal impact. Means efficiency wins on the always-on stack (LED, AHU schedules, base-load reduction) pay off more than schedule changes.`
+              : `weekend load matches weekday load — cooling + always-on equipment dominate, academic schedule has minimal impact. Means efficiency wins on the always-on stack (LED, AHU schedules, base-load reduction) pay off more than schedule changes.`
           },
           {
             label: 'Note on data quality',
@@ -838,15 +838,15 @@ function WeeklyView({ data }) {
             label: 'Trend across full weeks',
             text: fullWeeks.length >= 2
               ? trend > 5
-                ? `Rising ${trend.toFixed(1)}% from the first to last full week — likely warmer weather pushing some early-AC load, or term-end events. Worth checking against weather data once integrated.`
+                ? `Rising ${trend.toFixed(1)}% from the first to last full week — consistent with campus filling as the term begins, on top of late-summer cooling load. Worth checking against weather and the academic calendar once integrated.`
                 : trend < -5
-                  ? `Falling ${Math.abs(trend).toFixed(1)}% from the first to last full week — heating-season tail-off as April warms up. Expected pattern in NH.`
+                  ? `Falling ${Math.abs(trend).toFixed(1)}% from the first to last full week — a cooling-load tail-off or a pre-term lull in occupancy. Worth checking against weather data once integrated.`
                   : `Roughly flat (${trend > 0 ? '+' : ''}${trend.toFixed(1)}%) — campus load held stable across the export window.`
               : `Need more full weeks to read a trend. Re-run the parser with a wider window.`
           },
           {
             label: 'How weeks roll up',
-            text: `Each week sums the daily totals for ISO weeks (Mon-Sun). Partial weeks are flagged grey — Apr 5 falls on a Sunday, so the first ISO week (Mar 30 – Apr 5) only has the Sunday in this export. Same for the last week.`
+            text: `Each week sums the daily totals for ISO weeks (Mon-Sun). The export window rarely starts or ends on a Monday, so the first and last ISO weeks are usually partial — those bars are flagged grey so they aren't read like full weeks.`
           },
         ]}
       />
@@ -899,8 +899,8 @@ function MonthlyView({ data }) {
               : `Year-over-year heating intensity comparison would need a 2025 export to confirm. The 4-month window here doesn't have a year-prior baseline.`
           },
           {
-            label: 'May is partial',
-            text: `May currently shows ${data.monthly.find((m) => m.label === 'May')?.kwh.toLocaleString() || '0'} kWh over only ${data.monthly.find((m) => m.label === 'May')?.days || 0} days — the CSV cuts off May 4. The May full-month BMS capture (around June 1) replaces this row with a real master-meter total. The grey-bar treatment makes the partial state visible so it isn't compared like-for-like with the full months.`
+            label: 'Monthly vs the export window',
+            text: `The Monthly view shows the full-month master-meter captures on record (Jan–Apr). The latest Meter Trends export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) is a mid-window operational snapshot, so it appears in the Daily and Weekly views rather than as a full calendar month here.`
           },
         ]}
       />

@@ -3,7 +3,6 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
 import { Scope2BmsInsights } from '../components/Scope2BmsInsights';
-import { MeteredElectricityChart } from '../components/MeteredElectricityChart';
 import { GRID_MIX_ANNUAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -71,8 +70,6 @@ function Scope2() {
       <Scope2LiveDashboard />
 
       <Scope2BmsInsights />
-
-      <MeteredElectricityChart />
 
       <ScopePageInfo
         color="#f59e0b"
