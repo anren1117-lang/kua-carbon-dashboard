@@ -1161,16 +1161,16 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: same school, different methodology',
-        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,370 mtCO₂e gross, 2,650 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
+        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,375 mtCO₂e gross, 2,650 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
         given: [
-          { label: 'Gross (both)', value: '4,370 mtCO₂e' },
+          { label: 'Gross (both)', value: '4,375 mtCO₂e' },
           { label: 'Sequestration (real)', value: '2,650 mtCO₂e' },
           { label: 'Students (both)', value: '340' },
         ],
         question: 'Difference in published per-student footprint:',
         options: [
           { text: 'Both publish ~5.0 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
-          { text: 'A: ~5.1 mt; B: ~12.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,370 − 2,650) / 340 = 5.06. B: 4,370 / 340 = 12.85. Same physical campus, 2.5× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
+          { text: 'A: ~5.1 mt; B: ~12.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,375 − 2,650) / 340 = 5.07. B: 4,375 / 340 = 12.87. Same physical campus, 2.5× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
           { text: 'Both publish ~9.0 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
           { text: 'A: ~5.1 mt; B: ~5.1 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 5.1 (A) and 12.9 (B).' },
         ],
