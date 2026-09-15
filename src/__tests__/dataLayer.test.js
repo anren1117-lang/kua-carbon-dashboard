@@ -755,7 +755,7 @@ describe('canonical scope totals (post-fork-collapse)', () => {
   it('Scope 3 placeholder = bottom-up cross-check central (2,635)', () => {
     expect(SCOPE3_TOTAL_MT).toBe(2635);
   });
-  it('Gross = Scope 1 + Scope 2 + Scope 3 (4,370 with measured Scope 2 ≈ 385)', () => {
+  it('Gross = Scope 1 + Scope 2 + Scope 3 (≈4,375 with measured Scope 2 ≈ 390)', () => {
     expect(GROSS_MT).toBeGreaterThanOrEqual(4350);
     expect(GROSS_MT).toBeLessThanOrEqual(4400);
   });

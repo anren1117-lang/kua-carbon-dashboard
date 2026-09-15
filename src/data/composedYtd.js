@@ -1,62 +1,22 @@
-// Composed year-to-date electricity total — built from the actual
-// measured monthly BMS captures + the daily values in the BMS Meter
-// Trends export. Every kWh in the YTD figure traces back to a specific
-// measured source, no single-snapshot figure used as the headline.
+// Composed year-to-date electricity total. Every kWh in the YTD figure
+// traces back to a specific measured source:
 //
-// Sources (all measured):
-//   • monthlyConsumption.js     — Jan + Feb + Mar + Apr full-month
-//                                  master-meter "displayedTotal" rows
-//                                  from the BMS All Meters page
-//   • bmsExportApr2026.js       — May 1-4 daily totals summed across
-//                                  the export's main + panel feeds
-//                                  (the export starts Apr 5; April is
-//                                  already covered by the monthly
-//                                  capture above so we ONLY pull the
-//                                  May days here, no overlap)
+//   • monthlyConsumption.js    — Jan–Apr full-month master-meter
+//                                "displayedTotal" rows from the BMS All
+//                                Meters page (ground truth)
+//   • contiguousMonths2026.js  — May 1 onward, monthly totals from the
+//                                contiguous daily Meter Trends export,
+//                                scaled to master-meter equivalent (the
+//                                building feeds sum ~14% above the master)
 //
-// Cross-checks against the older single-snapshot value
-// (GRID_MIX_TOTAL_KWH = 649,439 from the All Meters page through
-// 2026-05-03) confirm agreement within ~0.5%, well inside CT
-// calibration noise.
+// The seasonal Year 1 projection below fills the rest of the year.
 
 import { monthlyReports } from './monthlyConsumption.js';
-import { bmsExportMeters as bmsExportAprMeters } from './bmsExportApr2026.js';
-import { bmsExportMeters as bmsExportSepMeters } from './bmsExportSep2026.js';
+import { reconciledMonths, CONTIGUOUS_LAST_DAY } from './contiguousMonths2026.js';
+import { SNAPSHOT_AS_OF } from './envysionSnapshot.js';
 
-// Heuristic: which feeds in the export count toward a campus total?
-// Same definition used by the Scope 2 BMS insights panel — main feeds
-// and panel feeds, not submeters underneath them.
-function isCampusFeed(id) {
-  return /MainFeed$|PanelFeed$|MDPFeed$|MDP$|^PM_\d+_Feed$|^PM_\d+_LP$|^PM_\d+_MainFeed$/.test(id);
-}
-
-// Daily campus totals by date, summed across campus feeds, for a parsed
-// export. We have two measured windows: the April export (Apr 5 – May 4)
-// and the September export (Aug 16 – Sep 14). Each contributes the
-// partial months not already covered by a full-month master-meter
-// capture; the gap between them (May 5 – Aug 15) is unmeasured and gets
-// filled by the seasonal projection in projectYear1(), not counted as
-// measured here.
-function exportDailyByDate(meters) {
-  const out = new Map();
-  for (const m of meters) {
-    if (!isCampusFeed(m.id)) continue;
-    for (const d of (m.daily || [])) {
-      out.set(d.date, (out.get(d.date) || 0) + d.kwh);
-    }
-  }
-  return out;
-}
-const aprExportDaily = exportDailyByDate(bmsExportAprMeters);
-const sepExportDaily = exportDailyByDate(bmsExportSepMeters);
-
-// Anchor date for the contiguous YTD composition — the last day of the
-// unbroken measured run from Jan 1. The September export (Aug 16 – Sep 14)
-// is measured too, but it's non-contiguous (May 5 – Aug 15 has no capture),
-// so it is surfaced separately as LATEST_MEASURED_WINDOW rather than
-// extending this anchor. That keeps the annual projection anchored on a
-// contiguous span instead of a short late-summer slice.
-export const COMPOSED_YTD_AS_OF = '2026-05-04';
+// Anchor date for the contiguous YTD composition — the last measured day.
+export const COMPOSED_YTD_AS_OF = CONTIGUOUS_LAST_DAY;
 
 // Days-into-year for Jan 1 → COMPOSED_YTD_AS_OF. Derive the year from
 // the anchor itself so this stays correct after a year rollover (the
@@ -74,7 +34,8 @@ export const COMPOSED_YTD_DAYS = dayOfYear;
 /**
  * @typedef {Object} YtdComponent
  * @property {string} label
- * @property {string} period         "Jan 2026" or "May 1-4 2026"
+ * @property {string} period         "YYYY-MM" month key
+ * @property {boolean} [reconciled]  true when scaled from the feed-sum export
  * @property {number} kwh
  * @property {number} days
  * @property {string} source         file path the kWh came from
@@ -112,62 +73,23 @@ export const ytdComponents = (() => {
     fullMonths.add(r.month);
   }
 
-  // 2. Partial months from each measured export — every month with
-  //    export days up to the anchor that isn't already a full month.
-  //    April export → May 1–4; September export → Aug 16–31 + Sep 1–14.
-  //    (April's own Apr days are dropped because Apr is a full month.)
-  const addPartials = (dailyMap, sourceFile) => {
-    const byMonth = new Map(); // 'YYYY-MM' → [date, ...]
-    for (const date of dailyMap.keys()) {
-      if (date > COMPOSED_YTD_AS_OF) continue;
-      const mk = date.slice(0, 7);
-      if (fullMonths.has(mk)) continue;
-      if (!byMonth.has(mk)) byMonth.set(mk, []);
-      byMonth.get(mk).push(date);
-    }
-    for (const [mk, dates] of byMonth) {
-      dates.sort();
-      const kwh = Math.round(dates.reduce((s, d) => s + dailyMap.get(d), 0));
-      const [yyyy, mm] = mk.split('-');
-      const first = dates[0].slice(8);
-      const last = dates[dates.length - 1].slice(8);
-      out.push({
-        label: `${MONTH_NAMES[parseInt(mm, 10) - 1]} ${first}–${last} ${yyyy}`,
-        period: mk,
-        kwh,
-        days: dates.length,
-        source: sourceFile,
-      });
-    }
-  };
-  // Only the contiguous run (April export → May 1–4) extends the YTD. The
-  // September export is surfaced separately (LATEST_MEASURED_WINDOW below).
-  addPartials(aprExportDaily, 'src/data/bmsExportApr2026.js (April Meter Trends export, daily campus-feed sum)');
+  // 2. Reconciled contiguous months from the daily Meter Trends export,
+  //    scaled to master-meter equivalent, so the YTD runs unbroken to the
+  //    anchor. A month that also has a master-meter capture above uses the
+  //    capture instead — it's ground truth and needs no scale factor.
+  for (const m of reconciledMonths) {
+    if (fullMonths.has(m.month)) continue;
+    if (m.month > COMPOSED_YTD_AS_OF.slice(0, 7)) continue;
+    const [yyyy, mm] = m.month.split('-');
+    const label = m.partial
+      ? `${MONTH_NAMES[parseInt(mm, 10) - 1]} 1–${m.days} ${yyyy}`
+      : labelForMonthKey(m.month);
+    out.push({ label, period: m.month, kwh: m.kwh, days: m.days, source: m.source, reconciled: true });
+  }
 
   // Chronological order for the composition table.
   out.sort((a, b) => a.period.localeCompare(b.period) || a.label.localeCompare(b.label));
   return out;
-})();
-
-// The latest measured operational window — the September export
-// (Aug 16 – Sep 14). Shown alongside the YTD as a measured slice, but
-// deliberately NOT folded into COMPOSED_YTD or the annual calibration: it's
-// a ~30-day, non-contiguous window (the May 5 – Aug 15 gap is unmeasured),
-// and using a short late-summer slice to re-anchor a whole-year projection
-// through a seasonal shape it appears to contradict would be less reliable
-// than the contiguous Jan–Apr anchor. It does signal that campus summer load
-// runs higher than the heating-driven model assumes — flagged in the UI.
-export const LATEST_MEASURED_WINDOW = (() => {
-  const dates = Array.from(sepExportDaily.keys()).sort();
-  if (dates.length === 0) return null;
-  const kwh = Math.round(dates.reduce((s, d) => s + sepExportDaily.get(d), 0));
-  const start = dates[0];
-  const end = dates[dates.length - 1];
-  // Unmeasured gap between the contiguous YTD anchor and this window's start.
-  const anchor = new Date(COMPOSED_YTD_AS_OF + 'T00:00:00Z');
-  const winStart = new Date(start + 'T00:00:00Z');
-  const gapDays = Math.max(0, Math.round((winStart - anchor) / 86400000) - 1);
-  return { start, end, kwh, days: dates.length, gapDays, source: 'src/data/bmsExportSep2026.js' };
 })();
 
 export const COMPOSED_YTD_KWH = ytdComponents.reduce((s, c) => s + c.kwh, 0);
@@ -177,8 +99,7 @@ export const COMPOSED_YTD_DAYS_COVERED = ytdComponents.reduce((s, c) => s + c.da
 // The naive approach is linear: kWh × (365 ÷ days_covered). For an
 // NH boarding school that's wrong — Jan/Feb peak from heating, Jul
 // trough from no occupancy + no heating + AC barely on. Linear
-// annualization over Apr-anchored data (a low-heating month)
-// systematically under-counts winter.
+// annualization ignores where in the year the measured run falls.
 //
 // Better: anchor the unmeasured months on the measured months using
 // the NH seasonal shape. Each measured month implies its own
@@ -202,8 +123,8 @@ function daysInMonthFor(year, monthIdx) {
   return new Date(year, monthIdx + 1, 0).getDate();
 }
 
-// Map each ytdComponent to its month index. Apr/May partial months
-// only contribute a fractional share.
+// Map each ytdComponent to its month index. A partial month only
+// contributes a fractional share.
 function componentToMonthShareCovered(c) {
   // Period like '2026-01' or '2026-05' from the components.
   const year = parseInt(c.period.slice(0, 4), 10);
@@ -216,9 +137,8 @@ function componentToMonthShareCovered(c) {
 
 // Calibrate annual baseline: each measured month implies its own
 // "annual" via kwh ÷ (monthShare × frac). Full months (frac = 1)
-// give a stable estimate; partial months are noisier because a
-// 4-day window is more sensitive to weather/occupancy than a 30-day
-// window. Weight each implied annual by its frac so a partial month
+// give a stable estimate; partial months are noisier because a short
+// window is more sensitive to weather/occupancy than a full month. Weight each implied annual by its frac so a partial month
 // counts proportionally less.
 //
 // Earlier code took an unweighted mean — which gave a partial 4-day
@@ -277,9 +197,30 @@ export const year1Months = projectYear1();
 export const COMPOSED_YEAR1_KWH = Math.round(year1Months.reduce((s, m) => s + m.kwh, 0));
 export const COMPOSED_YEAR1_CALIBRATED_ANNUAL = Math.round(calibratedAnnual);
 
+// Annualize a measured window by ITS share of the Year 1 shape, not the
+// YTD's: Year 1 ÷ the Year 1 kWh falling on the window's days (each month's
+// kWh spread evenly over its days). COMPOSED_ANNUALIZE_FACTOR is only right
+// for the Jan 1 → YTD-anchor window; a 123-day Jan–May snapshot or a 30-day
+// spring export needs its own factor.
+export function annualizeFactorForWindow(startIso, endIso) {
+  const year = parseInt(COMPOSED_YTD_AS_OF.slice(0, 4), 10);
+  const end = new Date(`${endIso}T12:00:00Z`);
+  let windowKwh = 0;
+  for (let d = new Date(`${startIso}T12:00:00Z`); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    if (d.getUTCFullYear() !== year) continue;
+    const m = d.getUTCMonth();
+    windowKwh += year1Months[m].kwh / daysInMonthFor(year, m);
+  }
+  return windowKwh > 0 ? COMPOSED_YEAR1_KWH / windowKwh : 1;
+}
+
+// envysionSnapshot.js per-building rows are YTD from Jan 1 → SNAPSHOT_AS_OF.
+export const SNAPSHOT_ANNUALIZE_FACTOR = annualizeFactorForWindow(`${SNAPSHOT_AS_OF.slice(0, 4)}-01-01`, SNAPSHOT_AS_OF);
+
 // Effective annualize factor = projected year 1 ÷ YTD measured.
-// Higher than naive 365/days_covered because the measured months
-// (Jan-Apr) lean heating-heavy.
+// Differs from naive 365/days_covered because the unmeasured days aren't
+// average: with data through mid-September, what's left of the year is
+// heating season, so this sits above the linear factor.
 export const COMPOSED_ANNUALIZE_FACTOR = COMPOSED_YTD_DAYS_COVERED > 0
   ? COMPOSED_YEAR1_KWH / COMPOSED_YTD_KWH
   : 1;

@@ -45,7 +45,7 @@ const tools = [
 const discussionPrompts = [
   {
     kind: 'Opener · 5 min',
-    text: 'If KUA emits ~4,370 mtCO₂e gross/year, and the forest sequesters ~2,650, what does net even mean?',
+    text: 'If KUA emits ~4,375 mtCO₂e gross/year, and the forest sequesters ~2,650, what does net even mean?',
   },
   {
     kind: 'Lab discussion',

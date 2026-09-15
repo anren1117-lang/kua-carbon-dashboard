@@ -42,11 +42,11 @@ KUA fingerprint (use this — DO NOT generalize):
 - 340 students, ~228 boarders + ~100 day, in Plainfield/Meriden NH (climate zone 6A, ~7,500 HDD).
 - 19 buildings, ~290,300 sqft total. 11 dorms ~105K sqft, 3 academic ~78K, 3 athletic ~98K, 2 other ~10K.
 - Heating: ~111K gal #2 heating oil + ~19K gal propane per year (bottom-up: sqft × NH-CZ6 intensity 45-75 kBtu/sqft/yr × 90% oil / 10% propane mix).
-- Electricity: ~1.64M kWh/yr Year-1 projection on the ISO-NE grid (effective rate 0.235 kg/kWh from per-fuel × 2024 mix).
+- Electricity: ~1.66M kWh/yr Year-1 projection on the ISO-NE grid (effective rate 0.235 kg/kWh from per-fuel × 2024 mix).
 - Fleet: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans (16 mpg) + 1 truck (14 mpg). ~54 mt/yr current.
 - 1,000 acres of campus forest sequestering ~2,650 mt/yr (Birdsey 1992 + Nowak 2013).
 - Student travel cohorts: ~100 day students (local Upper Valley), ~190 US boarders (mostly Northeast + scattered nationwide), ~50 international (East Asia heavy; Europe + South America secondary).
-- Scope totals — Scope 1: ~1,350 mt central (range 891–1,867 across 3 methods). Scope 2: ~385 mt measured ±5%. Scope 3: ~2,635 mt central (range 1,726–3,720 across 3-4 methods × 8 components: purchased goods ~1,315 dominates, student travel ~760 next, then dining ~235, upstream fuel ~230, commuting ~90, waste ~5). Heating oil dominates Scope 1; purchased goods + student travel dominate Scope 3.
+- Scope totals — Scope 1: ~1,350 mt central (range 891–1,867 across 3 methods). Scope 2: ~390 mt measured ±5%. Scope 3: ~2,635 mt central (range 1,726–3,720 across 3-4 methods × 8 components: purchased goods ~1,315 dominates, student travel ~760 next, then dining ~235, upstream fuel ~230, commuting ~90, waste ~5). Heating oil dominates Scope 1; purchased goods + student travel dominate Scope 3.
 
 Anchor your estimate against these whole-school annual mtCO2e benchmarks:
 - Heat-pump retrofit, single dorm (Densmore-class): 30–55 mt/yr (4-8K gal oil × 10.16 kg/gal × 70% displacement after Scope 2 add-back).
@@ -64,7 +64,7 @@ Anchor your estimate against these whole-school annual mtCO2e benchmarks:
 - One fewer domestic boarder RT (winter break): ~50 mt/yr (190 × 0.3 mt avg saved).
 - Lights-off campaign: 1–3 mt/yr (small effect on already-LED stock).
 - Recycling program improvement: 2–5 mt/yr.
-- Buy 100% NH-Class-1 RECs: 385 mt/yr full Scope 2 offset, ~$115K/yr (NEPOOL GIS market price).
+- Buy 100% NH-Class-1 RECs: 390 mt/yr full Scope 2 offset, ~$115K/yr (NEPOOL GIS market price).
 - Forest conservation easement on 1,000 acres: 0 net mt added (protects existing 2,650 mt/yr sink — important for accounting permanence).
 
 Output STRICT JSON only — no prose before/after — matching this shape:
@@ -129,7 +129,7 @@ function ruleEstimate({ title, description }) {
   if (has('compost'))
     return { mt: 4, cost: 25_000, confidence: 'medium', methodology: 'EPA WARM landfill methane avoided × tonnage diverted.', dataSource: 'EPA WARM v15.1', provenance: 'cited' };
   if (has('rec', 'renewable energy credit'))
-    return { mt: 385, cost: 115_000, confidence: 'high', methodology: 'NEPOOL GIS REC × full annualized scope-2 kWh (covers 100% of grid Scope 2).', dataSource: 'NEPOOL GIS REC market price × KUA annualized scope-2 kWh', provenance: 'cited' };
+    return { mt: 390, cost: 115_000, confidence: 'high', methodology: 'NEPOOL GIS REC × full annualized scope-2 kWh (covers 100% of grid Scope 2).', dataSource: 'NEPOOL GIS REC market price × KUA annualized scope-2 kWh', provenance: 'cited' };
   if (has('flight', 'travel') && has('international', 'student'))
     return { mt: 150, cost: 5_000, confidence: 'medium', methodology: 'ICAO calculator × KUA international-student roster (one-fewer-RT scenario).', dataSource: 'ICAO carbon calculator + Gold Standard offset prices', provenance: 'estimated' };
   if (has('commute', 'commuting'))

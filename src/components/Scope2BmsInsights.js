@@ -5,12 +5,13 @@ import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyReports } from '../data/monthlyConsumption.js';
+import { FEED_TO_MASTER_SCALE } from '../data/contiguousMonths2026.js';
+import { CAMPUS_FEED_RE } from '../data/campusFeeds.js';
 import {
   ytdComponents,
   COMPOSED_YTD_KWH,
   COMPOSED_YTD_AS_OF,
   COMPOSED_YTD_DAYS_COVERED,
-  LATEST_MEASURED_WINDOW,
   COMPOSED_ANNUAL_KWH,
   COMPOSED_ANNUALIZE_FACTOR,
   year1Months,
@@ -43,7 +44,7 @@ const HOURS_PER_DAY = 24;
 // Heuristic: which feeds count toward "consumption"? Main feeds and
 // panel feeds. Submeters under main feeds would double-count.
 function isConsumptionFeed(meterId) {
-  return /MainFeed$|PanelFeed$|MDPFeed$|MDP$|^PM_\d+_Feed$|^PM_\d+_LP$|^PM_\d+_MainFeed$/.test(meterId);
+  return CAMPUS_FEED_RE.test(meterId);
 }
 function isSolarFeed(meterId) {
   return /Solar/i.test(meterId);
@@ -132,10 +133,9 @@ export function Scope2BmsInsights() {
           {' '}{insights.windowDays.toFixed(0)} days, {bmsExportMeters.length} power meters). The operational
           insights that follow — load curve, solar, meter health, and the daily/weekly patterns — are{' '}
           <ProvenancePill provenance="measured" />
-          {' '}from these BMS cumulative-kWh counters. The year-to-date and annual figures below stay
-          anchored on the contiguous Jan–Apr captures; this Aug–Sep window is shown as a measured slice
-          in the composition below but isn't folded into the annual, since it's a short, non-contiguous
-          span (the May–Aug gap is unmeasured).
+          {' '}from these BMS cumulative-kWh counters. The year-to-date and annual figures below come from
+          a separate contiguous record — Jan–Apr master-meter captures, then May onward from a daily
+          Meter Trends export — rather than from this hourly window.
         </p>
       </header>
 
@@ -143,11 +143,11 @@ export function Scope2BmsInsights() {
       <section style={styles.card}>
         <h3 style={styles.cardTitle}>Year-to-date electricity, composed from measured sources</h3>
         <p style={styles.cardHint}>
-          The YTD figure is built from each measured input — full-month BMS captures for Jan–Apr, plus the
-          April Meter Trends export (May 1–4). Every kWh below traces to a specific source file and period.
-          Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of contiguous measured consumption. The latest measured
-          window — the Aug 16 – Sep 14 export shown above — appears as its own row below, kept separate
-          because the May–Aug gap makes it non-contiguous with this run.
+          The YTD figure is built from each measured input — full-month master-meter captures for Jan–Apr,
+          then May onward from the contiguous daily Meter Trends export. The building feeds in that export
+          sum about {Math.round((1 / FEED_TO_MASTER_SCALE - 1) * 100)}% above the master meter, so those months are
+          scaled ×{FEED_TO_MASTER_SCALE.toFixed(3)} to master-meter equivalent (marked “Measured · scaled”).
+          Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of contiguous measured consumption.
         </p>
         <table style={styles.ytdTable}>
           <thead>
@@ -167,7 +167,7 @@ export function Scope2BmsInsights() {
                   {c.kwh.toLocaleString()}
                 </td>
                 <td style={styles.ytdTdSrc}>
-                  <ProvenancePill provenance="measured" />
+                  <ProvenancePill provenance="measured" label={c.reconciled ? 'Measured · scaled' : undefined} />
                   <code style={{ marginLeft: 6, fontSize: 11 }}>{c.source}</code>
                 </td>
               </tr>
@@ -189,26 +189,14 @@ export function Scope2BmsInsights() {
                 {COMPOSED_ANNUAL_KWH.toLocaleString()}
               </td>
               <td style={styles.ytdTdSrc}>
-                {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — central value of the 365–405 cross-validated ±5% range
+                {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — central value of the {Math.round(COMPOSED_ANNUAL_MTCO2E * 0.95)}–{Math.round(COMPOSED_ANNUAL_MTCO2E * 1.05)} cross-validated ±5% range
               </td>
             </tr>
-            {LATEST_MEASURED_WINDOW && (
-              <tr style={styles.ytdWindow}>
-                <td style={styles.ytdTd}>Latest window · {LATEST_MEASURED_WINDOW.start.slice(5)} – {LATEST_MEASURED_WINDOW.end.slice(5)}</td>
-                <td style={styles.ytdTd}>{LATEST_MEASURED_WINDOW.days}</td>
-                <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: '#67e8f9' }}>
-                  {LATEST_MEASURED_WINDOW.kwh.toLocaleString()}
-                </td>
-                <td style={styles.ytdTdSrc}>
-                  <ProvenancePill provenance="measured" /> Sept export — shown for reference, <em>not</em> folded into the annual ({LATEST_MEASURED_WINDOW.gapDays}-day gap since May 4)
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
         <div style={styles.todayTarget}>
-          <div><span style={styles.ttLabel}>Today:</span> Each row above is a real measured input. The April monthly capture (128,895 kWh, single-snapshot displayedTotal) and the CSV's Apr 5–30 daily totals (140,827 kWh summed across 35 main+panel feeds) overlap — we use the monthly capture for April since it agrees with the master meter, and pull only May 1–4 from the CSV. The CSV's higher Apr figure reflects the 8-10% submeter overshoot documented on /buildings.</div>
-          <div><span style={styles.ttLabel}>Target:</span> The YTD anchor stays at May 4 — the last day of the contiguous measured run. The Aug 16 – Sep 14 window is measured too and shown in the row above, but it's a non-contiguous ~30-day slice, so it isn't used to re-anchor the annual. Worth noting: naively folding it into the calibration would lift the estimate to ~404, a sign campus late-summer load runs higher than the heating-driven seasonal model assumes. Getting monthly master-meter captures for May–August would close the gap and let the annual be revised on solid, contiguous ground.</div>
+          <div><span style={styles.ttLabel}>Today:</span> Each row above is a measured input. Where two sources overlap, the master meter wins: Jan–Apr use the monthly master-meter captures, and the daily export is used only from May onward. Its building-feed total is scaled ×{FEED_TO_MASTER_SCALE.toFixed(3)} — the ratio between the master meter and the feed total in Feb–Apr, when both were fully reporting. (January is left out: eight feeds have no readings Jan 1–19.) Why the feeds read high isn't pinned down, so we match them to the master meter rather than guess.</div>
+          <div><span style={styles.ttLabel}>Target:</span> Replace each scaled month with a true master-meter monthly capture from the All Meters page — ground truth that needs no scale factor. Until then, the flat scale assumes the feed-to-master relationship measured in late winter and spring holds through summer. Feb–Apr ratios ranged 0.856–0.884, within about ±2% of each other. January can't confirm that: filling its missing feeds from their late-January averages puts its ratio near 0.77, which would make the scaled months about 12% lower and the annual closer to 370 mtCO₂e. We can't yet tell whether those feeds were dark or just unlogged — so treat the scaled months as ±3% if the spring relationship holds, and possibly as much as 12% high.</div>
         </div>
       </section>
 
@@ -409,7 +397,9 @@ export function Scope2BmsInsights() {
 function Year1ProjectionSection() {
   const max = Math.max(...year1Months.map((m) => m.kwh));
   const measuredMonths = year1Months.filter((m) => m.provenance === 'measured');
-  const measuredKwh    = measuredMonths.reduce((s, m) => s + m.kwh, 0);
+  // The measured YTD, including the measured days of a partial month — a
+  // 'mixed' month's measured slice would be dropped by summing provenance.
+  const measuredKwh    = COMPOSED_YTD_KWH;
   const projectedKwh   = COMPOSED_YEAR1_KWH - measuredKwh;
   const measuredPct    = (measuredKwh / COMPOSED_YEAR1_KWH) * 100;
 
@@ -421,23 +411,23 @@ function Year1ProjectionSection() {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the data you uploaded)</h3>
       <p style={styles.cardHint}>
-        Built directly from the four monthly master-meter captures already in
-        the dashboard. Measured months (Jan–Apr) anchor a calibrated annual baseline that
-        the unmeasured months are projected against using NH's heating-driven seasonal
-        shape — much more honest than naive linear annualization, which over-counts summer.
+        Built from the measured months already in the dashboard — Jan–Apr master-meter captures
+        plus the scaled totals from May onward. Those months anchor a calibrated annual baseline
+        that the rest of the year is projected against using NH's heating-driven seasonal shape,
+        rather than naive linear annualization, which ignores where in the year the data falls.
       </p>
 
       <div style={styles.summaryGrid}>
         <Stat label="Year 1 total"             value={COMPOSED_YEAR1_KWH.toLocaleString()}                                  unit="kWh" accent="#86efac" note={`${(measuredPct).toFixed(0)}% measured, ${(100 - measuredPct).toFixed(0)}% projected`} />
-        <Stat label="Year 1 Scope 2"           value={(COMPOSED_YEAR1_KWH * 0.235 / 1000).toFixed(0)}                       unit="mtCO₂e" accent="#fbbf24" note={`× 0.235 kg/kWh ISO-NE`} />
-        <Stat label="vs naive linear"           value={`-${seasonalSavings.toLocaleString()}`}                               unit="kWh" accent="#22d3ee" note={`${seasonalSavingsPct.toFixed(1)}% lower than ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)} extrapolation`} />
+        <Stat label="Year 1 Scope 2"           value={Math.round(COMPOSED_ANNUAL_MTCO2E)}                       unit="mtCO₂e" accent="#fbbf24" note="× ISO-NE 2024 effective rate" />
+        <Stat label="vs naive linear"           value={`${seasonalSavings > 0 ? '−' : '+'}${Math.abs(seasonalSavings).toLocaleString()}`}                               unit="kWh" accent="#22d3ee" note={`${Math.abs(seasonalSavingsPct).toFixed(1)}% ${seasonalSavings > 0 ? 'lower' : 'higher'} than ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)} extrapolation`} />
         <Stat label="Effective annualize"       value={`×${COMPOSED_ANNUALIZE_FACTOR.toFixed(2)}`}                            unit=""    accent="#a855f7" note={`(linear would be ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)})`} />
       </div>
 
       <Year1Chart year1Months={year1Months} totalKwh={COMPOSED_YEAR1_KWH} />
 
       <div style={styles.legendRow}>
-        <LegendDot color="#22c55e">Measured (master-meter monthly capture + CSV)</LegendDot>
+        <LegendDot color="#22c55e">Measured (master meter Jan–Apr; scaled building feeds from May)</LegendDot>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
           <span style={{ width: 10, height: 10, background: '#475569', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)', borderRadius: 2, display: 'inline-block' }} />
           Projected (NH seasonal shape)
@@ -448,32 +438,38 @@ function Year1ProjectionSection() {
         </span>
       </div>
       <div style={{ marginTop: 8, fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
-        "Measured" means the campus master-meter "Totals" row is captured for that month — it doesn't imply every submeter underneath is reporting. Several PM_17_HP* heat-pump submeters are stuck (see Meter Health), but the master-meter total includes their loads anyway.
+        "Measured" means metered, not modelled. Jan–Apr are the campus master-meter totals; May onward are building-feed totals scaled ×{FEED_TO_MASTER_SCALE.toFixed(3)} to match the master meter (see the uncertainty note under the year-to-date table). Neither implies every submeter underneath is reporting — several PM_17_HP* heat-pump submeters are stuck (see Meter Health), but their loads still pass through the master meter and the main feeds.
       </div>
 
       <div style={styles.todayTarget}>
         <div>
           <span style={styles.ttLabel}>Today:</span>
-          For each measured month (Jan–Apr full, May partial), compute "implied annual" =
+          For each measured month, compute "implied annual" =
           measured_kwh ÷ that month's share of NH's seasonal shape (Jan = 1.25× mean month,
           Jul = 0.59× mean month, etc.). Take a fraction-weighted mean of those implied
-          annuals — full months count more than a 4-day partial — to get a calibrated
+          annuals — a partial month counts in proportion to the days it covers — to get a calibrated
           baseline ({COMPOSED_YTD_KWH > 0 ? Math.round(COMPOSED_YEAR1_KWH * (1 / 12)).toLocaleString() : 0} kWh/mean-month).
           Project each unmeasured month as baseline × itsMonthShare.
         </div>
         <div>
           <span style={styles.ttLabel}>Why:</span>
-          Linear annualization (multiply by 365 ÷ days_covered) over Jan–Apr data
-          overcounts summer because Jan–Apr are heating-heavy. The seasonal-anchored
-          estimate is ~{seasonalSavingsPct.toFixed(0)}% lower and matches what the
-          dashboard would show in the months that haven't been measured yet.
+          Linear annualization (multiply by 365 ÷ days_covered) treats every unmeasured
+          day as an average measured day.{' '}
+          {seasonalSavings > 0
+            ? 'Here that over-counts: the unmeasured months are lighter-load than the measured average.'
+            : 'Here that under-counts: the unmeasured months run into heating season, heavier than a measured average that includes the summer trough.'}
+          {' '}The seasonally anchored estimate is ~{Math.abs(seasonalSavingsPct).toFixed(0)}%{' '}
+          {seasonalSavings > 0 ? 'lower' : 'higher'}. That difference comes from the cited NH seasonal
+          curve, not from measurement: the rest of the year (about {Math.round((projectedKwh / COMPOSED_YEAR1_KWH) * 100)}% of
+          Year 1) is modelled, and the measured months only loosely follow the curve — so read Year 1
+          as an estimate.
         </div>
         <div>
           <span style={styles.ttLabel}>Target:</span>
-          Each measured month from now until Apr 2027 reduces the projected slice. Once
+          Each measured month through Dec 2026 shrinks the projected slice. Once
           all 12 months are captured, the chart is 100% green and the seasonal shape
           becomes derived-from-measurement instead of cited NH defaults — useful for
-          year-over-year change detection in 2028+.
+          year-over-year change detection from 2027.
         </div>
       </div>
     </section>
@@ -510,8 +506,8 @@ function Year1Chart({ year1Months, totalKwh }) {
   const cumPath = cumPoints.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 
   // Boundary x where measured ends and pure-projected begins.
-  // Find the first index whose provenance is 'projected' (after May which
-  // is mixed). For our data that's June (index 5).
+  // Find the first index whose provenance is 'projected' (a partial month
+  // before it is 'mixed' and sits on the measured side).
   const firstProjectedIdx = year1Months.findIndex((m) => m.provenance === 'projected');
   const boundaryX = firstProjectedIdx > 0 ? PAD.left + firstProjectedIdx * (plotW / 12) : null;
 
@@ -663,10 +659,10 @@ function TimePatternsSection() {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Pattern across time scales</h3>
       <p style={styles.cardHint}>
-        Same campus electricity, three resolutions. Daily and Weekly are rolled up from the latest
-        Meter Trends export (the operational window shown above). Monthly shows the full-month
-        master-meter captures on record (Jan–Apr). Each view comes with a what-and-why analysis built
-        from the data itself.
+        Same campus electricity, three resolutions. Daily and Weekly are rolled up from the 30-day
+        hourly export (the operational window shown above). Monthly uses the same Jan–Sep record as
+        the year-to-date table — master-meter captures for Jan–Apr, scaled daily-export totals from
+        May. Each view comes with a what-and-why analysis built from the data itself.
       </p>
       <div style={styles.tabRow}>
         <button type="button" onClick={() => setView('day')}   style={{ ...styles.tab,   ...(view === 'day'   ? styles.tabActive : {}) }}>Daily</button>
@@ -721,27 +717,20 @@ function buildTimePatterns() {
     .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
     .map((w) => ({ ...w, kwh: Math.round(w.kwh), avgPerDay: Math.round(w.kwh / w.days) }));
 
-  // Monthly: full-month captures from monthlyConsumption.js + partial
-  // May from CSV.
-  const monthly = monthlyReports.map((r) => ({
-    month: r.month,
-    label: ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][parseInt(r.month.slice(5), 10)],
-    kwh: r.displayedTotal,
-    days: ({ '2026-01': 31, '2026-02': 28, '2026-03': 31, '2026-04': 30 })[r.month] || 30,
-    partial: false,
-    source: 'monthly capture',
-  }));
-  const mayDays = daily.filter((d) => d.date.startsWith('2026-05'));
-  if (mayDays.length > 0) {
-    monthly.push({
-      month: '2026-05',
-      label: 'May',
-      kwh: mayDays.reduce((s, d) => s + d.kwh, 0),
-      days: mayDays.length,
-      partial: true,
-      source: 'CSV (partial month)',
-    });
-  }
+  // Monthly: the same contiguous record as the YTD table — master-meter
+  // captures (Jan–Apr) plus scaled daily-export totals (May onward).
+  const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthly = ytdComponents.map((c) => {
+    const [yyyy, mm] = c.period.split('-').map((s) => parseInt(s, 10));
+    return {
+      month: c.period,
+      label: MONTH_LABELS[mm - 1],
+      kwh: c.kwh,
+      days: c.days,
+      partial: c.days < new Date(yyyy, mm, 0).getDate(),
+      scaled: Boolean(c.reconciled),
+    };
+  });
 
   return { daily, meanDaily, stdev, anomalies, weekly, monthly };
 }
@@ -761,8 +750,8 @@ function DailyView({ data }) {
   const statDays = data.daily.length >= 3 ? data.daily.slice(0, -1) : data.daily;
   const peakDay = statDays.reduce((p, d) => (d.kwh > p.kwh ? d : p), statDays[0]);
   const lowDay = statDays.reduce((p, d) => (d.kwh < p.kwh ? d : p), statDays[0]);
-  const weekdays = data.daily.filter((d) => !d.isWeekend);
-  const weekendDays = data.daily.filter((d) => d.isWeekend);
+  const weekdays = statDays.filter((d) => !d.isWeekend);
+  const weekendDays = statDays.filter((d) => d.isWeekend);
   const weekdayMean = weekdays.reduce((s, d) => s + d.kwh, 0) / Math.max(1, weekdays.length);
   const weekendMean = weekendDays.reduce((s, d) => s + d.kwh, 0) / Math.max(1, weekendDays.length);
   const weekendDip = weekdayMean > 0 ? ((weekdayMean - weekendMean) / weekdayMean) * 100 : 0;
@@ -894,16 +883,17 @@ function MonthlyView({ data }) {
           <div key={m.month} style={styles.monthCol}>
             <div style={styles.monthVal}>{Math.round(m.kwh).toLocaleString()}</div>
             <div style={styles.monthBarTrack}>
-              <div style={{ ...styles.monthBar, height: `${(m.kwh / max) * 100}%`, background: m.partial ? '#475569' : '#fbbf24' }} title={`${m.label}: ${m.kwh.toLocaleString()} kWh over ${m.days} day${m.days === 1 ? '' : 's'}`} />
+              <div style={{ ...styles.monthBar, height: `${(m.kwh / max) * 100}%`, background: m.partial ? '#475569' : m.scaled ? '#d97706' : '#fbbf24' }} title={`${m.label}: ${m.kwh.toLocaleString()} kWh over ${m.days} day${m.days === 1 ? '' : 's'}`} />
             </div>
             <div style={styles.monthLabel}>{m.label}</div>
-            <div style={styles.monthSub}>{m.days} day{m.days === 1 ? '' : 's'}{m.partial ? ', partial' : ''}</div>
+            <div style={styles.monthSub}>{m.days} day{m.days === 1 ? '' : 's'}{m.partial ? ', partial' : ''}{m.scaled ? ' · scaled' : ''}</div>
           </div>
         ))}
       </div>
       <div style={styles.legendRow}>
-        <LegendDot color="#fbbf24">Full month (BMS capture)</LegendDot>
-        <LegendDot color="#475569">Partial month (CSV)</LegendDot>
+        <LegendDot color="#fbbf24">Full month (master meter)</LegendDot>
+        <LegendDot color="#d97706">Full month (scaled building feeds)</LegendDot>
+        <LegendDot color="#475569">Partial month</LegendDot>
       </div>
       <AnalysisBox
         title="What this means"
@@ -914,17 +904,17 @@ function MonthlyView({ data }) {
           },
           {
             label: `Lowest: ${lowMonth.label}`,
-            text: `${lowMonth.kwh.toLocaleString()} kWh over ${lowMonth.days} days = ${Math.round(lowDailyAvg).toLocaleString()} kWh/day. ${lowMonth.label === 'Apr' ? 'April is the shoulder month between heating-on and AC-on — heating demand drops as outdoor temperature rises through 50-60°F, AC hasn\'t kicked in yet. Plus spring break falls in March or April, removing some occupancy.' : lowMonth.label === 'Mar' ? 'Spring break compresses occupancy + heating ramp-down → typical academic-calendar low.' : `Likely driven by school break or seasonal heating tail-off.`}`
+            text: `${lowMonth.kwh.toLocaleString()} kWh over ${lowMonth.days} days = ${Math.round(lowDailyAvg).toLocaleString()} kWh/day. ${lowMonth.label === 'Apr' ? 'April is the shoulder month between heating-on and AC-on — heating demand drops as outdoor temperature rises through 50-60°F, AC hasn\'t kicked in yet. Plus spring break falls in March or April, removing some occupancy.' : lowMonth.label === 'Mar' ? 'Spring break compresses occupancy + heating ramp-down → typical academic-calendar low.' : ['Jun', 'Jul', 'Aug'].includes(lowMonth.label) ? 'Summer break: most students are off campus and there is no heating load, so this is close to the campus baseline — always-on systems, a smaller summer population, and some cooling.' : `Likely driven by school break or seasonal heating tail-off.`}`
           },
           {
             label: 'Why Feb beats Jan despite fewer days',
             text: data.monthly.find((m) => m.label === 'Feb') && data.monthly.find((m) => m.label === 'Jan') && data.monthly.find((m) => m.label === 'Feb').kwh > data.monthly.find((m) => m.label === 'Jan').kwh
               ? `Feb 2026 (${data.monthly.find((m) => m.label === 'Feb').kwh.toLocaleString()} kWh in 28 days) actually beats Jan (${data.monthly.find((m) => m.label === 'Jan').kwh.toLocaleString()} kWh in 31 days) per-day — Jan ran ${Math.round(data.monthly.find((m) => m.label === 'Jan').kwh / 31).toLocaleString()} kWh/day, Feb ran ${Math.round(data.monthly.find((m) => m.label === 'Feb').kwh / 28).toLocaleString()} kWh/day. NH February is colder + has fewer break days than Jan.`
-              : `Year-over-year heating intensity comparison would need a 2025 export to confirm. The 4-month window here doesn't have a year-prior baseline.`
+              : `Year-over-year heating intensity comparison would need a 2025 export to confirm. This 2026 record has no year-prior baseline.`
           },
           {
-            label: 'Monthly vs the export window',
-            text: `The Monthly view shows the full-month master-meter captures on record (Jan–Apr). The latest Meter Trends export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) is a mid-window operational snapshot, so it appears in the Daily and Weekly views rather than as a full calendar month here.`
+            label: 'Monthly vs the hourly window',
+            text: `Monthly uses the same contiguous record as the year-to-date table: Jan–Apr master-meter captures, then scaled totals from the Jan–Sep daily export (darker bars; see the uncertainty note under that table). The 30-day hourly export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) feeds the Daily and Weekly views instead.`
           },
         ]}
       />
@@ -1483,7 +1473,6 @@ const styles = {
   ytdTdSrc: { padding: '8px 8px', color: '#94a3b8', borderBottom: '1px solid #1f2937', verticalAlign: 'middle', fontSize: 11 },
   ytdTotal: { background: '#0b1220', borderTop: '2px solid #334155' },
   ytdAnnual: { background: '#0a1015' },
-  ytdWindow: { background: '#0a1015', borderTop: '1px dashed #164e63' },
 
   // Stacked bars for the Whittemore cluster + EV charger sub-list
   stackedBar: { display: 'flex', height: 18, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },

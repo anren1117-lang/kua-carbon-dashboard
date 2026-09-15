@@ -919,7 +919,7 @@ export default function AdminPlanAgent() {
               sourcePath="src/hooks/useMeasuredScope1.js" />
             <CtxRow provenance="measured" label={`Scope 2 kWh (${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh Year 1 / ${COMPOSED_YTD_KWH.toLocaleString()} kWh YTD)`}
               today="KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03 (123 days into 2026)."
-              target="Already measured. Improvement: drop the seasonally-anchored ×2.5 annualization once a full year of BMS data is captured."
+              target={`Already measured. Improvement: drop the seasonally anchored annualization (×${ANNUALIZE_FACTOR.toFixed(2)} today) once a full year of BMS data is captured.`}
               sourcePath="src/data/envysionSnapshot.js" />
             <CtxRow provenance="cited" label={`Scope 2 mtCO₂e (${Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized)`}
               today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range."
@@ -949,8 +949,8 @@ export default function AdminPlanAgent() {
               target="No upgrade needed. Will refresh annually from the KUA registrar feed when integrated."
               sourcePath="src/data/students.js TOTAL_STUDENTS" />
             <CtxRow provenance="cited" label={`Year 1 annualize factor (×${ANNUALIZE_FACTOR.toFixed(2)})`}
-              today="Seasonally anchored: each measured month implies its own annual via NH's heating-driven shape; their average gives a calibrated baseline. Unmeasured months projected from that baseline. Lower than naive linear (×2.94) because Jan–Apr is heating-heavy and would overstate summer."
-              target="Drops to ×1.0 (i.e. no projection needed) once a full calendar year of BMS data is captured (~Apr 2027)."
+              today="Seasonally anchored: each measured month implies its own annual via NH's heating-driven shape; their average gives a calibrated baseline. Unmeasured months projected from that baseline, so the factor reflects where in the year the measured run falls instead of assuming every day is average."
+              target="Drops to ×1.0 (i.e. no projection needed) once a full calendar year of BMS data is captured (~Jan 2027)."
               sourcePath="src/data/composedYtd.js COMPOSED_ANNUALIZE_FACTOR" />
           </div>
           <div style={styles.sourceCaveat}>

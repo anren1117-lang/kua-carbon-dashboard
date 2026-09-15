@@ -38,7 +38,7 @@ const scopes = [
     isDocumented: true,
     definition: 'Indirect emissions from electricity that KUA buys but does not generate. We never burn fuel to make electricity — but the power plants on the New England grid do, on our behalf, every time someone flips a light switch.',
     calculation: [
-      'kWh side is composed from real measured BMS captures (Jan–Apr 2026 monthly displayedTotal rows) plus the May days from the latest Meter Trends CSV.',
+      'kWh side is composed from real measured BMS captures (Jan–Apr 2026 monthly displayedTotal rows) plus May onward from the daily Meter Trends export, scaled to master-meter equivalent.',
       `${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh annualized (Year 1 projection)`,
       '× ISO-NE 2024 per-fuel output factors (combined-cycle gas 0.40, oil 0.78, coal 0.95, imports 0.30) summed over the 2024 generation mix',
       `= ${Math.round(SCOPE2_TOTAL_MT)} mtCO₂e/year`,

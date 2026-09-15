@@ -11,13 +11,20 @@ import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
-import { COMPOSED_ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+import { COMPOSED_ANNUAL_KWH, SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
 // magnitude rollup (per-building electricity) with a category-level summary
 // and overlays the top suggested actions from the AI advisor.
 
 const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; // ≈ 0.235 (output basis)
+
+// The April export covers its own ~30-day window — annualize it by that
+// window's seasonal share, not by the Jan → Sep YTD factor.
+const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
+  BMS_EXPORT_META.windowStartIso.slice(0, 10),
+  BMS_EXPORT_META.windowEndIso.slice(0, 10),
+);
 
 export default function Hotspots() {
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
@@ -32,10 +39,10 @@ export default function Hotspots() {
     if (m.direction === 'stuck') continue;
     const bId = meterMap[m.id];
     if (!bId) continue;
-    bmsByBuilding[bId] = (bmsByBuilding[bId] || 0) + m.totalKwh * COMPOSED_ANNUALIZE_FACTOR;
+    bmsByBuilding[bId] = (bmsByBuilding[bId] || 0) + m.totalKwh * EXPORT_ANNUALIZE_FACTOR;
   }
   // Snapshot rows are YTD; annualize for comparability.
-  const snapshotByBuilding = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r.energyUsedKwh * COMPOSED_ANNUALIZE_FACTOR]));
+  const snapshotByBuilding = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r.energyUsedKwh * SNAPSHOT_ANNUALIZE_FACTOR]));
   const buildingsKwh = buildings.map((b) => ({
     id: b.id,
     name: b.name,

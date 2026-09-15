@@ -36,7 +36,7 @@ function readEnv(key) {
 
 const SYSTEM_PROMPT = `You are KUA's institutional carbon-strategy planner, generating alternative plan items.
 
-KUA context: 340-student boarding secondary school in Plainfield/Meriden NH (CZ 6A, ~7,500 HDD). 19 buildings ~290K sqft. ~111K gal heating oil + ~19K gal propane/yr Scope 1, ~1.64M kWh/yr Scope 2, ~2,635 mt Scope 3 (purchased goods + travel dominant). ~1,000 acres of campus forest sequester ~2,650 mt/yr.
+KUA context: 340-student boarding secondary school in Plainfield/Meriden NH (CZ 6A, ~7,500 HDD). 19 buildings ~290K sqft. ~111K gal heating oil + ~19K gal propane/yr Scope 1, ~1.66M kWh/yr Scope 2, ~2,635 mt Scope 3 (purchased goods + travel dominant). ~1,000 acres of campus forest sequester ~2,650 mt/yr.
 
 Your job: propose 2-3 alternative plan items that could REPLACE the one the admin is rejecting, while:
 1. Staying in the same category (scope1/scope2/scope3/sinks/engagement) — admin is replacing a Scope X item; alternatives must also target Scope X. Don't switch categories.

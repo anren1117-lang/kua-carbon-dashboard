@@ -76,8 +76,8 @@ git push origin main
 
 - **Canonical scope numbers** live in `src/data/scopeTotals.js`. Today's
   values match the bottom-up multi-method cross-check centrals from
-  `src/data/geographicEstimates.js`: Scope 1 = 1,350 mt, Scope 2 = 385 mt,
-  Scope 3 = 2,635 mt, sinks = 2,650 mt → gross 4,370 / net 1,720 / per-student 5.0.
+  `src/data/geographicEstimates.js`: Scope 1 = 1,350 mt, Scope 2 = 390 mt,
+  Scope 3 = 2,635 mt, sinks = 2,650 mt → gross 4,375 / net 1,725 / per-student 5.0.
 
 - **Live measured-data hooks** (`src/hooks/useMeasured{Scope1,Scope3,Sinks,Renewables}.js`
   + composer `useMeasuredScopeTotals.js`) upgrade the headline numbers from

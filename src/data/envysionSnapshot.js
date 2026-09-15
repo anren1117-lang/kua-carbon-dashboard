@@ -45,10 +45,8 @@ export const envysionSnapshot = [
 // The figures here are year-to-date measurements, NOT a full-year
 // projection. The dashboard treats them as period totals through
 // SNAPSHOT_AS_OF (2026-05-03). Pages that want a full-year
-// projection import COMPOSED_ANNUALIZE_FACTOR from composedYtd.js —
-// that's the seasonally-anchored ~2.5 factor calibrated against
-// measured monthly captures, NOT the naive 365/123 = 2.97 linear
-// extrapolation that this file used to export. The naive factor
-// systematically over-counts the warmer half of the year on
-// Apr-anchored data, so it was a footgun and is intentionally not
-// re-exported here.
+// projection import SNAPSHOT_ANNUALIZE_FACTOR from composedYtd.js —
+// this window's seasonally anchored share of Year 1, NOT the naive
+// 365/123 = 2.97 linear extrapolation this file used to export, and NOT
+// COMPOSED_ANNUALIZE_FACTOR, which annualizes the longer Jan 1 → YTD
+// anchor window and would under-count these rows.

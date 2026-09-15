@@ -5,9 +5,16 @@ import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
-import { bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
-import { COMPOSED_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
+import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
+
+// The April export covers its own ~30-day window — annualize it by that
+// window's seasonal share, not by the Jan → Sep YTD factor.
+const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
+  BMS_EXPORT_META.windowStartIso.slice(0, 10),
+  BMS_EXPORT_META.windowEndIso.slice(0, 10),
+);
 import { Sparkline } from '../components/Sparkline.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 
@@ -56,10 +63,10 @@ export default function BuildingsPage() {
     // unmapped rather than zero-load.
     //
     // Both sources are normalized to the same Year 1 annualized basis
-    // before display: BMS gets × COMPOSED_ANNUALIZE_FACTOR (seasonal,
-    // ×2.5); snapshot gets the same factor since both windows cover
-    // a similarly heating-heavy slice of the year. Mixing YTD with
-    // annualized would silently give incomparable numbers across rows.
+    // before display, each by its own window's seasonal share of Year 1:
+    // the April export × EXPORT_ANNUALIZE_FACTOR, the Jan–May snapshot ×
+    // SNAPSHOT_ANNUALIZE_FACTOR. Mixing YTD with annualized, or reusing one
+    // window's factor for another, would give incomparable numbers across rows.
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
     const meterMap = getBmsMeterMap();
     return getEffectiveBuildings().map((b) => {
@@ -68,13 +75,13 @@ export default function BuildingsPage() {
       let source = 'none';
       if (mappedMeters.length > 0) {
         const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
-        kwh = windowKwh * COMPOSED_ANNUALIZE_FACTOR;
+        kwh = windowKwh * EXPORT_ANNUALIZE_FACTOR;
         source = 'bms';
       } else if (snapshotById[b.id]) {
         const snap = snapshotById[b.id];
         // Annualize the snapshot YTD same as the BMS-mapped figures so
         // the column shows Year 1 across all rows.
-        kwh = (snap?.energyUsedKwh ?? 0) * COMPOSED_ANNUALIZE_FACTOR;
+        kwh = (snap?.energyUsedKwh ?? 0) * SNAPSHOT_ANNUALIZE_FACTOR;
         source = 'snapshot';
       }
       const snap = snapshotById[b.id];

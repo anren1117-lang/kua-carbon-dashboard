@@ -117,7 +117,7 @@ function AdminMethodology() {
         <div style={styles.totalsCard}>
           <strong>Bottom-up gross (Scope 1 + 3, before Scope 2 + sinks):</strong>{' '}
           {(BOTTOM_UP_TOTALS.scope1 + BOTTOM_UP_TOTALS.scope3).toLocaleString()} mtCO₂e/yr.
-          {' '}Add the measured Scope 2 (~385 mt) and subtract sinks ({BOTTOM_UP_TOTALS.sinks.toLocaleString()} mt) for the
+          {' '}Add the measured Scope 2 (~{Math.round(GRID_MIX_ANNUAL_MTCO2E)} mt) and subtract sinks ({BOTTOM_UP_TOTALS.sinks.toLocaleString()} mt) for the
           full balance. Both bottom-up scopes are within ±5% of the canonical placeholders, so the
           dashboard's headline numbers are well-sized — but each component above can be refined as
           measured data lands without changing the methodology.

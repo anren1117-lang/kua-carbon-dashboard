@@ -27,7 +27,7 @@ export const reductionTargets = [
     title: '50% gross-emissions reduction by 2030',
     scope: 'gross',
     baselineYear: 2024,
-    baselineValue: 4370, // bottom-up cross-check central: Scope 1 1,350 + Scope 2 385 + Scope 3 2,635
+    baselineValue: 4375, // bottom-up cross-check central: Scope 1 1,350 + Scope 2 390 + Scope 3 2,635
     targetYear: 2030,
     percentReduction: 50,
     description: 'Halve KUA\'s gross annual emissions vs the 2024 preliminary baseline. Achievable largely through dorm thermostat adjustments, beef-portion reductions, and the planned Whittemore + Miller solar arrays.',
@@ -39,7 +39,7 @@ export const reductionTargets = [
     title: 'Scope 2 down 30% by 2027',
     scope: 'scope2',
     baselineYear: 2024,
-    baselineValue: 385, // updated (was 222 pre-emission-factor-fix; 395 pre-projection-weighting-fix)
+    baselineValue: 390, // updated (was 222 pre-emission-factor-fix; 395 pre-projection-weighting-fix; 385 before the contiguous Jan–Sep meter export)
     targetYear: 2027,
     percentReduction: 30,
     description: 'Move 30% of campus electricity onto on-campus renewables (the planned 100 kW combined arrays) plus an LED retrofit and HVAC scheduling tightening.',
@@ -63,7 +63,7 @@ export const reductionTargets = [
     title: 'Net-zero net carbon by 2050',
     scope: 'net',
     baselineYear: 2024,
-    baselineValue: 1720, // gross 4,370 − sinks 2,650
+    baselineValue: 1725, // gross 4,375 − sinks 2,650
     targetYear: 2050,
     percentReduction: 100,
     description: 'After all other reductions, close the remaining gap with verified removal credits or expanded forest stewardship. KUA\'s net is already low because of the campus forest; full net-zero is a 25-year horizon project.',

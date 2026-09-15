@@ -437,7 +437,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Scope 2 — purchased electricity',
-        body: '**Scope 2** is the strange middle category. KUA itself doesn\'t burn fuel to make electricity — there\'s no coal pile or gas plant behind the gym. But every kWh KUA uses came from somewhere, and that somewhere is a power plant on the New England grid that DID burn fuel (or run nuclear fission, or harvest wind, etc.) to generate the electricity that traveled hundreds of miles down transmission lines to a KUA building.\n\nThe GHG Protocol decided early on that you have to count those emissions, even though they happen elsewhere. The argument is simple: if you\'re consuming the electricity, you\'re responsible for the demand that caused the generation, even if you didn\'t turn the steam turbine yourself.\n\n**To convert kilowatt-hours into emissions, you need a "grid emission factor"** — how many kg of CO₂ are produced per kWh, on average across all the generators on your regional grid. New England\'s grid is run by **ISO New England (ISO-NE)**, an independent operator headquartered in Holyoke, Massachusetts. Each year ISO-NE publishes an Emissions Report listing the average factor: in 2024, that was **643 lb CO₂ per MWh** for in-region generation, or about **0.292 kg/kWh**. New England is cleaner than the US average because of significant nuclear (23%) and Canadian hydro imports (12%).\n\n**KUA\'s Scope 2 is the line currently sourced from real measurement.** The campus Distech Eclypse BMS captures every meter\'s kWh; combined with the latest BMS Meter Trends CSV the dashboard composes a Year 1 projection of **~1.64 million kWh annual**. Multiply by KUA\'s effective ISO-NE 2024 emission factor (~0.235 kg/kWh, derived from per-fuel output factors weighted across the 2024 mix) and you get **~385 mtCO₂e/year** — small compared to Scope 1 heating because the New England grid is relatively clean, and small compared to Scope 3 travel because student air travel is just so emissions-heavy per passenger.\n\n**A subtlety: location-based vs market-based.** The GHG Protocol actually requires reporting Scope 2 in TWO ways. **Location-based** uses the regional grid average (what we just calculated). **Market-based** lets you credit yourself for any specifically-procured renewable energy (e.g., if KUA bought RECs or signed a clean-electricity supply contract). KUA currently reports only the location-based number; the market-based view would show a lower figure if KUA chose to buy clean supply.',
+        body: '**Scope 2** is the strange middle category. KUA itself doesn\'t burn fuel to make electricity — there\'s no coal pile or gas plant behind the gym. But every kWh KUA uses came from somewhere, and that somewhere is a power plant on the New England grid that DID burn fuel (or run nuclear fission, or harvest wind, etc.) to generate the electricity that traveled hundreds of miles down transmission lines to a KUA building.\n\nThe GHG Protocol decided early on that you have to count those emissions, even though they happen elsewhere. The argument is simple: if you\'re consuming the electricity, you\'re responsible for the demand that caused the generation, even if you didn\'t turn the steam turbine yourself.\n\n**To convert kilowatt-hours into emissions, you need a "grid emission factor"** — how many kg of CO₂ are produced per kWh, on average across all the generators on your regional grid. New England\'s grid is run by **ISO New England (ISO-NE)**, an independent operator headquartered in Holyoke, Massachusetts. Each year ISO-NE publishes an Emissions Report listing the average factor: in 2024, that was **643 lb CO₂ per MWh** for in-region generation, or about **0.292 kg/kWh**. New England is cleaner than the US average because of significant nuclear (23%) and Canadian hydro imports (12%).\n\n**KUA\'s Scope 2 is the line currently sourced from real measurement.** The campus Distech Eclypse BMS captures every meter\'s kWh; combined with a daily BMS Meter Trends export the dashboard composes a Year 1 projection of **~1.66 million kWh annual**. Multiply by KUA\'s effective ISO-NE 2024 emission factor (~0.235 kg/kWh, derived from per-fuel output factors weighted across the 2024 mix) and you get **~390 mtCO₂e/year** — small compared to Scope 1 heating because the New England grid is relatively clean, and small compared to Scope 3 travel because student air travel is just so emissions-heavy per passenger.\n\n**A subtlety: location-based vs market-based.** The GHG Protocol actually requires reporting Scope 2 in TWO ways. **Location-based** uses the regional grid average (what we just calculated). **Market-based** lets you credit yourself for any specifically-procured renewable energy (e.g., if KUA bought RECs or signed a clean-electricity supply contract). KUA currently reports only the location-based number; the market-based view would show a lower figure if KUA chose to buy clean supply.',
       },
       {
         type: 'math',
@@ -474,12 +474,12 @@ const paths = [
       {
         type: 'concept',
         heading: 'Sinks — the only category that goes the other way',
-        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is the **~1,000 acres of campus forest**. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates × stand-mix weighting gives **2,100–2,650 mtCO₂e/year** drawdown across published methods (Birdsey 1992 / USDA NH FIA / Nowak 2013), with the dashboard adopting the per-stand inventory result of **~2,650 mtCO₂e/year**.\n\n**Why does this matter so much?** Because it\'s **more than half the magnitude of KUA\'s gross emissions**. If gross emissions are ~4,370 mtCO₂e/year and sequestration is ~2,650 mtCO₂e/year, then **net emissions are about ~1,720 mtCO₂e/year**. Per student, that\'s about 5.0 mtCO₂e — below most peer boarding schools, which sit at 6–10 mtCO₂e per student. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university footprint studies and found that on-campus sequestration was rarely measured even at institutions with significant forested land. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks.** Middlebury College reports as "carbon neutral" by purchasing carbon credits equal to their gross emissions — a financial drawdown rather than a physical one. KUA\'s 2,650 mtCO₂e/year is REAL — those CO₂ molecules are actually being pulled out of the air, on KUA land, by trees you can walk up to and measure.',
+        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is the **~1,000 acres of campus forest**. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates × stand-mix weighting gives **2,100–2,650 mtCO₂e/year** drawdown across published methods (Birdsey 1992 / USDA NH FIA / Nowak 2013), with the dashboard adopting the per-stand inventory result of **~2,650 mtCO₂e/year**.\n\n**Why does this matter so much?** Because it\'s **more than half the magnitude of KUA\'s gross emissions**. If gross emissions are ~4,375 mtCO₂e/year and sequestration is ~2,650 mtCO₂e/year, then **net emissions are about ~1,725 mtCO₂e/year**. Per student, that\'s about 5.0 mtCO₂e — below most peer boarding schools, which sit at 6–10 mtCO₂e per student. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university footprint studies and found that on-campus sequestration was rarely measured even at institutions with significant forested land. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks.** Middlebury College reports as "carbon neutral" by purchasing carbon credits equal to their gross emissions — a financial drawdown rather than a physical one. KUA\'s 2,650 mtCO₂e/year is REAL — those CO₂ molecules are actually being pulled out of the air, on KUA land, by trees you can walk up to and measure.',
       },
       {
         type: 'concept',
         heading: 'Stocks vs flows — APES distinction that matters',
-        body: 'Annual emissions (~4,370 mtCO₂e/yr) are a FLOW — a rate. The atmospheric CO₂ concentration (~425 ppm) is a STOCK — total accumulated. Stopping emissions doesn\'t reduce the stock; it just stops the stock from growing. CO₂ residence time is centuries, so even after we cut emissions to zero, today\'s atmospheric CO₂ stays mostly stuck for the lifetime of every student now in school.',
+        body: 'Annual emissions (~4,375 mtCO₂e/yr) are a FLOW — a rate. The atmospheric CO₂ concentration (~425 ppm) is a STOCK — total accumulated. Stopping emissions doesn\'t reduce the stock; it just stops the stock from growing. CO₂ residence time is centuries, so even after we cut emissions to zero, today\'s atmospheric CO₂ stays mostly stuck for the lifetime of every student now in school.',
       },
       {
         type: 'math',
@@ -708,18 +708,18 @@ const paths = [
     steps: [
       {
         type: 'concept',
-        heading: 'KUA\'s headline number is ~1,720 mtCO₂e/year',
+        heading: 'KUA\'s headline number is ~1,725 mtCO₂e/year',
         body: 'That\'s the NET balance — gross emissions minus on-campus sequestration. The composite range across all method combinations is 333–3,892 mt because most of the inputs are estimates. Once measured data fills in, the range tightens.',
       },
       {
         type: 'concept',
         heading: 'AP Stats: range, point estimate, and uncertainty',
-        body: 'A point estimate (1,720) by itself is misleading without an uncertainty range. Our composite cross-check range is 333–3,892 — meaning the "true" value is most plausibly somewhere in that band. AP Statistics calls this a confidence interval. The width of the interval comes from the uncertainty in each line item: Scope 1 published-method range 891–1,867, Scope 3 1,726–3,720, sinks 2,100–2,650. These uncertainties propagate.',
+        body: 'A point estimate (1,725) by itself is misleading without an uncertainty range. Our composite cross-check range is 333–3,892 — meaning the "true" value is most plausibly somewhere in that band. AP Statistics calls this a confidence interval. The width of the interval comes from the uncertainty in each line item: Scope 1 published-method range 891–1,867, Scope 3 1,726–3,720, sinks 2,100–2,650. These uncertainties propagate.',
       },
       {
         type: 'concept',
         heading: 'Where does the headline come from?',
-        body: 'Gross: ~4,370 mtCO₂e/yr (Scope 1 ~1,350 + Scope 2 ~385 + Scope 3 ~2,635). Sequestration: ~2,650 mtCO₂e/yr drawdown. Net: 4,370 − 2,650 = 1,720.',
+        body: 'Gross: ~4,375 mtCO₂e/yr (Scope 1 ~1,350 + Scope 2 ~390 + Scope 3 ~2,635). Sequestration: ~2,650 mtCO₂e/yr drawdown. Net: 4,375 − 2,650 = 1,725.',
       },
       {
         type: 'quiz',
@@ -727,8 +727,8 @@ const paths = [
         options: [
           { text: '~25%', correct: false, explanation: 'Too low — Scope 3 dominates at residential boarding schools.' },
           { text: '~45%', correct: false, explanation: 'Closer, but Scope 3 is even bigger here.' },
-          { text: '~60%', correct: true, explanation: 'Right. **~2,635 of ~4,370 mtCO₂e gross is Scope 3** — about 60%. Inside Scope 3 itself, purchased goods (EEIO Cat 1 spend-based) leads followed by student travel (international + US-boarder term-break flights). Scope 1 (~1,350) and Scope 2 (~385) together are only ~40%. Kool (2025) found a similar Scope-3-dominant pattern at Royal Roads University.' },
-          { text: '~90%', correct: false, explanation: 'Too high — Scope 1 and 2 still total ~40% (1,735/4,370). Scope 3 dominates but doesn\'t exclude the others.' },
+          { text: '~60%', correct: true, explanation: 'Right. **~2,635 of ~4,375 mtCO₂e gross is Scope 3** — about 60%. Inside Scope 3 itself, purchased goods (EEIO Cat 1 spend-based) leads followed by student travel (international + US-boarder term-break flights). Scope 1 (~1,350) and Scope 2 (~390) together are only ~40%. Kool (2025) found a similar Scope-3-dominant pattern at Royal Roads University.' },
+          { text: '~90%', correct: false, explanation: 'Too high — Scope 1 and 2 still total ~40% (1,740/4,375). Scope 3 dominates but doesn\'t exclude the others.' },
         ],
       },
       {
@@ -768,15 +768,15 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: per-student net footprint',
-        scenario: 'KUA gross: ~4,370 mtCO₂e. Sequestration: ~2,650 mtCO₂e. Enrollment: ~340 students.',
+        scenario: 'KUA gross: ~4,375 mtCO₂e. Sequestration: ~2,650 mtCO₂e. Enrollment: ~340 students.',
         given: [
-          { label: 'Gross', value: '4,370 mtCO₂e/yr' },
+          { label: 'Gross', value: '4,375 mtCO₂e/yr' },
           { label: 'Sequestration', value: '2,650 mtCO₂e/yr' },
           { label: 'Students', value: '340' },
         ],
         question: 'Net per student:',
         options: [
-          { text: '~5.0 mtCO₂e/student', correct: true, explanation: 'Right. Net = 4,370 − 2,650 = 1,720. Per student = 1,720/340 = 5.06 mtCO₂e.' },
+          { text: '~5.0 mtCO₂e/student', correct: true, explanation: 'Right. Net = 4,375 − 2,650 = 1,725. Per student = 1,725/340 = 5.07 mtCO₂e.' },
           { text: '~12.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
           { text: '~7.8 mtCO₂e/student', correct: false, explanation: 'That\'s sequestration per student alone (2,650/340 = 7.8). The net is gross minus sinks, divided by enrollment.' },
           { text: '~3.4 mtCO₂e/student', correct: false, explanation: 'Older value from a previous methodology iteration. Current canonical is ~5.0 mt/student.' },
@@ -823,7 +823,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'You can verify the dashboard yourself',
-        body: 'Net ~1,720 mt/yr (composite cross-check range 333–3,892). 60% of gross from Scope 3. Per student ~5.1 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
+        body: 'Net ~1,725 mt/yr (composite cross-check range 333–3,892). 60% of gross from Scope 3. Per student ~5.1 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
       },
     ],
   },
@@ -1049,7 +1049,7 @@ const paths = [
         question: 'Annual avoided emissions:',
         options: [
           { text: '~7 mtCO₂e/yr', correct: false, explanation: 'Off by 10× (probably an extra unit conversion).' },
-          { text: '~71 mtCO₂e/yr', correct: true, explanation: 'Right. 245 MWh × 643 lb/MWh = 157,535 lb × 0.4536 = 71,458 kg ≈ 71.5 mtCO₂e. About a fifth of KUA\'s entire Scope 2 (~385 mt).' },
+          { text: '~71 mtCO₂e/yr', correct: true, explanation: 'Right. 245 MWh × 643 lb/MWh = 157,535 lb × 0.4536 = 71,458 kg ≈ 71.5 mtCO₂e. About a fifth of KUA\'s entire Scope 2 (~390 mt).' },
           { text: '~700 mtCO₂e/yr', correct: false, explanation: 'Way too high — probably forgot kg → mt.' },
           { text: '~157 mtCO₂e/yr', correct: false, explanation: 'You may have stopped at lb without converting to kg (×0.4536) or mt.' },
         ],
@@ -1273,7 +1273,7 @@ const paths = [
           { text: 'Student turning off dorm lights', correct: false, explanation: 'Tiny — about 0.005 mtCO₂e per LED bulb saved per year.' },
           { text: 'One fewer round-trip flight per international student', correct: true, explanation: 'Right. 50 × 1 × 2.93 = 146 mtCO₂e/yr saved across the international cohort. The single highest-leverage individual lever in the entire dashboard.' },
           { text: 'Composting in dining hall', correct: false, explanation: 'Real but smaller — ~10–24 mt/yr at full diversion. Captures fugitive methane that would otherwise leak from landfilled food.' },
-          { text: 'Buying offsets equal to KUA\'s gross emissions', correct: false, explanation: 'Offsets equal gross would account for ~4,370 mt on paper, but the offset quality varies and KUA\'s emissions don\'t actually fall. Reduction wins over offsetting per dollar of effort.' },
+          { text: 'Buying offsets equal to KUA\'s gross emissions', correct: false, explanation: 'Offsets equal gross would account for ~4,375 mt on paper, but the offset quality varies and KUA\'s emissions don\'t actually fall. Reduction wins over offsetting per dollar of effort.' },
         ],
       },
       {

@@ -125,7 +125,7 @@ export const lessonLibrary = [
       'Argue why measurement boundaries matter for accountability',
     ],
     dashboardPages: ['/scope-1', '/scope-2', '/scope-3'],
-    studentTask: 'Given KUA\'s rough scope splits (1: ~1,350 mt, 2: ~385 mt, 3: ~2,635 mt), pick the scope most reducible without the school giving anything up. Defend in 3 sentences.',
+    studentTask: 'Given KUA\'s rough scope splits (1: ~1,350 mt, 2: ~390 mt, 3: ~2,635 mt), pick the scope most reducible without the school giving anything up. Defend in 3 sentences.',
     teacherPrep: 'Open all three scope pages in tabs; have students rotate through them in groups.',
     keyArticles: ['ka_scopes', 'ka_kua_emissions'],
   },
@@ -285,7 +285,7 @@ export const lessonLibrary = [
     courses: ['AP Statistics', 'Prob., Stats., and Data Science (H)'],
     gradeBand: '12',
     durationMin: 50,
-    summary: 'The dashboard reports KUA\'s net annual footprint as 1,720 mtCO₂e with no uncertainty band. Pick three big inputs, assume each has a ±10–20% uncertainty, and propagate the combined band using the variance-addition rule.',
+    summary: 'The dashboard reports KUA\'s net annual footprint as 1,725 mtCO₂e with no uncertainty band. Pick three big inputs, assume each has a ±10–20% uncertainty, and propagate the combined band using the variance-addition rule.',
     learningGoals: [
       'Apply the variance-addition rule for independent errors',
       'Translate a ± percent uncertainty into a standard deviation',
@@ -614,7 +614,7 @@ export const lessonLibrary = [
       'Defend a stylistic choice in the margins of your draft',
     ],
     dashboardPages: ['/', '/sinks-os', '/scope-1', '/scope-2', '/methodology'],
-    studentTask: '800-word essay on KUA\'s 1,720 mtCO₂e in the voice of Dillard, Carson, or Leopold. Margin notes annotate at least 5 places where you made a stylistic choice + why.',
+    studentTask: '800-word essay on KUA\'s 1,725 mtCO₂e in the voice of Dillard, Carson, or Leopold. Margin notes annotate at least 5 places where you made a stylistic choice + why.',
   },
   {
     id: 'l_apush_energy_history',

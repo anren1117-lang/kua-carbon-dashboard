@@ -37,9 +37,8 @@ function Scope2() {
       <h1 style={styles.title}>Scope 2 — Purchased Electricity</h1>
       <p style={styles.subtitle}>
         Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
-        composed from real measured BMS captures (Jan–Apr 2026) plus the May 1–4 days from the
-        April Meter Trends export. (The Aug–Sep operational export is shown as a separate measured
-        slice in the Scope 2 insights below.) Emissions intensity is per-fuel output factors weighted by
+        composed from real measured BMS master-meter captures (Jan–Apr 2026) plus May onward from
+        the daily Meter Trends export, scaled to master-meter equivalent. Emissions intensity is per-fuel output factors weighted by
         ISO-NE 2024 generation mix (~0.235 kg/kWh effective).
       </p>
       <div style={styles.card}>
@@ -61,7 +60,7 @@ function Scope2() {
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Quantity source</span>
-          <span style={styles.value}>BMS captures (Jan–Apr) + April Meter Trends export (May 1–4 days)</span>
+          <span style={styles.value}>BMS master-meter captures (Jan–Apr) + daily Meter Trends export, scaled (May onward)</span>
         </div>
         <div style={{ ...styles.row, borderBottom: 'none' }}>
           <span style={styles.label}>Reconciliation</span>
@@ -84,8 +83,8 @@ function Scope2() {
             note: `composed YTD × annualize`,
           },
           provenance: 'cited',
-          note: 'Recomputes automatically when new BMS data lands. kWh side is composed from monthly captures (Jan-Apr) + the April Meter Trends export (May 1–4 days). mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.',
-          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured across full-month BMS captures + the 4 May days from the parsed April Meter Trends export. Annualized × ${(COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2)} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~0.235 kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
+          note: 'Recomputes automatically when new BMS data lands. kWh side is composed from monthly master-meter captures (Jan–Apr) + the daily Meter Trends export scaled to master-meter equivalent (May onward). mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.',
+          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — full-month BMS master-meter captures for Jan–Apr + May onward from the daily Meter Trends export, scaled to master-meter equivalent. Annualized × ${(COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2)} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~0.235 kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
           futureMethod: 'Drop the annualization multiplier once a full calendar year of BMS data is captured (~Jan 2027) — kWh figure flips from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[

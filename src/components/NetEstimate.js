@@ -54,7 +54,7 @@ const rows = [
   },
   {
     name: 'Scope 2 — Electricity (kWh × factor)', low: SCOPE2_LOW, high: SCOPE2_HIGH, provenance: 'cited',
-    currentMethod: `Recomputed from the composed YTD on each render. Composed YTD-through-${COMPOSED_YTD_AS_OF} (monthly BMS captures Jan-Apr + Meter Trends CSV May days) annualizes to ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr × ISO-NE 2024 effective rate 0.235 kg/kWh (per-fuel output factors at published generation mix) = ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Range is the central value ±5% — the cross-validation noise between the two BMS sources.`,
+    currentMethod: `Recomputed from the composed YTD on each render. Composed YTD-through-${COMPOSED_YTD_AS_OF} (monthly BMS master-meter captures Jan–Apr + daily Meter Trends export May onward, scaled to master-meter equivalent) annualizes to ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr × ISO-NE 2024 effective rate 0.235 kg/kWh (per-fuel output factors at published generation mix) = ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Range is the central value ±5% — a working band covering the feed-to-master scale on the May–Sep months and the modelled rest of the year; January's unresolved feed ratio (see Scope 2) would put the central value near the low edge.`,
     futureMethod:  'Already at target methodology. Year-over-year improvement comes from a longer measured BMS window (drop the annualization multiplier once a full year is metered) and from the next eGRID NEWE update.',
   },
   {

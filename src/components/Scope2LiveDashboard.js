@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
-import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR } from '../data/composedYtd.js';
+import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, SNAPSHOT_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { ProvenancePill } from './ProvenancePill.js';
@@ -22,9 +22,9 @@ import { EnergyEquivalents } from './EnergyEquivalents.js';
 // useEffect runs.
 //
 // Year-counter prefers the ACTUAL composed YTD figure (which already
-// reflects heating-heavy Jan-Apr months) over linear-prorating the
-// annual baseline — those differ by ~14% in early May because the
-// year isn't uniform.
+// reflects the real month-by-month shape — heavy winter, light summer)
+// over linear-prorating the annual baseline, because the year isn't
+// uniform.
 function initialEmissions(annualMt, measuredYtdMt) {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -60,9 +60,8 @@ export function Scope2LiveDashboard() {
   const [viewMode, setViewMode] = useState('overview');
 
   // Annual baseline derived from the seasonally-anchored Year 1
-  // projection (composedYtd.js). The factor (~×2.5) accounts for
-  // the fact that the YTD measured months are heating-heavy — naive
-  // linear annualization would over-count summer.
+  // projection (composedYtd.js). The factor accounts for where in the
+  // year the measured YTD falls, which naive linear annualization ignores.
   const yearlyEmissions = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
   // Annualized for the same reason as yearlyEmissions above — the
   // "kWh/year" stat below would be wrong showing the YTD figure.
@@ -75,7 +74,8 @@ export function Scope2LiveDashboard() {
 
   // Buildings + Envysion observations joined from the data layer.
   // envysionSnapshot.energyUsedKwh is YTD-through-2026-05-03 (123 days);
-  // multiply by ANNUALIZE_FACTOR so the displayed "Energy Used" column
+  // multiply by SNAPSHOT_ANNUALIZE_FACTOR (that window's own seasonal
+  // share, not the Jan → Sep YTD factor) so the displayed "Energy Used" column
   // shows Year 1 kWh consistent with /buildings, /hotspots, and the
   // headline Year 1 figure on this same page.
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
@@ -83,7 +83,7 @@ export function Scope2LiveDashboard() {
     const b = buildingsById[row.buildingId];
     return {
       name: b?.name ?? row.buildingId,
-      energyUsed: Math.round(row.energyUsedKwh * ANNUALIZE_FACTOR),
+      energyUsed: Math.round(row.energyUsedKwh * SNAPSHOT_ANNUALIZE_FACTOR),
       power: row.powerKw,
       avgVoltage: row.avgVoltage,
       category: b?.category ?? 'Other',
@@ -212,7 +212,7 @@ export function Scope2LiveDashboard() {
 
   // gridMix.mtCO2e and .kwhUsed are YTD figures. The "Energy Sources"
   // panel below shows them under a footer that says "TOTAL ANNUAL
-  // EMISSIONS" (yearlyEmissions, ~385 mt). Annualize the per-source
+  // EMISSIONS" (yearlyEmissions, ~390 mt). Annualize the per-source
   // rows here so the breakdown adds up to the footer instead of being
   // ~38% short.
   const emissionsData = gridMix.map((m) => ({
@@ -230,7 +230,7 @@ export function Scope2LiveDashboard() {
   // Monday for display. The monthlyPattern.emissions field is calibrated
   // to a legacy ~213 mt annual baseline; rescale here so the displayed
   // monthly mtCO2e values sum to the canonical annual Scope 2 figure
-  // (~385 mt today via per-fuel output factors).
+  // (~390 mt today via per-fuel output factors).
   const dayOfWeekData = [...dayOfWeekPattern.slice(1), dayOfWeekPattern[0]];
   const _monthlyMultSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
   const monthlyData = monthlyPattern.map((m) => ({
@@ -251,8 +251,8 @@ export function Scope2LiveDashboard() {
     const msPerDay = 24 * 60 * 60 * 1000;
 
     // Anchor the year counter on actual measured YTD (which already
-    // reflects heating-heavy Jan-Apr) rather than linear-prorating the
-    // annual figure. Linear pro-rata understates by ~14% in early May.
+    // reflects the real seasonal shape) rather than linear-prorating the
+    // annual figure.
     setYearEmissions(GRID_MIX_TOTAL_MTCO2E);
     setMonthEmissions((msInMonth / msPerMonth) * emissionsPerMonth);
     setTodayEmissions((msInDay / msPerDay) * emissionsPerDay);

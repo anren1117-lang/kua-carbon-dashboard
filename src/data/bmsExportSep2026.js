@@ -1,62 +1,57 @@
-// Auto-generated from MeterTrends_20260914_1909987.csv by scripts/parseBmsExport.mjs
+// Auto-generated from MeterTrends_20260915_1209660.csv by scripts/parseBmsExport.mjs
 // Do not edit by hand. Re-run the parser with a fresh export to update.
 //
-// Source window: 2026-08-16T04:00:00.000Z → 2026-09-14T23:00:00.000Z
-// Meters: 104, hours covered: 716.
+// Source window: 2026-08-17T04:00:00.000Z → 2026-09-15T16:00:00.000Z
+// Meters: 104, hours covered: 709.
 // Per-meter shape: { id, totalKwh, peakKw, avgKw, hourly[24], daily[{date,kwh,peakKw}], sampleCount }.
 
 export const BMS_EXPORT_META = {
-  "sourceFile": "MeterTrends_20260914_1909987.csv",
-  "windowStartIso": "2026-08-16T04:00:00.000Z",
-  "windowEndIso": "2026-09-14T23:00:00.000Z",
-  "hoursCovered": 716,
+  "sourceFile": "MeterTrends_20260915_1209660.csv",
+  "windowStartIso": "2026-08-17T04:00:00.000Z",
+  "windowEndIso": "2026-09-15T16:00:00.000Z",
+  "hoursCovered": 709,
   "meterCount": 104,
-  "generatedAt": "2026-09-15T01:10:38.453Z"
+  "generatedAt": "2026-09-15T18:26:49.921Z"
 };
 
 export const bmsExportMeters = [
   {
     "id": "PM_03_MainFeed",
-    "totalKwh": 30672,
-    "totalKwhCumulative": 30672,
-    "totalKwhIntegrated": 30672,
+    "totalKwh": 30724,
+    "totalKwhCumulative": 30724,
+    "totalKwhIntegrated": 30724,
     "peakKw": 95.16,
-    "avgKw": 42.9,
+    "avgKw": 43.4,
     "hourly": [
-      27.48,
-      27.5,
-      27.9,
-      28,
+      27.66,
+      27.63,
+      27.8,
       28.03,
-      29.4,
-      35.13,
-      46.3,
-      55.53,
-      57.77,
-      54.87,
-      58.13,
-      61.07,
-      59.4,
-      53.83,
-      52.77,
-      53.67,
-      51.97,
-      51.5,
-      45.9,
-      35.31,
-      29.52,
-      28.66,
-      27.72
+      28.23,
+      29.67,
+      35.67,
+      47.03,
+      56.67,
+      58.77,
+      56.33,
+      59.67,
+      62.47,
+      60.28,
+      54.45,
+      53.34,
+      54.31,
+      52.59,
+      52.28,
+      46.52,
+      35.62,
+      29.69,
+      28.9,
+      28
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 660,
-        "peakKw": 50.97
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 825,
+        "kwh": 804,
         "peakKw": 59.12
       },
       {
@@ -196,57 +191,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 997,
+        "kwh": 1119,
+        "peakKw": 95.16
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 611,
         "peakKw": 95.16
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 30672
+    "signedCumulative": 30724
   },
   {
     "id": "PM_17_MainFeed",
-    "totalKwh": 24344,
-    "totalKwhCumulative": 24344,
-    "totalKwhIntegrated": 24344,
+    "totalKwh": 24856,
+    "totalKwhCumulative": 24856,
+    "totalKwhIntegrated": 24856,
     "peakKw": 102.1,
-    "avgKw": 34.05,
+    "avgKw": 35.11,
     "hourly": [
-      30.79,
-      29.27,
-      28.63,
-      27.47,
-      28.07,
-      27.2,
-      27.1,
-      28.27,
-      28.43,
-      29.33,
-      33.9,
-      37.47,
-      38.27,
-      41.8,
-      42.6,
-      43,
-      43.1,
-      41.53,
-      40.23,
-      39.03,
-      35.31,
-      32.9,
-      31.9,
-      31.28
+      31.17,
+      30.2,
+      29.97,
+      28.73,
+      28.4,
+      28.1,
+      28.4,
+      29.5,
+      28.87,
+      30.57,
+      35.3,
+      38.73,
+      38.8,
+      43.07,
+      43.86,
+      44.31,
+      44.45,
+      42.79,
+      41.45,
+      40.17,
+      37.07,
+      34.38,
+      33.31,
+      32.55
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 121,
-        "peakKw": 12.93
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 136,
+        "kwh": 131,
         "peakKw": 12.93
       },
       {
@@ -386,57 +381,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 1006,
+        "kwh": 1202,
+        "peakKw": 100.27
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 442,
         "peakKw": 100.27
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 24344
+    "signedCumulative": 24856
   },
   {
     "id": "PM_15_MainFeed",
-    "totalKwh": 13859,
-    "totalKwhCumulative": 13859,
-    "totalKwhIntegrated": 14657,
+    "totalKwh": 14157,
+    "totalKwhCumulative": 14157,
+    "totalKwhIntegrated": 14809,
     "peakKw": 54.09,
-    "avgKw": 22.9,
+    "avgKw": 23.14,
     "hourly": [
-      26.86,
-      26.27,
-      25.63,
-      24.53,
-      24.83,
-      24.63,
-      24.47,
-      22.53,
-      18.17,
-      17.28,
-      15.81,
-      16.12,
-      13.44,
+      26.97,
+      26.43,
+      25.77,
+      24.77,
+      25,
+      24.87,
+      24.7,
+      22.93,
+      18.83,
+      17.92,
+      16.68,
+      17.06,
+      14.47,
       12.5,
       14.59,
       11.61,
-      13.5,
-      18.57,
-      25.73,
+      13.78,
+      18.41,
+      25.9,
+      32.52,
       32.17,
-      31.97,
-      30.52,
-      29.38,
-      28.17
+      30.72,
+      29.55,
+      28.31
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 322,
-        "peakKw": 46.91
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 433,
+        "kwh": 409,
         "peakKw": 46.91
       },
       {
@@ -576,57 +571,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 379,
+        "kwh": 501,
+        "peakKw": 54.09
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 376,
         "peakKw": 54.09
       }
     ],
     "sampleCount": 640,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 13859
+    "signedCumulative": 14157
   },
   {
     "id": "PM_21_MainFeed",
-    "totalKwh": 12027,
-    "totalKwhCumulative": 12027,
-    "totalKwhIntegrated": 12027,
+    "totalKwh": 12091,
+    "totalKwhCumulative": 12091,
+    "totalKwhIntegrated": 12091,
     "peakKw": 36,
-    "avgKw": 16.82,
+    "avgKw": 17.08,
     "hourly": [
-      16.59,
-      14.17,
-      13.23,
-      12.37,
-      10.93,
-      11.83,
-      12.07,
-      15.07,
-      18.23,
-      16.8,
-      16.27,
-      17.77,
-      18.2,
+      17,
+      14.37,
+      13.4,
+      12.57,
+      11.13,
+      11.97,
+      12.2,
+      15.23,
+      18.7,
       17.23,
-      17.7,
+      16.53,
+      18.07,
+      18.5,
+      17.48,
+      17.79,
       18.03,
-      19.2,
-      18.6,
-      18.57,
-      19.9,
-      20.97,
-      19.86,
-      20.03,
-      20.55
+      19.21,
+      18.72,
+      18.86,
+      20.14,
+      21.45,
+      20.55,
+      20.45,
+      21.14
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 260,
-        "peakKw": 19
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 232,
+        "kwh": 224,
         "peakKw": 13
       },
       {
@@ -766,57 +761,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 415,
+        "kwh": 527,
         "peakKw": 32
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 220,
+        "peakKw": 25
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 12027
+    "signedCumulative": 12091
   },
   {
     "id": "PM_11_MainFeed",
-    "totalKwh": 9789,
-    "totalKwhCumulative": 9789,
-    "totalKwhIntegrated": 9789,
+    "totalKwh": 9764,
+    "totalKwhCumulative": 9764,
+    "totalKwhIntegrated": 9764,
     "peakKw": 30.8,
-    "avgKw": 13.69,
+    "avgKw": 13.79,
     "hourly": [
       13.03,
-      12.87,
+      12.9,
       12.6,
-      12.2,
-      12.4,
-      11.9,
-      11.53,
+      12.17,
+      12.33,
+      11.87,
+      11.5,
       11.6,
-      12.7,
-      15.33,
-      16.5,
-      16.6,
-      15.53,
-      16.03,
-      16.07,
-      15.03,
-      13.83,
-      13.07,
       12.77,
-      13.27,
-      13.41,
+      15.63,
+      16.9,
+      17.07,
+      15.93,
+      16.17,
+      16.24,
+      15.21,
+      13.9,
+      13.17,
+      12.83,
+      13.31,
+      13.59,
+      13.66,
       13.62,
-      13.55,
       13.07
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 269,
-        "peakKw": 23.1
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 301,
+        "kwh": 288,
         "peakKw": 23.1
       },
       {
@@ -956,57 +951,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 314,
+        "kwh": 372,
+        "peakKw": 30.8
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 199,
         "peakKw": 30.8
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 9789
+    "signedCumulative": 9764
   },
   {
     "id": "PM_12_MainFeed",
-    "totalKwh": 8973,
-    "totalKwhCumulative": 8973,
-    "totalKwhIntegrated": 8973,
-    "peakKw": 22.5,
-    "avgKw": 12.55,
+    "totalKwh": 9093,
+    "totalKwhCumulative": 9093,
+    "totalKwhIntegrated": 9093,
+    "peakKw": 23.4,
+    "avgKw": 12.84,
     "hourly": [
-      13.72,
-      12.67,
-      12.1,
-      11.83,
-      12.13,
-      12.07,
-      12.1,
-      11.77,
-      11.67,
-      12.93,
-      13.1,
-      13.2,
-      12.7,
-      12.47,
-      12.67,
+      14.03,
+      12.87,
+      12.33,
+      12.03,
+      12.37,
+      12.33,
       12.3,
-      12.27,
-      11.97,
-      11.73,
-      12.53,
-      13.17,
-      13.41,
-      13.34,
-      13.48
+      12.03,
+      12,
+      13.4,
+      13.6,
+      13.7,
+      13.2,
+      12.69,
+      12.9,
+      12.52,
+      12.48,
+      12.14,
+      11.93,
+      12.72,
+      13.48,
+      13.76,
+      13.62,
+      13.86
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 164,
-        "peakKw": 17.3
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 231,
+        "kwh": 222,
         "peakKw": 17.3
       },
       {
@@ -1146,57 +1141,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 310,
+        "kwh": 381,
         "peakKw": 22.5
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 222,
+        "peakKw": 23.4
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 8973
+    "signedCumulative": 9093
   },
   {
     "id": "PM_15_FieldSolarFeed",
-    "totalKwh": 6779,
-    "totalKwhCumulative": 6779,
-    "totalKwhIntegrated": 6779,
+    "totalKwh": 6649,
+    "totalKwhCumulative": 6649,
+    "totalKwhIntegrated": 6652,
     "peakKw": 14,
-    "avgKw": 9.48,
+    "avgKw": 9.42,
     "hourly": [
       7.97,
-      7.67,
+      7.63,
       7.23,
-      7.23,
+      7.2,
       7.07,
       7.2,
       7.5,
-      8.33,
+      8.37,
       9.63,
+      10.03,
       10.27,
-      10.67,
-      10.7,
-      10.7,
-      10.43,
-      10.6,
-      10.6,
-      10.8,
-      11.07,
-      10.9,
-      11.03,
-      10.9,
-      10.52,
+      10.69,
+      10.69,
+      10.38,
+      10.55,
+      10.55,
+      10.79,
+      11.1,
+      10.83,
+      11,
+      10.86,
+      10.48,
       9.72,
-      8.83
+      8.79
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 231,
-        "peakKw": 0
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 234,
+        "kwh": 226,
         "peakKw": 0
       },
       {
@@ -1336,54 +1331,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 188,
+        "kwh": 227,
         "peakKw": 0
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 73,
+        "peakKw": 0.73
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 706,
     "droppedOutliers": 0,
     "direction": "generation",
-    "signedCumulative": -6779
+    "signedCumulative": -6649
   },
   {
     "id": "PM_03_MP1Feed",
-    "totalKwh": 5435,
-    "totalKwhCumulative": 5435,
-    "totalKwhIntegrated": 5435,
-    "peakKw": 11.18,
-    "avgKw": 7.6,
+    "totalKwh": 5477,
+    "totalKwhCumulative": 5477,
+    "totalKwhIntegrated": 5477,
+    "peakKw": 11.19,
+    "avgKw": 7.74,
     "hourly": [
+      5,
+      4.93,
       4.83,
-      4.77,
-      4.63,
-      4.77,
-      4.77,
-      4.77,
-      5.7,
-      9.1,
-      9.73,
-      9.57,
-      9.97,
-      10.07,
+      4.9,
+      4.93,
+      4.93,
+      5.87,
+      9.2,
+      9.9,
+      9.67,
+      10.1,
+      10.23,
+      10.1,
+      10,
+      9.79,
       9.93,
-      9.87,
-      9.67,
-      9.8,
-      9.67,
-      9.77,
-      9.5,
-      9.23,
-      7.38,
-      4.86,
-      4.86,
-      4.86
+      9.79,
+      9.9,
+      9.69,
+      9.41,
+      7.55,
+      5.03,
+      5,
+      5.07
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 80,
-        "peakKw": 6.6
-      },
       {
         "date": "2026-08-17",
         "kwh": 139,
@@ -1526,54 +1521,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 167,
+        "kwh": 191,
         "peakKw": 11.18
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 98,
+        "peakKw": 11.19
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 5435
+    "signedCumulative": 5477
   },
   {
     "id": "PM_17_HP01Feed",
-    "totalKwh": 4941,
-    "totalKwhCumulative": 4941,
-    "totalKwhIntegrated": 4941,
+    "totalKwh": 4951,
+    "totalKwhCumulative": 4951,
+    "totalKwhIntegrated": 4951,
     "peakKw": 17.4,
-    "avgKw": 6.91,
+    "avgKw": 6.99,
     "hourly": [
       7,
-      6.83,
+      6.93,
       6.7,
       6.4,
       6.63,
-      6.4,
+      6.5,
       6.23,
       6.67,
-      6.3,
-      6,
+      6.33,
+      6.07,
       6.73,
       7.1,
-      7.17,
-      7.37,
-      7.6,
-      7.5,
       7.2,
-      7.23,
-      7.17,
-      7.07,
+      7.62,
+      7.86,
+      7.76,
+      7.45,
+      7.48,
+      7.41,
+      7.31,
       7.14,
       7.21,
       7.14,
       7.1
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -1718,55 +1713,55 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 209,
         "peakKw": 16.01
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 10,
+        "peakKw": 16.01
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 4941
+    "signedCumulative": 4951
   },
   {
     "id": "PM_02_MainFeed",
-    "totalKwh": 4002,
-    "totalKwhCumulative": 4002,
-    "totalKwhIntegrated": 4002,
+    "totalKwh": 4004,
+    "totalKwhCumulative": 4004,
+    "totalKwhIntegrated": 4004,
     "peakKw": 17.46,
-    "avgKw": 5.6,
+    "avgKw": 5.66,
     "hourly": [
-      6.24,
-      5.33,
-      5.23,
-      5.1,
-      5.43,
-      5.83,
-      5.53,
-      4.8,
-      5,
-      4,
-      4.5,
-      4.63,
-      4.47,
-      4.63,
-      5,
+      6.21,
+      5.4,
       5.3,
-      5.83,
-      5.43,
-      6.1,
-      6.67,
-      7.21,
-      7.31,
-      7.76,
-      7.24
+      5.2,
+      5.5,
+      5.87,
+      5.6,
+      4.9,
+      5.07,
+      4.13,
+      4.57,
+      4.7,
+      4.5,
+      4.72,
+      5.07,
+      5.38,
+      5.97,
+      5.48,
+      6.17,
+      6.66,
+      7.17,
+      7.28,
+      7.86,
+      7.28
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 88,
-        "peakKw": 16.01
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 165,
+        "kwh": 158,
         "peakKw": 16.01
       },
       {
@@ -1906,57 +1901,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 98,
+        "kwh": 129,
+        "peakKw": 17.46
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 66,
         "peakKw": 17.46
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 4002
+    "signedCumulative": 4004
   },
   {
     "id": "PM_28_MainFeed",
-    "totalKwh": 3954,
-    "totalKwhCumulative": 3954,
-    "totalKwhIntegrated": 3954,
+    "totalKwh": 3946,
+    "totalKwhCumulative": 3946,
+    "totalKwhIntegrated": 3946,
     "peakKw": 14,
-    "avgKw": 5.53,
+    "avgKw": 5.57,
     "hourly": [
       5.24,
-      4.67,
-      4.37,
-      4.2,
-      4.17,
-      4.07,
+      4.7,
+      4.4,
       4.23,
-      4.63,
-      5.37,
-      5.67,
-      5.77,
+      4.23,
+      4.1,
+      4.27,
+      4.67,
+      5.43,
       5.73,
-      5.6,
-      5.9,
-      5.8,
-      6.07,
-      6.03,
-      5.9,
-      6.13,
-      6.57,
-      6.93,
+      5.87,
+      5.73,
+      5.67,
+      5.97,
+      5.83,
+      6.14,
+      6.14,
+      5.97,
+      6.21,
+      6.62,
+      7,
       6.72,
-      6.83,
-      6.28
+      6.86,
+      6.31
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 88,
-        "peakKw": 5
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 95,
+        "kwh": 91,
         "peakKw": 7
       },
       {
@@ -2096,57 +2091,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 110,
+        "kwh": 133,
         "peakKw": 7
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 61,
+        "peakKw": 6
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3954
+    "signedCumulative": 3946
   },
   {
     "id": "PM_01_MainFeed",
-    "totalKwh": 3877,
-    "totalKwhCumulative": 3877,
-    "totalKwhIntegrated": 3877,
+    "totalKwh": 3939,
+    "totalKwhCumulative": 3939,
+    "totalKwhIntegrated": 3939,
     "peakKw": 10.65,
-    "avgKw": 5.42,
+    "avgKw": 5.56,
     "hourly": [
-      3.93,
-      3.97,
+      4.03,
+      4.1,
+      3.9,
+      3.8,
       3.83,
-      3.7,
-      3.77,
-      3.93,
-      4.9,
-      5.97,
-      5.53,
-      5.57,
-      5.6,
-      5.93,
-      6.07,
+      4.03,
+      5.13,
       6.2,
-      6.27,
-      6.57,
-      7.2,
-      6.9,
-      6.63,
-      6.93,
-      6.45,
-      5.24,
-      4.62,
-      4.34
+      5.77,
+      5.7,
+      5.8,
+      6.17,
+      6.17,
+      6.34,
+      6.41,
+      6.76,
+      7.38,
+      7.07,
+      6.83,
+      7.1,
+      6.69,
+      5.38,
+      4.72,
+      4.41
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 42,
-        "peakKw": 8.44
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 70,
+        "kwh": 68,
         "peakKw": 8.44
       },
       {
@@ -2286,57 +2281,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 140,
+        "kwh": 165,
+        "peakKw": 10.65
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 81,
         "peakKw": 10.65
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3877
+    "signedCumulative": 3939
   },
   {
     "id": "PM_20_MKPanelFeed",
-    "totalKwh": 3873,
-    "totalKwhCumulative": 3873,
-    "totalKwhIntegrated": 3873,
+    "totalKwh": 3938,
+    "totalKwhCumulative": 3938,
+    "totalKwhIntegrated": 3938,
     "peakKw": 17,
-    "avgKw": 5.42,
+    "avgKw": 5.56,
     "hourly": [
-      5.28,
-      5,
-      4.73,
-      4.57,
-      4.33,
-      4.43,
-      4.5,
+      5.45,
+      5.13,
+      4.8,
+      4.7,
       4.47,
-      4.93,
-      5.57,
-      5.87,
+      4.53,
+      4.6,
+      4.57,
+      5.03,
+      5.7,
+      6.07,
+      6.37,
+      6.43,
+      6.38,
       6.17,
-      6.2,
-      6.2,
-      6,
-      6.27,
-      6.17,
-      6.17,
-      6.3,
-      5.73,
+      6.45,
+      6.34,
+      6.34,
+      6.45,
+      5.9,
+      5.52,
       5.34,
-      5.17,
-      5.14,
-      5.45
+      5.28,
+      5.62
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 27,
-        "peakKw": 2
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 28,
+        "kwh": 27,
         "peakKw": 2
       },
       {
@@ -2476,54 +2471,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 134,
+        "kwh": 158,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 69,
         "peakKw": 8
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3873
+    "signedCumulative": 3938
   },
   {
     "id": "PM_12_AHU01_SF_Feed",
-    "totalKwh": 3593,
-    "totalKwhCumulative": 3593,
-    "totalKwhIntegrated": 3593,
+    "totalKwh": 3695,
+    "totalKwhCumulative": 3695,
+    "totalKwhIntegrated": 3695,
     "peakKw": 7,
-    "avgKw": 5.03,
+    "avgKw": 5.22,
     "hourly": [
-      5.21,
-      4.9,
-      4.87,
-      5.07,
-      5.13,
-      5.07,
+      5.41,
       5.1,
-      4.93,
-      4.97,
-      4.93,
-      4.9,
-      4.8,
-      4.83,
-      4.8,
-      4.9,
-      4.8,
-      5,
       5.07,
-      5.17,
+      5.27,
+      5.33,
+      5.27,
       5.3,
+      5.13,
+      5.17,
+      5.13,
+      5.1,
+      5,
+      5.03,
+      4.97,
       5.07,
+      4.97,
+      5.17,
+      5.24,
       5.34,
-      5.21,
-      5.28
+      5.48,
+      5.28,
+      5.55,
+      5.41,
+      5.48
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 6.07
-      },
       {
         "date": "2026-08-17",
         "kwh": 40,
@@ -2666,57 +2661,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 118,
-        "peakKw": 6.05
+        "kwh": 142,
+        "peakKw": 6.08
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 78,
+        "peakKw": 6.08
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3593
+    "signedCumulative": 3695
   },
   {
     "id": "PM_04_MainFeed",
-    "totalKwh": 3465,
-    "totalKwhCumulative": 3465,
-    "totalKwhIntegrated": 3465,
+    "totalKwh": 3433,
+    "totalKwhCumulative": 3433,
+    "totalKwhIntegrated": 3433,
     "peakKw": 18.4,
     "avgKw": 4.85,
     "hourly": [
-      3.1,
-      2.83,
-      2.97,
-      2.73,
+      3.07,
+      2.8,
+      2.9,
+      2.7,
+      2.8,
+      3.03,
       2.87,
       3.07,
-      2.87,
-      3.13,
       3.9,
-      5.9,
-      7.2,
-      7.73,
-      7.6,
-      7.57,
-      7.73,
-      7.77,
-      7.3,
-      5.8,
-      4.63,
-      4.6,
-      3.97,
-      3.66,
-      3.66,
+      6.03,
+      7.23,
+      7.87,
+      7.67,
+      7.69,
+      7.86,
+      7.86,
+      7.38,
+      5.86,
+      4.69,
+      4.59,
+      3.93,
+      3.62,
+      3.62,
       3.52
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 88,
-        "peakKw": 18.4
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 160,
+        "kwh": 157,
         "peakKw": 18.4
       },
       {
@@ -2856,57 +2851,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 96,
+        "kwh": 108,
+        "peakKw": 11.9
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 47,
         "peakKw": 11.9
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3465
+    "signedCumulative": 3433
   },
   {
     "id": "PM_11_MDPFeed",
-    "totalKwh": 3299,
-    "totalKwhCumulative": 3299,
-    "totalKwhIntegrated": 3299,
+    "totalKwh": 3242,
+    "totalKwhCumulative": 3242,
+    "totalKwhIntegrated": 3242,
     "peakKw": 9.97,
-    "avgKw": 4.61,
+    "avgKw": 4.58,
     "hourly": [
-      3.9,
-      4.17,
-      4.07,
-      4,
-      3.8,
+      3.79,
+      4.13,
       4,
       3.93,
-      3.8,
-      4.2,
+      3.73,
+      3.87,
+      3.87,
+      3.7,
+      4.13,
       4.83,
-      5.2,
-      5.4,
-      5.4,
-      5.53,
-      5.5,
+      5.23,
       5.43,
+      5.4,
+      5.55,
+      5.52,
+      5.45,
       5,
-      4.83,
-      4.53,
-      4.53,
+      4.86,
+      4.52,
+      4.55,
       4.86,
       4.79,
-      4.59,
-      4.41
+      4.48,
+      4.34
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 109,
-        "peakKw": 9.34
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 125,
+        "kwh": 120,
         "peakKw": 9.34
       },
       {
@@ -3046,57 +3041,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 78,
+        "kwh": 94,
+        "peakKw": 9.13
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 41,
         "peakKw": 9.13
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3299
+    "signedCumulative": 3242
   },
   {
     "id": "PM_17_BarnFieldhouseFeed",
-    "totalKwh": 3201,
-    "totalKwhCumulative": 3201,
-    "totalKwhIntegrated": 3201,
+    "totalKwh": 3220,
+    "totalKwhCumulative": 3220,
+    "totalKwhIntegrated": 3220,
     "peakKw": 9.46,
-    "avgKw": 4.48,
+    "avgKw": 4.55,
     "hourly": [
-      3.66,
+      3.69,
+      3.67,
+      3.73,
+      3.63,
       3.57,
-      3.67,
-      3.53,
-      3.53,
-      3.8,
-      3.67,
-      4.2,
-      4.33,
-      4.13,
+      3.9,
+      3.77,
       4.23,
       4.43,
-      5,
-      5.5,
-      5.47,
-      5.27,
-      5.57,
-      5.57,
-      5.57,
-      5.53,
-      5.41,
-      4.14,
-      3.93,
-      3.69
+      4.2,
+      4.3,
+      4.5,
+      5.07,
+      5.62,
+      5.55,
+      5.38,
+      5.66,
+      5.69,
+      5.69,
+      5.62,
+      5.48,
+      4.17,
+      4,
+      3.79
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 60,
-        "peakKw": 7.71
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 70,
+        "kwh": 67,
         "peakKw": 7.71
       },
       {
@@ -3236,57 +3231,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 121,
+        "kwh": 142,
+        "peakKw": 9.46
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 61,
         "peakKw": 9.46
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 3201
+    "signedCumulative": 3220
   },
   {
     "id": "PM_15_M1AFeed",
-    "totalKwh": 2972,
-    "totalKwhCumulative": 2972,
-    "totalKwhIntegrated": 2972,
+    "totalKwh": 2955,
+    "totalKwhCumulative": 2955,
+    "totalKwhIntegrated": 2955,
     "peakKw": 20.4,
-    "avgKw": 4.16,
+    "avgKw": 4.17,
     "hourly": [
-      3.72,
-      3.73,
-      3.5,
-      3.27,
-      3.43,
-      3.33,
-      3.2,
-      3.13,
-      3,
-      3.73,
+      3.86,
+      3.83,
+      3.6,
+      3.4,
+      3.53,
+      3.47,
+      3.3,
+      3.3,
+      3.1,
+      3.8,
       3.97,
-      4.2,
+      4.13,
       4.67,
-      4.87,
+      4.83,
+      5.1,
+      5.31,
+      5.55,
+      5.14,
+      5.48,
       5.17,
-      5.37,
-      5.67,
-      5.27,
-      5.47,
-      5.13,
-      4.34,
+      4.28,
       4,
-      3.79,
-      3.76
+      3.72,
+      3.83
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 97,
-        "peakKw": 15.57
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 122,
+        "kwh": 119,
         "peakKw": 15.57
       },
       {
@@ -3426,434 +3421,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 97,
+        "kwh": 113,
+        "peakKw": 20.4
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 67,
         "peakKw": 20.4
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 2972
-  },
-  {
-    "id": "PM_03_PPB4Feed",
-    "totalKwh": 2694,
-    "totalKwhCumulative": 2694,
-    "totalKwhIntegrated": 2694,
-    "peakKw": 5,
-    "avgKw": 3.77,
-    "hourly": [
-      3.76,
-      3.57,
-      3.63,
-      3.67,
-      3.47,
-      3.6,
-      3.57,
-      3.6,
-      3.7,
-      3.97,
-      3.93,
-      4.07,
-      3.97,
-      4.03,
-      3.93,
-      4,
-      3.87,
-      3.93,
-      3.8,
-      3.7,
-      3.76,
-      3.76,
-      3.59,
-      3.55
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 83,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 89,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 89,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 90,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 89,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 87,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 85,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 84,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 85,
-        "peakKw": 4.14
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 91,
-        "peakKw": 4.27
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 94,
-        "peakKw": 4.42
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 97,
-        "peakKw": 4.48
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 90,
-        "peakKw": 4.48
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 93,
-        "peakKw": 4.48
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 96,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 95,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 95,
-        "peakKw": 4.32
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 97,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 97,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 94,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 87,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 71,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 94,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 92,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 92,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 85,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 93,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 91,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 89,
-        "peakKw": 4.55
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 80,
-        "peakKw": 4.55
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 2694
-  },
-  {
-    "id": "PM_03_PPSTFeed",
-    "totalKwh": 2654,
-    "totalKwhCumulative": 2654,
-    "totalKwhIntegrated": 2654,
-    "peakKw": 9.08,
-    "avgKw": 3.71,
-    "hourly": [
-      3.41,
-      3.67,
-      3.33,
-      3.5,
-      3.47,
-      3.53,
-      3.17,
-      3.63,
-      4.1,
-      4.23,
-      4.2,
-      4.4,
-      4.3,
-      4.17,
-      4.1,
-      4.03,
-      3.97,
-      3.73,
-      3.43,
-      3.2,
-      3.31,
-      3.45,
-      3.28,
-      3.41
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 78,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 83,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 91,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 88,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 82,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 81,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 79,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 80,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 83,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 87,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 82,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 84,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 82,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 79,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 88,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 86,
-        "peakKw": 7.59
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 85,
-        "peakKw": 7.36
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 94,
-        "peakKw": 7.36
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 102,
-        "peakKw": 7.36
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 99,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 95,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 86,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 97,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 103,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 99,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 104,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 98,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 92,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 87,
-        "peakKw": 9.08
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 80,
-        "peakKw": 9.08
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 2654
+    "signedCumulative": 2955
   },
   {
     "id": "PM_17_HP03Feed",
-    "totalKwh": 2526,
-    "totalKwhCumulative": 2526,
-    "totalKwhIntegrated": 2528,
+    "totalKwh": 2695,
+    "totalKwhCumulative": 2695,
+    "totalKwhIntegrated": 2697,
     "peakKw": 15.55,
-    "avgKw": 3.55,
+    "avgKw": 3.82,
     "hourly": [
-      2.41,
-      2.23,
-      2.07,
-      2.23,
-      2.17,
+      2.52,
+      2.5,
+      2.53,
+      2.63,
+      2.27,
+      2.47,
+      2.57,
+      2.48,
       2.2,
-      2.13,
-      2.07,
-      2.1,
-      2.7,
-      3.8,
-      4.33,
-      4.2,
-      5.1,
-      5.27,
-      5.6,
-      6.07,
-      5.7,
-      5.2,
-      4.9,
-      3.79,
-      3.21,
-      2.72,
-      2.71
+      3.03,
+      4.27,
+      4.73,
+      4.3,
+      5.28,
+      5.45,
+      5.79,
+      6.28,
+      5.9,
+      5.38,
+      5.07,
+      4.28,
+      3.69,
+      3.17,
+      3.18
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 1,
@@ -3996,57 +3611,437 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 61,
+        "kwh": 115,
+        "peakKw": 14.67
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 115,
         "peakKw": 14.67
       }
     ],
-    "sampleCount": 713,
+    "sampleCount": 706,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 2526
+    "signedCumulative": 2695
+  },
+  {
+    "id": "PM_03_PPB4Feed",
+    "totalKwh": 2676,
+    "totalKwhCumulative": 2676,
+    "totalKwhIntegrated": 2676,
+    "peakKw": 5,
+    "avgKw": 3.78,
+    "hourly": [
+      3.79,
+      3.57,
+      3.63,
+      3.7,
+      3.43,
+      3.63,
+      3.57,
+      3.6,
+      3.73,
+      3.97,
+      4,
+      4.07,
+      4,
+      4.07,
+      3.93,
+      4.03,
+      3.86,
+      3.97,
+      3.79,
+      3.69,
+      3.79,
+      3.72,
+      3.62,
+      3.55
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 86,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 89,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 90,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 89,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 87,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 85,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 84,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 85,
+        "peakKw": 4.14
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 91,
+        "peakKw": 4.27
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 94,
+        "peakKw": 4.42
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 97,
+        "peakKw": 4.48
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 90,
+        "peakKw": 4.48
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 93,
+        "peakKw": 4.48
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 96,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 95,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 95,
+        "peakKw": 4.32
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 97,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 97,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 94,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 87,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 71,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 94,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 92,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 92,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 85,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 93,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 91,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 89,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 95,
+        "peakKw": 4.55
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 53,
+        "peakKw": 4.55
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2676
+  },
+  {
+    "id": "PM_03_PPSTFeed",
+    "totalKwh": 2644,
+    "totalKwhCumulative": 2644,
+    "totalKwhIntegrated": 2644,
+    "peakKw": 9.08,
+    "avgKw": 3.73,
+    "hourly": [
+      3.41,
+      3.67,
+      3.27,
+      3.47,
+      3.53,
+      3.5,
+      3.13,
+      3.67,
+      4.17,
+      4.33,
+      4.3,
+      4.53,
+      4.37,
+      4.17,
+      4.14,
+      4.03,
+      4,
+      3.72,
+      3.48,
+      3.21,
+      3.31,
+      3.45,
+      3.28,
+      3.45
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 79,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 91,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 88,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 82,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 81,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 79,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 80,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 83,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 87,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 82,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 84,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 82,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 79,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 88,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 86,
+        "peakKw": 7.59
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 85,
+        "peakKw": 7.36
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 94,
+        "peakKw": 7.36
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 102,
+        "peakKw": 7.36
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 99,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 95,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 86,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 97,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 103,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 99,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 104,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 98,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 92,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 87,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 95,
+        "peakKw": 9.08
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 57,
+        "peakKw": 9.08
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 2644
   },
   {
     "id": "PM_03_PP1TFeed",
-    "totalKwh": 1975,
-    "totalKwhCumulative": 1975,
-    "totalKwhIntegrated": 1975,
+    "totalKwh": 1954,
+    "totalKwhCumulative": 1954,
+    "totalKwhIntegrated": 1954,
     "peakKw": 4,
     "avgKw": 2.76,
     "hourly": [
-      2.79,
+      2.76,
       2.73,
       2.7,
       2.73,
-      2.77,
-      2.7,
+      2.73,
+      2.73,
       2.77,
       2.67,
       2.73,
-      2.63,
-      2.77,
+      2.6,
+      2.8,
       2.8,
       2.77,
       2.9,
-      2.77,
-      2.77,
+      2.76,
+      2.76,
       2.83,
-      2.77,
+      2.76,
       2.83,
       2.9,
-      2.66,
+      2.69,
       2.72,
       2.76,
       2.83
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 66,
-        "peakKw": 3.42
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 70,
+        "kwh": 67,
         "peakKw": 3.42
       },
       {
@@ -4186,57 +4181,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 55,
+        "kwh": 67,
+        "peakKw": 3.29
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 36,
         "peakKw": 3.29
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1975
+    "signedCumulative": 1954
   },
   {
     "id": "PM_05_MainFeed",
-    "totalKwh": 1855,
-    "totalKwhCumulative": 1855,
-    "totalKwhIntegrated": 1855,
+    "totalKwh": 1829,
+    "totalKwhCumulative": 1829,
+    "totalKwhIntegrated": 1829,
     "peakKw": 10.25,
-    "avgKw": 2.59,
+    "avgKw": 2.58,
     "hourly": [
       2.48,
-      2.23,
+      2.17,
+      2.03,
       2.1,
-      2.13,
-      1.93,
       1.9,
-      1.73,
+      1.87,
+      1.7,
       1.97,
-      2.37,
-      3.17,
-      3.03,
-      3.03,
-      3.1,
+      2.4,
+      3.2,
       3,
+      3.03,
+      3.13,
+      3,
+      2.93,
+      3.21,
+      3.14,
       2.9,
-      3.17,
-      3.1,
-      2.87,
-      2.47,
-      2.63,
+      2.45,
+      2.66,
       2.59,
-      3,
-      2.69,
-      2.69
+      2.97,
+      2.66,
+      2.62
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 54,
-        "peakKw": 10.19
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 52,
+        "kwh": 50,
         "peakKw": 10.19
       },
       {
@@ -4376,43 +4371,48 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 44,
+        "kwh": 50,
+        "peakKw": 8.07
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 24,
         "peakKw": 8.07
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1855
+    "signedCumulative": 1829
   },
   {
     "id": "PM_03_PPB1Feed",
-    "totalKwh": 1809,
-    "totalKwhCumulative": 1809,
-    "totalKwhIntegrated": 1809,
+    "totalKwh": 1807,
+    "totalKwhCumulative": 1807,
+    "totalKwhIntegrated": 1807,
     "peakKw": 7.03,
-    "avgKw": 2.53,
+    "avgKw": 2.55,
     "hourly": [
       1.97,
-      1.97,
+      1.93,
       1.9,
-      1.9,
+      1.87,
       1.77,
       1.93,
       2.43,
-      2.83,
-      3.13,
-      3.27,
-      3.17,
-      3.37,
-      3.63,
-      3.2,
-      2.97,
-      2.73,
       2.9,
-      2.83,
+      3.17,
+      3.33,
+      3.2,
+      3.43,
+      3.8,
+      3.24,
+      3,
+      2.76,
       2.93,
-      2.17,
+      2.86,
+      2.97,
+      2.21,
       2.03,
       1.79,
       1.83,
@@ -4420,13 +4420,8 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 42,
-        "peakKw": 2.44
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 45,
+        "kwh": 43,
         "peakKw": 2.62
       },
       {
@@ -4566,20 +4561,25 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 63,
+        "kwh": 71,
+        "peakKw": 7.03
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 34,
         "peakKw": 7.03
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1809
+    "signedCumulative": 1807
   },
   {
     "id": "PM_15_RoofTopSolarFeed",
-    "totalKwh": 1685,
-    "totalKwhCumulative": 1685,
-    "totalKwhIntegrated": 2029,
+    "totalKwh": 1639,
+    "totalKwhCumulative": 1639,
+    "totalKwhIntegrated": 1984,
     "peakKw": 12,
     "avgKw": 5.38,
     "hourly": [
@@ -4590,30 +4590,25 @@ export const bmsExportMeters = [
       0,
       0,
       0,
-      0.04,
-      1.76,
+      0,
+      1.72,
       4.93,
-      7.8,
-      8.37,
+      7.77,
+      8.4,
       8.47,
-      8.57,
-      8.3,
-      7.23,
-      5.47,
-      4.1,
-      2.68,
-      0.23,
+      8.45,
+      8.21,
+      7.14,
+      5.45,
+      4.17,
+      2.74,
+      0.19,
       0,
       0,
       0,
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 89,
-        "peakKw": 1.08
-      },
       {
         "date": "2026-08-17",
         "kwh": 55,
@@ -4758,20 +4753,25 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 86,
         "peakKw": 1.03
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 44,
+        "peakKw": 1.03
       }
     ],
-    "sampleCount": 377,
+    "sampleCount": 369,
     "droppedOutliers": 0,
     "direction": "generation",
-    "signedCumulative": -1685
+    "signedCumulative": -1639
   },
   {
     "id": "PM_15_P1B_P2BFeed",
-    "totalKwh": 1632,
-    "totalKwhCumulative": 1632,
-    "totalKwhIntegrated": 1632,
+    "totalKwh": 1628,
+    "totalKwhCumulative": 1628,
+    "totalKwhIntegrated": 1628,
     "peakKw": 6.07,
-    "avgKw": 2.28,
+    "avgKw": 2.3,
     "hourly": [
       2.07,
       1.9,
@@ -4781,32 +4781,27 @@ export const bmsExportMeters = [
       2.07,
       2.03,
       2.07,
-      2.47,
-      3.17,
-      3.17,
-      3.2,
-      2.7,
-      2.47,
-      2.53,
-      2.2,
+      2.5,
+      3.23,
+      3.27,
+      3.27,
+      2.8,
+      2.48,
+      2.55,
+      2.21,
       2.17,
       2.07,
       2.03,
       2.03,
       2,
-      2.1,
+      2.07,
       2.07,
       2.28
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 47,
-        "peakKw": 4.72
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 49,
+        "kwh": 47,
         "peakKw": 4.72
       },
       {
@@ -4946,204 +4941,209 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 54,
+        "kwh": 62,
+        "peakKw": 6.07
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 37,
         "peakKw": 6.07
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1632
+    "signedCumulative": 1628
   },
   {
-    "id": "PM_15_P3AFeed",
-    "totalKwh": 1550,
-    "totalKwhCumulative": 1550,
-    "totalKwhIntegrated": 1550,
-    "peakKw": 5,
-    "avgKw": 2.17,
+    "id": "PM_17_HP04Feed",
+    "totalKwh": 1593,
+    "totalKwhCumulative": 1593,
+    "totalKwhIntegrated": 1593,
+    "peakKw": 17,
+    "avgKw": 2.25,
     "hourly": [
-      2.03,
+      1.66,
+      1.83,
       2.07,
-      2.1,
+      2.13,
+      1.63,
+      1.77,
+      2.03,
       1.93,
-      2.07,
-      2.13,
+      1.57,
+      1.9,
+      2.6,
+      3.2,
+      2.8,
+      3.48,
+      3.59,
+      3.38,
+      2.9,
+      2.55,
+      2.28,
       2.03,
-      2.13,
-      2.17,
-      2.3,
-      2.47,
-      2.53,
-      2.33,
-      2.3,
-      2.27,
-      2.43,
-      2.23,
-      2.1,
-      2.1,
-      2.03,
-      2.03,
-      2.1,
-      2.1,
-      2
+      1.83,
+      1.69,
+      1.62,
+      1.59
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 48,
-        "peakKw": 2.28
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 49,
-        "peakKw": 2.28
+        "kwh": 1,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-18",
-        "kwh": 49,
-        "peakKw": 2.28
+        "kwh": 0,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-19",
-        "kwh": 50,
-        "peakKw": 2.28
+        "kwh": 0,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-20",
-        "kwh": 49,
-        "peakKw": 2.3
+        "kwh": 1,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-21",
-        "kwh": 50,
-        "peakKw": 2.3
+        "kwh": 0,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-22",
-        "kwh": 49,
-        "peakKw": 2.3
+        "kwh": 0,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-23",
-        "kwh": 49,
-        "peakKw": 2.3
+        "kwh": 1,
+        "peakKw": 0.02
       },
       {
         "date": "2026-08-24",
-        "kwh": 49,
-        "peakKw": 2.3
+        "kwh": 31,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-25",
-        "kwh": 50,
-        "peakKw": 2.3
+        "kwh": 1,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-26",
-        "kwh": 50,
-        "peakKw": 2.3
+        "kwh": 0,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-27",
-        "kwh": 49,
-        "peakKw": 2.3
+        "kwh": 0,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-28",
-        "kwh": 50,
-        "peakKw": 2.38
+        "kwh": 1,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-29",
-        "kwh": 50,
-        "peakKw": 2.39
+        "kwh": 0,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-30",
-        "kwh": 50,
-        "peakKw": 2.83
+        "kwh": 173,
+        "peakKw": 16.7
       },
       {
         "date": "2026-08-31",
-        "kwh": 50,
-        "peakKw": 2.83
+        "kwh": 369,
+        "peakKw": 16.7
       },
       {
         "date": "2026-09-01",
-        "kwh": 49,
-        "peakKw": 2.16
+        "kwh": 364,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-02",
-        "kwh": 49,
-        "peakKw": 2.24
+        "kwh": 244,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-03",
-        "kwh": 56,
-        "peakKw": 3.83
+        "kwh": 1,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-04",
-        "kwh": 57,
-        "peakKw": 4.57
+        "kwh": 16,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-05",
-        "kwh": 56,
-        "peakKw": 4.57
+        "kwh": 3,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-06",
-        "kwh": 52,
-        "peakKw": 4.57
+        "kwh": 1,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-07",
-        "kwh": 56,
-        "peakKw": 4.57
+        "kwh": 1,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-08",
-        "kwh": 60,
-        "peakKw": 4.57
+        "kwh": 0,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-09",
-        "kwh": 56,
-        "peakKw": 4.81
+        "kwh": 52,
+        "peakKw": 15.67
       },
       {
         "date": "2026-09-10",
-        "kwh": 57,
-        "peakKw": 4.81
+        "kwh": 125,
+        "peakKw": 15.76
       },
       {
         "date": "2026-09-11",
-        "kwh": 58,
-        "peakKw": 4.81
+        "kwh": 66,
+        "peakKw": 15.76
       },
       {
         "date": "2026-09-12",
-        "kwh": 56,
-        "peakKw": 4.81
+        "kwh": 1,
+        "peakKw": 15.76
       },
       {
         "date": "2026-09-13",
-        "kwh": 50,
-        "peakKw": 4.81
+        "kwh": 0,
+        "peakKw": 15.76
       },
       {
         "date": "2026-09-14",
-        "kwh": 47,
-        "peakKw": 4.81
+        "kwh": 22,
+        "peakKw": 15.76
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 119,
+        "peakKw": 15.76
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1550
+    "signedCumulative": 1593
   },
   {
     "id": "PM_11_LibraryPanelFeed",
@@ -5151,42 +5151,37 @@ export const bmsExportMeters = [
     "totalKwhCumulative": 1545,
     "totalKwhIntegrated": 1545,
     "peakKw": 12.31,
-    "avgKw": 2.16,
+    "avgKw": 2.18,
     "hourly": [
-      1.72,
+      1.76,
       1.77,
       1.77,
-      1.6,
-      1.87,
+      1.57,
+      1.9,
       1.77,
       1.7,
-      1.97,
-      2,
-      2.47,
-      2.77,
-      2.93,
-      2.83,
+      2.03,
+      2.03,
+      2.5,
+      2.87,
+      2.97,
       2.9,
-      3.03,
-      2.83,
-      2.53,
-      2.4,
-      1.63,
+      2.97,
+      3.07,
+      2.9,
+      2.55,
+      2.41,
+      1.66,
       1.97,
       1.9,
-      1.79,
+      1.83,
       1.93,
-      1.72
+      1.69
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 39,
-        "peakKw": 12.31
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 43,
+        "kwh": 42,
         "peakKw": 12.31
       },
       {
@@ -5326,244 +5321,244 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 43,
+        "kwh": 50,
+        "peakKw": 8.61
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 33,
         "peakKw": 8.61
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
     "signedCumulative": 1545
   },
   {
-    "id": "PM_05_SubpanelFeed",
-    "totalKwh": 1541,
-    "totalKwhCumulative": 1541,
-    "totalKwhIntegrated": 1541,
-    "peakKw": 9.01,
-    "avgKw": 2.16,
+    "id": "PM_15_P3AFeed",
+    "totalKwh": 1542,
+    "totalKwhCumulative": 1542,
+    "totalKwhIntegrated": 1542,
+    "peakKw": 5,
+    "avgKw": 2.18,
     "hourly": [
-      2.24,
-      1.97,
       2.03,
-      1.73,
-      1.67,
-      1.7,
-      1.47,
-      1.57,
+      2.07,
+      2.1,
+      1.93,
       2.03,
-      2.47,
-      2.4,
-      2.27,
+      2.13,
+      2.03,
+      2.13,
+      2.17,
       2.33,
-      2.17,
-      2.3,
-      2.2,
-      2.37,
-      2.17,
-      2.27,
-      2.3,
-      2.55,
-      2.55,
-      2.48,
-      2.55
+      2.53,
+      2.6,
+      2.4,
+      2.31,
+      2.28,
+      2.45,
+      2.21,
+      2.1,
+      2.1,
+      2.03,
+      2.03,
+      2.1,
+      2.14,
+      2
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 49,
-        "peakKw": 7.67
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 41,
-        "peakKw": 7.67
+        "kwh": 47,
+        "peakKw": 2.28
       },
       {
         "date": "2026-08-18",
-        "kwh": 33,
-        "peakKw": 7.67
+        "kwh": 49,
+        "peakKw": 2.28
       },
       {
         "date": "2026-08-19",
-        "kwh": 33,
-        "peakKw": 7.67
+        "kwh": 50,
+        "peakKw": 2.28
       },
       {
         "date": "2026-08-20",
-        "kwh": 39,
-        "peakKw": 7.67
+        "kwh": 49,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-21",
-        "kwh": 59,
-        "peakKw": 7.67
+        "kwh": 50,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-22",
-        "kwh": 57,
-        "peakKw": 7.67
+        "kwh": 49,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-23",
-        "kwh": 72,
-        "peakKw": 7.67
+        "kwh": 49,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-24",
-        "kwh": 54,
-        "peakKw": 7.67
+        "kwh": 49,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-25",
-        "kwh": 58,
-        "peakKw": 7.67
+        "kwh": 50,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-26",
-        "kwh": 62,
-        "peakKw": 7.67
+        "kwh": 50,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-27",
-        "kwh": 75,
-        "peakKw": 9.01
+        "kwh": 49,
+        "peakKw": 2.3
       },
       {
         "date": "2026-08-28",
-        "kwh": 74,
-        "peakKw": 9.01
+        "kwh": 50,
+        "peakKw": 2.38
       },
       {
         "date": "2026-08-29",
-        "kwh": 63,
-        "peakKw": 9.01
+        "kwh": 50,
+        "peakKw": 2.39
       },
       {
         "date": "2026-08-30",
-        "kwh": 64,
-        "peakKw": 9.01
+        "kwh": 50,
+        "peakKw": 2.83
       },
       {
         "date": "2026-08-31",
-        "kwh": 66,
-        "peakKw": 9.01
+        "kwh": 50,
+        "peakKw": 2.83
       },
       {
         "date": "2026-09-01",
-        "kwh": 65,
-        "peakKw": 6.3
+        "kwh": 49,
+        "peakKw": 2.16
       },
       {
         "date": "2026-09-02",
-        "kwh": 61,
-        "peakKw": 6.48
+        "kwh": 49,
+        "peakKw": 2.24
       },
       {
         "date": "2026-09-03",
-        "kwh": 51,
-        "peakKw": 6.48
+        "kwh": 56,
+        "peakKw": 3.83
       },
       {
         "date": "2026-09-04",
-        "kwh": 56,
-        "peakKw": 6.92
+        "kwh": 57,
+        "peakKw": 4.57
       },
       {
         "date": "2026-09-05",
-        "kwh": 57,
-        "peakKw": 6.92
+        "kwh": 56,
+        "peakKw": 4.57
       },
       {
         "date": "2026-09-06",
-        "kwh": 44,
-        "peakKw": 6.92
+        "kwh": 52,
+        "peakKw": 4.57
       },
       {
         "date": "2026-09-07",
-        "kwh": 43,
-        "peakKw": 6.92
+        "kwh": 56,
+        "peakKw": 4.57
       },
       {
         "date": "2026-09-08",
-        "kwh": 45,
-        "peakKw": 6.92
+        "kwh": 60,
+        "peakKw": 4.57
       },
       {
         "date": "2026-09-09",
-        "kwh": 32,
-        "peakKw": 6.92
+        "kwh": 56,
+        "peakKw": 4.81
       },
       {
         "date": "2026-09-10",
-        "kwh": 44,
-        "peakKw": 6.92
+        "kwh": 57,
+        "peakKw": 4.81
       },
       {
         "date": "2026-09-11",
-        "kwh": 34,
-        "peakKw": 6.92
+        "kwh": 58,
+        "peakKw": 4.81
       },
       {
         "date": "2026-09-12",
-        "kwh": 32,
-        "peakKw": 6.92
+        "kwh": 56,
+        "peakKw": 4.81
       },
       {
         "date": "2026-09-13",
-        "kwh": 46,
-        "peakKw": 6.92
+        "kwh": 50,
+        "peakKw": 4.81
       },
       {
         "date": "2026-09-14",
-        "kwh": 32,
-        "peakKw": 6.92
+        "kwh": 56,
+        "peakKw": 4.81
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 33,
+        "peakKw": 4.81
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1541
+    "signedCumulative": 1542
   },
   {
     "id": "PM_03_MPBFeed",
-    "totalKwh": 1536,
-    "totalKwhCumulative": 1536,
-    "totalKwhIntegrated": 1573,
+    "totalKwh": 1512,
+    "totalKwhCumulative": 1512,
+    "totalKwhIntegrated": 1549,
     "peakKw": 7.39,
-    "avgKw": 2.32,
+    "avgKw": 2.31,
     "hourly": [
       0.79,
+      0.83,
       0.9,
-      0.93,
-      0.9,
+      0.87,
+      0.61,
       0.68,
-      0.68,
-      0.97,
-      2.87,
-      3.33,
+      1,
+      2.9,
       3.37,
-      3.5,
-      3.7,
+      3.43,
+      3.53,
       3.73,
-      3.8,
       3.73,
       3.83,
-      3.87,
-      3.73,
-      3.37,
-      1.63,
-      1.03,
+      3.72,
+      3.83,
+      3.86,
+      3.72,
+      3.38,
+      1.62,
+      1,
       0.76,
       0.7,
       0.62
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 57,
-        "peakKw": 5.61
-      },
       {
         "date": "2026-08-17",
         "kwh": 53,
@@ -5708,245 +5703,245 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 41,
         "peakKw": 7.39
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 33,
+        "peakKw": 7.39
       }
     ],
-    "sampleCount": 678,
+    "sampleCount": 671,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1536
+    "signedCumulative": 1512
   },
   {
-    "id": "PM_17_HP04Feed",
-    "totalKwh": 1465,
-    "totalKwhCumulative": 1465,
-    "totalKwhIntegrated": 1465,
-    "peakKw": 17,
-    "avgKw": 2.05,
+    "id": "PM_05_SubpanelFeed",
+    "totalKwh": 1512,
+    "totalKwhCumulative": 1512,
+    "totalKwhIntegrated": 1512,
+    "peakKw": 9.01,
+    "avgKw": 2.14,
     "hourly": [
-      1.66,
-      1.57,
-      1.57,
-      1.67,
-      1.57,
-      1.5,
-      1.53,
-      1.5,
-      1.5,
-      1.53,
-      2.1,
-      2.77,
-      2.7,
-      3.37,
-      3.47,
-      3.27,
-      2.8,
-      2.47,
-      2.2,
+      2.21,
+      1.9,
       1.97,
-      1.62,
-      1.62,
-      1.59,
-      1.59
+      1.7,
+      1.63,
+      1.67,
+      1.43,
+      1.53,
+      2.07,
+      2.5,
+      2.3,
+      2.27,
+      2.3,
+      2.17,
+      2.31,
+      2.21,
+      2.38,
+      2.17,
+      2.28,
+      2.31,
+      2.55,
+      2.48,
+      2.48,
+      2.52
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 1,
-        "peakKw": 0.02
+        "kwh": 39,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-18",
-        "kwh": 0,
-        "peakKw": 0.02
+        "kwh": 33,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-19",
-        "kwh": 0,
-        "peakKw": 0.02
+        "kwh": 33,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-20",
-        "kwh": 1,
-        "peakKw": 0.02
+        "kwh": 39,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-21",
-        "kwh": 0,
-        "peakKw": 0.02
+        "kwh": 59,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-22",
-        "kwh": 0,
-        "peakKw": 0.02
+        "kwh": 57,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-23",
-        "kwh": 1,
-        "peakKw": 0.02
+        "kwh": 72,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-24",
-        "kwh": 31,
-        "peakKw": 16.7
+        "kwh": 54,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-25",
-        "kwh": 1,
-        "peakKw": 16.7
+        "kwh": 58,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-26",
-        "kwh": 0,
-        "peakKw": 16.7
+        "kwh": 62,
+        "peakKw": 7.67
       },
       {
         "date": "2026-08-27",
-        "kwh": 0,
-        "peakKw": 16.7
+        "kwh": 75,
+        "peakKw": 9.01
       },
       {
         "date": "2026-08-28",
-        "kwh": 1,
-        "peakKw": 16.7
+        "kwh": 74,
+        "peakKw": 9.01
       },
       {
         "date": "2026-08-29",
-        "kwh": 0,
-        "peakKw": 16.7
+        "kwh": 63,
+        "peakKw": 9.01
       },
       {
         "date": "2026-08-30",
-        "kwh": 173,
-        "peakKw": 16.7
+        "kwh": 64,
+        "peakKw": 9.01
       },
       {
         "date": "2026-08-31",
-        "kwh": 369,
-        "peakKw": 16.7
+        "kwh": 66,
+        "peakKw": 9.01
       },
       {
         "date": "2026-09-01",
-        "kwh": 364,
-        "peakKw": 15.67
+        "kwh": 65,
+        "peakKw": 6.3
       },
       {
         "date": "2026-09-02",
-        "kwh": 244,
-        "peakKw": 15.67
+        "kwh": 61,
+        "peakKw": 6.48
       },
       {
         "date": "2026-09-03",
-        "kwh": 1,
-        "peakKw": 15.67
+        "kwh": 51,
+        "peakKw": 6.48
       },
       {
         "date": "2026-09-04",
-        "kwh": 16,
-        "peakKw": 15.67
+        "kwh": 56,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-05",
-        "kwh": 3,
-        "peakKw": 15.67
+        "kwh": 57,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-06",
-        "kwh": 1,
-        "peakKw": 15.67
+        "kwh": 44,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-07",
-        "kwh": 1,
-        "peakKw": 15.67
+        "kwh": 43,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-08",
-        "kwh": 0,
-        "peakKw": 15.67
+        "kwh": 45,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-09",
-        "kwh": 52,
-        "peakKw": 15.67
+        "kwh": 32,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-10",
-        "kwh": 125,
-        "peakKw": 15.76
+        "kwh": 44,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-11",
-        "kwh": 66,
-        "peakKw": 15.76
+        "kwh": 34,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-12",
-        "kwh": 1,
-        "peakKw": 15.76
+        "kwh": 32,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-13",
-        "kwh": 0,
-        "peakKw": 15.76
+        "kwh": 46,
+        "peakKw": 6.92
       },
       {
         "date": "2026-09-14",
-        "kwh": 13,
-        "peakKw": 15.76
+        "kwh": 38,
+        "peakKw": 6.92
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 16,
+        "peakKw": 6.92
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1465
+    "signedCumulative": 1512
   },
   {
     "id": "PM_14_MainFeed",
-    "totalKwh": 1450,
-    "totalKwhCumulative": 1450,
-    "totalKwhIntegrated": 1450,
+    "totalKwh": 1444,
+    "totalKwhCumulative": 1444,
+    "totalKwhIntegrated": 1444,
     "peakKw": 11.72,
-    "avgKw": 2.03,
+    "avgKw": 2.04,
     "hourly": [
-      2.52,
+      2.48,
       2.37,
       2.13,
       2.17,
       2.03,
-      2,
-      2.03,
+      1.97,
+      2.07,
       1.9,
       2.37,
-      2.33,
-      1.63,
-      1.17,
+      2.43,
+      1.6,
+      1.07,
       1.27,
-      1.3,
-      1.33,
-      1.5,
-      1.3,
-      1.33,
-      1.4,
-      2.3,
+      1.31,
+      1.34,
+      1.52,
+      1.31,
+      1.34,
+      1.41,
+      2.34,
       2.76,
-      3.38,
-      3.28,
+      3.41,
+      3.34,
       3.03
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 38,
-        "peakKw": 8.53
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 49,
+        "kwh": 46,
         "peakKw": 8.53
       },
       {
@@ -6086,437 +6081,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 33,
+        "kwh": 45,
+        "peakKw": 10.5
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 23,
         "peakKw": 10.5
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1450
-  },
-  {
-    "id": "PM_12_SCP_D_Feed",
-    "totalKwh": 1403,
-    "totalKwhCumulative": 1403,
-    "totalKwhIntegrated": 1403,
-    "peakKw": 5.5,
-    "avgKw": 1.96,
-    "hourly": [
-      1.93,
-      1.5,
-      1.43,
-      1.6,
-      1.43,
-      1.4,
-      1.57,
-      1.53,
-      1.8,
-      2.2,
-      2.17,
-      2.23,
-      2.23,
-      2.4,
-      2.2,
-      2.53,
-      2.53,
-      2.33,
-      2.47,
-      2.27,
-      1.86,
-      2.1,
-      1.72,
-      1.62
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 82,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 85,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 85,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 71,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 60,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 8,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 8,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 28,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 37,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 40,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 8,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 21,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 29,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 54,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 24,
-        "peakKw": 3.57
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 68,
-        "peakKw": 3.69
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 58,
-        "peakKw": 3.63
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 61,
-        "peakKw": 3.84
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 61,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 48,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 56,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 79,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 59,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 45,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 55,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 60,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 48,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 27,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 7,
-        "peakKw": 5.5
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 31,
-        "peakKw": 5.5
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 1403
-  },
-  {
-    "id": "PM_16_MainFeed",
-    "totalKwh": 1390,
-    "totalKwhCumulative": 1390,
-    "totalKwhIntegrated": 1390,
-    "peakKw": 11.13,
-    "avgKw": 1.94,
-    "hourly": [
-      1.66,
-      1.33,
-      1.4,
-      1.4,
-      1.3,
-      1.37,
-      1.33,
-      1.8,
-      2.03,
-      1.83,
-      1.87,
-      2.03,
-      1.9,
-      2.23,
-      2,
-      2,
-      2.33,
-      2.43,
-      2.2,
-      2.4,
-      2.76,
-      2.41,
-      2.52,
-      2.17
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 31,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 37,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 66,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 73,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 49,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 39,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 33,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 60,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 36,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 44,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 39,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 42,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 42,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 43,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 47,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 38,
-        "peakKw": 11.13
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 42,
-        "peakKw": 4.58
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 53,
-        "peakKw": 6.38
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 49,
-        "peakKw": 6.4
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 42,
-        "peakKw": 6.4
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 50,
-        "peakKw": 6.4
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 43,
-        "peakKw": 6.4
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 43,
-        "peakKw": 6.98
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 42,
-        "peakKw": 6.98
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 61,
-        "peakKw": 8.07
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 51,
-        "peakKw": 8.07
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 58,
-        "peakKw": 8.16
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 45,
-        "peakKw": 8.16
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 57,
-        "peakKw": 8.16
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 35,
-        "peakKw": 8.16
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 1390
+    "signedCumulative": 1444
   },
   {
     "id": "PM_20_FRKNFeed",
-    "totalKwh": 1388,
-    "totalKwhCumulative": 1388,
-    "totalKwhIntegrated": 1388,
+    "totalKwh": 1400,
+    "totalKwhCumulative": 1400,
+    "totalKwhIntegrated": 1400,
     "peakKw": 8,
-    "avgKw": 1.94,
+    "avgKw": 1.98,
     "hourly": [
-      2.1,
-      1.63,
-      1.63,
+      2.14,
+      1.67,
+      1.6,
       1.4,
-      1.33,
       1.3,
+      1.27,
       1.4,
-      1.83,
-      2.27,
-      2,
-      2.1,
+      1.9,
+      2.37,
+      2.13,
+      2.17,
       1.8,
       1.93,
       1.9,
-      1.6,
-      1.67,
-      2.2,
-      2.47,
-      2.23,
-      2.3,
-      2.41,
+      1.62,
+      1.66,
+      2.24,
+      2.52,
+      2.28,
+      2.34,
       2.55,
-      2.31,
-      2.28
+      2.69,
+      2.34,
+      2.34
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 30,
-        "peakKw": 2
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 25,
+        "kwh": 24,
         "peakKw": 2
       },
       {
@@ -6656,57 +6271,437 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 45,
+        "kwh": 60,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 28,
         "peakKw": 5
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1388
+    "signedCumulative": 1400
   },
   {
-    "id": "PM_17_HP05Feed",
-    "totalKwh": 1310,
-    "totalKwhCumulative": 1310,
-    "totalKwhIntegrated": 1310,
-    "peakKw": 5.1,
-    "avgKw": 1.83,
+    "id": "PM_16_MainFeed",
+    "totalKwh": 1385,
+    "totalKwhCumulative": 1385,
+    "totalKwhIntegrated": 1385,
+    "peakKw": 11.13,
+    "avgKw": 1.96,
     "hourly": [
-      1.9,
-      1.6,
-      1.77,
-      1.73,
-      1.7,
-      1.7,
+      1.62,
+      1.33,
+      1.4,
+      1.4,
+      1.3,
+      1.37,
+      1.33,
       1.87,
-      1.63,
-      1.93,
-      1.7,
-      1.8,
+      2.07,
       1.83,
-      1.77,
-      1.77,
       1.87,
-      1.8,
-      1.93,
-      1.87,
-      1.97,
-      2.13,
       2.03,
       1.93,
-      1.86,
-      1.9
+      2.21,
+      1.97,
+      2.03,
+      2.38,
+      2.41,
+      2.24,
+      2.41,
+      2.79,
+      2.45,
+      2.59,
+      2.24
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 29,
-        "peakKw": 2.26
+        "date": "2026-08-17",
+        "kwh": 34,
+        "peakKw": 11.13
       },
       {
+        "date": "2026-08-18",
+        "kwh": 66,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 73,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 49,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 39,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 33,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 60,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 36,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 44,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 39,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 42,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 42,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 43,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 47,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 38,
+        "peakKw": 11.13
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 42,
+        "peakKw": 4.58
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 53,
+        "peakKw": 6.38
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 49,
+        "peakKw": 6.4
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 42,
+        "peakKw": 6.4
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 50,
+        "peakKw": 6.4
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 43,
+        "peakKw": 6.4
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 43,
+        "peakKw": 6.98
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 42,
+        "peakKw": 6.98
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 61,
+        "peakKw": 8.07
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 51,
+        "peakKw": 8.07
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 58,
+        "peakKw": 8.16
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 45,
+        "peakKw": 8.16
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 57,
+        "peakKw": 8.16
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 46,
+        "peakKw": 8.16
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 18,
+        "peakKw": 8.16
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1385
+  },
+  {
+    "id": "PM_12_SCP_D_Feed",
+    "totalKwh": 1367,
+    "totalKwhCumulative": 1367,
+    "totalKwhIntegrated": 1367,
+    "peakKw": 5.5,
+    "avgKw": 1.93,
+    "hourly": [
+      1.93,
+      1.47,
+      1.4,
+      1.53,
+      1.43,
+      1.33,
+      1.53,
+      1.47,
+      1.8,
+      2.13,
+      2.13,
+      2.27,
+      2.23,
+      2.38,
+      2.14,
+      2.52,
+      2.48,
+      2.31,
+      2.41,
+      2.24,
+      1.83,
+      2.1,
+      1.72,
+      1.62
+    ],
+    "daily": [
+      {
         "date": "2026-08-17",
-        "kwh": 31,
+        "kwh": 82,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 85,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 71,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 60,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 8,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 8,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 28,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 37,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 40,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 8,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 21,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 29,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 54,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 24,
+        "peakKw": 3.57
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 68,
+        "peakKw": 3.69
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 58,
+        "peakKw": 3.63
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 61,
+        "peakKw": 3.84
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 61,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 48,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 56,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 79,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 59,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 45,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 55,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 60,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 48,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 27,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 7,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 45,
+        "peakKw": 5.5
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 35,
+        "peakKw": 5.5
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1367
+  },
+  {
+    "id": "PM_17_HP05Feed",
+    "totalKwh": 1330,
+    "totalKwhCumulative": 1330,
+    "totalKwhIntegrated": 1330,
+    "peakKw": 5.1,
+    "avgKw": 1.88,
+    "hourly": [
+      1.97,
+      1.67,
+      1.8,
+      1.8,
+      1.73,
+      1.77,
+      1.93,
+      1.7,
+      2,
+      1.73,
+      1.83,
+      1.9,
+      1.8,
+      1.79,
+      1.9,
+      1.83,
+      1.97,
+      1.9,
+      1.97,
+      2.17,
+      2.07,
+      2,
+      1.9,
+      2
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 30,
         "peakKw": 2.26
       },
       {
@@ -6846,54 +6841,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 62,
+        "kwh": 75,
+        "peakKw": 5.1
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 37,
         "peakKw": 5.1
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1310
+    "signedCumulative": 1330
   },
   {
     "id": "PM_12_MPP_C_Feed",
-    "totalKwh": 1202,
-    "totalKwhCumulative": 1202,
-    "totalKwhIntegrated": 1202,
-    "peakKw": 4.91,
-    "avgKw": 1.68,
+    "totalKwh": 1237,
+    "totalKwhCumulative": 1237,
+    "totalKwhIntegrated": 1237,
+    "peakKw": 4.92,
+    "avgKw": 1.75,
     "hourly": [
-      1.97,
-      1.77,
-      2,
-      1.9,
       2.1,
+      1.8,
+      2.07,
+      2,
       2.17,
-      2.17,
-      2.17,
-      2.13,
+      2.23,
+      2.23,
+      2.23,
+      2.23,
+      2,
       1.97,
-      1.87,
-      1.73,
-      1.43,
-      1.5,
-      1.3,
-      1.37,
-      1.07,
-      1.23,
-      1.13,
-      1.4,
-      1.28,
-      1.41,
+      1.8,
+      1.53,
       1.52,
-      1.76
+      1.34,
+      1.38,
+      1.1,
+      1.24,
+      1.17,
+      1.41,
+      1.38,
+      1.45,
+      1.62,
+      1.83
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 13,
-        "peakKw": 3.63
-      },
       {
         "date": "2026-08-17",
         "kwh": 18,
@@ -7036,54 +7031,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 51,
+        "kwh": 62,
         "peakKw": 4.91
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 37,
+        "peakKw": 4.92
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1202
+    "signedCumulative": 1237
   },
   {
     "id": "PM_03_PP1AFeed",
-    "totalKwh": 1189,
-    "totalKwhCumulative": 1189,
-    "totalKwhIntegrated": 1189,
+    "totalKwh": 1199,
+    "totalKwhCumulative": 1199,
+    "totalKwhIntegrated": 1199,
     "peakKw": 3.04,
-    "avgKw": 1.66,
+    "avgKw": 1.69,
     "hourly": [
-      1.17,
+      1.21,
       1.43,
-      1.27,
-      1.13,
-      1.4,
+      1.3,
       1.17,
-      1.7,
-      1.87,
-      1.87,
-      1.87,
-      1.97,
-      1.87,
-      1.97,
-      1.97,
-      2.17,
-      1.77,
-      1.83,
-      2.03,
-      1.8,
+      1.4,
+      1.2,
+      1.73,
+      1.93,
       1.9,
-      1.66,
-      1.48,
+      1.9,
+      2,
+      1.9,
+      2,
+      2,
+      2.21,
+      1.83,
+      1.86,
+      2.07,
+      1.83,
+      1.93,
+      1.72,
+      1.52,
       1.34,
-      1.24
+      1.28
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 18,
-        "peakKw": 1.87
-      },
       {
         "date": "2026-08-17",
         "kwh": 27,
@@ -7226,57 +7221,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 36,
+        "kwh": 43,
+        "peakKw": 3.04
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 21,
         "peakKw": 3.04
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1189
+    "signedCumulative": 1199
   },
   {
     "id": "PM_11_LP_1_Feed",
-    "totalKwh": 1158,
-    "totalKwhCumulative": 1158,
-    "totalKwhIntegrated": 1158,
+    "totalKwh": 1173,
+    "totalKwhCumulative": 1173,
+    "totalKwhIntegrated": 1173,
     "peakKw": 6.03,
-    "avgKw": 1.62,
+    "avgKw": 1.66,
     "hourly": [
-      1.97,
-      1.73,
+      2,
+      1.77,
       1.8,
       1.7,
-      1.57,
+      1.6,
       1.37,
-      0.73,
+      0.77,
       0.8,
       1,
-      1.8,
-      2.07,
-      2,
-      1.8,
-      1.83,
       1.9,
-      1.57,
-      1.13,
-      1.2,
-      1.6,
+      2.23,
+      2.1,
       1.93,
-      1.76,
+      1.86,
+      1.97,
+      1.59,
+      1.14,
+      1.21,
+      1.62,
+      1.93,
+      1.79,
       1.83,
-      2.07,
-      1.76
+      2.1,
+      1.79
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 28,
-        "peakKw": 2.85
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 31,
+        "kwh": 29,
         "peakKw": 2.85
       },
       {
@@ -7416,402 +7411,27 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 48,
+        "kwh": 58,
+        "peakKw": 6.03
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 35,
         "peakKw": 6.03
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1158
-  },
-  {
-    "id": "PM_10_3rd4th_FloorFeed",
-    "totalKwh": 1137,
-    "totalKwhCumulative": 1137,
-    "totalKwhIntegrated": 1137,
-    "peakKw": 4.83,
-    "avgKw": 1.59,
-    "hourly": [
-      1.48,
-      1.33,
-      1.27,
-      1.37,
-      1.3,
-      1.3,
-      1.33,
-      1.43,
-      1.6,
-      1.73,
-      1.63,
-      1.87,
-      1.7,
-      1.87,
-      1.7,
-      1.87,
-      1.77,
-      1.57,
-      1.63,
-      1.73,
-      1.69,
-      1.66,
-      1.72,
-      1.62
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 51,
-        "peakKw": 3.31
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 53,
-        "peakKw": 3.31
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 55,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 38,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 33,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 38,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 34,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 36,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 36,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 47,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 42,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 40,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 42,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 46,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 48,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 41,
-        "peakKw": 4.83
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 40,
-        "peakKw": 2.15
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 49,
-        "peakKw": 3.01
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 52,
-        "peakKw": 3.46
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 56,
-        "peakKw": 3.46
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 62,
-        "peakKw": 3.63
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 66,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 58,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 56,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 18,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 0,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 0,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 0,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 0,
-        "peakKw": 4.17
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 0,
-        "peakKw": 4.17
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 1137
-  },
-  {
-    "id": "PM_20_LSKPanelFeed",
-    "totalKwh": 1070,
-    "totalKwhCumulative": 1070,
-    "totalKwhIntegrated": 1070,
-    "peakKw": 4,
-    "avgKw": 1.5,
-    "hourly": [
-      1.59,
-      1.6,
-      1.53,
-      1.5,
-      1.4,
-      1.53,
-      1.37,
-      1.03,
-      1.13,
-      1.2,
-      1.2,
-      1.2,
-      1.43,
-      1.33,
-      1.3,
-      1.3,
-      1.5,
-      1.2,
-      1.37,
-      1.97,
-      2.03,
-      2.1,
-      2.03,
-      2.14
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 23,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 25,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 25,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 24,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 24,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 34,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 35,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 28,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 28,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 28,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 29,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 32,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 32,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 44,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 35,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 32,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 34,
-        "peakKw": 2
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 39,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 47,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 46,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 42,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 42,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 47,
-        "peakKw": 4
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 47,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 51,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 48,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 43,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 36,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 39,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 31,
-        "peakKw": 3
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 1070
+    "signedCumulative": 1173
   },
   {
     "id": "PM_03_PPHWBoosterFeed",
-    "totalKwh": 1057,
-    "totalKwhCumulative": 1057,
-    "totalKwhIntegrated": 1057,
-    "peakKw": 14.8,
-    "avgKw": 1.48,
+    "totalKwh": 1088,
+    "totalKwhCumulative": 1088,
+    "totalKwhIntegrated": 1088,
+    "peakKw": 15.15,
+    "avgKw": 1.54,
     "hourly": [
       0,
       0,
@@ -7819,31 +7439,26 @@ export const bmsExportMeters = [
       0,
       0,
       0.03,
+      1.27,
       1.23,
-      1.17,
-      3.57,
-      3.17,
-      1.93,
-      2.6,
-      3.6,
-      4.5,
-      2.43,
-      1.07,
-      1.63,
-      1.8,
-      2.77,
-      3.17,
-      0.55,
+      3.73,
+      3.33,
+      2.17,
+      2.73,
+      3.77,
+      4.66,
+      2.52,
+      1.1,
+      1.69,
+      1.86,
+      2.86,
+      3.28,
+      0.62,
       0.03,
       0,
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 6.66
-      },
       {
         "date": "2026-08-17",
         "kwh": 3,
@@ -7986,57 +7601,437 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 61,
+        "kwh": 63,
+        "peakKw": 14.85
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 29,
         "peakKw": 14.85
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1057
+    "signedCumulative": 1088
+  },
+  {
+    "id": "PM_10_3rd4th_FloorFeed",
+    "totalKwh": 1084,
+    "totalKwhCumulative": 1084,
+    "totalKwhIntegrated": 1084,
+    "peakKw": 4.83,
+    "avgKw": 1.53,
+    "hourly": [
+      1.41,
+      1.27,
+      1.2,
+      1.3,
+      1.23,
+      1.23,
+      1.27,
+      1.4,
+      1.53,
+      1.63,
+      1.57,
+      1.8,
+      1.6,
+      1.86,
+      1.69,
+      1.83,
+      1.72,
+      1.55,
+      1.62,
+      1.69,
+      1.62,
+      1.59,
+      1.62,
+      1.55
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 51,
+        "peakKw": 3.31
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 55,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 38,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 33,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 38,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 34,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 36,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 36,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 47,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 42,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 40,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 42,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 46,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 48,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 41,
+        "peakKw": 4.83
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 40,
+        "peakKw": 2.15
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 49,
+        "peakKw": 3.01
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 52,
+        "peakKw": 3.46
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 56,
+        "peakKw": 3.46
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 62,
+        "peakKw": 3.63
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 66,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 58,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 56,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 18,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 0,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 0,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 0,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 0,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 0,
+        "peakKw": 4.17
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 4.17
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1084
+  },
+  {
+    "id": "PM_20_LSKPanelFeed",
+    "totalKwh": 1076,
+    "totalKwhCumulative": 1076,
+    "totalKwhIntegrated": 1076,
+    "peakKw": 4,
+    "avgKw": 1.52,
+    "hourly": [
+      1.62,
+      1.63,
+      1.5,
+      1.5,
+      1.43,
+      1.5,
+      1.37,
+      1.07,
+      1.17,
+      1.2,
+      1.2,
+      1.27,
+      1.47,
+      1.34,
+      1.34,
+      1.31,
+      1.52,
+      1.24,
+      1.38,
+      2,
+      2.07,
+      2.17,
+      2.1,
+      2.14
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 24,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 25,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 24,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 24,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 34,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 35,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 28,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 28,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 28,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 29,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 32,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 32,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 44,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 35,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 32,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 34,
+        "peakKw": 2
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 39,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 47,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 46,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 42,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 42,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 47,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 47,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 51,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 48,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 43,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 36,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 39,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 42,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 19,
+        "peakKw": 2
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 1076
   },
   {
     "id": "PM_12_LP_A_Feed",
-    "totalKwh": 1043,
-    "totalKwhCumulative": 1043,
-    "totalKwhIntegrated": 1043,
+    "totalKwh": 1038,
+    "totalKwhCumulative": 1038,
+    "totalKwhIntegrated": 1038,
     "peakKw": 3.3,
-    "avgKw": 1.46,
+    "avgKw": 1.47,
     "hourly": [
       1.69,
+      1.5,
       1.53,
-      1.53,
-      1.33,
+      1.3,
       1.33,
       1.57,
-      1.43,
+      1.4,
       1.07,
-      1.1,
-      1.4,
+      1.13,
       1.43,
       1.43,
-      1.4,
-      1.53,
-      1.4,
-      1.33,
       1.43,
-      1.3,
-      1.3,
-      1.43,
+      1.47,
+      1.55,
+      1.41,
+      1.34,
+      1.45,
+      1.31,
+      1.31,
+      1.45,
       1.83,
       1.69,
-      1.69,
+      1.72,
       1.86
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 32,
-        "peakKw": 1.84
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 34,
+        "kwh": 32,
         "peakKw": 1.84
       },
       {
@@ -8176,54 +8171,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 33,
+        "kwh": 41,
+        "peakKw": 3.3
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 21,
         "peakKw": 3.3
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1043
+    "signedCumulative": 1038
   },
   {
     "id": "PM_15_P1A_P2AFeed",
-    "totalKwh": 1026,
-    "totalKwhCumulative": 1026,
-    "totalKwhIntegrated": 1026,
+    "totalKwh": 1035,
+    "totalKwhCumulative": 1035,
+    "totalKwhIntegrated": 1035,
     "peakKw": 8.38,
-    "avgKw": 1.43,
+    "avgKw": 1.46,
     "hourly": [
       1.14,
       0.87,
-      1.03,
+      1.07,
       0.87,
       1,
+      1,
+      0.87,
       0.97,
-      0.83,
-      0.93,
-      1.4,
-      2.03,
-      2.37,
-      2.2,
-      2.03,
-      1.97,
-      2.17,
-      2.17,
-      1.57,
-      1.6,
-      1.4,
+      1.43,
+      2.1,
+      2.47,
+      2.27,
+      2.1,
+      2,
+      2.21,
+      2.21,
+      1.59,
+      1.62,
+      1.45,
       1.17,
       1.38,
-      1,
+      1.03,
       1.21,
       1.1
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 18,
-        "peakKw": 6.15
-      },
       {
         "date": "2026-08-17",
         "kwh": 24,
@@ -8366,57 +8361,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 33,
+        "kwh": 37,
+        "peakKw": 8.38
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 23,
         "peakKw": 8.38
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1026
+    "signedCumulative": 1035
   },
   {
     "id": "PM_17_M42AFeed",
-    "totalKwh": 1016,
-    "totalKwhCumulative": 1016,
-    "totalKwhIntegrated": 1016,
+    "totalKwh": 1022,
+    "totalKwhCumulative": 1022,
+    "totalKwhIntegrated": 1022,
     "peakKw": 5,
-    "avgKw": 1.42,
+    "avgKw": 1.44,
     "hourly": [
       0.93,
       0.83,
-      0.87,
+      0.83,
       0.93,
       1,
       0.87,
-      0.93,
       0.9,
-      1.6,
-      2.03,
+      1,
+      1.73,
       2.1,
-      2.23,
-      1.93,
+      2.13,
       2.27,
-      2.23,
-      2.43,
-      1.83,
-      1.4,
-      1.4,
+      2.03,
+      2.28,
+      2.28,
+      2.48,
+      1.86,
+      1.41,
+      1.41,
       1.17,
-      1.17,
+      1.28,
       1.03,
-      0.97,
+      0.93,
       0.97
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 23,
-        "peakKw": 4.22
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 27,
+        "kwh": 26,
         "peakKw": 4.22
       },
       {
@@ -8556,54 +8551,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 45,
+        "kwh": 51,
+        "peakKw": 4.53
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 24,
         "peakKw": 4.53
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 1016
+    "signedCumulative": 1022
   },
   {
     "id": "PM_13_BoilerRoomFeed",
-    "totalKwh": 939,
-    "totalKwhCumulative": 939,
-    "totalKwhIntegrated": 939,
+    "totalKwh": 940,
+    "totalKwhCumulative": 940,
+    "totalKwhIntegrated": 940,
     "peakKw": 4,
-    "avgKw": 1.31,
+    "avgKw": 1.33,
     "hourly": [
-      1.14,
+      1.21,
       1.13,
       1.1,
       1.07,
       1.1,
-      1.17,
-      1.27,
-      1.27,
-      1.3,
-      1.4,
       1.2,
+      1.27,
       1.23,
-      1.47,
-      1.3,
       1.33,
-      1.4,
-      1.37,
-      1.3,
-      1.5,
-      1.5,
-      1.69,
-      1.52,
+      1.43,
+      1.2,
+      1.27,
+      1.47,
+      1.31,
+      1.34,
+      1.41,
       1.38,
+      1.31,
+      1.52,
+      1.52,
+      1.72,
+      1.55,
+      1.41,
       1.41
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 24,
-        "peakKw": 4
-      },
       {
         "date": "2026-08-17",
         "kwh": 24,
@@ -8746,20 +8741,25 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 26,
+        "kwh": 33,
+        "peakKw": 3.73
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 18,
         "peakKw": 3.73
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 939
+    "signedCumulative": 940
   },
   {
     "id": "PM_09_1stFloorPanelFeed",
-    "totalKwh": 903,
-    "totalKwhCumulative": 903,
-    "totalKwhIntegrated": 903,
+    "totalKwh": 889,
+    "totalKwhCumulative": 889,
+    "totalKwhIntegrated": 889,
     "peakKw": 11.47,
     "avgKw": 1.26,
     "hourly": [
@@ -8769,34 +8769,29 @@ export const bmsExportMeters = [
       0.73,
       0.63,
       0.77,
-      1.17,
-      1.8,
+      1.2,
+      1.9,
       1.5,
       1.67,
-      1.33,
+      1.37,
       1,
-      1,
-      1.1,
       0.97,
-      1.3,
-      1.5,
-      1.57,
-      1.6,
-      2.13,
-      2.45,
-      1.66,
-      1.21,
-      1.14
+      1.14,
+      0.93,
+      1.24,
+      1.45,
+      1.52,
+      1.59,
+      2.14,
+      2.48,
+      1.59,
+      1.17,
+      1.1
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 26,
-        "peakKw": 11.47
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 46,
+        "kwh": 45,
         "peakKw": 11.47
       },
       {
@@ -8936,57 +8931,247 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 14,
+        "kwh": 18,
+        "peakKw": 7.55
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 9,
         "peakKw": 7.55
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 903
+    "signedCumulative": 889
   },
   {
-    "id": "PM_10_1st_2nd_FloorFeed",
-    "totalKwh": 873,
-    "totalKwhCumulative": 873,
-    "totalKwhIntegrated": 873,
-    "peakKw": 4,
-    "avgKw": 1.22,
+    "id": "PM_20_PKPanelFeed",
+    "totalKwh": 886,
+    "totalKwhCumulative": 886,
+    "totalKwhIntegrated": 886,
+    "peakKw": 11,
+    "avgKw": 1.25,
     "hourly": [
-      1.24,
       1.1,
-      1.13,
+      0.9,
+      0.8,
+      0.83,
+      0.77,
+      0.7,
+      0.93,
+      0.73,
+      0.8,
+      0.9,
+      0.9,
       0.97,
-      1.03,
-      1.07,
-      1,
-      1.2,
-      1.2,
-      1.2,
-      1.27,
-      1.27,
-      1.27,
-      1.23,
-      1.2,
-      1.4,
-      1.2,
-      1.27,
-      1.33,
-      1.13,
+      1.17,
+      1.21,
       1.34,
-      1.41,
-      1.48,
-      1.38
+      1.28,
+      1.52,
+      1.34,
+      1.59,
+      1.69,
+      2.03,
+      2.38,
+      2.38,
+      1.93
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 19,
-        "peakKw": 2.22
+        "date": "2026-08-17",
+        "kwh": 15,
+        "peakKw": 1
       },
       {
+        "date": "2026-08-18",
+        "kwh": 17,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 16,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 16,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 16,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 16,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 14,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 15,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 14,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 15,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 17,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 17,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 18,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 18,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 22,
+        "peakKw": 3
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 17,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 52,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 34,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 55,
+        "peakKw": 10
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 36,
+        "peakKw": 5
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 55,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 42,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 49,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 35,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 50,
+        "peakKw": 8
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 44,
+        "peakKw": 6
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 32,
+        "peakKw": 4
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 82,
+        "peakKw": 11
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 43,
+        "peakKw": 7
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 14,
+        "peakKw": 2
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 886
+  },
+  {
+    "id": "PM_10_1st_2nd_FloorFeed",
+    "totalKwh": 853,
+    "totalKwhCumulative": 853,
+    "totalKwhIntegrated": 853,
+    "peakKw": 4,
+    "avgKw": 1.2,
+    "hourly": [
+      1.21,
+      1.07,
+      1.1,
+      0.93,
+      1,
+      1.03,
+      1,
+      1.17,
+      1.17,
+      1.17,
+      1.23,
+      1.23,
+      1.27,
+      1.24,
+      1.21,
+      1.41,
+      1.24,
+      1.28,
+      1.34,
+      1.14,
+      1.34,
+      1.38,
+      1.45,
+      1.34
+    ],
+    "daily": [
+      {
         "date": "2026-08-17",
-        "kwh": 28,
+        "kwh": 27,
         "peakKw": 2.87
       },
       {
@@ -9128,242 +9313,52 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 3.94
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 3.94
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 873
-  },
-  {
-    "id": "PM_20_PKPanelFeed",
-    "totalKwh": 869,
-    "totalKwhCumulative": 869,
-    "totalKwhIntegrated": 869,
-    "peakKw": 11,
-    "avgKw": 1.22,
-    "hourly": [
-      1.07,
-      0.87,
-      0.8,
-      0.83,
-      0.73,
-      0.7,
-      0.93,
-      0.73,
-      0.8,
-      0.87,
-      0.9,
-      0.97,
-      1.1,
-      1.2,
-      1.33,
-      1.23,
-      1.5,
-      1.33,
-      1.53,
-      1.67,
-      1.93,
-      2.17,
-      2.28,
-      1.79
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 14,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 16,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 17,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 16,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 16,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 16,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 16,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 14,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 15,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 14,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 15,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 17,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 17,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 18,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 18,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 22,
-        "peakKw": 3
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 17,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 52,
-        "peakKw": 8
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 34,
-        "peakKw": 4
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 55,
-        "peakKw": 10
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 36,
-        "peakKw": 5
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 55,
-        "peakKw": 6
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 42,
-        "peakKw": 4
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 49,
-        "peakKw": 6
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 35,
-        "peakKw": 4
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 50,
-        "peakKw": 8
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 44,
-        "peakKw": 6
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 32,
-        "peakKw": 4
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 82,
-        "peakKw": 11
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 25,
-        "peakKw": 3
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 869
+    "signedCumulative": 853
   },
   {
     "id": "PM_09_BoilerPanelFeed",
-    "totalKwh": 850,
-    "totalKwhCumulative": 850,
-    "totalKwhIntegrated": 850,
+    "totalKwh": 851,
+    "totalKwhCumulative": 851,
+    "totalKwhIntegrated": 851,
     "peakKw": 11.25,
-    "avgKw": 1.19,
+    "avgKw": 1.2,
     "hourly": [
-      1.31,
+      1.34,
       1.07,
-      0.87,
-      0.93,
       0.9,
       0.93,
-      0.93,
-      1.03,
-      0.93,
+      0.9,
       0.97,
+      0.93,
       1.03,
-      1.27,
-      1.23,
-      1.1,
+      0.97,
+      0.97,
+      1.07,
+      1.3,
       1.2,
+      1.14,
+      1.21,
       1.17,
-      1.17,
-      1.3,
-      1.67,
-      1.3,
+      1.21,
+      1.31,
+      1.69,
+      1.31,
       1.59,
-      1.76,
+      1.79,
       1.69,
       1.24
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 17,
-        "peakKw": 4.46
-      },
       {
         "date": "2026-08-17",
         "kwh": 18,
@@ -9506,57 +9501,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 23,
+        "kwh": 28,
+        "peakKw": 11.25
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 13,
         "peakKw": 11.25
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 850
+    "signedCumulative": 851
   },
   {
     "id": "PM_09_4thFloorPanelFeed",
-    "totalKwh": 785,
-    "totalKwhCumulative": 785,
-    "totalKwhIntegrated": 785,
+    "totalKwh": 775,
+    "totalKwhCumulative": 775,
+    "totalKwhIntegrated": 775,
     "peakKw": 4.24,
-    "avgKw": 1.1,
+    "avgKw": 1.09,
     "hourly": [
-      1.38,
-      1.4,
-      1.2,
+      1.34,
+      1.37,
+      1.23,
       1.2,
       1.1,
-      0.93,
+      0.97,
       0.7,
-      0.7,
-      0.83,
+      0.67,
+      0.87,
       0.63,
-      0.7,
+      0.73,
       0.87,
       0.73,
-      0.77,
-      0.93,
-      0.93,
+      0.76,
       0.97,
+      0.93,
+      1,
       1.07,
-      1.33,
-      1.53,
-      1.41,
-      1.62,
-      1.79,
-      1.69
+      1.31,
+      1.52,
+      1.38,
+      1.59,
+      1.76,
+      1.66
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 23,
-        "peakKw": 4.24
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 29,
+        "kwh": 27,
         "peakKw": 4.24
       },
       {
@@ -9696,28 +9691,33 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 15,
+        "kwh": 20,
+        "peakKw": 3.95
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 10,
         "peakKw": 3.95
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 785
+    "signedCumulative": 775
   },
   {
     "id": "PM_09_3rdFloorPanelFeed",
-    "totalKwh": 752,
-    "totalKwhCumulative": 752,
-    "totalKwhIntegrated": 752,
+    "totalKwh": 749,
+    "totalKwhCumulative": 749,
+    "totalKwhIntegrated": 749,
     "peakKw": 3.73,
-    "avgKw": 1.05,
+    "avgKw": 1.06,
     "hourly": [
-      1.17,
+      1.21,
       1.03,
       1,
       0.9,
-      0.97,
+      1.03,
       1,
       1.07,
       1.03,
@@ -9726,27 +9726,22 @@ export const bmsExportMeters = [
       0.83,
       0.93,
       0.87,
-      0.97,
+      0.93,
       1.1,
-      1,
-      1.17,
+      1.03,
+      1.14,
       1.1,
-      1.13,
+      1.1,
       1.17,
-      1.17,
+      1.24,
       1.28,
-      1.34,
+      1.38,
       1.24
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 23,
-        "peakKw": 2.65
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 23,
+        "kwh": 22,
         "peakKw": 2.65
       },
       {
@@ -9886,54 +9881,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 22,
+        "kwh": 28,
+        "peakKw": 3.7
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 15,
         "peakKw": 3.7
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 752
+    "signedCumulative": 749
   },
   {
     "id": "PM_20_SBKPanelFeed",
-    "totalKwh": 722,
-    "totalKwhCumulative": 722,
-    "totalKwhIntegrated": 722,
+    "totalKwh": 737,
+    "totalKwhCumulative": 737,
+    "totalKwhIntegrated": 737,
     "peakKw": 10,
-    "avgKw": 1.01,
+    "avgKw": 1.04,
     "hourly": [
-      1.21,
+      1.24,
       0.8,
       0.57,
-      0.83,
+      0.87,
       0.17,
-      0.8,
-      0.53,
-      1.07,
-      2.33,
-      1.33,
-      1.07,
-      1.33,
-      1.1,
       0.77,
-      0.77,
-      0.8,
-      0.6,
+      0.57,
+      1.03,
+      2.47,
+      1.43,
+      1.03,
+      1.37,
       1.1,
-      0.97,
-      0.7,
-      1.28,
+      0.79,
+      0.76,
+      0.83,
+      0.59,
       1.1,
-      1.24,
-      1.83
+      1,
+      0.72,
+      1.34,
+      1.17,
+      1.31,
+      1.97
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 13,
-        "peakKw": 2
-      },
       {
         "date": "2026-08-17",
         "kwh": 12,
@@ -10076,22 +10071,27 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 50,
+        "kwh": 63,
         "peakKw": 10
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 15,
+        "peakKw": 4
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "generation",
-    "signedCumulative": -722
+    "signedCumulative": -737
   },
   {
     "id": "PM_15_P3BFeed",
-    "totalKwh": 674,
-    "totalKwhCumulative": 674,
-    "totalKwhIntegrated": 674,
+    "totalKwh": 677,
+    "totalKwhCumulative": 677,
+    "totalKwhIntegrated": 677,
     "peakKw": 3,
-    "avgKw": 0.94,
+    "avgKw": 0.96,
     "hourly": [
       0.83,
       0.67,
@@ -10099,34 +10099,29 @@ export const bmsExportMeters = [
       0.7,
       0.8,
       0.83,
-      0.77,
+      0.8,
       0.83,
       0.93,
-      1.13,
-      1.3,
+      1.17,
       1.37,
-      1.13,
-      1.27,
-      1.23,
+      1.4,
+      1.17,
+      1.31,
+      1.24,
       1.07,
-      1.07,
+      1.1,
       0.93,
       0.83,
       0.83,
-      0.79,
+      0.83,
       0.72,
       0.9,
-      0.86
+      0.9
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 16,
-        "peakKw": 1.52
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 16,
+        "kwh": 15,
         "peakKw": 1.52
       },
       {
@@ -10266,32 +10261,37 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 27,
+        "kwh": 31,
+        "peakKw": 2.79
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 16,
         "peakKw": 2.79
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 674
+    "signedCumulative": 677
   },
   {
     "id": "PM_18_KurthResidenceMainFeed",
-    "totalKwh": 602,
-    "totalKwhCumulative": 602,
-    "totalKwhIntegrated": 1337,
+    "totalKwh": 635,
+    "totalKwhCumulative": 635,
+    "totalKwhIntegrated": 1338,
     "peakKw": 13.6,
-    "avgKw": 2.55,
+    "avgKw": 2.56,
     "hourly": [
-      2.76,
+      2.72,
       2.27,
       2.03,
       1.93,
       1.8,
       1.7,
-      1.77,
-      1.93,
-      1.64,
+      1.8,
+      2.03,
+      1.66,
       1.14,
       1.4,
       0.83,
@@ -10300,23 +10300,18 @@ export const bmsExportMeters = [
       1.75,
       1.57,
       1.38,
-      1.75,
-      3.1,
-      3.93,
+      1.74,
+      3.14,
+      4,
       4.38,
-      4.48,
-      4.21,
-      3.59
+      4.55,
+      4.28,
+      3.52
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 26,
-        "peakKw": 8.16
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 43,
+        "kwh": 40,
         "peakKw": 8.16
       },
       {
@@ -10456,54 +10451,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 34,
+        "kwh": 50,
+        "peakKw": 13.6
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 14,
         "peakKw": 13.6
       }
     ],
-    "sampleCount": 524,
+    "sampleCount": 522,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 602
+    "signedCumulative": 635
   },
   {
     "id": "PM_10_LaundryPanelFeed",
-    "totalKwh": 527,
-    "totalKwhCumulative": 527,
-    "totalKwhIntegrated": 527,
+    "totalKwh": 519,
+    "totalKwhCumulative": 519,
+    "totalKwhIntegrated": 519,
     "peakKw": 7,
-    "avgKw": 0.74,
+    "avgKw": 0.73,
     "hourly": [
       0.45,
-      0.37,
+      0.33,
       0.47,
       0.27,
-      0.3,
+      0.27,
       0.43,
       0.37,
-      0.3,
+      0.27,
       0.93,
       0.77,
-      1.03,
+      1,
       0.7,
       0.83,
-      0.93,
+      0.97,
       1,
-      0.8,
-      0.73,
-      0.6,
-      1,
+      0.83,
+      0.76,
+      0.59,
+      1.03,
       0.97,
       1.31,
       1.28,
-      1.21,
+      1.17,
       0.69
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 8,
-        "peakKw": 1.43
-      },
       {
         "date": "2026-08-17",
         "kwh": 11,
@@ -10648,41 +10643,46 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 13.31
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 13.31
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 2,
     "direction": "consumption",
-    "signedCumulative": 527
+    "signedCumulative": 519
   },
   {
     "id": "PM_11_LP_2_Feed",
-    "totalKwh": 516,
-    "totalKwhCumulative": 516,
-    "totalKwhIntegrated": 516,
+    "totalKwh": 514,
+    "totalKwhCumulative": 514,
+    "totalKwhIntegrated": 514,
     "peakKw": 3,
-    "avgKw": 0.72,
+    "avgKw": 0.73,
     "hourly": [
       0.72,
-      0.43,
       0.47,
-      0.67,
+      0.43,
+      0.63,
       0.4,
-      0.4,
-      0.6,
+      0.37,
+      0.57,
       0.43,
       0.73,
-      1,
-      1.23,
-      0.87,
-      1.07,
+      1.03,
+      1.3,
       0.9,
+      1.1,
+      0.93,
       1,
       1,
-      0.7,
-      0.8,
-      0.53,
-      0.73,
+      0.72,
+      0.79,
+      0.52,
+      0.76,
       0.69,
       0.69,
       0.59,
@@ -10690,13 +10690,8 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 15,
-        "peakKw": 1.11
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 16,
+        "kwh": 15,
         "peakKw": 1.11
       },
       {
@@ -10836,54 +10831,54 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 18,
+        "kwh": 21,
+        "peakKw": 2.85
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 11,
         "peakKw": 2.85
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 516
+    "signedCumulative": 514
   },
   {
     "id": "PM_09_2ndFloorPanelFeed",
-    "totalKwh": 506,
-    "totalKwhCumulative": 506,
-    "totalKwhIntegrated": 506,
+    "totalKwh": 509,
+    "totalKwhCumulative": 509,
+    "totalKwhIntegrated": 509,
     "peakKw": 2,
-    "avgKw": 0.71,
+    "avgKw": 0.72,
     "hourly": [
-      0.76,
+      0.79,
       0.7,
-      0.73,
+      0.77,
       0.63,
-      0.83,
+      0.87,
       0.67,
-      0.73,
       0.7,
-      0.47,
+      0.73,
+      0.5,
       0.63,
       0.6,
       0.63,
-      0.63,
-      0.53,
-      0.73,
-      0.53,
-      0.8,
-      0.57,
-      0.8,
-      0.77,
+      0.67,
+      0.52,
+      0.76,
+      0.52,
       0.83,
-      1,
+      0.55,
+      0.83,
+      0.76,
+      0.83,
+      1.07,
       0.86,
       0.86
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 13,
-        "peakKw": 1.04
-      },
       {
         "date": "2026-08-17",
         "kwh": 14,
@@ -11026,57 +11021,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 16,
+        "kwh": 21,
+        "peakKw": 1.56
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 11,
         "peakKw": 1.56
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 506
+    "signedCumulative": 509
   },
   {
     "id": "PM_15_ITFeed",
-    "totalKwh": 501,
-    "totalKwhCumulative": 501,
-    "totalKwhIntegrated": 501,
+    "totalKwh": 497,
+    "totalKwhCumulative": 497,
+    "totalKwhIntegrated": 497,
     "peakKw": 1.31,
     "avgKw": 0.7,
     "hourly": [
-      0.69,
-      0.6,
-      0.73,
-      0.77,
-      0.57,
-      0.8,
-      0.77,
-      0.7,
-      0.6,
-      0.87,
-      0.7,
-      0.5,
-      0.87,
-      0.7,
-      0.5,
-      0.87,
-      0.63,
-      0.7,
-      0.73,
-      0.67,
       0.66,
+      0.63,
+      0.73,
+      0.73,
+      0.6,
+      0.8,
+      0.73,
+      0.73,
+      0.6,
+      0.87,
+      0.67,
+      0.53,
+      0.87,
+      0.69,
+      0.52,
+      0.86,
+      0.62,
       0.72,
+      0.72,
+      0.66,
+      0.69,
+      0.69,
       0.76,
-      0.72
+      0.76
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 15,
-        "peakKw": 1.31
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 19,
+        "kwh": 18,
         "peakKw": 1.31
       },
       {
@@ -11216,57 +11211,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 14,
+        "kwh": 17,
+        "peakKw": 1.15
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 9,
         "peakKw": 1.15
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 501
+    "signedCumulative": 497
   },
   {
     "id": "PM_06_Breaker8_10_12Feed",
-    "totalKwh": 433,
-    "totalKwhCumulative": 433,
-    "totalKwhIntegrated": 433,
+    "totalKwh": 430,
+    "totalKwhCumulative": 430,
+    "totalKwhIntegrated": 430,
     "peakKw": 3.41,
     "avgKw": 0.61,
     "hourly": [
       0.62,
-      0.27,
+      0.23,
       0.57,
-      0.3,
-      0.57,
+      0.33,
+      0.53,
       0.43,
-      0.63,
-      0.8,
-      0.63,
-      0.7,
-      0.73,
-      0.6,
-      0.6,
-      0.57,
-      0.57,
-      0.57,
-      0.6,
       0.67,
+      0.8,
+      0.67,
+      0.73,
       0.7,
-      0.7,
-      0.9,
-      0.9,
+      0.63,
+      0.6,
       0.55,
+      0.59,
+      0.59,
+      0.59,
+      0.66,
+      0.69,
+      0.69,
+      0.93,
+      0.9,
+      0.52,
       0.38
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 12,
-        "peakKw": 2.55
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 17,
+        "kwh": 16,
         "peakKw": 2.55
       },
       {
@@ -11406,43 +11401,48 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 8,
+        "kwh": 11,
+        "peakKw": 3.41
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 7,
         "peakKw": 3.41
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 433
+    "signedCumulative": 430
   },
   {
     "id": "PM_14_SubPanelFeed",
-    "totalKwh": 416,
-    "totalKwhCumulative": 416,
-    "totalKwhIntegrated": 416,
+    "totalKwh": 413,
+    "totalKwhCumulative": 413,
+    "totalKwhIntegrated": 413,
     "peakKw": 4.08,
     "avgKw": 0.58,
     "hourly": [
-      0.66,
+      0.62,
       0.77,
       0.5,
       0.53,
-      0.57,
-      0.5,
-      0.63,
-      0.37,
+      0.53,
+      0.53,
+      0.6,
+      0.4,
       0.7,
       0.47,
       0.57,
       0.33,
       0.5,
-      0.53,
-      0.57,
-      0.47,
-      0.57,
-      0.57,
-      0.53,
-      0.63,
+      0.55,
+      0.55,
+      0.48,
+      0.59,
+      0.55,
+      0.55,
+      0.66,
       0.83,
       0.69,
       0.72,
@@ -11450,13 +11450,8 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 9,
-        "peakKw": 6.58
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 14,
+        "kwh": 12,
         "peakKw": 6.58
       },
       {
@@ -11596,43 +11591,48 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 11,
+        "kwh": 13,
+        "peakKw": 4.08
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 6,
         "peakKw": 4.08
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 416
+    "signedCumulative": 413
   },
   {
     "id": "PM_03_PPB2Feed",
-    "totalKwh": 407,
-    "totalKwhCumulative": 407,
-    "totalKwhIntegrated": 407,
+    "totalKwh": 401,
+    "totalKwhCumulative": 401,
+    "totalKwhIntegrated": 401,
     "peakKw": 2,
     "avgKw": 0.57,
     "hourly": [
-      0.34,
+      0.31,
       0.33,
-      0.47,
+      0.5,
       0.57,
       0.53,
       0.4,
-      0.37,
-      0.4,
+      0.33,
+      0.43,
       0.6,
       0.7,
       0.6,
-      0.8,
+      0.83,
       0.67,
-      0.97,
-      0.73,
-      0.87,
-      0.8,
-      0.6,
-      0.6,
-      0.4,
+      0.93,
+      0.72,
+      0.86,
+      0.79,
+      0.59,
+      0.59,
+      0.41,
       0.38,
       0.55,
       0.59,
@@ -11640,13 +11640,8 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 21,
-        "peakKw": 0.1
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 22,
+        "kwh": 21,
         "peakKw": 0.1
       },
       {
@@ -11786,22 +11781,27 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 6,
+        "kwh": 10,
+        "peakKw": 0.05
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 12,
         "peakKw": 0.05
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "generation",
-    "signedCumulative": -407
+    "signedCumulative": -401
   },
   {
     "id": "PM_19_KurthDormMainFeed",
-    "totalKwh": 406,
-    "totalKwhCumulative": 406,
-    "totalKwhIntegrated": 1062,
+    "totalKwh": 379,
+    "totalKwhCumulative": 379,
+    "totalKwhIntegrated": 1029,
     "peakKw": 10,
-    "avgKw": 3.03,
+    "avgKw": 2.98,
     "hourly": [
       0,
       0,
@@ -11810,16 +11810,16 @@ export const bmsExportMeters = [
       0,
       0,
       0,
-      0.08,
-      0.57,
-      1.8,
+      0,
+      0.48,
+      1.77,
       4,
       4.7,
-      5.66,
-      5.59,
-      5.66,
-      4.17,
-      2.96,
+      5.62,
+      5.46,
+      5.54,
+      4,
+      3.04,
       1.87,
       0.4,
       0,
@@ -11829,11 +11829,6 @@ export const bmsExportMeters = [
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 59,
-        "peakKw": 7.44
-      },
       {
         "date": "2026-08-17",
         "kwh": 15,
@@ -11978,55 +11973,55 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 62,
         "peakKw": 8.87
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 26,
+        "peakKw": 8.87
       }
     ],
-    "sampleCount": 351,
+    "sampleCount": 345,
     "droppedOutliers": 0,
     "direction": "generation",
-    "signedCumulative": -406
+    "signedCumulative": -379
   },
   {
     "id": "PM_10_ChildCareMainFeed",
-    "totalKwh": 346,
-    "totalKwhCumulative": 346,
-    "totalKwhIntegrated": 346,
+    "totalKwh": 332,
+    "totalKwhCumulative": 332,
+    "totalKwhIntegrated": 332,
     "peakKw": 4.19,
-    "avgKw": 0.48,
+    "avgKw": 0.47,
     "hourly": [
-      0.69,
-      0.6,
+      0.66,
+      0.57,
+      0.3,
+      0.4,
+      0.37,
+      0.33,
       0.3,
       0.43,
-      0.37,
-      0.33,
-      0.33,
-      0.43,
-      0.33,
+      0.3,
       0.5,
-      0.5,
-      0.4,
-      0.43,
-      0.4,
-      0.4,
       0.5,
       0.37,
-      0.57,
-      0.63,
-      0.73,
-      0.59,
+      0.43,
+      0.38,
+      0.41,
+      0.48,
+      0.38,
+      0.55,
+      0.62,
+      0.72,
+      0.55,
       0.52,
-      0.59,
-      0.69
+      0.55,
+      0.66
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 13,
-        "peakKw": 5.73
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 18,
+        "kwh": 17,
         "peakKw": 5.73
       },
       {
@@ -12168,25 +12163,220 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 4.19
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 4.19
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 346
+    "signedCumulative": 332
+  },
+  {
+    "id": "PM_15_P3CFeed",
+    "totalKwh": 330,
+    "totalKwhCumulative": 330,
+    "totalKwhIntegrated": 330,
+    "peakKw": 3,
+    "avgKw": 0.47,
+    "hourly": [
+      0.24,
+      0.33,
+      0.33,
+      0.17,
+      0.43,
+      0.3,
+      0.23,
+      0.43,
+      0.33,
+      0.77,
+      1.2,
+      0.87,
+      0.83,
+      0.69,
+      0.69,
+      0.62,
+      0.34,
+      0.34,
+      0.28,
+      0.45,
+      0.31,
+      0.17,
+      0.52,
+      0.28
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 9,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 7,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 10,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 10,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 12,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 9,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 7,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 8,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 11,
+        "peakKw": 2.4
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 8,
+        "peakKw": 0.56
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 7,
+        "peakKw": 0.56
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 18,
+        "peakKw": 2.48
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 18,
+        "peakKw": 2.48
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 14,
+        "peakKw": 2.48
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 8,
+        "peakKw": 2.48
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 13,
+        "peakKw": 2.48
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 20,
+        "peakKw": 2.48
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 13,
+        "peakKw": 2.49
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 17,
+        "peakKw": 2.51
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 15,
+        "peakKw": 2.51
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 13,
+        "peakKw": 2.52
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 7,
+        "peakKw": 2.52
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 17,
+        "peakKw": 2.52
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 11,
+        "peakKw": 2.52
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 330
   },
   {
     "id": "PM_19_SolarFeed",
-    "totalKwh": 339,
-    "totalKwhCumulative": 339,
-    "totalKwhIntegrated": 339,
+    "totalKwh": 330,
+    "totalKwhCumulative": 330,
+    "totalKwhIntegrated": 330,
     "peakKw": 2.32,
     "avgKw": 0.47,
     "hourly": [
-      0.45,
+      0.41,
       0.33,
       0.23,
-      0.3,
+      0.33,
       0.07,
       0.07,
       0.1,
@@ -12194,29 +12384,24 @@ export const bmsExportMeters = [
       0.13,
       0.17,
       0.2,
-      0.43,
+      0.4,
       0.5,
-      0.53,
-      0.53,
-      0.87,
-      0.7,
-      0.97,
-      0.63,
-      1.07,
+      0.55,
+      0.55,
       0.86,
-      0.79,
-      0.79,
-      0.55
+      0.72,
+      1,
+      0.62,
+      1.07,
+      0.83,
+      0.76,
+      0.72,
+      0.52
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 9,
-        "peakKw": 2.32
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 26,
+        "kwh": 25,
         "peakKw": 2.32
       },
       {
@@ -12358,20 +12543,215 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 5,
         "peakKw": 2.26
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 1,
+        "peakKw": 2.26
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 339
+    "signedCumulative": 330
+  },
+  {
+    "id": "PM_06_Breaker33Feed",
+    "totalKwh": 325,
+    "totalKwhCumulative": 325,
+    "totalKwhIntegrated": 325,
+    "peakKw": 4.59,
+    "avgKw": 0.46,
+    "hourly": [
+      0.48,
+      0.3,
+      0.3,
+      0.33,
+      0.3,
+      0.27,
+      0.47,
+      0.37,
+      0.4,
+      0.37,
+      0.5,
+      0.33,
+      0.53,
+      0.52,
+      0.45,
+      0.38,
+      0.72,
+      0.52,
+      0.48,
+      0.52,
+      0.69,
+      0.55,
+      0.79,
+      0.48
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 7,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 6,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 5,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 6,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 6,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 6,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 8,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 7,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 10,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 14,
+        "peakKw": 0.95
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 8,
+        "peakKw": 1.38
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 11,
+        "peakKw": 2.64
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 11,
+        "peakKw": 2.64
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 8,
+        "peakKw": 2.64
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 6,
+        "peakKw": 2.64
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 6,
+        "peakKw": 0.47
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 13,
+        "peakKw": 2.66
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 11,
+        "peakKw": 2.66
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 9,
+        "peakKw": 2.66
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 12,
+        "peakKw": 2.66
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 23,
+        "peakKw": 4.36
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 12,
+        "peakKw": 4.41
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 11,
+        "peakKw": 4.41
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 13,
+        "peakKw": 4.41
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 16,
+        "peakKw": 4.41
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 10,
+        "peakKw": 4.41
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 18,
+        "peakKw": 4.41
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 28,
+        "peakKw": 4.59
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 17,
+        "peakKw": 4.64
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 7,
+        "peakKw": 4.64
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 325
   },
   {
     "id": "PM_20_EVChargerFeed",
-    "totalKwh": 328,
-    "totalKwhCumulative": 328,
-    "totalKwhIntegrated": 328,
+    "totalKwh": 308,
+    "totalKwhCumulative": 308,
+    "totalKwhIntegrated": 308,
     "peakKw": 4,
-    "avgKw": 0.46,
+    "avgKw": 0.44,
     "hourly": [
       0.34,
       0.4,
@@ -12386,24 +12766,19 @@ export const bmsExportMeters = [
       0.13,
       0.6,
       0.77,
-      0.6,
-      0.77,
-      0.9,
-      0.83,
-      0.6,
-      0.33,
-      0.7,
+      0.62,
+      0.72,
+      0.69,
+      0.66,
+      0.45,
+      0.34,
+      0.72,
       1.14,
       0.76,
       0.45,
       0.62
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 20,
-        "peakKw": 7
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -12548,400 +12923,215 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 1,
         "peakKw": 1
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0
       }
     ],
-    "sampleCount": 715,
-    "droppedOutliers": 40,
+    "sampleCount": 708,
+    "droppedOutliers": 37,
     "direction": "consumption",
-    "signedCumulative": 328
+    "signedCumulative": 308
   },
   {
-    "id": "PM_15_P3CFeed",
-    "totalKwh": 326,
-    "totalKwhCumulative": 326,
-    "totalKwhIntegrated": 326,
-    "peakKw": 3,
-    "avgKw": 0.46,
-    "hourly": [
-      0.21,
-      0.37,
-      0.33,
-      0.17,
-      0.43,
-      0.3,
-      0.23,
-      0.43,
-      0.33,
-      0.7,
-      1.17,
-      0.8,
-      0.77,
-      0.7,
-      0.67,
-      0.6,
-      0.37,
-      0.33,
-      0.27,
-      0.47,
-      0.31,
-      0.17,
-      0.52,
-      0.28
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 9,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 7,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 10,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 10,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 12,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 9,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 7,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 8,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 11,
-        "peakKw": 2.4
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 8,
-        "peakKw": 0.56
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 7,
-        "peakKw": 0.56
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 18,
-        "peakKw": 2.48
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 18,
-        "peakKw": 2.48
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 14,
-        "peakKw": 2.48
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 8,
-        "peakKw": 2.48
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 13,
-        "peakKw": 2.48
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 20,
-        "peakKw": 2.48
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 13,
-        "peakKw": 2.49
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 17,
-        "peakKw": 2.51
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 15,
-        "peakKw": 2.51
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 13,
-        "peakKw": 2.52
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 7,
-        "peakKw": 2.52
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 16,
-        "peakKw": 2.52
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 326
-  },
-  {
-    "id": "PM_06_Breaker33Feed",
-    "totalKwh": 318,
-    "totalKwhCumulative": 318,
-    "totalKwhIntegrated": 318,
-    "peakKw": 4.38,
-    "avgKw": 0.44,
+    "id": "PM_06_Breaker32Feed",
+    "totalKwh": 299,
+    "totalKwhCumulative": 299,
+    "totalKwhIntegrated": 299,
+    "peakKw": 2.43,
+    "avgKw": 0.42,
     "hourly": [
       0.45,
-      0.27,
       0.33,
+      0.37,
+      0.33,
+      0.17,
       0.3,
-      0.27,
-      0.27,
-      0.47,
-      0.37,
-      0.37,
-      0.37,
-      0.53,
       0.3,
-      0.53,
-      0.5,
-      0.47,
       0.37,
-      0.7,
-      0.5,
-      0.5,
-      0.5,
+      0.4,
+      0.33,
+      0.33,
+      0.63,
+      0.2,
+      0.48,
+      0.41,
+      0.48,
+      0.31,
+      0.62,
       0.69,
+      0.41,
+      0.62,
+      0.62,
       0.52,
-      0.72,
-      0.41
+      0.48
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 6,
-        "peakKw": 0.64
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 7,
-        "peakKw": 0.95
+        "kwh": 9,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-18",
-        "kwh": 6,
-        "peakKw": 0.95
+        "kwh": 12,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-19",
-        "kwh": 5,
-        "peakKw": 0.95
+        "kwh": 11,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-20",
-        "kwh": 6,
-        "peakKw": 0.95
+        "kwh": 10,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-21",
-        "kwh": 6,
-        "peakKw": 0.95
+        "kwh": 9,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-22",
-        "kwh": 6,
-        "peakKw": 0.95
+        "kwh": 10,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-23",
-        "kwh": 8,
-        "peakKw": 0.95
+        "kwh": 12,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-24",
         "kwh": 7,
-        "peakKw": 0.95
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-25",
-        "kwh": 10,
-        "peakKw": 0.95
+        "kwh": 8,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-26",
-        "kwh": 14,
-        "peakKw": 0.95
+        "kwh": 8,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-27",
-        "kwh": 8,
-        "peakKw": 1.38
+        "kwh": 9,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-28",
-        "kwh": 11,
-        "peakKw": 2.64
+        "kwh": 9,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-29",
-        "kwh": 11,
-        "peakKw": 2.64
+        "kwh": 7,
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-30",
         "kwh": 8,
-        "peakKw": 2.64
+        "peakKw": 2.43
       },
       {
         "date": "2026-08-31",
-        "kwh": 6,
-        "peakKw": 2.64
+        "kwh": 9,
+        "peakKw": 2.43
       },
       {
         "date": "2026-09-01",
-        "kwh": 6,
-        "peakKw": 0.47
+        "kwh": 8,
+        "peakKw": 0.39
       },
       {
         "date": "2026-09-02",
-        "kwh": 13,
-        "peakKw": 2.66
+        "kwh": 10,
+        "peakKw": 1.14
       },
       {
         "date": "2026-09-03",
-        "kwh": 11,
-        "peakKw": 2.66
+        "kwh": 15,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-04",
-        "kwh": 9,
-        "peakKw": 2.66
+        "kwh": 12,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-05",
-        "kwh": 12,
-        "peakKw": 2.66
+        "kwh": 10,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-06",
-        "kwh": 23,
-        "peakKw": 4.36
+        "kwh": 11,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-07",
-        "kwh": 12,
-        "peakKw": 4.41
+        "kwh": 13,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-08",
-        "kwh": 11,
-        "peakKw": 4.41
+        "kwh": 10,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-09",
         "kwh": 13,
-        "peakKw": 4.41
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-10",
-        "kwh": 16,
-        "peakKw": 4.41
+        "kwh": 14,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-11",
         "kwh": 10,
-        "peakKw": 4.41
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-12",
-        "kwh": 18,
-        "peakKw": 4.41
+        "kwh": 9,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-13",
-        "kwh": 28,
-        "peakKw": 4.59
+        "kwh": 11,
+        "peakKw": 1.98
       },
       {
         "date": "2026-09-14",
         "kwh": 11,
-        "peakKw": 4.64
+        "peakKw": 1.98
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 4,
+        "peakKw": 1.98
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 318
+    "signedCumulative": 299
   },
   {
     "id": "PM_19_ACApartmentFeed",
-    "totalKwh": 304,
-    "totalKwhCumulative": 304,
-    "totalKwhIntegrated": 306,
+    "totalKwh": 296,
+    "totalKwhCumulative": 296,
+    "totalKwhIntegrated": 298,
     "peakKw": 2.29,
-    "avgKw": 0.43,
+    "avgKw": 0.42,
     "hourly": [
       0,
       0,
@@ -12953,27 +13143,22 @@ export const bmsExportMeters = [
       0.13,
       0.13,
       0.57,
-      0.97,
-      1.17,
-      1.43,
-      1.2,
-      1.53,
+      1,
       1.13,
+      1.43,
+      1.17,
+      1.52,
+      1.1,
       0.93,
-      0.77,
-      0.13,
-      0.1,
+      0.79,
+      0.14,
+      0.07,
       0,
       0,
       0,
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 14,
-        "peakKw": 2.29
-      },
       {
         "date": "2026-08-17",
         "kwh": 8,
@@ -13118,55 +13303,55 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 14,
         "peakKw": 2.23
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 6,
+        "peakKw": 2.23
       }
     ],
-    "sampleCount": 713,
+    "sampleCount": 706,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 304
+    "signedCumulative": 296
   },
   {
     "id": "PM_10_Apartment410Feed",
-    "totalKwh": 302,
-    "totalKwhCumulative": 302,
-    "totalKwhIntegrated": 302,
-    "peakKw": 4.18,
-    "avgKw": 0.42,
+    "totalKwh": 290,
+    "totalKwhCumulative": 290,
+    "totalKwhIntegrated": 290,
+    "peakKw": 4.02,
+    "avgKw": 0.41,
     "hourly": [
-      0.28,
+      0.24,
       0.27,
       0.2,
       0.2,
-      0.33,
+      0.3,
       0.17,
       0.17,
       0.57,
-      0.7,
+      0.67,
       0.67,
       0.6,
-      0.67,
+      0.63,
       0.57,
-      0.53,
-      0.3,
-      0.4,
-      0.33,
-      0.5,
-      0.47,
-      0.47,
-      0.45,
+      0.55,
+      0.28,
+      0.41,
       0.31,
       0.52,
-      0.48
+      0.48,
+      0.45,
+      0.45,
+      0.31,
+      0.48,
+      0.34
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 11,
-        "peakKw": 5.44
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 25,
+        "kwh": 24,
         "peakKw": 5.44
       },
       {
@@ -13308,245 +13493,55 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 4.31
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 4.31
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 302
+    "signedCumulative": 290
   },
   {
-    "id": "PM_06_Breaker32Feed",
-    "totalKwh": 301,
-    "totalKwhCumulative": 301,
-    "totalKwhIntegrated": 301,
-    "peakKw": 2.43,
-    "avgKw": 0.42,
+    "id": "PM_10_Apartment02Feed",
+    "totalKwh": 280,
+    "totalKwhCumulative": 280,
+    "totalKwhIntegrated": 280,
+    "peakKw": 3.81,
+    "avgKw": 0.4,
     "hourly": [
-      0.45,
-      0.33,
+      0.34,
       0.37,
-      0.33,
+      0.3,
+      0.37,
+      0.17,
+      0.3,
       0.2,
       0.27,
-      0.3,
+      0.13,
       0.4,
+      0.23,
       0.37,
-      0.33,
-      0.37,
-      0.6,
-      0.2,
-      0.47,
-      0.43,
-      0.47,
-      0.33,
-      0.6,
-      0.7,
-      0.43,
-      0.59,
-      0.59,
+      0.5,
+      0.45,
+      0.41,
+      0.45,
+      0.52,
+      0.45,
+      0.76,
       0.55,
+      0.62,
+      0.34,
+      0.59,
       0.45
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 9,
-        "peakKw": 2.43
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 9,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 12,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 11,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 10,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 9,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 10,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 12,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 7,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 8,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 8,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 9,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 9,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 7,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 8,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 9,
-        "peakKw": 2.43
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 8,
-        "peakKw": 0.39
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 10,
-        "peakKw": 1.14
-      },
-      {
-        "date": "2026-09-03",
         "kwh": 15,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 12,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 10,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 11,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 13,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 10,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 13,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 14,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 10,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 9,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 11,
-        "peakKw": 1.98
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 8,
-        "peakKw": 1.98
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 301
-  },
-  {
-    "id": "PM_10_Apartment02Feed",
-    "totalKwh": 296,
-    "totalKwhCumulative": 296,
-    "totalKwhIntegrated": 296,
-    "peakKw": 3.81,
-    "avgKw": 0.41,
-    "hourly": [
-      0.38,
-      0.37,
-      0.3,
-      0.4,
-      0.17,
-      0.3,
-      0.23,
-      0.27,
-      0.13,
-      0.43,
-      0.23,
-      0.37,
-      0.53,
-      0.47,
-      0.4,
-      0.47,
-      0.53,
-      0.47,
-      0.77,
-      0.6,
-      0.66,
-      0.38,
-      0.62,
-      0.48
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 15,
-        "peakKw": 3.81
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 16,
         "peakKw": 3.81
       },
       {
@@ -13688,52 +13683,52 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 2.59
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 2.59
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 296
+    "signedCumulative": 280
   },
   {
     "id": "PM_03_PPB3Feed",
-    "totalKwh": 268,
-    "totalKwhCumulative": 268,
-    "totalKwhIntegrated": 268,
-    "peakKw": 1.19,
-    "avgKw": 0.37,
+    "totalKwh": 269,
+    "totalKwhCumulative": 269,
+    "totalKwhIntegrated": 269,
+    "peakKw": 1.2,
+    "avgKw": 0.38,
     "hourly": [
       0.14,
-      0.67,
-      0.17,
+      0.63,
+      0.2,
       0.3,
-      0.37,
-      0.37,
-      0.43,
+      0.33,
+      0.4,
+      0.47,
       0.2,
       0.43,
-      0.57,
-      0.17,
       0.6,
-      0.37,
-      0.6,
-      0.23,
-      0.3,
-      0.67,
+      0.2,
+      0.63,
+      0.33,
+      0.62,
+      0.24,
+      0.28,
+      0.69,
       0.1,
-      0.5,
-      0.47,
+      0.48,
+      0.48,
       0.14,
+      0.45,
       0.48,
-      0.48,
-      0.24
+      0.28
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 8,
-        "peakKw": 0.98
-      },
       {
         "date": "2026-08-17",
         "kwh": 8,
@@ -13876,42 +13871,237 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 8,
+        "kwh": 9,
         "peakKw": 1.19
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 8,
+        "peakKw": 1.2
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 268
+    "signedCumulative": 269
   },
   {
-    "id": "PM_19_AC02Feed",
-    "totalKwh": 151,
-    "totalKwhCumulative": 151,
-    "totalKwhIntegrated": 151,
+    "id": "PM_03_PP1BFeed",
+    "totalKwh": 152,
+    "totalKwhCumulative": 152,
+    "totalKwhIntegrated": 152,
     "peakKw": 1,
     "avgKw": 0.21,
     "hourly": [
-      0.21,
-      0.27,
+      0.17,
+      0.13,
+      0.2,
+      0.2,
+      0.13,
+      0.2,
       0.3,
+      0.13,
+      0.2,
+      0.2,
+      0.33,
+      0.23,
+      0.23,
+      0.21,
+      0.45,
+      0.14,
+      0.21,
+      0.31,
+      0.17,
+      0.24,
+      0.21,
+      0.17,
+      0.28,
+      0.1
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 5,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 5,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 4,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 2,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 5,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 4,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 2,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 5,
+        "peakKw": 0.53
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 6,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 5,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 6,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 5,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 8,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 7,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 8,
+        "peakKw": 0.58
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 6,
+        "peakKw": 0.34
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 6,
+        "peakKw": 0.34
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 6,
+        "peakKw": 0.36
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 5,
+        "peakKw": 0.36
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 5,
+        "peakKw": 0.37
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 6,
+        "peakKw": 0.37
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 3,
+        "peakKw": 0.37
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 6,
+        "peakKw": 0.37
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 6,
+        "peakKw": 0.44
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 5,
+        "peakKw": 0.44
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 7,
+        "peakKw": 0.44
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 3,
+        "peakKw": 0.44
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 3,
+        "peakKw": 0.44
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 5,
+        "peakKw": 0.44
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 3,
+        "peakKw": 0.44
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 0,
+    "direction": "consumption",
+    "signedCumulative": 152
+  },
+  {
+    "id": "PM_19_AC02Feed",
+    "totalKwh": 149,
+    "totalKwhCumulative": 149,
+    "totalKwhIntegrated": 149,
+    "peakKw": 1,
+    "avgKw": 0.21,
+    "hourly": [
+      0.17,
+      0.3,
+      0.27,
       0.1,
       0.2,
       0.2,
-      0.2,
-      0.3,
+      0.23,
+      0.27,
       0.2,
       0.13,
       0.27,
       0.2,
       0.17,
-      0.3,
-      0.13,
-      0.3,
-      0.2,
+      0.31,
+      0.14,
+      0.28,
+      0.21,
       0.17,
-      0.27,
+      0.28,
       0.1,
       0.28,
       0.28,
@@ -13920,13 +14110,8 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 5,
-        "peakKw": 0.25
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 6,
+        "kwh": 5,
         "peakKw": 0.25
       },
       {
@@ -14066,217 +14251,32 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 4,
+        "kwh": 5,
+        "peakKw": 0.25
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 3,
         "peakKw": 0.25
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 151
-  },
-  {
-    "id": "PM_03_PP1BFeed",
-    "totalKwh": 150,
-    "totalKwhCumulative": 150,
-    "totalKwhIntegrated": 150,
-    "peakKw": 1,
-    "avgKw": 0.21,
-    "hourly": [
-      0.17,
-      0.13,
-      0.17,
-      0.2,
-      0.13,
-      0.2,
-      0.33,
-      0.1,
-      0.2,
-      0.2,
-      0.3,
-      0.23,
-      0.23,
-      0.2,
-      0.43,
-      0.13,
-      0.2,
-      0.3,
-      0.17,
-      0.23,
-      0.21,
-      0.17,
-      0.28,
-      0.1
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 2,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 5,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 5,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 4,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 2,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 5,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 4,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 2,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 5,
-        "peakKw": 0.53
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 6,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 5,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 6,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 5,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 8,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 7,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 8,
-        "peakKw": 0.58
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 6,
-        "peakKw": 0.34
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 6,
-        "peakKw": 0.34
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 6,
-        "peakKw": 0.36
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 5,
-        "peakKw": 0.36
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 5,
-        "peakKw": 0.37
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 6,
-        "peakKw": 0.37
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 3,
-        "peakKw": 0.37
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 6,
-        "peakKw": 0.37
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 6,
-        "peakKw": 0.44
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 5,
-        "peakKw": 0.44
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 7,
-        "peakKw": 0.44
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 3,
-        "peakKw": 0.44
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 3,
-        "peakKw": 0.44
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 4,
-        "peakKw": 0.44
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 0,
-    "direction": "consumption",
-    "signedCumulative": 150
+    "signedCumulative": 149
   },
   {
     "id": "PM_06_Breaker30Feed",
-    "totalKwh": 138,
-    "totalKwhCumulative": 138,
-    "totalKwhIntegrated": 138,
+    "totalKwh": 137,
+    "totalKwhCumulative": 137,
+    "totalKwhIntegrated": 137,
     "peakKw": 1,
     "avgKw": 0.19,
     "hourly": [
       0.21,
       0.13,
-      0.37,
-      0.2,
+      0.33,
+      0.23,
       0.17,
       0.17,
       0.27,
@@ -14286,27 +14286,22 @@ export const bmsExportMeters = [
       0.13,
       0.17,
       0.17,
-      0.27,
-      0.17,
-      0.2,
-      0.13,
-      0.17,
-      0.13,
-      0.27,
       0.24,
+      0.17,
+      0.21,
+      0.14,
+      0.17,
+      0.14,
+      0.24,
+      0.28,
       0.17,
       0.21,
       0.17
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 4,
-        "peakKw": 0.21
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 5,
+        "kwh": 4,
         "peakKw": 0.6
       },
       {
@@ -14446,24 +14441,29 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
+        "kwh": 4,
+        "peakKw": 0.6
+      },
+      {
+        "date": "2026-09-15",
         "kwh": 3,
         "peakKw": 0.6
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 138
+    "signedCumulative": 137
   },
   {
     "id": "PM_25_LSKPanelFeed",
-    "totalKwh": 119,
-    "totalKwhCumulative": 119,
-    "totalKwhIntegrated": 119,
+    "totalKwh": 122,
+    "totalKwhCumulative": 122,
+    "totalKwhIntegrated": 122,
     "peakKw": 1,
     "avgKw": 0.17,
     "hourly": [
-      0.1,
+      0.14,
       0.07,
       0.07,
       0.03,
@@ -14471,29 +14471,24 @@ export const bmsExportMeters = [
       0.03,
       0.1,
       0,
-      0.1,
+      0.13,
       0.23,
       0.33,
-      0.17,
-      0.23,
-      0.27,
       0.2,
-      0.17,
       0.23,
-      0.23,
-      0.13,
-      0.27,
+      0.28,
       0.21,
-      0.31,
+      0.17,
+      0.24,
+      0.21,
+      0.14,
+      0.28,
+      0.21,
+      0.34,
       0.21,
       0.24
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 1
-      },
       {
         "date": "2026-08-17",
         "kwh": 2,
@@ -14636,57 +14631,57 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 5,
+        "kwh": 6,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 3,
         "peakKw": 1
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 119
+    "signedCumulative": 122
   },
   {
     "id": "PM_19_AC03Feed",
-    "totalKwh": 117,
-    "totalKwhCumulative": 117,
-    "totalKwhIntegrated": 117,
+    "totalKwh": 115,
+    "totalKwhCumulative": 115,
+    "totalKwhIntegrated": 115,
     "peakKw": 1,
     "avgKw": 0.16,
     "hourly": [
-      0.31,
+      0.28,
       0.1,
       0.03,
-      0.2,
       0.17,
+      0.2,
       0.13,
       0.23,
       0.17,
-      0.17,
+      0.13,
       0.13,
       0.07,
       0.33,
+      0.13,
       0.1,
+      0.14,
+      0.14,
+      0.28,
+      0.24,
       0.1,
       0.17,
-      0.13,
-      0.27,
-      0.23,
-      0.1,
-      0.2,
       0.03,
-      0.1,
+      0.14,
       0.28,
       0.17
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 4,
-        "peakKw": 0.22
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 5,
+        "kwh": 4,
         "peakKw": 0.22
       },
       {
@@ -14826,20 +14821,25 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 3,
+        "kwh": 4,
+        "peakKw": 0.2
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 2,
         "peakKw": 0.2
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 117
+    "signedCumulative": 115
   },
   {
     "id": "PM_10_WestApartmentFeed",
-    "totalKwh": 105,
-    "totalKwhCumulative": 105,
-    "totalKwhIntegrated": 105,
+    "totalKwh": 104,
+    "totalKwhCumulative": 104,
+    "totalKwhIntegrated": 104,
     "peakKw": 1,
     "avgKw": 0.15,
     "hourly": [
@@ -14856,24 +14856,19 @@ export const bmsExportMeters = [
       0.17,
       0.17,
       0.13,
-      0.13,
+      0.1,
       0.17,
-      0.13,
+      0.14,
       0.03,
-      0.2,
-      0.2,
-      0.2,
+      0.21,
+      0.21,
+      0.21,
       0.1,
       0.03,
       0.28,
       0.07
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 4.87
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -15018,52 +15013,52 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 4.44
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 4.44
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 6,
     "direction": "consumption",
-    "signedCumulative": 105
+    "signedCumulative": 104
   },
   {
     "id": "PM_15_ElevatorFeed",
-    "totalKwh": 95,
-    "totalKwhCumulative": 95,
-    "totalKwhIntegrated": 95,
+    "totalKwh": 94,
+    "totalKwhCumulative": 94,
+    "totalKwhIntegrated": 94,
     "peakKw": 1.19,
     "avgKw": 0.13,
     "hourly": [
       0,
-      0.23,
+      0.2,
       0.1,
       0.13,
       0.27,
       0.07,
       0.1,
-      0.1,
+      0.13,
       0,
       0.1,
-      0.13,
+      0.1,
       0.1,
       0.23,
-      0.2,
+      0.21,
       0.07,
       0.07,
-      0.13,
+      0.14,
       0.03,
       0.17,
-      0.17,
+      0.14,
       0.34,
       0.14,
-      0.1,
+      0.14,
       0.21
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 3,
-        "peakKw": 0.55
-      },
       {
         "date": "2026-08-17",
         "kwh": 3,
@@ -15206,25 +15201,30 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 3,
+        "kwh": 4,
+        "peakKw": 1.19
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 1,
         "peakKw": 1.19
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 95
+    "signedCumulative": 94
   },
   {
     "id": "PM_12_TheaterPanelFeed",
-    "totalKwh": 91,
-    "totalKwhCumulative": 91,
-    "totalKwhIntegrated": 149,
+    "totalKwh": 92,
+    "totalKwhCumulative": 92,
+    "totalKwhIntegrated": 150,
     "peakKw": 2,
     "avgKw": 0.23,
     "hourly": [
       0.76,
-      0.53,
+      0.5,
       0.37,
       0,
       0,
@@ -15232,31 +15232,26 @@ export const bmsExportMeters = [
       0,
       0,
       0.07,
-      0.23,
+      0.27,
       0.17,
-      0.16,
-      0.13,
-      0.13,
+      0.2,
+      0.17,
+      0.14,
       0,
       0,
       0,
-      0.03,
+      0.04,
       0.07,
       0.07,
-      0.41,
+      0.38,
       0.83,
-      0.52,
-      0.76
+      0.55,
+      0.72
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 4,
-        "peakKw": 1.32
-      },
-      {
         "date": "2026-08-17",
-        "kwh": 11,
+        "kwh": 10,
         "peakKw": 1.32
       },
       {
@@ -15396,20 +15391,25 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 6,
+        "kwh": 8,
+        "peakKw": 1.31
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 4,
         "peakKw": 1.31
       }
     ],
-    "sampleCount": 657,
+    "sampleCount": 650,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 91
+    "signedCumulative": 92
   },
   {
     "id": "PM_19_ApartmentDryerFeed",
-    "totalKwh": 82,
-    "totalKwhCumulative": 82,
-    "totalKwhIntegrated": 82,
+    "totalKwh": 81,
+    "totalKwhCumulative": 81,
+    "totalKwhIntegrated": 81,
     "peakKw": 1,
     "avgKw": 0.11,
     "hourly": [
@@ -15427,23 +15427,18 @@ export const bmsExportMeters = [
       0.07,
       0.07,
       0.03,
-      0.13,
+      0.14,
       0.17,
-      0.3,
-      0.2,
-      0.13,
-      0.37,
+      0.31,
+      0.21,
+      0.14,
+      0.38,
       0.21,
       0.24,
-      0.24,
+      0.21,
       0.28
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -15588,18 +15583,23 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 1,
         "peakKw": 5.21
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 5.21
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 23,
     "direction": "consumption",
-    "signedCumulative": 82
+    "signedCumulative": 81
   },
   {
     "id": "PM_15_P2CFeed",
-    "totalKwh": 78,
-    "totalKwhCumulative": 78,
-    "totalKwhIntegrated": 78,
+    "totalKwh": 80,
+    "totalKwhCumulative": 80,
+    "totalKwhIntegrated": 80,
     "peakKw": 1,
     "avgKw": 0.11,
     "hourly": [
@@ -15610,18 +15610,18 @@ export const bmsExportMeters = [
       0.1,
       0.07,
       0.03,
-      0.03,
+      0.07,
       0.13,
       0.13,
       0.07,
-      0.17,
-      0.1,
-      0.17,
-      0.17,
-      0.23,
-      0.17,
-      0.17,
       0.2,
+      0.13,
+      0.14,
+      0.17,
+      0.24,
+      0.17,
+      0.17,
+      0.21,
       0.07,
       0.03,
       0.17,
@@ -15629,11 +15629,6 @@ export const bmsExportMeters = [
       0.14
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 0.64
-      },
       {
         "date": "2026-08-17",
         "kwh": 2,
@@ -15778,12 +15773,17 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 2,
         "peakKw": 0.68
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 3,
+        "peakKw": 0.68
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "consumption",
-    "signedCumulative": 78
+    "signedCumulative": 80
   },
   {
     "id": "PM_19_2ndFloorDryerFeed",
@@ -15794,9 +15794,9 @@ export const bmsExportMeters = [
     "avgKw": 0.09,
     "hourly": [
       0.03,
-      0.03,
-      0.13,
       0.07,
+      0.13,
+      0.03,
       0.07,
       0.2,
       0.13,
@@ -15805,25 +15805,20 @@ export const bmsExportMeters = [
       0.07,
       0.07,
       0.07,
-      0.07,
+      0.1,
       0.03,
       0.07,
       0.07,
-      0.17,
+      0.14,
       0.1,
       0.1,
-      0.13,
+      0.14,
       0.07,
       0.17,
       0.1,
       0.03
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 2,
-        "peakKw": 0.14
-      },
       {
         "date": "2026-08-17",
         "kwh": 3,
@@ -15968,18 +15963,213 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 2,
         "peakKw": 0.13
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 2,
+        "peakKw": 0.13
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 66,
     "direction": "consumption",
     "signedCumulative": 66
   },
   {
+    "id": "PM_29_MDPWPanelFeed",
+    "totalKwh": 61,
+    "totalKwhCumulative": 61,
+    "totalKwhIntegrated": 61,
+    "peakKw": 0,
+    "avgKw": 0.09,
+    "hourly": [
+      0,
+      0.13,
+      0.03,
+      0.07,
+      0.13,
+      0.07,
+      0,
+      0,
+      0.03,
+      0.2,
+      0.03,
+      0.1,
+      0.07,
+      0.14,
+      0.1,
+      0.07,
+      0.07,
+      0.14,
+      0.17,
+      0.03,
+      0.07,
+      0.14,
+      0.17,
+      0.1
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 4,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 3,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 1,
+        "peakKw": 1
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 61,
+    "direction": "consumption",
+    "signedCumulative": 61
+  },
+  {
     "id": "PM_07_DryerFeed03",
-    "totalKwh": 60,
-    "totalKwhCumulative": 60,
-    "totalKwhIntegrated": 60,
+    "totalKwh": 59,
+    "totalKwhCumulative": 59,
+    "totalKwhIntegrated": 59,
     "peakKw": 0.04,
     "avgKw": 0.08,
     "hourly": [
@@ -15987,7 +16177,7 @@ export const bmsExportMeters = [
       0.03,
       0.03,
       0,
-      0.03,
+      0,
       0.03,
       0.1,
       0,
@@ -16001,19 +16191,14 @@ export const bmsExportMeters = [
       0.1,
       0,
       0.07,
-      0.27,
-      0.2,
+      0.28,
+      0.21,
       0.21,
       0.24,
       0.24,
       0.14
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -16158,202 +16343,17 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 3.92
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 3.92
       }
     ],
-    "sampleCount": 715,
-    "droppedOutliers": 50,
+    "sampleCount": 708,
+    "droppedOutliers": 49,
     "direction": "consumption",
-    "signedCumulative": 60
-  },
-  {
-    "id": "PM_29_MDPWPanelFeed",
-    "totalKwh": 60,
-    "totalKwhCumulative": 60,
-    "totalKwhIntegrated": 60,
-    "peakKw": 0,
-    "avgKw": 0.08,
-    "hourly": [
-      0,
-      0.13,
-      0.03,
-      0.07,
-      0.13,
-      0.07,
-      0,
-      0,
-      0.03,
-      0.17,
-      0.07,
-      0.1,
-      0.07,
-      0.13,
-      0.1,
-      0.07,
-      0.07,
-      0.13,
-      0.17,
-      0.03,
-      0.07,
-      0.1,
-      0.17,
-      0.1
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 4,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 3,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 1,
-        "peakKw": 1
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 60,
-    "direction": "consumption",
-    "signedCumulative": 60
+    "signedCumulative": 59
   },
   {
     "id": "PM_03_ElevatorFeed",
@@ -16372,9 +16372,9 @@ export const bmsExportMeters = [
       0.07,
       0.03,
       0.07,
-      0.07,
+      0.03,
       0.1,
-      0.07,
+      0.1,
       0.07,
       0.1,
       0.07,
@@ -16384,16 +16384,11 @@ export const bmsExportMeters = [
       0.03,
       0.1,
       0.03,
-      0.14,
-      0.03,
+      0.1,
+      0.07,
       0.07
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 2,
-        "peakKw": 0.08
-      },
       {
         "date": "2026-08-17",
         "kwh": 2,
@@ -16536,11 +16531,16 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
+        "kwh": 2,
+        "peakKw": 0.08
+      },
+      {
+        "date": "2026-09-15",
         "kwh": 1,
         "peakKw": 0.08
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 55,
     "direction": "consumption",
     "signedCumulative": 55
@@ -16571,19 +16571,14 @@ export const bmsExportMeters = [
       0.07,
       0.07,
       0.07,
-      0.3,
-      0.23,
+      0.31,
+      0.24,
       0.24,
       0.28,
       0.17,
       0.14
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
       {
         "date": "2026-08-17",
         "kwh": 1,
@@ -16728,9 +16723,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 3.94
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 3.94
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 43,
     "direction": "consumption",
     "signedCumulative": 55
@@ -16762,18 +16762,13 @@ export const bmsExportMeters = [
       0.03,
       0.03,
       0.1,
-      0.2,
+      0.21,
       0.31,
       0.28,
       0.31,
       0.03
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -16918,9 +16913,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 3.66
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 3.66
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 35,
     "direction": "consumption",
     "signedCumulative": 46
@@ -16950,20 +16950,15 @@ export const bmsExportMeters = [
       0.1,
       0.1,
       0.1,
-      0.13,
+      0.14,
       0.07,
-      0.13,
+      0.14,
       0.14,
       0.03,
       0.07,
       0.17
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.48
-      },
       {
         "date": "2026-08-17",
         "kwh": 2,
@@ -17108,38 +17103,43 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 1,
         "peakKw": 0.45
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.45
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 45,
     "direction": "consumption",
     "signedCumulative": 45
   },
   {
     "id": "PM_12_RPP_B_Feed",
-    "totalKwh": 40,
-    "totalKwhCumulative": 40,
-    "totalKwhIntegrated": 51,
-    "peakKw": 0.66,
-    "avgKw": 0.07,
+    "totalKwh": 42,
+    "totalKwhCumulative": 42,
+    "totalKwhIntegrated": 53,
+    "peakKw": 0.79,
+    "avgKw": 0.08,
     "hourly": [
       0.04,
       0.03,
       0.07,
       0.03,
-      0.03,
+      0.07,
       0.17,
       0.03,
       0.07,
       0.03,
       0.1,
       0.07,
-      0.07,
+      0.1,
       0.13,
-      0.03,
+      0.04,
       0.17,
       0.1,
-      0.03,
+      0.04,
       0.14,
       0.03,
       0.17,
@@ -17149,11 +17149,6 @@ export const bmsExportMeters = [
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.38
-      },
       {
         "date": "2026-08-17",
         "kwh": 2,
@@ -17298,20 +17293,25 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 2,
         "peakKw": 0.79
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 2,
+        "peakKw": 0.79
       }
     ],
-    "sampleCount": 704,
-    "droppedOutliers": 51,
+    "sampleCount": 697,
+    "droppedOutliers": 53,
     "direction": "generation",
-    "signedCumulative": -40
+    "signedCumulative": -42
   },
   {
     "id": "PM_19_AC01Feed",
-    "totalKwh": 38,
-    "totalKwhCumulative": 38,
-    "totalKwhIntegrated": 39,
+    "totalKwh": 39,
+    "totalKwhCumulative": 39,
+    "totalKwhIntegrated": 40,
     "peakKw": 0,
-    "avgKw": 0.05,
+    "avgKw": 0.06,
     "hourly": [
       0,
       0,
@@ -17320,8 +17320,8 @@ export const bmsExportMeters = [
       0,
       0.03,
       0.03,
-      0,
-      0.1,
+      0.07,
+      0.13,
       0.2,
       0.03,
       0,
@@ -17329,21 +17329,16 @@ export const bmsExportMeters = [
       0.03,
       0.07,
       0.03,
-      0.17,
-      0.07,
-      0.13,
+      0.1,
+      0.03,
+      0.1,
       0.07,
       0.14,
       0.07,
-      0.07,
+      0.14,
       0.07
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 4,
-        "peakKw": 3.68
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -17486,204 +17481,19 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 2,
+        "kwh": 4,
         "peakKw": 3.62
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 3,
+        "peakKw": 3.66
       }
     ],
-    "sampleCount": 714,
+    "sampleCount": 707,
     "droppedOutliers": 33,
     "direction": "consumption",
-    "signedCumulative": 38
-  },
-  {
-    "id": "PM_31_MWPanelFeed",
-    "totalKwh": 29,
-    "totalKwhCumulative": 29,
-    "totalKwhIntegrated": 29,
-    "peakKw": 0,
-    "avgKw": 0.04,
-    "hourly": [
-      0.03,
-      0.07,
-      0,
-      0.07,
-      0.03,
-      0.03,
-      0.03,
-      0.03,
-      0,
-      0.07,
-      0,
-      0.03,
-      0.1,
-      0.03,
-      0.03,
-      0.07,
-      0.03,
-      0.03,
-      0.07,
-      0.03,
-      0.07,
-      0,
-      0.07,
-      0.03
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 2,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 1,
-        "peakKw": 1
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 0,
-        "peakKw": 0
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 29,
-    "direction": "consumption",
-    "signedCumulative": 29
+    "signedCumulative": 39
   },
   {
     "id": "PM_19_AC1stFloorFeed",
@@ -17712,18 +17522,13 @@ export const bmsExportMeters = [
       0.03,
       0.03,
       0.03,
-      0.03,
+      0,
       0,
       0.14,
       0.1,
-      0.07
+      0.1
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 0.44
-      },
       {
         "date": "2026-08-17",
         "kwh": 2,
@@ -17866,20 +17671,215 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
+        "kwh": 1,
+        "peakKw": 0.41
+      },
+      {
+        "date": "2026-09-15",
         "kwh": 0,
         "peakKw": 0.41
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
+    "droppedOutliers": 27,
+    "direction": "consumption",
+    "signedCumulative": 27
+  },
+  {
+    "id": "PM_31_MWPanelFeed",
+    "totalKwh": 27,
+    "totalKwhCumulative": 27,
+    "totalKwhIntegrated": 27,
+    "peakKw": 0,
+    "avgKw": 0.04,
+    "hourly": [
+      0.03,
+      0.03,
+      0,
+      0.07,
+      0.03,
+      0.03,
+      0.03,
+      0.03,
+      0,
+      0.07,
+      0,
+      0.03,
+      0.1,
+      0.03,
+      0.03,
+      0.03,
+      0.03,
+      0.03,
+      0.07,
+      0.03,
+      0.07,
+      0,
+      0.07,
+      0.03
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 2,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 1,
+        "peakKw": 1
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 0,
+        "peakKw": 0
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0
+      }
+    ],
+    "sampleCount": 708,
     "droppedOutliers": 27,
     "direction": "consumption",
     "signedCumulative": 27
   },
   {
     "id": "PM_17_ChargerFeed",
-    "totalKwh": 21,
-    "totalKwhCumulative": 21,
-    "totalKwhIntegrated": 35,
+    "totalKwh": 23,
+    "totalKwhCumulative": 23,
+    "totalKwhIntegrated": 37,
     "peakKw": 0,
     "avgKw": 0.05,
     "hourly": [
@@ -17897,23 +17897,18 @@ export const bmsExportMeters = [
       0.07,
       0.07,
       0.07,
-      0.03,
+      0.04,
       0.07,
       0.11,
-      0.13,
-      0.13,
+      0.14,
+      0.14,
       0.07,
       0.07,
+      0.1,
       0.07,
-      0.07,
-      0.07
+      0.1
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -18056,19 +18051,24 @@ export const bmsExportMeters = [
       },
       {
         "date": "2026-09-14",
-        "kwh": 5,
+        "kwh": 7,
+        "peakKw": 3.1
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
         "peakKw": 3.1
       }
     ],
-    "sampleCount": 701,
-    "droppedOutliers": 29,
+    "sampleCount": 694,
+    "droppedOutliers": 31,
     "direction": "consumption",
-    "signedCumulative": 21
+    "signedCumulative": 23
   },
   {
     "id": "PM_17_HP02Feed",
-    "totalKwh": 17,
-    "totalKwhCumulative": 17,
+    "totalKwh": 16,
+    "totalKwhCumulative": 16,
     "totalKwhIntegrated": 44,
     "peakKw": 0.59,
     "avgKw": 0.06,
@@ -18086,9 +18086,9 @@ export const bmsExportMeters = [
       0.1,
       0.23,
       0.1,
-      0.27,
-      0.13,
-      0.2,
+      0.28,
+      0.14,
+      0.21,
       0.17,
       0.07,
       0,
@@ -18099,11 +18099,6 @@ export const bmsExportMeters = [
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -18248,202 +18243,17 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 4,
         "peakKw": 0.94
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.94
       }
     ],
-    "sampleCount": 688,
+    "sampleCount": 680,
     "droppedOutliers": 44,
     "direction": "consumption",
-    "signedCumulative": 17
-  },
-  {
-    "id": "PM_17_AHU01Feed",
-    "totalKwh": 12,
-    "totalKwhCumulative": 12,
-    "totalKwhIntegrated": 12,
-    "peakKw": 0.02,
-    "avgKw": 0.02,
-    "hourly": [
-      0,
-      0.03,
-      0,
-      0,
-      0,
-      0.07,
-      0,
-      0,
-      0.03,
-      0.03,
-      0,
-      0,
-      0.03,
-      0,
-      0.03,
-      0,
-      0,
-      0,
-      0.03,
-      0.03,
-      0.03,
-      0,
-      0.03,
-      0.03
-    ],
-    "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-17",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-18",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-19",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-20",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-21",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-22",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-23",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-24",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-25",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-26",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-27",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-28",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-29",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-30",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-08-31",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-01",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-02",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-03",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-04",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-05",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-06",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-07",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-08",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-09",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-10",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-11",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-12",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-13",
-        "kwh": 1,
-        "peakKw": 0.02
-      },
-      {
-        "date": "2026-09-14",
-        "kwh": 0,
-        "peakKw": 0.02
-      }
-    ],
-    "sampleCount": 715,
-    "droppedOutliers": 12,
-    "direction": "consumption",
-    "signedCumulative": 12
+    "signedCumulative": 16
   },
   {
     "id": "PM_17_AHU02Feed",
@@ -18480,11 +18290,6 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.02
-      },
-      {
         "date": "2026-08-17",
         "kwh": 1,
         "peakKw": 0.02
@@ -18628,12 +18433,207 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 1,
         "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.02
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 12,
     "direction": "consumption",
     "signedCumulative": 12
+  },
+  {
+    "id": "PM_17_AHU01Feed",
+    "totalKwh": 11,
+    "totalKwhCumulative": 11,
+    "totalKwhIntegrated": 11,
+    "peakKw": 0.02,
+    "avgKw": 0.02,
+    "hourly": [
+      0,
+      0.03,
+      0,
+      0,
+      0,
+      0.07,
+      0,
+      0,
+      0.03,
+      0.03,
+      0,
+      0,
+      0.03,
+      0,
+      0.03,
+      0,
+      0,
+      0,
+      0.03,
+      0.03,
+      0,
+      0,
+      0.03,
+      0.03
+    ],
+    "daily": [
+      {
+        "date": "2026-08-17",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-18",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-19",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-20",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-21",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-22",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-23",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-24",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-25",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-26",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-27",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-28",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-29",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-30",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-08-31",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-01",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-02",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-03",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-04",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-05",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-06",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-07",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-08",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-09",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-10",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-11",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-12",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-13",
+        "kwh": 1,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-14",
+        "kwh": 0,
+        "peakKw": 0.02
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.02
+      }
+    ],
+    "sampleCount": 708,
+    "droppedOutliers": 11,
+    "direction": "consumption",
+    "signedCumulative": 11
   },
   {
     "id": "PM_07_DryerFeed02",
@@ -18669,11 +18669,6 @@ export const bmsExportMeters = [
       0.04
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -18818,9 +18813,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 2
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 2
       }
     ],
-    "sampleCount": 700,
+    "sampleCount": 693,
     "droppedOutliers": 12,
     "direction": "stuck",
     "signedCumulative": -4
@@ -18828,8 +18828,8 @@ export const bmsExportMeters = [
   {
     "id": "PM_10_Apartment01Feed",
     "totalKwh": 0,
-    "totalKwhCumulative": 6,
-    "totalKwhIntegrated": 38,
+    "totalKwhCumulative": 7,
+    "totalKwhIntegrated": 37,
     "peakKw": 0.35,
     "avgKw": 0.06,
     "hourly": [
@@ -18846,11 +18846,11 @@ export const bmsExportMeters = [
       0.07,
       0.11,
       0.07,
+      0.08,
+      0.11,
+      0,
       0.07,
-      0.1,
       0.04,
-      0.07,
-      0.03,
       0,
       0,
       0.04,
@@ -18859,11 +18859,6 @@ export const bmsExportMeters = [
       0.08
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 1,
-        "peakKw": 0.78
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -19008,12 +19003,17 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 0.76
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.76
       }
     ],
-    "sampleCount": 671,
-    "droppedOutliers": 38,
+    "sampleCount": 664,
+    "droppedOutliers": 37,
     "direction": "stuck",
-    "signedCumulative": -6
+    "signedCumulative": -7
   },
   {
     "id": "PM_11_RTUFeed",
@@ -19049,11 +19049,6 @@ export const bmsExportMeters = [
       0
     ],
     "daily": [
-      {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0.01
-      },
       {
         "date": "2026-08-17",
         "kwh": 0,
@@ -19198,9 +19193,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 0.01
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.01
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "stuck",
     "signedCumulative": 2
@@ -19240,11 +19240,6 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 1.54
-      },
-      {
         "date": "2026-08-17",
         "kwh": 0,
         "peakKw": 1.54
@@ -19388,9 +19383,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 0.09
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0.26
       }
     ],
-    "sampleCount": 712,
+    "sampleCount": 705,
     "droppedOutliers": 0,
     "direction": "stuck",
     "signedCumulative": 0
@@ -19430,11 +19430,6 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
         "date": "2026-08-17",
         "kwh": 0,
         "peakKw": 0
@@ -19578,9 +19573,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 0
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0
       }
     ],
-    "sampleCount": 715,
+    "sampleCount": 708,
     "droppedOutliers": 0,
     "direction": "stuck",
     "signedCumulative": 0
@@ -19620,11 +19620,6 @@ export const bmsExportMeters = [
     ],
     "daily": [
       {
-        "date": "2026-08-16",
-        "kwh": 0,
-        "peakKw": 0
-      },
-      {
         "date": "2026-08-17",
         "kwh": 0,
         "peakKw": 0
@@ -19768,9 +19763,14 @@ export const bmsExportMeters = [
         "date": "2026-09-14",
         "kwh": 0,
         "peakKw": 0
+      },
+      {
+        "date": "2026-09-15",
+        "kwh": 0,
+        "peakKw": 0
       }
     ],
-    "sampleCount": 714,
+    "sampleCount": 707,
     "droppedOutliers": 0,
     "direction": "stuck",
     "signedCumulative": -1

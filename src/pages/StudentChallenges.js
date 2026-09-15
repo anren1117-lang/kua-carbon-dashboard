@@ -5,11 +5,17 @@ import { students } from '../data/students.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
-import { bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
-import { COMPOSED_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
+import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
 
 const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
+
+// Each source is annualized by its own window's seasonal share.
+const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
+  BMS_EXPORT_META.windowStartIso.slice(0, 10),
+  BMS_EXPORT_META.windowEndIso.slice(0, 10),
+);
 
 // Privacy-by-design: every public ranking aggregates at dorm level.
 // Individual students appear nowhere on this page. Per the project
@@ -34,10 +40,10 @@ export default function StudentChallenges() {
       let kwh = 0;
       if (mappedMeters.length > 0) {
         const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
-        kwh = windowKwh * COMPOSED_ANNUALIZE_FACTOR;
+        kwh = windowKwh * EXPORT_ANNUALIZE_FACTOR;
       } else {
         const snap = snapshotById[d.buildingId];
-        kwh = (snap?.energyUsedKwh ?? 0) * COMPOSED_ANNUALIZE_FACTOR;
+        kwh = (snap?.energyUsedKwh ?? 0) * SNAPSHOT_ANNUALIZE_FACTOR;
       }
       const mt = (kwh * KG_PER_KWH) / 1000;
       const kgPerStudent = d.population ? (mt * 1000) / d.population : 0;
