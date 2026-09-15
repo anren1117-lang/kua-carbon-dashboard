@@ -68,6 +68,26 @@ export function uploadToRows(text, fileName) {
   };
 }
 
+/**
+ * Ordered write plan for a replace-by-month save. The new row is INSERTED
+ * before the row it replaces is deleted, so a failure part-way through leaves
+ * the month with the old value rather than with nothing (composition is
+ * last-wins, so a momentary duplicate is harmless).
+ * @param {object[]} existingRows  saved ledger rows
+ * @param {object[]} newRows       rows about to be written
+ */
+export function planMonthSave(existingRows, newRows) {
+  const ops = [];
+  for (const r of newRows) {
+    const stale = existingRows.find((x) => (
+      x.source === r.source && !x.building && String(x.period_start).slice(0, 10) === r.period_start
+    ));
+    ops.push({ op: 'insert', row: r });
+    if (stale) ops.push({ op: 'delete', id: stale.id, meta: { period_start: stale.period_start, source: stale.source, kwh: stale.kwh } });
+  }
+  return ops;
+}
+
 function MeterTrendsUpload() {
   const { rows, error, insert, remove } = useTable(SCOPE2_TABLE, 'created_at', { ascending: true });
   const [upload, setUpload] = useState(null);
@@ -107,13 +127,10 @@ function MeterTrendsUpload() {
 
   const existingFor = (r) => ledgerRows.find((x) => x.source === r.source && String(x.period_start).slice(0, 10) === r.period_start);
 
-  // Replace-by-month, insert FIRST: a failure part-way leaves the old row in
-  // place rather than a month with nothing.
   const saveMonthRows = async (newRows) => {
-    for (const r of newRows) {
-      const stale = existingFor(r);
-      await insert(r);
-      if (stale) await remove(stale.id, { period_start: stale.period_start, source: stale.source, kwh: stale.kwh });
+    for (const op of planMonthSave(ledgerRows, newRows)) {
+      if (op.op === 'insert') await insert(op.row);
+      else await remove(op.id, op.meta);
     }
   };
 

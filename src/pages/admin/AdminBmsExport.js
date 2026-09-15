@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../../components/ModuleShell.js';
 import { ProvenancePill } from '../../components/ProvenancePill.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../../data/bmsExportApr2026.js';
-import { getBmsMeterMap, setBmsMeterMapping, clearBmsMeterMappings } from '../../data/bmsExportMapping.js';
+import { getBmsMeterMap, setBmsMeterMapping, clearBmsMeterMappings, hydrateBmsMeterMap } from '../../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../../data/assetInventory.js';
 
 // /admin/bms-export — read-only view of the parsed BMS Meter Trends
@@ -18,6 +18,18 @@ import { getEffectiveBuildings } from '../../data/assetInventory.js';
 export default function AdminBmsExport() {
   const [tick, setTick] = useState(0);
   const refresh = () => setTick((t) => t + 1);
+  // Pull the shared mapping once so this page shows what every admin sees,
+  // not just what this browser has in localStorage.
+  const [shared, setShared] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    hydrateBmsMeterMap().then((res) => {
+      if (cancelled) return;
+      setShared(res);
+      setTick((t) => t + 1);
+    });
+    return () => { cancelled = true; };
+  }, []);
   const [filter, setFilter] = useState('');
   const [showOnlyUnmapped, setShowOnlyUnmapped] = useState(false);
 
@@ -58,7 +70,12 @@ export default function AdminBmsExport() {
         <div style={styles.metaRow}>
           <ProvenancePill provenance="measured" />
           <span style={styles.metaText}>Source: <code>{BMS_EXPORT_META.sourceFile}</code> · parsed {BMS_EXPORT_META.generatedAt.slice(0, 10)}</span>
-          <span style={styles.metaText}>To refresh: re-run <code>node scripts/parseBmsExport.mjs &lt;newer.csv&gt; src/data/bmsExportApr2026.js</code> and commit.</span>
+          <span style={styles.metaText}>To refresh: re-run <code>node scripts/parseBmsExport.mjs &lt;newer.csv&gt; src/data/bmsExportSep2026.js</code> and commit.</span>
+          <span style={styles.metaText}>
+            {shared?.ok
+              ? `Meter→building mapping is shared with every admin (${shared.rows} row${shared.rows === 1 ? '' : 's'} saved).`
+              : 'Meter→building mapping is saved in this browser only. Apply supabase/migrations/20260915120000_bms_meter_map.sql to share it with the other admins.'}
+          </span>
         </div>
       </ModuleSection>
 

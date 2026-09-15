@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import Layout from './components/Layout';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
+import { hydrateBmsMeterMap } from './data/bmsExportMapping.js';
 
 // AdminLayout is heavy (nav dropdowns, login form, breadcrumb,
 // expiry handlers) and only matters for the small subset of users
@@ -181,6 +182,11 @@ function PageFallback() {
     </div>
   );
 }
+
+// Fill the shared meter→building mapping cache at startup. A missing table or
+// a slow network just leaves this browser's localStorage copy in place; pages
+// rendered before it lands pick it up on the next navigation.
+void hydrateBmsMeterMap();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -77,6 +77,8 @@ Scope 2 kWh is composed in exactly one place: `src/data/electricityLedger.js` (p
 
 Note that `KG_PER_KWH`-style constants — `(GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH` in Buildings, Hotspots, Executive, StudentChallenges, Renewables2, equivalents.js — are a *rate* (≈0.2344 kg/kWh) and don't move with the composed kWh (verified 400k–2.5M kWh). Leave them static.
 
+**Meter → building mapping.** `src/data/bmsExportMapping.js` decides which building each PM_* meter belongs to, and so which buildings show measured electricity. Precedence is DEFAULT_MAPPING → this browser's localStorage → the shared `bms_meter_map` table (shared wins: the mapping is a fact about the campus, not a per-admin preference). `getBmsMeterMap()` stays synchronous for the render paths that call it; `hydrateBmsMeterMap()` fills a module cache once at startup, and writes go to both stores. If the migration (`supabase/migrations/20260915120000_bms_meter_map.sql`) hasn't been applied, everything falls back to localStorage and `/admin/bms-export` says so.
+
 **Still seed-only:** `data/learningContent.js` and the LearnAgent narrative/quiz strings (module-level content, no hook available — the figures are written into prose and updated by hand when the headline moves), and `SCOPE2_TOTAL_MT` / `GROSS_MT` in `scopeTotals.js`, which are the fallback chain by design. If the headline moves materially, grep for the old value across `src/data/ap-content` excluded paths and update the prose.
 
 ### Supabase tables (canonical)

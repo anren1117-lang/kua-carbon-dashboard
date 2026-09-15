@@ -9,9 +9,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   DEFAULT_MAPPING, getBmsMeterMap, setBmsMeterMapping,
   clearBmsMeterMappings, metersForBuilding,
+  hydrateBmsMeterMap, isBmsMeterMapShared, __setSharedMeterMap,
 } from '../data/bmsExportMapping.js';
 
-beforeEach(() => { localStorage.clear(); });
+beforeEach(() => { localStorage.clear(); __setSharedMeterMap(null); });
 
 describe('getBmsMeterMap', () => {
   it('returns the default mapping when localStorage is empty', () => {
@@ -69,6 +70,69 @@ describe('clearBmsMeterMappings', () => {
   it('drops all overrides, leaving just the defaults', () => {
     setBmsMeterMapping('PM_03_MainFeed', 'b_miller');
     clearBmsMeterMappings();
+    expect(getBmsMeterMap()).toEqual(DEFAULT_MAPPING);
+  });
+});
+
+describe('shared mapping (bms_meter_map)', () => {
+  const fakeClient = (rows, { fail = false } = {}) => {
+    const calls = [];
+    const builder = {
+      select: () => Promise.resolve(fail ? { data: null, error: { message: 'relation does not exist' } } : { data: rows, error: null }),
+      upsert: (row) => { calls.push(['upsert', row]); return Promise.resolve({ error: null }); },
+      delete: () => ({ eq: (col, val) => { calls.push(['delete', val]); return Promise.resolve({ error: null }); },
+                       neq: () => { calls.push(['deleteAll']); return Promise.resolve({ error: null }); } }),
+    };
+    return { from: () => builder, calls };
+  };
+
+  it('hydrates shared rows and reports how many landed', async () => {
+    const c = fakeClient([{ meter_id: 'PM_03_MainFeed', building_id: 'b_miller' }]);
+    const res = await hydrateBmsMeterMap(c);
+    expect(res).toEqual({ ok: true, rows: 1 });
+    expect(isBmsMeterMapShared()).toBe(true);
+    expect(getBmsMeterMap().PM_03_MainFeed).toBe('b_miller');
+  });
+
+  it("keeps working on localStorage when the table isn't there", async () => {
+    setBmsMeterMapping('PM_44_Shop', 'b_shop', fakeClient([]));
+    const res = await hydrateBmsMeterMap(fakeClient(null, { fail: true }));
+    expect(res.ok).toBe(false);
+    expect(getBmsMeterMap().PM_44_Shop).toBe('b_shop');
+  });
+
+  it('lets a shared row win over this browser’s older edit', async () => {
+    setBmsMeterMapping('PM_03_MainFeed', 'b_local_guess', fakeClient([]));
+    await hydrateBmsMeterMap(fakeClient([{ meter_id: 'PM_03_MainFeed', building_id: 'b_agreed' }]));
+    expect(getBmsMeterMap().PM_03_MainFeed).toBe('b_agreed');
+  });
+
+  // The share is fire-and-forget by design, so the caller isn't blocked on the
+  // round-trip — let the microtasks run before asserting on it.
+  const flush = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+
+  it('writes a new mapping through to the shared table', async () => {
+    const c = fakeClient([]);
+    setBmsMeterMapping('PM_50_Lab', 'b_lab', c);
+    // Visible immediately, without waiting for the round-trip.
+    expect(getBmsMeterMap().PM_50_Lab).toBe('b_lab');
+    await flush();
+    expect(c.calls).toEqual([['upsert', expect.objectContaining({ meter_id: 'PM_50_Lab', building_id: 'b_lab' })]]);
+  });
+
+  it('removes a mapping from the shared table too', async () => {
+    const c = fakeClient([]);
+    __setSharedMeterMap({ PM_50_Lab: 'b_lab' });
+    setBmsMeterMapping('PM_50_Lab', '', c);
+    expect(getBmsMeterMap().PM_50_Lab).toBeUndefined();
+    await flush();
+    expect(c.calls).toEqual([['delete', 'PM_50_Lab']]);
+  });
+
+  it('clears shared rows as well as local ones', () => {
+    const c = fakeClient([]);
+    __setSharedMeterMap({ PM_03_MainFeed: 'b_miller' });
+    clearBmsMeterMappings(c);
     expect(getBmsMeterMap()).toEqual(DEFAULT_MAPPING);
   });
 });
