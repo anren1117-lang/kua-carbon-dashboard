@@ -6,7 +6,7 @@ import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } fro
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
-import { getBmsMeterMap } from '../data/bmsExportMapping.js';
+import { useBmsMeterMap } from '../hooks/useBmsMeterMap.js';
 import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
@@ -52,8 +52,10 @@ const CATEGORY_COLORS = {
 };
 
 export default function BuildingsPage() {
-  // Campus annual Scope 2 follows the live electricity ledger.
+  // Campus annual Scope 2 follows the live electricity ledger; the meter map
+  // arrives from the shared table after first paint.
   const s2 = useMeasuredScope2();
+  const meterMap = useBmsMeterMap();
   const [sortBy, setSortBy] = useState('kwh');
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState(null);
@@ -71,7 +73,6 @@ export default function BuildingsPage() {
     // SNAPSHOT_ANNUALIZE_FACTOR. Mixing YTD with annualized, or reusing one
     // window's factor for another, would give incomparable numbers across rows.
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
-    const meterMap = getBmsMeterMap();
     return getEffectiveBuildings().map((b) => {
       const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === b.id && m.direction !== 'stuck');
       let kwh = 0;
@@ -101,7 +102,7 @@ export default function BuildingsPage() {
         kgPerOccupant: b.occupants ? (mt * 1000) / b.occupants : 0,
       };
     });
-  }, []);
+  }, [meterMap]);
 
   const filtered = filter === 'all' ? rows : rows.filter((r) => r.category === filter);
   const sorted = [...filtered].sort((a, b) => {
@@ -381,11 +382,11 @@ function Field({ label, value }) {
 // chart (when BMS-mapped) or seasonal-projection bar (when not).
 function DormEnergySection({ rows }) {
   const [sortBy, setSortBy] = useState('perStudent');
+  // Hooks stay above every early return so the hook order can't change
+  // between renders.
+  const meterMap = useBmsMeterMap();
   const dorms = rows.filter((r) => r.category === 'Dorm' && r.dormPopulation > 0);
   if (dorms.length === 0) return null;
-
-  // Compute per-student kWh per day for each dorm (annual ÷ 365 ÷ pop)
-  const meterMap = getBmsMeterMap();
   const enriched = dorms.map((d) => {
     const annualKwh = d.kwh;
     const kwhPerStudentPerDay = (annualKwh / 365) / d.dormPopulation;
@@ -442,9 +443,8 @@ function DormEnergySection({ rows }) {
 // categories, since "per student" only makes sense for dorms).
 function CategoryEnergySection({ rows, category, denominatorKey, denominatorLabel, defaultOpen = false }) {
   const buildings = rows.filter((r) => r.category === category);
+  const meterMap = useBmsMeterMap();
   if (buildings.length === 0) return null;
-
-  const meterMap = getBmsMeterMap();
   const enriched = buildings.map((b) => {
     const annualKwh = b.kwh;
     const denominator = b[denominatorKey] || 0;
@@ -666,7 +666,7 @@ function BmsExportPanel({ buildingId }) {
   // Look up which PM devices are mapped to this building, sum their
   // daily kWh series, render as a sparkline + total. Renders nothing
   // when no PM is mapped — keeps the row clean for un-mapped buildings.
-  const map = getBmsMeterMap();
+  const map = useBmsMeterMap();
   const meterIds = Object.entries(map).filter(([, b]) => b === buildingId).map(([m]) => m);
   if (meterIds.length === 0) return null;
   const meters = meterIds.map((id) => bmsExportMeters.find((m) => m.id === id)).filter(Boolean);

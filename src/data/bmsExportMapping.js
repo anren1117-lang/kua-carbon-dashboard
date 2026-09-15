@@ -38,6 +38,28 @@ export const DEFAULT_MAPPING = {
 let sharedMap = {};
 let sharedLoaded = false;
 
+// The mapping changes after first paint (startup hydration, an admin edit), so
+// consumers that memoize per-building rows need to know. Version + listeners
+// back the useBmsMeterMap() hook in src/hooks/useBmsMeterMap.js.
+let version = 0;
+const listeners = new Set();
+
+function bumpVersion() {
+  version += 1;
+  for (const fn of listeners) {
+    try { fn(version); } catch { /* a bad listener must not break a save */ }
+  }
+}
+
+export function getBmsMeterMapVersion() {
+  return version;
+}
+
+export function subscribeBmsMeterMap(fn) {
+  listeners.add(fn);
+  return () => { listeners.delete(fn); };
+}
+
 async function client(injected) {
   if (injected) return injected;
   const mod = await import('../supabaseClient.js');
@@ -75,6 +97,7 @@ export async function hydrateBmsMeterMap(injectedClient) {
       data.filter((r) => r?.meter_id && r?.building_id).map((r) => [r.meter_id, r.building_id]),
     );
     sharedLoaded = true;
+    bumpVersion();
     return { ok: true, rows: data.length };
   } catch {
     return { ok: false, rows: 0 };
@@ -104,12 +127,14 @@ export function setBmsMeterMapping(meterId, buildingId, injectedClient) {
   if (buildingId) nextShared[meterId] = buildingId;
   else delete nextShared[meterId];
   sharedMap = nextShared;
+  bumpVersion();
   void shareMapping(meterId, buildingId, injectedClient);
 }
 
 export function clearBmsMeterMappings(injectedClient) {
   try { localStorage.removeItem(MAP_KEY); } catch { /* private window */ }
   sharedMap = {};
+  bumpVersion();
   (async () => {
     try {
       const supabase = await client(injectedClient);
@@ -122,6 +147,7 @@ export function clearBmsMeterMappings(injectedClient) {
 export function __setSharedMeterMap(map) {
   sharedMap = map ? { ...map } : {};
   sharedLoaded = Boolean(map);
+  bumpVersion();
 }
 
 // Reverse lookup: which PM meters belong to a given building?

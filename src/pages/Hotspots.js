@@ -10,7 +10,7 @@ import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } fro
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
-import { getBmsMeterMap } from '../data/bmsExportMapping.js';
+import { useBmsMeterMap } from '../hooks/useBmsMeterMap.js';
 import { COMPOSED_ANNUAL_KWH, SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
@@ -35,7 +35,7 @@ export default function Hotspots() {
   // should rank from the same source of truth, not a different one.
   // Both sources annualized the same way so values across rows are
   // comparable (envysionSnapshot is YTD through 2026-05-03, not annual).
-  const meterMap = getBmsMeterMap();
+  const meterMap = useBmsMeterMap();
   const bmsByBuilding = {};
   for (const m of bmsExportMeters) {
     if (m.direction === 'stuck') continue;
