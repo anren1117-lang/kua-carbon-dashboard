@@ -67,6 +67,14 @@ Pages already wired to live data:
 
 When adding a new measured-data table to Supabase, follow the same pattern: helper in scopeTotals.js, hook in src/hooks/, wire to the page that displays it. Each component flips estimated → measured independently — it's fine to have heating measured + fleet still estimated, etc.
 
+### Scope 2 electricity ledger (admin-fed)
+
+Scope 2 kWh is composed in exactly one place: `src/data/electricityLedger.js` (pure rules), seeded by `src/data/monthlyConsumption.js` (master-meter monthly totals) + `src/data/contiguousMonths2026.js` (monthly campus feed-sums). Rules: per month a BMS All Meters master total wins; otherwise the feed-sum is scaled by master ÷ feed-sum, calibrated on months that have both with complete feed coverage and a sane ratio (0.5–1.5). The YTD runs contiguously from Jan 1 of the reported year — the latest year that has a January — and stops at the first missing month and after the first partial month; anything it can't use comes back in `uncounted` with a reason. Month-range labels ("Jan–Apr") are derived via `ledgerSourceText()`, so page copy never hardcodes which months came from where.
+
+`useMeasuredScope2()` lays admin rows from `scope2_meter_readings` (campus-wide rows whose `source` is `bms_master_monthly` or `meter_trends_feed_sum`) over that seed and composes with the same functions. With no rows the result equals the static exports in `composedYtd.js` / `gridMix.js`, so the dashboard is unchanged until someone enters data. Admin entry: `/admin/scope-2/meter-trends` — daily Meter Trends CSV parsed in the browser (`feedMonthSums.js`) into one monthly row, or a typed master total, with a preview of the public composition before saving. `notes` on a row is admin-facing (filenames, capture details) and never reaches the public page; public caveats are derived, or carried from the seed month.
+
+**Known gap:** `SCOPE2_TOTAL_MT` / `GROSS_MT` in `scopeTotals.js` and ~15 pages (ScopeDonut, AISummary, PeerComparison, Hotspots, Scenarios, AnnualReport, LearnAgent, learningContent, …) still read the seed constants at module scope. Admin-entered months move `/scope-2` and every consumer of `useMeasuredScopeTotals()`, but not those pages. Route them through the hook before relying on admin data in production.
+
 ### Supabase tables (canonical)
 
 17 tables drive the live dashboard. The canonical list lives in `src/data/adminTableSources.js` (used by both AdminHome and AdminDataQuality):

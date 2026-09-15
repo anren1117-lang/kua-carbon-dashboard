@@ -1,19 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { reconciledMonths, CONTIGUOUS_LAST_DAY, FEED_TO_MASTER_SCALE } from '../data/contiguousMonths2026.js';
 import { monthlyReports } from '../data/monthlyConsumption.js';
 import {
+  seedLedger,
   ytdComponents,
+  reconciledMonths,
   COMPOSED_YTD_AS_OF,
   COMPOSED_YTD_DAYS,
   COMPOSED_YTD_DAYS_COVERED,
   COMPOSED_ANNUALIZE_FACTOR,
   SNAPSHOT_ANNUALIZE_FACTOR,
+  FEED_TO_MASTER_SCALE,
   annualizeFactorForWindow,
 } from '../data/composedYtd.js';
 
 describe('composed YTD — contiguous Jan 1 → anchor', () => {
-  it('anchors on the last full day of the contiguous export', () => {
-    expect(COMPOSED_YTD_AS_OF).toBe(CONTIGUOUS_LAST_DAY);
+  it('anchors on the last day of the contiguous seed record', () => {
+    expect(COMPOSED_YTD_AS_OF).toBe(seedLedger.asOf);
   });
 
   it('covers every day from Jan 1 to the anchor exactly once', () => {
@@ -22,16 +24,15 @@ describe('composed YTD — contiguous Jan 1 → anchor', () => {
     expect(COMPOSED_YTD_DAYS_COVERED).toBe(COMPOSED_YTD_DAYS);
   });
 
-  it('the last reconciled month ends on the anchor day', () => {
+  it('the last scaled month ends on the anchor day', () => {
     const last = reconciledMonths[reconciledMonths.length - 1];
-    expect(`${last.month}-${String(last.days).padStart(2, '0')}`).toBe(CONTIGUOUS_LAST_DAY);
+    expect(`${last.month}-${String(last.days).padStart(2, '0')}`).toBe(COMPOSED_YTD_AS_OF);
   });
 
   it('flags scaled months, and a master-meter capture wins over a scaled month', () => {
     const master = new Set(monthlyReports.map((r) => r.month));
-    const scaled = new Set(reconciledMonths.map((m) => m.month));
     for (const c of ytdComponents) {
-      expect(Boolean(c.reconciled)).toBe(scaled.has(c.period) && !master.has(c.period));
+      expect(Boolean(c.reconciled)).toBe(!master.has(c.period));
     }
   });
 

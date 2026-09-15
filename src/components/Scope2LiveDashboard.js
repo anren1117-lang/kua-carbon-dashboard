@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
-import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, SNAPSHOT_ANNUALIZE_FACTOR } from '../data/composedYtd.js';
+import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, SNAPSHOT_ANNUALIZE_FACTOR, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { ProvenancePill } from './ProvenancePill.js';
@@ -409,7 +409,7 @@ export function Scope2LiveDashboard() {
               {(() => {
                 const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
                 return monthlyData.map((m, i) => {
-                  const measured = measuredKeys.has(`2026-${String(i + 1).padStart(2, '0')}`);
+                  const measured = measuredKeys.has(`${COMPOSED_YTD_AS_OF.slice(0, 4)}-${String(i + 1).padStart(2, '0')}`);
                   return (
                     <div
                       key={i}

@@ -54,9 +54,9 @@ const TOTAL_PCT = GRID_MIX_FACTORS.reduce((s, f) => s + f.mixPercent, 0); // 100
 // Per-fuel rows are derived: kwhUsed = COMPOSED_YTD_KWH × mix-fraction;
 // mtCO2e = kwhUsed × emissionFactor. When COMPOSED_YTD_KWH changes
 // (new BMS data lands), every row in this array recomputes.
-export const gridMix = (() => {
+export function composeGridMix(ytdKwh) {
   const rows = GRID_MIX_FACTORS.map((f) => {
-    const kwhUsed = Math.round(COMPOSED_YTD_KWH * (f.mixPercent / TOTAL_PCT));
+    const kwhUsed = Math.round(ytdKwh * (f.mixPercent / TOTAL_PCT));
     const mtCO2e = +(kwhUsed * f.emissionFactor).toFixed(2);
     return {
       source: f.source,
@@ -71,13 +71,23 @@ export const gridMix = (() => {
   const totalMt = rows.reduce((s, r) => s + r.mtCO2e, 0);
   rows.forEach((r) => { r.percentOfEmissions = totalMt > 0 ? +((r.mtCO2e / totalMt) * 100).toFixed(1) : 0; });
   return rows;
-})();
+}
+
+export const gridMix = composeGridMix(COMPOSED_YTD_KWH);
 
 export const GRID_MIX_TOTAL_MTCO2E = +gridMix.reduce((s, r) => s + r.mtCO2e, 0).toFixed(2);
 // YTD electricity flows through from composedYtd.js — not hardcoded.
 export const GRID_MIX_TOTAL_KWH = COMPOSED_YTD_KWH;
 // Annual scope-2 mtCO2e at the current grid mix.
 export const GRID_MIX_ANNUAL_MTCO2E = +(GRID_MIX_TOTAL_MTCO2E * COMPOSED_ANNUALIZE_FACTOR).toFixed(1);
+
+/** YTD + annual Scope 2 mtCO₂e for any composed YTD and Year 1 kWh, with the
+ *  same per-fuel rounding as the constants above — for live admin-fed data. */
+export function composeScope2Mt(ytdKwh, year1Kwh) {
+  if (!(ytdKwh > 0)) return { ytdMt: 0, annualMt: 0 };
+  const ytdMt = +composeGridMix(ytdKwh).reduce((s, r) => s + r.mtCO2e, 0).toFixed(2);
+  return { ytdMt, annualMt: +(ytdMt * (year1Kwh / ytdKwh)).toFixed(1) };
+}
 
 export const GRID_MIX_YEAR = 2024;            // ISO-NE factor source year
 export const KUA_USAGE_YEAR = 2026;            // KUA usage year

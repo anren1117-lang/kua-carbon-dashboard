@@ -3,26 +3,10 @@ import { ProvenancePill } from './ProvenancePill.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportSep2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
-import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
-import { monthlyReports } from '../data/monthlyConsumption.js';
-import { FEED_TO_MASTER_SCALE } from '../data/contiguousMonths2026.js';
+import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { CAMPUS_FEED_RE } from '../data/campusFeeds.js';
-import {
-  ytdComponents,
-  COMPOSED_YTD_KWH,
-  COMPOSED_YTD_AS_OF,
-  COMPOSED_YTD_DAYS_COVERED,
-  COMPOSED_ANNUAL_KWH,
-  COMPOSED_ANNUALIZE_FACTOR,
-  year1Months,
-  COMPOSED_YEAR1_KWH,
-  COMPOSED_LINEAR_ANNUALIZE_FACTOR,
-} from '../data/composedYtd.js';
-// COMPOSED_YTD_MTCO2E and COMPOSED_ANNUAL_MTCO2E now come from gridMix
-// (GRID_MIX_TOTAL_MTCO2E / GRID_MIX_ANNUAL_MTCO2E) — same values, but
-// the cited per-fuel emission factors live there.
-const COMPOSED_YTD_MTCO2E    = GRID_MIX_TOTAL_MTCO2E;
-const COMPOSED_ANNUAL_MTCO2E = GRID_MIX_ANNUAL_MTCO2E;
+import { MONTH_ABBR, ledgerSourceText, monthRangeLabel } from '../data/electricityLedger.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
 // Eight measured Scope 2 features unlocked by the parsed BMS export:
 //
@@ -50,8 +34,46 @@ function isSolarFeed(meterId) {
   return /Solar/i.test(meterId);
 }
 
+// Month-range copy derived from the live ledger, so the text follows the data
+// as admins add months instead of naming fixed ranges.
+const monthName = (key) => `${MONTH_ABBR[parseInt(key.slice(5, 7), 10) - 1]} ${key.slice(0, 4)}`;
+function listMonths(keys) {
+  if (keys.length === 0) return '';
+  const year = keys[0].slice(0, 4);
+  return keys.every((k) => k.slice(0, 4) === year) ? `${monthRangeLabel(keys)} ${year}` : keys.map(monthName).join(', ');
+}
+function ledgerLegend(ledger) {
+  const { master, scaled } = ledger.ranges;
+  return [master && `master meter ${master}`, scaled && `scaled building feeds ${scaled}`].filter(Boolean).join('; ');
+}
+function ledgerFootnote(ledger) {
+  const { master, scaled } = ledger.ranges;
+  const many = (range) => /[–,]/.test(range);
+  const scaleText = ledger.scale ? ledger.scale.value.toFixed(3) : '';
+  return [
+    master && (many(master)
+      ? `${master} are campus master-meter totals.`
+      : `${master} is a campus master-meter total.`),
+    scaled && ledger.scale && (many(scaled)
+      ? `${scaled} are building-feed totals scaled ×${scaleText} to match the master meter (see the uncertainty note under the year-to-date table).`
+      : `${scaled} is a building-feed total scaled ×${scaleText} to match the master meter (see the uncertainty note under the year-to-date table).`),
+  ].filter(Boolean).join(' ');
+}
+
 export function Scope2BmsInsights() {
   const [topLimit, setTopLimit] = useState(10);
+  // Scope 2 composition: the seed data files with any admin ledger months
+  // (/admin/scope-2/meter-trends) laid over them.
+  const s2 = useMeasuredScope2();
+  const { ledger } = s2;
+  const scale = ledger.scale;
+  const scaledInUse = Boolean(scale && ledger.ranges.scaled);
+  const scaleMonthsText = scale ? listMonths(scale.months) : '';
+  const ratios = scale ? scale.perMonth.map((r) => r.ratio) : [];
+  const spreadPct = ratios.length > 1 ? Math.max(...ratios.map((r) => Math.abs(r / scale.value - 1))) * 100 : null;
+  const excludedNotes = scale ? scale.excluded.filter((x) => x.note) : [];
+  // Positive when the building feeds read HIGHER than the master meter.
+  const feedVsMasterPct = scale ? Math.round((1 / scale.value - 1) * 100) : 0;
 
   const insights = useMemo(() => {
     // Hour-of-day curve: average across all main/panel feeds (excludes
@@ -134,8 +156,7 @@ export function Scope2BmsInsights() {
           insights that follow — load curve, solar, meter health, and the daily/weekly patterns — are{' '}
           <ProvenancePill provenance="measured" />
           {' '}from these BMS cumulative-kWh counters. The year-to-date and annual figures below come from
-          a separate contiguous record — Jan–Apr master-meter captures, then May onward from a daily
-          Meter Trends export — rather than from this hourly window.
+          a separate contiguous record — {ledgerSourceText(ledger)} — rather than from this hourly window.
         </p>
       </header>
 
@@ -143,11 +164,15 @@ export function Scope2BmsInsights() {
       <section style={styles.card}>
         <h3 style={styles.cardTitle}>Year-to-date electricity, composed from measured sources</h3>
         <p style={styles.cardHint}>
-          The YTD figure is built from each measured input — full-month master-meter captures for Jan–Apr,
-          then May onward from the contiguous daily Meter Trends export. The building feeds in that export
-          sum about {Math.round((1 / FEED_TO_MASTER_SCALE - 1) * 100)}% above the master meter, so those months are
-          scaled ×{FEED_TO_MASTER_SCALE.toFixed(3)} to master-meter equivalent (marked “Measured · scaled”).
-          Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of contiguous measured consumption.
+          The YTD figure is built from each measured input: {ledgerSourceText(ledger)}.
+          {scaledInUse && (
+            <>
+              {' '}The building feeds in that export sum about {Math.abs(feedVsMasterPct)}%{' '}
+              {feedVsMasterPct >= 0 ? 'above' : 'below'} the master meter, so those months are
+              scaled ×{scale.value.toFixed(3)} (marked “Measured · scaled”).
+            </>
+          )}
+          {' '}Through {s2.asOf}, that’s {s2.ytdDays} days of contiguous measured consumption.
         </p>
         <table style={styles.ytdTable}>
           <thead>
@@ -159,7 +184,7 @@ export function Scope2BmsInsights() {
             </tr>
           </thead>
           <tbody>
-            {ytdComponents.map((c, i) => (
+            {s2.ytdComponents.map((c, i) => (
               <tr key={i}>
                 <td style={styles.ytdTd}>{c.label}</td>
                 <td style={styles.ytdTd}>{c.days}</td>
@@ -167,42 +192,61 @@ export function Scope2BmsInsights() {
                   {c.kwh.toLocaleString()}
                 </td>
                 <td style={styles.ytdTdSrc}>
-                  <ProvenancePill provenance="measured" label={c.reconciled ? 'Measured · scaled' : undefined} />
+                  <ProvenancePill
+                    provenance={c.estimated ? 'estimated' : 'measured'}
+                    label={c.reconciled ? (c.estimated ? 'Estimated · scaled' : 'Measured · scaled') : undefined}
+                  />
                   <code style={{ marginLeft: 6, fontSize: 11 }}>{c.source}</code>
                 </td>
               </tr>
             ))}
             <tr style={styles.ytdTotal}>
               <td style={styles.ytdTd}><strong>YTD total</strong></td>
-              <td style={styles.ytdTd}><strong>{COMPOSED_YTD_DAYS_COVERED}</strong></td>
+              <td style={styles.ytdTd}><strong>{s2.ytdDays}</strong></td>
               <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: '#86efac', fontSize: 15 }}>
-                {COMPOSED_YTD_KWH.toLocaleString()}
+                {s2.ytdKwh.toLocaleString()}
               </td>
               <td style={styles.ytdTdSrc}>
-                <strong>{COMPOSED_YTD_MTCO2E} mtCO₂e</strong> via ISO-NE 2024 effective rate
+                <strong>{s2.ytdMt} mtCO₂e</strong> via ISO-NE 2024 effective rate
               </td>
             </tr>
             <tr style={styles.ytdAnnual}>
-              <td style={styles.ytdTd}>Annualized × {COMPOSED_ANNUALIZE_FACTOR.toFixed(2)}</td>
+              <td style={styles.ytdTd}>Annualized × {s2.annualizeFactor.toFixed(2)}</td>
               <td style={styles.ytdTd}>365</td>
               <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: '#cbd5e1' }}>
-                {COMPOSED_ANNUAL_KWH.toLocaleString()}
+                {s2.year1Kwh.toLocaleString()}
               </td>
               <td style={styles.ytdTdSrc}>
-                {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — central value of the {Math.round(COMPOSED_ANNUAL_MTCO2E * 0.95)}–{Math.round(COMPOSED_ANNUAL_MTCO2E * 1.05)} cross-validated ±5% range
+                {s2.annualMt} mtCO₂e/yr — central value of the {Math.round(s2.annualMt * 0.95)}–{Math.round(s2.annualMt * 1.05)} ±5% working band (the scale on the scaled months, plus the projected rest of the year)
               </td>
             </tr>
           </tbody>
         </table>
         <div style={styles.todayTarget}>
-          <div><span style={styles.ttLabel}>Today:</span> Each row above is a measured input. Where two sources overlap, the master meter wins: Jan–Apr use the monthly master-meter captures, and the daily export is used only from May onward. Its building-feed total is scaled ×{FEED_TO_MASTER_SCALE.toFixed(3)} — the ratio between the master meter and the feed total in Feb–Apr, when both were fully reporting. (January is left out: eight feeds have no readings Jan 1–19.) Why the feeds read high isn't pinned down, so we match them to the master meter rather than guess.</div>
-          <div><span style={styles.ttLabel}>Target:</span> Replace each scaled month with a true master-meter monthly capture from the All Meters page — ground truth that needs no scale factor. Until then, the flat scale assumes the feed-to-master relationship measured in late winter and spring holds through summer. Feb–Apr ratios ranged 0.856–0.884, within about ±2% of each other. January can't confirm that: filling its missing feeds from their late-January averages puts its ratio near 0.77, which would make the scaled months about 12% lower and the annual closer to 370 mtCO₂e. We can't yet tell whether those feeds were dark or just unlogged — so treat the scaled months as ±3% if the spring relationship holds, and possibly as much as 12% high.</div>
+          <div><span style={styles.ttLabel}>Today:</span> Each row above is a measured input. Where two sources overlap, the master meter wins.
+            {scaledInUse ? (
+              <>
+                {' '}Months without a master total use the daily export’s building-feed total, scaled ×{scale.value.toFixed(3)} — the ratio between the master meter and the feed total in {scaleMonthsText}, when both were fully reporting.
+                {excludedNotes.map((x) => (
+                  <React.Fragment key={x.month}>{' '}{monthName(x.month)} is left out of that ratio: {x.note}</React.Fragment>
+                ))}
+                {' '}Why the feeds read {feedVsMasterPct >= 0 ? 'high' : 'low'} isn’t pinned down, so we match them to the master meter rather than guess.
+              </>
+            ) : ' Every month shown is a master-meter total, so no scale factor is in use.'}</div>
+          <div><span style={styles.ttLabel}>Target:</span> {scaledInUse ? (
+              <>
+                Replace each scaled month with a true master-meter monthly capture from the All Meters page — ground truth that needs no scale factor. Until then, the flat scale assumes the feed-to-master relationship measured in {scaleMonthsText} holds for the scaled months.{' '}
+                {spreadPct === null
+                  ? 'With a single calibration month there is no spread yet to judge it by.'
+                  : `Calibration-month ratios ranged ${Math.min(...ratios)}–${Math.max(...ratios)}, within about ±${Math.max(1, Math.round(spreadPct))}% of the scale — treat the scaled months as roughly that good if the relationship holds${excludedNotes.length ? ', and weigh the caveat above' : ''}.`}
+              </>
+            ) : 'Keep adding each month’s master-meter total as it closes.'}</div>
         </div>
       </section>
 
-      <Year1ProjectionSection />
+      <Year1ProjectionSection s2={s2} />
 
-      <TimePatternsSection />
+      <TimePatternsSection s2={s2} />
 
       {/* Window summary cards */}
       <div style={styles.summaryGrid}>
@@ -394,7 +438,15 @@ export function Scope2BmsInsights() {
 }
 
 // ─── Year 1 projection (seasonally anchored on the data you input) ───
-function Year1ProjectionSection() {
+function Year1ProjectionSection({ s2 }) {
+  // Live composition (seed + admin ledger months). The names are kept from
+  // the static composedYtd exports this section read before it went live.
+  const year1Months = s2.year1Months;
+  const COMPOSED_YTD_KWH = s2.ytdKwh;
+  const COMPOSED_YEAR1_KWH = s2.year1Kwh;
+  const COMPOSED_ANNUALIZE_FACTOR = s2.annualizeFactor;
+  const COMPOSED_LINEAR_ANNUALIZE_FACTOR = s2.linearFactor;
+  const COMPOSED_ANNUAL_MTCO2E = s2.annualMt;
   const max = Math.max(...year1Months.map((m) => m.kwh));
   const measuredMonths = year1Months.filter((m) => m.provenance === 'measured');
   // The measured YTD, including the measured days of a partial month — a
@@ -411,8 +463,8 @@ function Year1ProjectionSection() {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the data you uploaded)</h3>
       <p style={styles.cardHint}>
-        Built from the measured months already in the dashboard — Jan–Apr master-meter captures
-        plus the scaled totals from May onward. Those months anchor a calibrated annual baseline
+        Built from the measured months already in the dashboard — {ledgerSourceText(s2.ledger)}.
+        Those months anchor a calibrated annual baseline
         that the rest of the year is projected against using NH's heating-driven seasonal shape,
         rather than naive linear annualization, which ignores where in the year the data falls.
       </p>
@@ -427,7 +479,7 @@ function Year1ProjectionSection() {
       <Year1Chart year1Months={year1Months} totalKwh={COMPOSED_YEAR1_KWH} />
 
       <div style={styles.legendRow}>
-        <LegendDot color="#22c55e">Measured (master meter Jan–Apr; scaled building feeds from May)</LegendDot>
+        <LegendDot color="#22c55e">Measured ({ledgerLegend(s2.ledger)})</LegendDot>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
           <span style={{ width: 10, height: 10, background: '#475569', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.25) 4px, rgba(0,0,0,0.25) 6px)', borderRadius: 2, display: 'inline-block' }} />
           Projected (NH seasonal shape)
@@ -438,7 +490,7 @@ function Year1ProjectionSection() {
         </span>
       </div>
       <div style={{ marginTop: 8, fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
-        "Measured" means metered, not modelled. Jan–Apr are the campus master-meter totals; May onward are building-feed totals scaled ×{FEED_TO_MASTER_SCALE.toFixed(3)} to match the master meter (see the uncertainty note under the year-to-date table). Neither implies every submeter underneath is reporting — several PM_17_HP* heat-pump submeters are stuck (see Meter Health), but their loads still pass through the master meter and the main feeds.
+        "Measured" means metered, not modelled. {ledgerFootnote(s2.ledger)} Neither implies every submeter underneath is reporting — several PM_17_HP* heat-pump submeters are stuck (see Meter Health), but their loads still pass through the master meter and the main feeds.
       </div>
 
       <div style={styles.todayTarget}>
@@ -651,18 +703,18 @@ function Year1Chart({ year1Months, totalKwh }) {
 // pattern looks the way it does. The analysis paragraphs are
 // data-driven (peak day computed from the data, anomaly detected
 // statistically, etc.) rather than canned text.
-function TimePatternsSection() {
+function TimePatternsSection({ s2 }) {
   const [view, setView] = useState('day');
-  const data = useMemo(() => buildTimePatterns(), []);
+  const data = useMemo(() => buildTimePatterns(s2.ytdComponents), [s2.ytdComponents]);
 
   return (
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Pattern across time scales</h3>
       <p style={styles.cardHint}>
         Same campus electricity, three resolutions. Daily and Weekly are rolled up from the 30-day
-        hourly export (the operational window shown above). Monthly uses the same Jan–Sep record as
-        the year-to-date table — master-meter captures for Jan–Apr, scaled daily-export totals from
-        May. Each view comes with a what-and-why analysis built from the data itself.
+        hourly export (the operational window shown above). Monthly uses the same record as the
+        year-to-date table — {ledgerSourceText(s2.ledger)}. Each view comes with a what-and-why
+        analysis built from the data itself.
       </p>
       <div style={styles.tabRow}>
         <button type="button" onClick={() => setView('day')}   style={{ ...styles.tab,   ...(view === 'day'   ? styles.tabActive : {}) }}>Daily</button>
@@ -677,7 +729,7 @@ function TimePatternsSection() {
   );
 }
 
-function buildTimePatterns() {
+function buildTimePatterns(ytdRows) {
   // Daily campus totals from the CSV — sum across consumption feeds
   // by date.
   const dailyKwhByDate = new Map();
@@ -718,9 +770,9 @@ function buildTimePatterns() {
     .map((w) => ({ ...w, kwh: Math.round(w.kwh), avgPerDay: Math.round(w.kwh / w.days) }));
 
   // Monthly: the same contiguous record as the YTD table — master-meter
-  // captures (Jan–Apr) plus scaled daily-export totals (May onward).
+  // totals where they exist, scaled daily-export feed-sums otherwise.
   const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthly = ytdComponents.map((c) => {
+  const monthly = ytdRows.map((c) => {
     const [yyyy, mm] = c.period.split('-').map((s) => parseInt(s, 10));
     return {
       month: c.period,
@@ -914,7 +966,7 @@ function MonthlyView({ data }) {
           },
           {
             label: 'Monthly vs the hourly window',
-            text: `Monthly uses the same contiguous record as the year-to-date table: Jan–Apr master-meter captures, then scaled totals from the Jan–Sep daily export (darker bars; see the uncertainty note under that table). The 30-day hourly export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) feeds the Daily and Weekly views instead.`
+            text: `Monthly uses the same contiguous record as the year-to-date table: master-meter totals where they exist, scaled building-feed totals otherwise (darker bars; see the uncertainty note under that table). The 30-day hourly export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) feeds the Daily and Weekly views instead.`
           },
         ]}
       />

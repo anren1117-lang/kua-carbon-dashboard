@@ -59,10 +59,12 @@ export function useTable(table, orderBy = 'created_at', { ascending = false } = 
     await refresh();
   };
 
-  const remove = async (id) => {
+  // `meta` carries identifying fields of the deleted row into the audit log —
+  // without it a delete+insert replacement is unreadable after the fact.
+  const remove = async (id, meta) => {
     const { error } = await supabase.from(table).delete().eq('id', id);
     if (error) throw error;
-    logAdminWrite({ action: 'delete', table, payload: { id } });
+    logAdminWrite({ action: 'delete', table, payload: { id, ...(meta || {}) } });
     await refresh();
   };
 

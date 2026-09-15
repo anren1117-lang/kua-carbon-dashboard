@@ -7,7 +7,7 @@ import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
 import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
-import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
+import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 
 // The April export covers its own ~30-day window — annualize it by that
 // window's seasonal share, not by the Jan → Sep YTD factor.
@@ -166,7 +166,7 @@ export default function BuildingsPage() {
           const multSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
           const sparkData = monthlyPattern.map((m, i) => ({
             value: +((m.multiplier / multSum) * GRID_MIX_ANNUAL_MTCO2E).toFixed(1),
-            measured: measuredKeys.has(`2026-${String(i + 1).padStart(2, '0')}`),
+            measured: measuredKeys.has(`${COMPOSED_YTD_AS_OF.slice(0, 4)}-${String(i + 1).padStart(2, '0')}`),
             month: monthLabels[i],
           }));
           return (

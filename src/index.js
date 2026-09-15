@@ -157,6 +157,7 @@ const Propane = lazy(() => import('./pages/admin/scope1/Propane'));
 const Refrigerants = lazy(() => import('./pages/admin/scope1/Refrigerants'));
 const Fleet = lazy(() => import('./pages/admin/scope1/Fleet'));
 const MeterReading = lazy(() => import('./pages/admin/scope2/MeterReading'));
+const MeterTrendsUpload = lazy(() => import('./pages/admin/scope2/MeterTrendsUpload'));
 const Solar = lazy(() => import('./pages/admin/renewables/Solar'));
 const Geothermal = lazy(() => import('./pages/admin/renewables/Geothermal'));
 const Wind = lazy(() => import('./pages/admin/renewables/Wind'));
@@ -324,6 +325,7 @@ root.render(
 
             <Route path="scope-2" element={<AdminScope2 />} />
             <Route path="scope-2/meter" element={<MeterReading />} />
+            <Route path="scope-2/meter-trends" element={<MeterTrendsUpload />} />
 
             <Route path="scope-3" element={<AdminScope3 />} />
             <Route path="scope-3/cat-1" element={<Cat1PurchasedGoods />} />

@@ -17,6 +17,7 @@ import Fleet        from '../pages/admin/scope1/Fleet.js';
 import Refrigerants from '../pages/admin/scope1/Refrigerants.js';
 // scope2
 import MeterReading from '../pages/admin/scope2/MeterReading.js';
+import MeterTrendsUpload from '../pages/admin/scope2/MeterTrendsUpload.js';
 // scope3
 import Cat1PurchasedGoods from '../pages/admin/scope3/Cat1PurchasedGoods.js';
 import Cat3UpstreamFuel   from '../pages/admin/scope3/Cat3UpstreamFuel.js';
@@ -42,6 +43,7 @@ const pages = [
   ['Fleet',                Fleet],
   ['Refrigerants',         Refrigerants],
   ['MeterReading',         MeterReading],
+  ['MeterTrendsUpload',    MeterTrendsUpload],
   ['Cat1PurchasedGoods',   Cat1PurchasedGoods],
   ['Cat3UpstreamFuel',     Cat3UpstreamFuel],
   ['Cat5Waste',            Cat5Waste],

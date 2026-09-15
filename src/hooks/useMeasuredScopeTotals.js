@@ -10,7 +10,7 @@
 import { useMeasuredScope1 } from './useMeasuredScope1.js';
 import { useMeasuredScope3 } from './useMeasuredScope3.js';
 import { useMeasuredSinks } from './useMeasuredSinks.js';
-import { GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
+import { useMeasuredScope2 } from './useMeasuredScope2.js';
 
 /**
  * @returns {{
@@ -32,9 +32,11 @@ export function useMeasuredScopeTotals() {
   const s1 = useMeasuredScope1();
   const s3 = useMeasuredScope3();
   const sinks = useMeasuredSinks();
+  const s2 = useMeasuredScope2();
   const scope1Mt = s1.totalMt;
   const scope3Mt = s3.totalMt;
-  const scope2Mt = Math.round(GRID_MIX_ANNUAL_MTCO2E); // already measured via BMS
+  // BMS-measured kWh — the seed ledger, with any admin ledger months laid over it.
+  const scope2Mt = Math.round(s2.annualMt);
   const sinkMt = sinks.totalMt;
   const grossMt = scope1Mt + scope2Mt + scope3Mt;
   const netMt = grossMt - sinkMt;
@@ -52,7 +54,8 @@ export function useMeasuredScopeTotals() {
     sinkMt,
     grossMt,
     netMt,
-    loading: s1.loading || s3.loading || sinks.loading,
+    loading: s1.loading || s2.loading || s3.loading || sinks.loading,
+    scope2FromAdmin: s2.fromAdmin,
     measuredScopes,
     scope1Measured: s1.measured,
     scope3Measured: s3.measured,

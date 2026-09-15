@@ -3,21 +3,14 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
 import { Scope2BmsInsights } from '../components/Scope2BmsInsights';
-import { GRID_MIX_ANNUAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
-import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import { ledgerSourceText } from '../data/electricityLedger.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
-// Estimate range: ±5% around the composed annual figure. Tightens
-// automatically when more measured data narrows the cross-validation
-// band between the two BMS sources (YTD All Meters page + Meter
-// Trends CSV).
-const SCOPE2_RANGE_LOW  = Math.round(GRID_MIX_ANNUAL_MTCO2E * 0.95);
-const SCOPE2_RANGE_HIGH = Math.round(GRID_MIX_ANNUAL_MTCO2E * 1.05);
-
-// Helpers for the action-math blocks below — keep the educational
-// figures in sync with the canonical Year 1 kWh and grid factor.
+// Helper for the action-math blocks below — keeps the educational figures in
+// sync with the grid factor. Everything that depends on the composed kWh is
+// derived inside the component from the live ledger instead.
 const KG_PER_KWH = 0.235;
-const KWH_TOTAL_LABEL = `~${(COMPOSED_ANNUAL_KWH / 1_000_000).toFixed(1)}M kWh/yr (Year 1)`;
 const fmtKwh = (n) => Math.round(n).toLocaleString();
 const fmtMt  = (kg) => (kg / 1000).toFixed(1);
 
@@ -32,13 +25,24 @@ const styles = {
 };
 
 function Scope2() {
+  // Live Scope 2 composition (seed data + admin ledger months). Local names
+  // mirror the static exports this page read before it went live.
+  const s2 = useMeasuredScope2();
+  const GRID_MIX_TOTAL_KWH = s2.ytdKwh;
+  const GRID_MIX_ANNUAL_MTCO2E = s2.annualMt;
+  const COMPOSED_ANNUAL_KWH = s2.year1Kwh;
+  const COMPOSED_YTD_AS_OF = s2.asOf;
+  const SCOPE2_RANGE_LOW = Math.round(s2.annualMt * 0.95);
+  const SCOPE2_RANGE_HIGH = Math.round(s2.annualMt * 1.05);
+  const hasMonths = s2.ledger.months.length > 0;
+  // Label used by the action-math blocks lower down the page.
+  const KWH_TOTAL_LABEL = `~${(COMPOSED_ANNUAL_KWH / 1_000_000).toFixed(1)}M kWh/yr (Year 1)`;
   return (
     <div>
       <h1 style={styles.title}>Scope 2 — Purchased Electricity</h1>
       <p style={styles.subtitle}>
         Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
-        composed from real measured BMS master-meter captures (Jan–Apr 2026) plus May onward from
-        the daily Meter Trends export, scaled to master-meter equivalent. Emissions intensity is per-fuel output factors weighted by
+        {hasMonths ? `composed from real measured BMS data — ${ledgerSourceText(s2.ledger)}.` : 'not composed yet — no measured months are on the page.'} Emissions intensity is per-fuel output factors weighted by
         ISO-NE 2024 generation mix (~0.235 kg/kWh effective).
       </p>
       <div style={styles.card}>
@@ -52,7 +56,7 @@ function Scope2() {
         </div>
         <div style={styles.row}>
           <span style={styles.label}>YTD electricity (composed)</span>
-          <span style={styles.value}>{GRID_MIX_TOTAL_KWH.toLocaleString()} kWh through {COMPOSED_YTD_AS_OF}</span>
+          <span style={styles.value}>{hasMonths ? `${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh through ${COMPOSED_YTD_AS_OF}` : 'No measured months yet'}</span>
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Year 1 projection</span>
@@ -60,7 +64,7 @@ function Scope2() {
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Quantity source</span>
-          <span style={styles.value}>BMS master-meter captures (Jan–Apr) + daily Meter Trends export, scaled (May onward)</span>
+          <span style={styles.value}>{hasMonths ? `BMS ${ledgerSourceText(s2.ledger)}` : 'No measured months yet'}</span>
         </div>
         <div style={{ ...styles.row, borderBottom: 'none' }}>
           <span style={styles.label}>Reconciliation</span>
@@ -83,8 +87,8 @@ function Scope2() {
             note: `composed YTD × annualize`,
           },
           provenance: 'cited',
-          note: 'Recomputes automatically when new BMS data lands. kWh side is composed from monthly master-meter captures (Jan–Apr) + the daily Meter Trends export scaled to master-meter equivalent (May onward). mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.',
-          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — full-month BMS master-meter captures for Jan–Apr + May onward from the daily Meter Trends export, scaled to master-meter equivalent. Annualized × ${(COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2)} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~0.235 kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
+          note: `Recomputes automatically when new BMS data lands. kWh side: ${ledgerSourceText(s2.ledger)}. mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.`,
+          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — ${ledgerSourceText(s2.ledger)}. Annualized × ${GRID_MIX_TOTAL_KWH > 0 ? (COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2) : '—'} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~0.235 kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
           futureMethod: 'Drop the annualization multiplier once a full calendar year of BMS data is captured (~Jan 2027) — kWh figure flips from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[

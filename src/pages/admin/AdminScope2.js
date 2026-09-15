@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const items = [
+  { to: '/admin/scope-2/meter-trends', name: 'Monthly electricity ledger', table: 'scope2_meter_readings', status: 'Drives Scope 2', desc: 'Upload the daily Meter Trends export or enter a BMS All Meters monthly total. The public Scope 2 figures recompose from these — a master total replaces a scaled month.' },
   { to: '/admin/scope-2/meter', name: 'Campus meter readings', table: 'scope2_meter_readings', status: 'Live form', desc: 'Source of truth for kWh. ISO-NE 2024 factor: 643 lb CO₂/MWh location-based.' },
 ];
 
