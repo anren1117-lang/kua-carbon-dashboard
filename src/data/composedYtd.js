@@ -20,7 +20,8 @@
 // calibration noise.
 
 import { monthlyReports } from './monthlyConsumption.js';
-import { bmsExportMeters } from './bmsExportApr2026.js';
+import { bmsExportMeters as bmsExportAprMeters } from './bmsExportApr2026.js';
+import { bmsExportMeters as bmsExportSepMeters } from './bmsExportSep2026.js';
 
 // Heuristic: which feeds in the export count toward a campus total?
 // Same definition used by the Scope 2 BMS insights panel — main feeds
@@ -29,21 +30,32 @@ function isCampusFeed(id) {
   return /MainFeed$|PanelFeed$|MDPFeed$|MDP$|^PM_\d+_Feed$|^PM_\d+_LP$|^PM_\d+_MainFeed$/.test(id);
 }
 
-// Pre-compute daily campus totals from the export, by date, summed
-// across every campus feed.
-const exportDailyByDate = (() => {
+// Daily campus totals by date, summed across campus feeds, for a parsed
+// export. We have two measured windows: the April export (Apr 5 – May 4)
+// and the September export (Aug 16 – Sep 14). Each contributes the
+// partial months not already covered by a full-month master-meter
+// capture; the gap between them (May 5 – Aug 15) is unmeasured and gets
+// filled by the seasonal projection in projectYear1(), not counted as
+// measured here.
+function exportDailyByDate(meters) {
   const out = new Map();
-  for (const m of bmsExportMeters) {
+  for (const m of meters) {
     if (!isCampusFeed(m.id)) continue;
     for (const d of (m.daily || [])) {
       out.set(d.date, (out.get(d.date) || 0) + d.kwh);
     }
   }
   return out;
-})();
+}
+const aprExportDaily = exportDailyByDate(bmsExportAprMeters);
+const sepExportDaily = exportDailyByDate(bmsExportSepMeters);
 
-// Anchor date for the YTD composition. Update when a fresher BMS
-// export ships — usually matches the latest day in bmsExportApr2026.js.
+// Anchor date for the contiguous YTD composition — the last day of the
+// unbroken measured run from Jan 1. The September export (Aug 16 – Sep 14)
+// is measured too, but it's non-contiguous (May 5 – Aug 15 has no capture),
+// so it is surfaced separately as LATEST_MEASURED_WINDOW rather than
+// extending this anchor. That keeps the annual projection anchored on a
+// contiguous span instead of a short late-summer slice.
 export const COMPOSED_YTD_AS_OF = '2026-05-04';
 
 // Days-into-year for Jan 1 → COMPOSED_YTD_AS_OF. Derive the year from
@@ -80,21 +92,16 @@ function daysForMonthKey(key) {
   return new Date(yyyy, mm, 0).getDate();
 }
 
-// The export-window prefix used for partial-month detection. Shifts to
-// the next month automatically as the YTD-as-of date crosses month
-// boundaries — earlier code hardcoded "2026-05" here too, so the May→June
-// transition would have silently dropped the partial-month component.
-const PARTIAL_MONTH_PREFIX = COMPOSED_YTD_AS_OF.slice(0, 7);
-
 /** @type {YtdComponent[]} */
 export const ytdComponents = (() => {
   const out = [];
+  const fullMonths = new Set();
 
-  // Months fully covered: every monthlyReports entry whose month key is
-  // strictly earlier than the partial-month prefix (so Apr 2026 ships
-  // in full, May 2026 is treated as partial via the export).
+  // 1. Full months from the master-meter captures. A month counts as
+  //    "full" only if its last calendar day is on or before the anchor.
   for (const r of monthlyReports) {
-    if (r.month >= PARTIAL_MONTH_PREFIX) continue;
+    const lastDay = `${r.month}-${String(daysForMonthKey(r.month)).padStart(2, '0')}`;
+    if (lastDay > COMPOSED_YTD_AS_OF) continue;
     out.push({
       label: labelForMonthKey(r.month),
       period: r.month,
@@ -102,28 +109,65 @@ export const ytdComponents = (() => {
       days: daysForMonthKey(r.month),
       source: 'src/data/monthlyConsumption.js (BMS All Meters page master-meter)',
     });
+    fullMonths.add(r.month);
   }
 
-  // Partial month from the export — the month containing
-  // COMPOSED_YTD_AS_OF, dates up to that anchor.
-  const partialMonthDays = Array.from(exportDailyByDate.entries())
-    .filter(([date]) => date.startsWith(PARTIAL_MONTH_PREFIX) && date <= COMPOSED_YTD_AS_OF)
-    .sort();
-  if (partialMonthDays.length > 0) {
-    const partialKwh = partialMonthDays.reduce((s, [, k]) => s + k, 0);
-    const first = partialMonthDays[0][0].slice(8);
-    const last = partialMonthDays[partialMonthDays.length - 1][0].slice(8);
-    const [yyyy, mm] = PARTIAL_MONTH_PREFIX.split('-');
-    out.push({
-      label: `${MONTH_NAMES[parseInt(mm, 10) - 1]} ${first}–${last} ${yyyy}`,
-      period: PARTIAL_MONTH_PREFIX,
-      kwh: Math.round(partialKwh),
-      days: partialMonthDays.length,
-      source: 'src/data/bmsExportApr2026.js (BMS Meter Trends export, daily campus-feed sum)',
-    });
-  }
+  // 2. Partial months from each measured export — every month with
+  //    export days up to the anchor that isn't already a full month.
+  //    April export → May 1–4; September export → Aug 16–31 + Sep 1–14.
+  //    (April's own Apr days are dropped because Apr is a full month.)
+  const addPartials = (dailyMap, sourceFile) => {
+    const byMonth = new Map(); // 'YYYY-MM' → [date, ...]
+    for (const date of dailyMap.keys()) {
+      if (date > COMPOSED_YTD_AS_OF) continue;
+      const mk = date.slice(0, 7);
+      if (fullMonths.has(mk)) continue;
+      if (!byMonth.has(mk)) byMonth.set(mk, []);
+      byMonth.get(mk).push(date);
+    }
+    for (const [mk, dates] of byMonth) {
+      dates.sort();
+      const kwh = Math.round(dates.reduce((s, d) => s + dailyMap.get(d), 0));
+      const [yyyy, mm] = mk.split('-');
+      const first = dates[0].slice(8);
+      const last = dates[dates.length - 1].slice(8);
+      out.push({
+        label: `${MONTH_NAMES[parseInt(mm, 10) - 1]} ${first}–${last} ${yyyy}`,
+        period: mk,
+        kwh,
+        days: dates.length,
+        source: sourceFile,
+      });
+    }
+  };
+  // Only the contiguous run (April export → May 1–4) extends the YTD. The
+  // September export is surfaced separately (LATEST_MEASURED_WINDOW below).
+  addPartials(aprExportDaily, 'src/data/bmsExportApr2026.js (April Meter Trends export, daily campus-feed sum)');
 
+  // Chronological order for the composition table.
+  out.sort((a, b) => a.period.localeCompare(b.period) || a.label.localeCompare(b.label));
   return out;
+})();
+
+// The latest measured operational window — the September export
+// (Aug 16 – Sep 14). Shown alongside the YTD as a measured slice, but
+// deliberately NOT folded into COMPOSED_YTD or the annual calibration: it's
+// a ~30-day, non-contiguous window (the May 5 – Aug 15 gap is unmeasured),
+// and using a short late-summer slice to re-anchor a whole-year projection
+// through a seasonal shape it appears to contradict would be less reliable
+// than the contiguous Jan–Apr anchor. It does signal that campus summer load
+// runs higher than the heating-driven model assumes — flagged in the UI.
+export const LATEST_MEASURED_WINDOW = (() => {
+  const dates = Array.from(sepExportDaily.keys()).sort();
+  if (dates.length === 0) return null;
+  const kwh = Math.round(dates.reduce((s, d) => s + sepExportDaily.get(d), 0));
+  const start = dates[0];
+  const end = dates[dates.length - 1];
+  // Unmeasured gap between the contiguous YTD anchor and this window's start.
+  const anchor = new Date(COMPOSED_YTD_AS_OF + 'T00:00:00Z');
+  const winStart = new Date(start + 'T00:00:00Z');
+  const gapDays = Math.max(0, Math.round((winStart - anchor) / 86400000) - 1);
+  return { start, end, kwh, days: dates.length, gapDays, source: 'src/data/bmsExportSep2026.js' };
 })();
 
 export const COMPOSED_YTD_KWH = ytdComponents.reduce((s, c) => s + c.kwh, 0);

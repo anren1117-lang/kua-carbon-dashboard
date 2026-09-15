@@ -10,6 +10,7 @@ import {
   COMPOSED_YTD_KWH,
   COMPOSED_YTD_AS_OF,
   COMPOSED_YTD_DAYS_COVERED,
+  LATEST_MEASURED_WINDOW,
   COMPOSED_ANNUAL_KWH,
   COMPOSED_ANNUALIZE_FACTOR,
   year1Months,
@@ -131,9 +132,10 @@ export function Scope2BmsInsights() {
           {' '}{insights.windowDays.toFixed(0)} days, {bmsExportMeters.length} power meters). The operational
           insights that follow — load curve, solar, meter health, and the daily/weekly patterns — are{' '}
           <ProvenancePill provenance="measured" />
-          {' '}from these BMS cumulative-kWh counters. The year-to-date and annual figures further down are
-          composed from the earlier Jan–Apr master-meter captures; this late-summer window is not a valid
-          basis for annualizing a heating-driven year, so it isn't used for those.
+          {' '}from these BMS cumulative-kWh counters. The year-to-date and annual figures below stay
+          anchored on the contiguous Jan–Apr captures; this Aug–Sep window is shown as a measured slice
+          in the composition below but isn't folded into the annual, since it's a short, non-contiguous
+          span (the May–Aug gap is unmeasured).
         </p>
       </header>
 
@@ -141,10 +143,11 @@ export function Scope2BmsInsights() {
       <section style={styles.card}>
         <h3 style={styles.cardTitle}>Year-to-date electricity, composed from measured sources</h3>
         <p style={styles.cardHint}>
-          The YTD figure on the dashboard is built up from each measured input — full-month BMS captures
-          for Jan–Apr, plus the April Meter Trends export (its May 1–4 days). Every kWh below traces to a
-          specific source file and a specific time period. Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of measured campus consumption.
-          (This is a different export from the Aug–Sep operational window shown above.)
+          The YTD figure is built from each measured input — full-month BMS captures for Jan–Apr, plus the
+          April Meter Trends export (May 1–4). Every kWh below traces to a specific source file and period.
+          Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of contiguous measured consumption. The latest measured
+          window — the Aug 16 – Sep 14 export shown above — appears as its own row below, kept separate
+          because the May–Aug gap makes it non-contiguous with this run.
         </p>
         <table style={styles.ytdTable}>
           <thead>
@@ -189,11 +192,23 @@ export function Scope2BmsInsights() {
                 {COMPOSED_ANNUAL_MTCO2E} mtCO₂e/yr — central value of the 365–405 cross-validated ±5% range
               </td>
             </tr>
+            {LATEST_MEASURED_WINDOW && (
+              <tr style={styles.ytdWindow}>
+                <td style={styles.ytdTd}>Latest window · {LATEST_MEASURED_WINDOW.start.slice(5)} – {LATEST_MEASURED_WINDOW.end.slice(5)}</td>
+                <td style={styles.ytdTd}>{LATEST_MEASURED_WINDOW.days}</td>
+                <td style={{ ...styles.ytdTd, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: '#67e8f9' }}>
+                  {LATEST_MEASURED_WINDOW.kwh.toLocaleString()}
+                </td>
+                <td style={styles.ytdTdSrc}>
+                  <ProvenancePill provenance="measured" /> Sept export — shown for reference, <em>not</em> folded into the annual ({LATEST_MEASURED_WINDOW.gapDays}-day gap since May 4)
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
         <div style={styles.todayTarget}>
           <div><span style={styles.ttLabel}>Today:</span> Each row above is a real measured input. The April monthly capture (128,895 kWh, single-snapshot displayedTotal) and the CSV's Apr 5–30 daily totals (140,827 kWh summed across 35 main+panel feeds) overlap — we use the monthly capture for April since it agrees with the master meter, and pull only May 1–4 from the CSV. The CSV's higher Apr figure reflects the 8-10% submeter overshoot documented on /buildings.</div>
-          <div><span style={styles.ttLabel}>Target:</span> This YTD is composed through May 4; full-month master-meter captures since then aren't folded in here yet. As each monthly capture is exported, re-run scripts/parseBmsExport.mjs and swap the corresponding CSV day-rows for the full-month total, extending the measured slice forward.</div>
+          <div><span style={styles.ttLabel}>Target:</span> The YTD anchor stays at May 4 — the last day of the contiguous measured run. The Aug 16 – Sep 14 window is measured too and shown in the row above, but it's a non-contiguous ~30-day slice, so it isn't used to re-anchor the annual. Worth noting: naively folding it into the calibration would lift the estimate to ~404, a sign campus late-summer load runs higher than the heating-driven seasonal model assumes. Getting monthly master-meter captures for May–August would close the gap and let the annual be revised on solid, contiguous ground.</div>
         </div>
       </section>
 
@@ -1468,6 +1483,7 @@ const styles = {
   ytdTdSrc: { padding: '8px 8px', color: '#94a3b8', borderBottom: '1px solid #1f2937', verticalAlign: 'middle', fontSize: 11 },
   ytdTotal: { background: '#0b1220', borderTop: '2px solid #334155' },
   ytdAnnual: { background: '#0a1015' },
+  ytdWindow: { background: '#0a1015', borderTop: '1px dashed #164e63' },
 
   // Stacked bars for the Whittemore cluster + EV charger sub-list
   stackedBar: { display: 'flex', height: 18, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },

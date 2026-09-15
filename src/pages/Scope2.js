@@ -38,7 +38,8 @@ function Scope2() {
       <p style={styles.subtitle}>
         Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
         composed from real measured BMS captures (Jan–Apr 2026) plus the May 1–4 days from the
-        April Meter Trends export. Emissions intensity is per-fuel output factors weighted by
+        April Meter Trends export. (The Aug–Sep operational export is shown as a separate measured
+        slice in the Scope 2 insights below.) Emissions intensity is per-fuel output factors weighted by
         ISO-NE 2024 generation mix (~0.235 kg/kWh effective).
       </p>
       <div style={styles.card}>
