@@ -128,9 +128,12 @@ export function Scope2BmsInsights() {
         <p style={styles.subtitle}>
           Real measured electricity data from the parsed Distech Eclypse Meter Trends export
           ({BMS_EXPORT_META.windowStartIso.slice(0, 10)} → {BMS_EXPORT_META.windowEndIso.slice(0, 10)},
-          {' '}{insights.windowDays.toFixed(0)} days, {bmsExportMeters.length} power meters). Every figure below is{' '}
+          {' '}{insights.windowDays.toFixed(0)} days, {bmsExportMeters.length} power meters). The operational
+          insights that follow — load curve, solar, meter health, and the daily/weekly patterns — are{' '}
           <ProvenancePill provenance="measured" />
-          {' '}— sourced from BMS cumulative-kWh counters at hourly resolution.
+          {' '}from these BMS cumulative-kWh counters. The year-to-date and annual figures further down are
+          composed from the earlier Jan–Apr master-meter captures; this late-summer window is not a valid
+          basis for annualizing a heating-driven year, so it isn't used for those.
         </p>
       </header>
 
@@ -139,8 +142,9 @@ export function Scope2BmsInsights() {
         <h3 style={styles.cardTitle}>Year-to-date electricity, composed from measured sources</h3>
         <p style={styles.cardHint}>
           The YTD figure on the dashboard is built up from each measured input — full-month BMS captures
-          for Jan–Apr, plus the Meter Trends CSV for May. Every kWh below traces to a specific source file
-          and a specific time period. Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of measured campus consumption.
+          for Jan–Apr, plus the April Meter Trends export (its May 1–4 days). Every kWh below traces to a
+          specific source file and a specific time period. Through {COMPOSED_YTD_AS_OF}, that's {COMPOSED_YTD_DAYS_COVERED} days of measured campus consumption.
+          (This is a different export from the Aug–Sep operational window shown above.)
         </p>
         <table style={styles.ytdTable}>
           <thead>
@@ -189,7 +193,7 @@ export function Scope2BmsInsights() {
         </table>
         <div style={styles.todayTarget}>
           <div><span style={styles.ttLabel}>Today:</span> Each row above is a real measured input. The April monthly capture (128,895 kWh, single-snapshot displayedTotal) and the CSV's Apr 5–30 daily totals (140,827 kWh summed across 35 main+panel feeds) overlap — we use the monthly capture for April since it agrees with the master meter, and pull only May 1–4 from the CSV. The CSV's higher Apr figure reflects the 8-10% submeter overshoot documented on /buildings.</div>
-          <div><span style={styles.ttLabel}>Target:</span> When the next monthly BMS capture lands (May full-month, around June 1), drop the May 1–4 CSV row and replace with the May full-month capture. When a fresh Meter Trends CSV is exported, re-run scripts/parseBmsExport.mjs and the May days extend automatically.</div>
+          <div><span style={styles.ttLabel}>Target:</span> This YTD is composed through May 4; full-month master-meter captures since then aren't folded in here yet. As each monthly capture is exported, re-run scripts/parseBmsExport.mjs and swap the corresponding CSV day-rows for the full-month total, extending the measured slice forward.</div>
         </div>
       </section>
 
@@ -218,7 +222,7 @@ export function Scope2BmsInsights() {
         </p>
         <HourlyChart hourly={insights.hourly} max={insights.hourMax} mean={insights.hourMean} />
         <div style={styles.todayTarget}>
-          <div><span style={styles.ttLabel}>Today:</span> Real measured load shape over 30 days. The {insights.peakToBaseRatio.toFixed(1)}× peak/base ratio means {insights.peakToBaseRatio < 2 ? 'load is mostly baseline (always-on equipment) — efficiency wins are in the always-on stack.' : 'load shifts substantially with occupancy — schedule + setpoint tweaks pay off.'}</div>
+          <div><span style={styles.ttLabel}>Today:</span> Real measured load shape over the {insights.windowDays.toFixed(0)}-day window. The {insights.peakToBaseRatio.toFixed(1)}× peak/base ratio means {insights.peakToBaseRatio < 2 ? 'load is mostly baseline (always-on equipment) — efficiency wins are in the always-on stack.' : 'load shifts substantially with occupancy — schedule + setpoint tweaks pay off.'}</div>
           <div><span style={styles.ttLabel}>Target:</span> Cross-reference peak hours with ISO-NE marginal-emissions intensity to identify carbon-shifting windows. Pre-cooling at 04:00–06:00 (low-carbon grid hours) shifts load away from {insights.peakHourIdx}:00 (likely high-carbon peak).</div>
         </div>
       </section>
@@ -269,7 +273,7 @@ export function Scope2BmsInsights() {
           )}
           <div style={styles.todayTarget}>
             <div><span style={styles.ttLabel}>Today:</span> Real measured generation from {insights.solarFeeds.length} working array{insights.solarFeeds.length === 1 ? '' : 's'}. {insights.solarOffsetPct < 1 ? 'Offset is tiny — Phase-2 capacity expansion has very high marginal value.' : insights.solarOffsetPct < 5 ? 'Offset is small — Phase-2 capacity expansion has high marginal value.' : 'Meaningful offset already — additional capacity has decreasing marginal value.'}</div>
-            <div><span style={styles.ttLabel}>Target:</span> Resolve broken solar feeds first (stuck meter + suspect-CT feed) before treating the offset figure as a denominator. Once all 3 arrays report cleanly, update SOLAR_ANNUAL_KWH on the Executive page to use this measured 30-day generation × 12 (seasonally-adjusted) — flips that figure from cited → measured.</div>
+            <div><span style={styles.ttLabel}>Target:</span> Resolve any excluded solar feed flagged under Solar feed health before treating the offset figure as a denominator. And note: this window (Aug–Sep) sits near the NH solar seasonal peak, so it can't be turned into an annual figure by a flat ×12 — it has to be scaled by a solar seasonal-shape factor first. Once the feeds are field-verified and seasonally scaled, SOLAR_ANNUAL_KWH on the Executive page can move from cited → measured.</div>
           </div>
         </section>
       )}
@@ -278,7 +282,7 @@ export function Scope2BmsInsights() {
         <section style={styles.card}>
           <h3 style={styles.cardTitle}>Meter health — Facilities action items</h3>
           <p style={styles.cardHint}>
-            Discovered by reading the cumulative-kWh counter direction across the 30-day window. Two failure
+            Discovered by reading the cumulative-kWh counter direction across the export window. Two failure
             modes detected: stuck counters (no movement) and counters that decrease on a meter that physically
             can't be generating energy — typical of a CT clamp installed backwards.
           </p>
@@ -402,7 +406,7 @@ function Year1ProjectionSection() {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the data you uploaded)</h3>
       <p style={styles.cardHint}>
-        Built directly from the BMS Meter Trends CSV + the four monthly captures already in
+        Built directly from the four monthly master-meter captures already in
         the dashboard. Measured months (Jan–Apr) anchor a calibrated annual baseline that
         the unmeasured months are projected against using NH's heating-driven seasonal
         shape — much more honest than naive linear annualization, which over-counts summer.
@@ -735,8 +739,13 @@ function DailyView({ data }) {
   // explicitly, the daily chart uses straight max-of-data scaling.
   if (data.daily.length === 0) return <div>No daily data in window.</div>;
   const max = Math.max(...data.daily.map((d) => d.kwh));
-  const peakDay = data.daily.reduce((p, d) => (d.kwh > p.kwh ? d : p), data.daily[0]);
-  const lowDay = data.daily.reduce((p, d) => (d.kwh < p.kwh ? d : p), data.daily[0]);
+  // The export window usually ends mid-day, so the final calendar bucket is a
+  // partial (truncated) day. Exclude it from peak/low selection so a short
+  // evening isn't reported as a real operational high or low — mirrors the
+  // partial-week greying below. It still renders as a bar.
+  const statDays = data.daily.length >= 3 ? data.daily.slice(0, -1) : data.daily;
+  const peakDay = statDays.reduce((p, d) => (d.kwh > p.kwh ? d : p), statDays[0]);
+  const lowDay = statDays.reduce((p, d) => (d.kwh < p.kwh ? d : p), statDays[0]);
   const weekdays = data.daily.filter((d) => !d.isWeekend);
   const weekendDays = data.daily.filter((d) => d.isWeekend);
   const weekdayMean = weekdays.reduce((s, d) => s + d.kwh, 0) / Math.max(1, weekdays.length);
@@ -1088,7 +1097,7 @@ function DayOfWeekSection() {
         })}
       </div>
       <div style={styles.todayTarget}>
-        <div><span style={styles.ttLabel}>Today:</span> {weekendDip > 15 ? `Strong weekend dip (${weekendDip.toFixed(0)}%) — academic + dining load drives most consumption.` : weekendDip > 5 ? `Modest weekend dip — boarder population + dorm HVAC keep night/weekend load high.` : 'Weekend load nearly matches weekday — heating + always-on equipment dominate.'} The 7 day-of-week buckets are real measured means.</div>
+        <div><span style={styles.ttLabel}>Today:</span> {weekendDip > 15 ? `Strong weekend dip (${weekendDip.toFixed(0)}%) — academic + dining load drives most consumption.` : weekendDip > 5 ? `Modest weekend dip — boarder population + dorm HVAC keep night/weekend load high.` : 'Weekend load nearly matches weekday — cooling + always-on equipment dominate.'} The 7 day-of-week buckets are real measured means.</div>
         <div><span style={styles.ttLabel}>Target:</span> Cross-tabulate with academic calendar (term breaks, sports tournaments) once a 12-month export window exists, to identify break-period setback opportunities.</div>
       </div>
     </section>
@@ -1153,7 +1162,7 @@ function LoadDurationCurveSection() {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Load duration curve</h3>
       <p style={styles.cardHint}>
-        For each hour in the 30-day window, the campus load (kW) sorted descending — left edge is the peak hour, right edge is the lowest. Sized for capital-decision context: how big a battery would shave the top 10%? What's the always-on base load?
+        For each hour in the export window, the campus load (kW) sorted descending — left edge is the peak hour, right edge is the lowest. Sized for capital-decision context: how big a battery would shave the top 10%? What's the always-on base load?
       </p>
       <div style={styles.ldcWrap}>
         <svg width={chartW} height={chartH + 20} viewBox={`0 0 ${chartW} ${chartH + 20}`} style={{ display: 'block', maxWidth: '100%', height: 'auto' }}>
