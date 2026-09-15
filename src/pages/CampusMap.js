@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 import { CampusMonthlyTrend } from '../components/CampusMonthlyTrend.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { layoutBoxesGeo } from '../utils/geoLayout.js';
@@ -107,6 +108,8 @@ export default function CampusMap() {
   const [selectedId, setSelectedId] = useState(null);
   // null = "All (annualized)"; otherwise 'YYYY-MM'.
   const [selectedMonth, setSelectedMonth] = useState(null);
+  // Per-building months include anything entered through the admin portal.
+  const { history: buildingHistory } = useBuildingMonthlyHistory();
   // 'schematic'  = original by-category zones
   // 'geographic' = lat/lng projected onto a blank canvas
   // 'photo'      = energy-intensity dots overlaid on the official KUA campus map image
@@ -114,8 +117,8 @@ export default function CampusMap() {
   const [layoutMode, setLayoutMode] = useState('schematic');
 
   const { rows, totalKwh, totalMt, monthsObserved, mode, availableMonths } = useMemo(
-    () => computeBuildingEmissions({ month: selectedMonth }),
-    [selectedMonth],
+    () => computeBuildingEmissions({ month: selectedMonth, monthlyHistory: buildingHistory }),
+    [selectedMonth, buildingHistory],
   );
   const selected = rows.find((r) => r.id === selectedId);
 

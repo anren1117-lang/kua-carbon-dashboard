@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 
 // /compare-buildings — side-by-side comparison of any two
 // buildings. Answers questions like "Welch vs Kilton — which dorm
@@ -13,7 +14,8 @@ import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 // meaningful comparison immediately.
 
 export default function CompareBuildings() {
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
+  const { history: monthlyHistory } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory }), [monthlyHistory]);
   const sorted = useMemo(() => [...rows].sort((a, b) => b.mtCO2e - a.mtCO2e), [rows]);
 
   const defaultA = sorted[0]?.id || null;

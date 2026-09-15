@@ -5,7 +5,8 @@ import { AnimatedNumber } from '../components/AnimatedNumber.js';
 import { Icon } from '../components/Icon.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
-import { buildingMonthlyHistory, monthlyReports, campusMonthlyTotals } from '../data/monthlyConsumption.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
+import { monthlyReports, campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 
 // /digest — "what happened this month at KUA, in one page."
@@ -35,8 +36,9 @@ export default function MonthlyDigest() {
   const latest  = monthly[monthly.length - 1] || null;
   const prior   = monthly[monthly.length - 2] || null;
 
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
-  const history = useMemo(() => buildingMonthlyHistory(), []);
+  // Per-building months include anything entered through the admin portal.
+  const { history } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory: history }), [history]);
 
   const dormStandings = useMemo(() => {
     if (!latest) return [];

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { buildings, getBuilding } from '../data/buildings.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
-import { buildingMonthlyHistory } from '../data/monthlyConsumption.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 import { toCsv, downloadCsv } from '../utils/csv.js';
 import { Icon } from '../components/Icon.js';
 import { CopyButton } from '../components/CopyButton.js';
@@ -18,8 +18,10 @@ import { CopyButton } from '../components/CopyButton.js';
 export default function BuildingDetail() {
   const { id } = useParams();
   const building = getBuilding(id);
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
-  const history = useMemo(() => buildingMonthlyHistory()[id] || {}, [id]);
+  // Per-building months include anything entered through the admin portal.
+  const { history: monthlyHistory } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory }), [monthlyHistory]);
+  const history = useMemo(() => monthlyHistory[id] || {}, [monthlyHistory, id]);
   const row = rows.find((r) => r.id === id);
 
   if (!building) {

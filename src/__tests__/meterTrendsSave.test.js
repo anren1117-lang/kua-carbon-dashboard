@@ -10,6 +10,7 @@ const incoming = (month, source, kwh) => ({
 
 const MASTER = 'bms_master_monthly';
 const FEED = 'meter_trends_feed_sum';
+const BUILDING = 'building_monthly';
 
 describe('planMonthSave — replace-by-month write order', () => {
   it('inserts the replacement before deleting the row it replaces', () => {
@@ -32,9 +33,19 @@ describe('planMonthSave — replace-by-month write order', () => {
     expect(ops.map((o) => o.op)).toEqual(['insert']);
   });
 
-  it('ignores building-level rows when looking for what to replace', () => {
+  it("a campus-wide row never replaces a building's row", () => {
     const ops = planMonthSave([saved('b1', '2026-05', FEED, 5000, { building: 'b_miller' })], [incoming('2026-05', FEED, 141633)]);
     expect(ops.map((o) => o.op)).toEqual(['insert']);
+  });
+
+  it('replaces only the same building’s month', () => {
+    const existing = [
+      saved('miller-may', '2026-05', BUILDING, 41000, { building: 'b_miller' }),
+      saved('fitch-may', '2026-05', BUILDING, 12000, { building: 'b_fitch' }),
+    ];
+    const ops = planMonthSave(existing, [{ ...incoming('2026-05', BUILDING, 42000), building: 'b_miller' }]);
+    expect(ops.map((o) => o.op)).toEqual(['insert', 'delete']);
+    expect(ops[1].id).toBe('miller-may');
   });
 
   it('plans each month of a multi-month upload independently', () => {

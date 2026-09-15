@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
-import { buildingMonthlyHistory, monthlyReports } from '../data/monthlyConsumption.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
+import { monthlyReports } from '../data/monthlyConsumption.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { energyEquivalents } from '../utils/equivalents.js';
 
@@ -17,12 +18,14 @@ import { energyEquivalents } from '../utils/equivalents.js';
 
 export default function DormLeaderboard() {
   const isNarrow = useIsNarrow();
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
+  // Per-building months include anything entered through the admin portal.
+  const { history: monthlyHistory } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory }), [monthlyHistory]);
   const dormRows = rows.filter((r) => r.category === 'Dorm' && r.occupants > 0);
 
   // Build a per-dorm, per-month, per-resident kWh series so the trend
   // arrow has something to compare against.
-  const history = useMemo(() => buildingMonthlyHistory(), []);
+  const history = monthlyHistory;
   const monthsAvailable = useMemo(() => {
     const all = new Set();
     for (const bucket of Object.values(history)) {

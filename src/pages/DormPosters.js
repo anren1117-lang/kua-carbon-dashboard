@@ -3,6 +3,7 @@ import qrcode from 'qrcode-generator';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 
 // /dorm-posters — printable sheet of QR codes, one per dorm,
 // each linking to that dorm's /buildings/:id detail page.
@@ -31,7 +32,8 @@ function svgForUrl(url) {
 }
 
 export default function DormPosters() {
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
+  const { history: monthlyHistory } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory }), [monthlyHistory]);
   const dorms = useMemo(() => {
     return rows
       .filter((r) => r.category === 'Dorm' && r.occupants > 0)

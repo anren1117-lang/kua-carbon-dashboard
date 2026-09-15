@@ -2,6 +2,8 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useTable, formStyles as s } from '../_shared';
 import { parseMeterTrendsCsv, sumCampusFeedsByMonth, MAX_MISSING_SHARE } from '../../../data/feedMonthSums.js';
 import { SOURCE_MASTER, SOURCE_FEED_SUM, MONTH_ABBR, daysInMonthKey } from '../../../data/electricityLedger.js';
+import { SOURCE_BUILDING_MONTHLY } from '../../../data/buildingMonths.js';
+import { getEffectiveBuildings } from '../../../data/assetInventory.js';
 import { composeScope2FromRows, SCOPE2_TABLE } from '../../../hooks/useMeasuredScope2.js';
 
 // /admin/scope-2/meter-trends — the admin entry point for the electricity
@@ -79,8 +81,11 @@ export function uploadToRows(text, fileName) {
 export function planMonthSave(existingRows, newRows) {
   const ops = [];
   for (const r of newRows) {
+    // Same source, same building (campus-wide rows have none) and same month.
     const stale = existingRows.find((x) => (
-      x.source === r.source && !x.building && String(x.period_start).slice(0, 10) === r.period_start
+      x.source === r.source
+      && (x.building ?? null) === (r.building ?? null)
+      && String(x.period_start).slice(0, 10) === r.period_start
     ));
     ops.push({ op: 'insert', row: r });
     if (stale) ops.push({ op: 'delete', id: stale.id, meta: { period_start: stale.period_start, source: stale.source, kwh: stale.kwh } });
@@ -92,6 +97,8 @@ function MeterTrendsUpload() {
   const { rows, error, insert, remove } = useTable(SCOPE2_TABLE, 'created_at', { ascending: true });
   const [upload, setUpload] = useState(null);
   const [masterForm, setMasterForm] = useState({ month: '', kwh: '', notes: '' });
+  const [buildingForm, setBuildingForm] = useState({ building: '', month: '', kwh: '', notes: '' });
+  const buildings = useMemo(() => getEffectiveBuildings(), []);
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
   // setBusy only lands on the next render, so a fast second click would
@@ -99,6 +106,7 @@ function MeterTrendsUpload() {
   const savingRef = useRef(false);
 
   const ledgerRows = rows.filter(isLedgerRow);
+  const buildingRows = rows.filter((r) => r.source === SOURCE_BUILDING_MONTHLY && r.building);
   const current = useMemo(() => composeScope2FromRows(rows), [rows]);
 
   // A valid master-meter form gets previewed too, so the higher-stakes input
@@ -128,7 +136,9 @@ function MeterTrendsUpload() {
   const existingFor = (r) => ledgerRows.find((x) => x.source === r.source && String(x.period_start).slice(0, 10) === r.period_start);
 
   const saveMonthRows = async (newRows) => {
-    for (const op of planMonthSave(ledgerRows, newRows)) {
+    // All saved rows, not just the campus ones: planMonthSave matches on
+    // source + building + month, so a per-building save replaces the right row.
+    for (const op of planMonthSave(rows, newRows)) {
       if (op.op === 'insert') await insert(op.row);
       else await remove(op.id, op.meta);
     }
@@ -184,6 +194,40 @@ function MeterTrendsUpload() {
       await saveMonthRows([masterDraft]);
       setMsg({ ok: true, text: `Saved the ${monthLabel(masterForm.month)} master-meter total.` });
       setMasterForm({ month: '', kwh: '', notes: '' });
+    } catch (err) {
+      setMsg({ ok: false, text: err.message });
+    } finally {
+      savingRef.current = false;
+      setBusy(false);
+    }
+  };
+
+  const saveBuildingMonth = async (e) => {
+    e.preventDefault();
+    const kwh = parseFloat(buildingForm.kwh);
+    if (!buildingForm.building) { setMsg({ ok: false, text: 'Pick a building.' }); return; }
+    if (!/^\d{4}-\d{2}$/.test(buildingForm.month)) { setMsg({ ok: false, text: 'Pick a month.' }); return; }
+    if (!Number.isFinite(kwh) || kwh <= 0) { setMsg({ ok: false, text: `kWh must be a positive number (got "${buildingForm.kwh}")` }); return; }
+    const row = {
+      period_start: `${buildingForm.month}-01`,
+      period_end: lastDayOf(buildingForm.month),
+      meter_id: null,
+      building: buildingForm.building,
+      kwh,
+      data_quality: 'measured',
+      source: SOURCE_BUILDING_MONTHLY,
+      notes: buildingForm.notes || null,
+    };
+    const replacing = rows.find((x) => x.source === SOURCE_BUILDING_MONTHLY && x.building === row.building && String(x.period_start).slice(0, 10) === row.period_start);
+    const name = buildings.find((b) => b.id === row.building)?.name || row.building;
+    if (replacing && !window.confirm(`Replace the ${monthLabel(buildingForm.month)} reading for ${name} (${fmt(Number(replacing.kwh))} kWh) with ${fmt(kwh)} kWh?`)) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setBusy(true);
+    try {
+      await saveMonthRows([row]);
+      setMsg({ ok: true, text: `Saved ${monthLabel(buildingForm.month)} for ${name}.` });
+      setBuildingForm({ building: '', month: '', kwh: '', notes: '' });
     } catch (err) {
       setMsg({ ok: false, text: err.message });
     } finally {
@@ -276,6 +320,57 @@ function MeterTrendsUpload() {
               </button>
             )}
           </div>
+        )}
+      </div>
+
+      <form style={s.card} onSubmit={saveBuildingMonth}>
+        <h2 style={s.h2}>Enter one building’s month</h2>
+        <p style={p.hint}>
+          A whole calendar month for a single building, from the BMS All Meters page with the date
+          range set to that month. This doesn’t change the campus total above — it feeds the
+          per-building figures on <strong>/buildings</strong>, <strong>/hotspots</strong>, the campus
+          map, the dorm leaderboard and the monthly digest, replacing the estimate for that building
+          and month.
+        </p>
+        <div style={s.formGrid}>
+          <label style={s.field}><span style={s.label}>Building</span>
+            <select value={buildingForm.building} onChange={(e) => setBuildingForm({ ...buildingForm, building: e.target.value })} style={s.input} required>
+              <option value="">Pick a building…</option>
+              {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </label>
+          <label style={s.field}><span style={s.label}>Month</span>
+            <input type="month" value={buildingForm.month} onChange={(e) => setBuildingForm({ ...buildingForm, month: e.target.value })} style={s.input} required />
+          </label>
+          <label style={s.field}><span style={s.label}>kWh for the month</span>
+            <input type="number" step="1" min="0" value={buildingForm.kwh} onChange={(e) => setBuildingForm({ ...buildingForm, kwh: e.target.value })} style={s.input} required />
+          </label>
+          <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span>
+            <input type="text" value={buildingForm.notes} onChange={(e) => setBuildingForm({ ...buildingForm, notes: e.target.value })} style={s.input} placeholder="optional" />
+          </label>
+        </div>
+        <button type="submit" style={{ ...s.submit, marginTop: 16 }} disabled={busy}>Save building month</button>
+      </form>
+
+      <div style={s.card}>
+        <h2 style={s.h2}>Per-building months saved ({buildingRows.length})</h2>
+        {buildingRows.length === 0 ? (
+          <p style={p.hint}>None yet — every building still uses its meter mapping or the older snapshot.</p>
+        ) : (
+          <table style={p.table}>
+            <thead><tr><th style={p.th}>Building</th><th style={p.th}>Month</th><th style={{ ...p.th, ...p.num }}>kWh</th><th style={p.th}>Notes</th><th style={p.th} /></tr></thead>
+            <tbody>
+              {[...buildingRows].reverse().map((r) => (
+                <tr key={r.id}>
+                  <td style={p.td}>{buildings.find((b) => b.id === r.building)?.name || r.building}</td>
+                  <td style={p.td}>{monthLabel(String(r.period_start).slice(0, 7))}</td>
+                  <td style={{ ...p.td, ...p.num }}>{fmt(Number(r.kwh))}</td>
+                  <td style={p.tdMuted}>{r.notes || ''}</td>
+                  <td style={p.td}><button type="button" onClick={() => onDelete(r)} style={p.linkBtn}>Delete</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 

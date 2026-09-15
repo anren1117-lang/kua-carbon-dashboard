@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
-import { buildingMonthlyHistory } from '../data/monthlyConsumption.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 
 // /challenge — frames the existing dorm leaderboard as a monthly
 // competition. Useful for proctors / residential life running an
@@ -22,8 +22,9 @@ function formatMonth(ym) {
 }
 
 export default function EnergyChallenge() {
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
-  const history = useMemo(() => buildingMonthlyHistory(), []);
+  // Per-building months include anything entered through the admin portal.
+  const { history } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory: history }), [history]);
 
   const dormRows = rows.filter((r) => r.category === 'Dorm' && r.occupants > 0);
   const monthsAvailable = useMemo(() => {

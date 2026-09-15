@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
-import { buildingMonthlyHistory, campusMonthlyTotals } from '../data/monthlyConsumption.js';
+import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 
 // /compare — side-by-side comparison of any two captured months.
 // Drives questions like "did the post-winter-break January spike
@@ -35,8 +36,9 @@ export default function MonthCompare() {
   const [a, setA] = useState(defaultA);
   const [b, setB] = useState(defaultB);
 
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
-  const history = useMemo(() => buildingMonthlyHistory(), []);
+  // Per-building months include anything entered through the admin portal.
+  const { history } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory: history }), [history]);
 
   const monthA = monthly.find((m) => m.month === a) || null;
   const monthB = monthly.find((m) => m.month === b) || null;

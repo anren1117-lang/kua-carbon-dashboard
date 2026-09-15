@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
+import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { Icon } from './Icon.js';
 
@@ -15,7 +16,8 @@ import { Icon } from './Icon.js';
 
 export function DormLeaderboardPreview() {
   const isNarrow = useIsNarrow();
-  const { rows } = useMemo(() => computeBuildingEmissions(), []);
+  const { history: monthlyHistory } = useBuildingMonthlyHistory();
+  const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory }), [monthlyHistory]);
   const dorms = useMemo(() => {
     return rows
       .filter((r) => r.category === 'Dorm' && r.occupants > 0 && r.annualKwh > 0)
