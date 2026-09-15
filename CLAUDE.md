@@ -73,7 +73,11 @@ Scope 2 kWh is composed in exactly one place: `src/data/electricityLedger.js` (p
 
 `useMeasuredScope2()` lays admin rows from `scope2_meter_readings` (campus-wide rows whose `source` is `bms_master_monthly` or `meter_trends_feed_sum`) over that seed and composes with the same functions. With no rows the result equals the static exports in `composedYtd.js` / `gridMix.js`, so the dashboard is unchanged until someone enters data. Admin entry: `/admin/scope-2/meter-trends` — daily Meter Trends CSV parsed in the browser (`feedMonthSums.js`) into one monthly row, or a typed master total, with a preview of the public composition before saving. `notes` on a row is admin-facing (filenames, capture details) and never reaches the public page; public caveats are derived, or carried from the seed month.
 
-**Known gap:** `SCOPE2_TOTAL_MT` / `GROSS_MT` in `scopeTotals.js` and ~15 pages (ScopeDonut, AISummary, PeerComparison, Hotspots, Scenarios, AnnualReport, LearnAgent, learningContent, …) still read the seed constants at module scope. Admin-entered months move `/scope-2` and every consumer of `useMeasuredScopeTotals()`, but not those pages. Route them through the hook before relying on admin data in production.
+**Who reads the live composition.** Migrated to the hooks (Phase 378), so an admin-entered month moves them: ScopeDonut, AISummary, ScopeExplainer, PeerComparison, NetEstimate (hero + the Scope 2 breakdown row), Actions, Scenarios, TeacherPortal, Hotspots, Executive, AnnualReport, Buildings (seasonal sparkline), AdminMethodology, AdminDataQuality, AdminPlanAgent (its AI-prompt context already synced via `useMeasuredScopeTotals`). Each keeps the static export as its first-paint fallback (`live.scope2Mt || SCOPE2_TOTAL_MT`).
+
+Note that `KG_PER_KWH`-style constants — `(GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH` in Buildings, Hotspots, Executive, StudentChallenges, Renewables2, equivalents.js — are a *rate* (≈0.2344 kg/kWh) and don't move with the composed kWh (verified 400k–2.5M kWh). Leave them static.
+
+**Still seed-only:** `data/learningContent.js` and the LearnAgent narrative/quiz strings (module-level content, no hook available — the figures are written into prose and updated by hand when the headline moves), and `SCOPE2_TOTAL_MT` / `GROSS_MT` in `scopeTotals.js`, which are the fallback chain by design. If the headline moves materially, grep for the old value across `src/data/ap-content` excluded paths and update the prose.
 
 ### Supabase tables (canonical)
 

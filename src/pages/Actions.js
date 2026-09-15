@@ -6,6 +6,7 @@ import { reductionActions, reductionActionsByVisibility } from '../data/reductio
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { rankActions } from '../utils/hotspots.js';
 import { GROSS_MT } from '../data/scopeTotals.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Public Actions page — interactive: students pick which actions
 // they'll commit to and the page shows in real time how that moves
@@ -26,7 +27,7 @@ const CATEGORY_META = {
 };
 
 const STORAGE_KEY = 'kua_committed_actions';
-const KUA_GROSS_MT = GROSS_MT;      // Reactive — composed from scopeTotals.
+const KUA_GROSS_MT_FALLBACK = GROSS_MT; // First paint; the live value comes from the hook.
 const TYPICAL_DORM = 22;            // Approx. KUA dorm population for "my dorm" scope.
 
 function loadCommitted() {
@@ -45,6 +46,8 @@ export default function Actions() {
   const [scope, setScope] = useState('me');                   // 'me' | 'dorm' | 'campus'
   const [committed, setCommitted] = useState(() => loadCommitted());
   const [expanded, setExpanded] = useState(null);
+  const live = useMeasuredScopeTotals();
+  const KUA_GROSS_MT = live.grossMt || KUA_GROSS_MT_FALLBACK;
 
   useEffect(() => { saveCommitted(committed); }, [committed]);
 

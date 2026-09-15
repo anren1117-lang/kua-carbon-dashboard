@@ -10,6 +10,7 @@ import { rankActions } from '../utils/hotspots.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { Icon } from '../components/Icon.js';
 
@@ -28,6 +29,7 @@ const GROSS_FALLBACK = SCOPE_TOTALS_FALLBACK.scope1 + SCOPE_TOTALS_FALLBACK.scop
 
 export default function AnnualReport() {
   const live = useMeasuredScopeTotals();
+  const s2 = useMeasuredScope2();
   // Use live measured values everywhere they're available. Falls back
   // to the synchronous module-level constants on first paint, before
   // the Supabase fetch resolves. The numbers are identical when no
@@ -178,7 +180,7 @@ export default function AnnualReport() {
 
       <Section title="Electricity supply">
         <p style={styles.body}>
-          KUA's ~{COMPOSED_ANNUAL_KWH.toLocaleString()} kWh of Year 1 projected annual electricity ({GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured YTD through {COMPOSED_YTD_AS_OF}, seasonally projected) comes through the ISO New England regional grid. The 2024 system mix was:
+          KUA's ~{s2.year1Kwh.toLocaleString()} kWh of Year 1 projected annual electricity ({s2.ytdKwh.toLocaleString()} kWh measured through {s2.asOf}, seasonally projected) comes through the ISO New England regional grid. The 2024 system mix was:
         </p>
         <table style={styles.table}>
           <thead>
@@ -195,7 +197,7 @@ export default function AnnualReport() {
               // The annual report is annual, so scale the per-fuel kWh
               // and mt to Year 1 by the same factor used in
               // GRID_MIX_ANNUAL_MTCO2E (live, no need to import again).
-              const factor = GRID_MIX_ANNUAL_MTCO2E / GRID_MIX_TOTAL_MTCO2E;
+              const factor = s2.ytdMt > 0 ? s2.annualMt / s2.ytdMt : GRID_MIX_ANNUAL_MTCO2E / GRID_MIX_TOTAL_MTCO2E;
               return (
                 <tr key={m.source}>
                   <td style={styles.td}>{m.source}</td>
@@ -210,7 +212,7 @@ export default function AnnualReport() {
         <p style={{ ...styles.body, marginTop: 12, color: '#475569' }}>
           On-campus solar (the operational rooftop array, anchored on measured April BMS production)
           generates ~{SOLAR_ANNUAL_KWH.toLocaleString()} kWh annually — about
-          {' '}{((SOLAR_ANNUAL_KWH / COMPOSED_ANNUAL_KWH) * 100).toFixed(1)}% of campus annual demand,
+          {' '}{((SOLAR_ANNUAL_KWH / (s2.year1Kwh || COMPOSED_ANNUAL_KWH)) * 100).toFixed(1)}% of campus annual demand,
           displacing the equivalent grid-driven emissions.
         </p>
       </Section>

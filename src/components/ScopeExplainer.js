@@ -4,12 +4,17 @@ import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scope
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
+import { ledgerSourceText } from '../data/electricityLedger.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
 // Per-student values pulled from the same centralized source the rest
 // of the dashboard uses, so this homepage explainer stays in sync.
 const PER_STUDENT = (mt) => +(mt / TOTAL_STUDENTS).toFixed(2);
 
-const scopes = [
+// First-paint values. The Scope 2 row is rebuilt from the live electricity
+// ledger inside the component below.
+const SCOPES = [
   {
     key: 'scope1', color: '#ef4444', label: 'Scope 1', title: 'Direct Emissions',
     summary: 'Greenhouse gases released directly from sources KUA owns or controls — heating fuel, refrigerants, fleet vehicles.',
@@ -186,6 +191,23 @@ function ScopeCard({ s, color }) {
 }
 
 export function ScopeExplainer() {
+  // Scope 2 follows the live electricity ledger; the other rows keep the
+  // canonical totals until their own measured paths land.
+  const live = useMeasuredScopeTotals();
+  const s2 = useMeasuredScope2();
+  const scope2Mt = live.scope2Mt || SCOPE2_TOTAL_MT;
+  const scopes = SCOPES.map((s) => (s.key !== 'scope2' ? s : {
+    ...s,
+    kuaTotal: `~${Math.round(scope2Mt).toLocaleString()}`,
+    kuaPerStudent: PER_STUDENT(scope2Mt),
+    kuaRange: `${Math.round(scope2Mt * 0.95)} – ${Math.round(scope2Mt * 1.05)} (±5% working band)`,
+    calculation: [
+      `kWh side is composed from real measured BMS data — ${ledgerSourceText(s2.ledger)}.`,
+      `${s2.year1Kwh.toLocaleString()} kWh annualized (Year 1 projection)`,
+      s.calculation[2],
+      `= ${Math.round(scope2Mt)} mtCO₂e/year`,
+    ],
+  }));
   return (
     <div style={styles.wrap}>
       <section style={styles.outer}>

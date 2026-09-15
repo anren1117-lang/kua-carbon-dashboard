@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Generates a plain-language summary of the dashboard state. Currently rule-based;
 // the same I/O shape (database values in, grounded sentences out) can be swapped
@@ -21,10 +22,12 @@ const PRELIM = {
   students: STUDENTS,
 };
 
-function compose(records) {
-  const gross = Math.round(GROSS_MT);
-  const net = gross - PRELIM.sinks;
-  const perStudent = (net / PRELIM.students).toFixed(1);
+function compose(records, totals) {
+  // `totals` is the live measured view; PRELIM is the first-paint fallback.
+  const P = totals || PRELIM;
+  const gross = Math.round(P.scope1 + P.scope2 + P.scope3);
+  const net = gross - P.sinks;
+  const perStudent = (net / P.students).toFixed(1);
   const recordCount = records.totalRecords ?? 0;
   const measuredScope = records.totalRecords > 0 ? Object.keys(records.tables).filter((t) => records.tables[t] > 0) : [];
 
@@ -33,13 +36,13 @@ function compose(records) {
     `KUA's preliminary total carbon footprint is approximately ${gross.toLocaleString()} mtCO₂e per year across Scopes 1, 2, and 3.`
   );
   sentences.push(
-    `Scope 3 is the largest contributor at roughly ${PRELIM.scope3.toLocaleString()} mtCO₂e — about ${Math.round(PRELIM.scope3 / gross * 100)}% of the total — dominated by student travel (international + US-boarder term-break flights), with dining, purchased goods, and waste making up the rest.`
+    `Scope 3 is the largest contributor at roughly ${P.scope3.toLocaleString()} mtCO₂e — about ${Math.round(P.scope3 / gross * 100)}% of the total — dominated by student travel (international + US-boarder term-break flights), with dining, purchased goods, and waste making up the rest.`
   );
   sentences.push(
-    `Heating fuel (Scope 1) contributes ~${PRELIM.scope1.toLocaleString()} mtCO₂e from cold-climate combustion, while purchased electricity (Scope 2) adds another ${PRELIM.scope2} mtCO₂e from the ISO-NE 2024 grid.`
+    `Heating fuel (Scope 1) contributes ~${P.scope1.toLocaleString()} mtCO₂e from cold-climate combustion, while purchased electricity (Scope 2) adds another ${P.scope2} mtCO₂e from the ISO-NE 2024 grid.`
   );
   sentences.push(
-    `On-campus sequestration from roughly 1,000 acres of forest pulls back an estimated ${PRELIM.sinks.toLocaleString()} mtCO₂e per year, leaving a net balance near ${net.toLocaleString()} mtCO₂e — about ${perStudent} per student per year.`
+    `On-campus sequestration from roughly 1,000 acres of forest pulls back an estimated ${P.sinks.toLocaleString()} mtCO₂e per year, leaving a net balance near ${net.toLocaleString()} mtCO₂e — about ${perStudent} per student per year.`
   );
   if (recordCount > 0) {
     sentences.push(
@@ -112,9 +115,17 @@ export function AISummary() {
     return () => { cancelled = true; };
   }, []);
 
-  const sentences = compose(records);
-  const gross = Math.round(GROSS_MT);
-  const net = gross - PRELIM.sinks;
+  const live = useMeasuredScopeTotals();
+  const P = {
+    scope1: Math.round(live.scope1Mt || PRELIM.scope1),
+    scope2: Math.round(live.scope2Mt || PRELIM.scope2),
+    scope3: Math.round(live.scope3Mt || PRELIM.scope3),
+    sinks: Math.round(live.sinkMt || PRELIM.sinks),
+    students: PRELIM.students,
+  };
+  const sentences = compose(records, P);
+  const gross = Math.round(P.scope1 + P.scope2 + P.scope3);
+  const net = gross - P.sinks;
 
   const [showFull, setShowFull] = useState(false);
   const visibleSentences = showFull ? sentences : sentences.slice(0, 1);
@@ -152,16 +163,16 @@ export function AISummary() {
         {showCalc && (
           <pre id="ai-summary-calc" style={styles.calc}>
 {`gross = scope1 + scope2 + scope3
-      = ${PRELIM.scope1} + ${PRELIM.scope2} + ${PRELIM.scope3}
+      = ${P.scope1} + ${P.scope2} + ${P.scope3}
       = ${gross.toLocaleString()} mtCO₂e/yr
 
 net = gross - on_campus_sinks
-    = ${gross.toLocaleString()} - ${PRELIM.sinks.toLocaleString()}
+    = ${gross.toLocaleString()} - ${P.sinks.toLocaleString()}
     = ${net.toLocaleString()} mtCO₂e/yr
 
 per_student = net / students
-            = ${net.toLocaleString()} / ${PRELIM.students}
-            = ${(net / PRELIM.students).toFixed(2)} mtCO₂e/student/yr
+            = ${net.toLocaleString()} / ${P.students}
+            = ${(net / P.students).toFixed(2)} mtCO₂e/student/yr
 
 records_in_db = ${records.totalRecords}
 nonempty_tables = ${Object.entries(records.tables).filter(([, n]) => n > 0).map(([k]) => k).join(', ') || '(none yet)'}`}

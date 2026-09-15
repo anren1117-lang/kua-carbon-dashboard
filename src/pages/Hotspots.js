@@ -12,6 +12,7 @@ import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { COMPOSED_ANNUAL_KWH, SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
 // Hotspots — ranked view of where emissions are concentrated. Combines a
 // magnitude rollup (per-building electricity) with a category-level summary
@@ -27,6 +28,7 @@ const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
 );
 
 export default function Hotspots() {
+  const s2 = useMeasuredScope2();
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
   // Per-building kWh: prefer BMS-mapped measured data, fall back to
   // envysionSnapshot. Same priority ladder as /buildings — Hotspots
@@ -53,7 +55,9 @@ export default function Hotspots() {
   // comes from composedYtd. They differ because not every building is
   // mapped + in envysionSnapshot. Show both honestly.
   const sumOfBuildings = buildingsKwh.reduce((s, b) => s + b.kwh, 0);
-  const totalKwh = COMPOSED_ANNUAL_KWH;
+  // Campus total follows the live electricity ledger so building shares stay
+  // honest once admin-entered months land.
+  const totalKwh = s2.year1Kwh || COMPOSED_ANNUAL_KWH;
   const ranked = buildingHotspots(buildingsKwh, totalKwh, KG_PER_KWH_ISO_NE);
 
   // Categories rolled up from the same kWh source the rank uses.
@@ -73,7 +77,7 @@ export default function Hotspots() {
 
   const topActions = rankActions(reductionActions).slice(0, 5);
 
-  const totalMt = GRID_MIX_ANNUAL_MTCO2E;
+  const totalMt = s2.annualMt || GRID_MIX_ANNUAL_MTCO2E;
   const buildingsCoverage = (sumOfBuildings / totalKwh) * 100;
   const top3Share = ranked.slice(0, 3).reduce((s, h) => s + h.percentOfTotal, 0);
 
@@ -90,10 +94,10 @@ export default function Hotspots() {
   );
   const _multSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
   const trendSeries = monthlyPattern.map((m, i) => {
-    const monthKey = `2026-${String(i + 1).padStart(2, '0')}`;
+    const monthKey = `${s2.ledger.year}-${String(i + 1).padStart(2, '0')}`;
     const measuredKwh = measuredMonths[monthKey];
     const measured = measuredKwh != null;
-    const projectedMt = (m.multiplier / _multSum) * GRID_MIX_ANNUAL_MTCO2E;
+    const projectedMt = (m.multiplier / _multSum) * totalMt;
     const mt = measured
       ? (measuredKwh * KG_PER_KWH_ISO_NE) / 1000
       : projectedMt;

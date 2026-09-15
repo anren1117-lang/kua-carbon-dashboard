@@ -12,6 +12,8 @@ import {
   SINKS_RANGE,
 } from '../data/geographicEstimates.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
+import { ledgerSourceText } from '../data/electricityLedger.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 import { AnimatedNumber } from './AnimatedNumber.js';
 import { AmbientParticles } from './AmbientParticles.js';
@@ -236,12 +238,22 @@ export function NetEstimate() {
   const heroTiltRef = useCardTilt({ max: 4, scale: 1.005 });
   useSpotlight(heroTiltRef);
   const live = useMeasuredScopeTotals();
+  const s2 = useMeasuredScope2();
+  // The Scope 2 row recomposes from the electricity ledger, so an admin-entered
+  // month moves this breakdown too, not just the Scope 2 page.
+  const liveRows = rows.map((r) => (!r.name.startsWith('Scope 2') ? r : {
+    ...r,
+    low: Math.round(s2.annualMt * 0.95),
+    high: Math.round(s2.annualMt * 1.05),
+    currentMethod: `Recomputed from the composed year-to-date on each render: ${ledgerSourceText(s2.ledger)} — ${s2.ytdKwh.toLocaleString()} kWh through ${s2.asOf}, annualizing to ${s2.year1Kwh.toLocaleString()} kWh/yr × ISO-NE 2024 effective rate 0.235 kg/kWh = ${s2.annualMt} mtCO₂e/yr. Range is the central value ±5% — a working band covering the feed-to-master scale on the scaled months and the modelled rest of the year.`,
+  }));
   // Override the hero + per-student with live measured values when any
   // scope flipped to measured. The breakdown table below still shows
   // the multi-method ranges per row (those are the cross-check view,
   // independent of the measured headline).
-  const heroNetMid = live.scope1Measured || live.scope3Measured ? live.netMt : summary.netMid;
-  const heroGrossMid = live.scope1Measured || live.scope3Measured ? live.grossMt : summary.grossMid;
+  const anyLive = live.scope1Measured || live.scope3Measured || live.scope2FromAdmin;
+  const heroNetMid = anyLive ? live.netMt : summary.netMid;
+  const heroGrossMid = anyLive ? live.grossMt : summary.grossMid;
   const heroPerStudentMid = +(heroNetMid / TOTAL_STUDENTS).toFixed(1);
   const heroBadge = live.scope1Measured || live.scope3Measured
     ? (live.scope1Measured && live.scope3Measured ? 'Measured estimate' : 'Partially measured')
@@ -318,7 +330,7 @@ export function NetEstimate() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
+                {liveRows.map((r) => (
                   <tr key={r.name}>
                     <td style={styles.td}>{r.name}</td>
                     <td style={styles.tdNum}>
@@ -335,7 +347,7 @@ export function NetEstimate() {
             </button>
             {showNotes && (
               <ul style={styles.noteList}>
-                {rows.map((r) => (
+                {liveRows.map((r) => (
                   <li key={r.name}>
                     <div style={{ marginBottom: 4 }}>
                       <strong style={{ color: '#e5e7eb' }}>{r.name}</strong>{' '}

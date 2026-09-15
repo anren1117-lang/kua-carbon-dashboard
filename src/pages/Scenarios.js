@@ -5,6 +5,7 @@ import { EducationalCard } from '../components/EducationalCard';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { runScenario } from '../utils/scenarioModel.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { AnimatedNumber } from '../components/AnimatedNumber.js';
 
 // /scenarios — interactive what-if simulator. Pulls KUA's canonical
@@ -52,15 +53,21 @@ export default function Scenarios() {
   const [solarKw,                 setSolarKw]                 = useState(0);
   const [treePlantingAcres,       setTreePlantingAcres]       = useState(0);
 
+  // Baseline follows measured data (Scope 2 recomposes from the electricity
+  // ledger); the static totals are the first-paint fallback.
+  const live = useMeasuredScopeTotals();
+  const baseScope1Mt = live.scope1Mt || SCOPE1_TOTAL_MT;
+  const baseScope2Mt = live.scope2Mt || SCOPE2_TOTAL_MT;
+
   const result = useMemo(() => runScenario({
-    scope1Mt: SCOPE1_TOTAL_MT,
-    scope2Mt: SCOPE2_TOTAL_MT,
+    scope1Mt: baseScope1Mt,
+    scope2Mt: baseScope2Mt,
     sinksMt:  ANNUAL_SEQUESTRATION_MT,
     electricityReductionPct,
     heatingElectrifyPct,
     solarKw,
     treePlantingAcres,
-  }), [electricityReductionPct, heatingElectrifyPct, solarKw, treePlantingAcres]);
+  }), [baseScope1Mt, baseScope2Mt, electricityReductionPct, heatingElectrifyPct, solarKw, treePlantingAcres]);
 
   const reset = () => {
     setElectricityReductionPct(0);

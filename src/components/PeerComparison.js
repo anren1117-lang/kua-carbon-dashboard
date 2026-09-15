@@ -4,6 +4,8 @@ import { useSpotlight } from '../hooks/useSpotlight.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
 // Per-student mtCO2e breakdown drawn from publicly disclosed sustainability reports.
 // Cross-institutional comparison has real limits (Valls-Val & Bovea 2021): Scope 3
@@ -79,6 +81,25 @@ const typeLabels = {
   'university':         'Research university',
 };
 
+// KUA's row follows measured data as it lands — Scope 2 recomposes from the
+// electricity ledger. Peer rows stay hand-typed from their published reports.
+function buildLivePeers(live, s2) {
+  return peers.map((p) => {
+    if (!p.isUs) return p;
+    const scope1 = live?.scope1Mt ?? KUA_SCOPE1_TOTAL_MT;
+    const scope2 = live?.scope2Mt ?? KUA_SCOPE2_ANNUAL_MT;
+    const scope3 = live?.scope3Mt ?? KUA_SCOPE3_TOTAL_MT;
+    const ytdMt = s2?.ytdMt ?? GRID_MIX_TOTAL_MTCO2E;
+    return {
+      ...p,
+      scope1: round1(scope1 / TOTAL_STUDENTS),
+      scope2: round1(scope2 / TOTAL_STUDENTS),
+      scope3: round1(scope3 / TOTAL_STUDENTS),
+      note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${Math.round(scope1).toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(scope2).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${ytdMt.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${Math.round(scope3).toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at mid-estimate sequestration.`,
+    };
+  });
+}
+
 const sumGross = (p) => p.scope1 + p.scope2 + p.scope3;
 const sumNet = (p) => sumGross(p) + p.sinks + p.offsets; // sinks/offsets are stored negative
 
@@ -133,7 +154,7 @@ const styles = {
 
 const valToPct = (v) => ((v - axisMin) / axisRange) * 100;
 
-function PeerNotes() {
+function PeerNotes({ peers }) {
   const [open, setOpen] = useState(false);
   const toggleStyle = { marginTop: 18, background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', padding: '8px 14px', borderRadius: 6, fontSize: 13, cursor: 'pointer' };
   return (
@@ -205,6 +226,9 @@ function Bar({ p }) {
 export function PeerComparison() {
   const isNarrow = useIsNarrow();
   const spotRef = useSpotlight();
+  const live = useMeasuredScopeTotals();
+  const s2 = useMeasuredScope2();
+  const livePeers = buildLivePeers(live, s2);
   // Axis tick values for context.
   const ticks = [Math.ceil(axisMin), 0, Math.round(axisMax / 2), Math.round(axisMax)];
 
@@ -246,7 +270,7 @@ export function PeerComparison() {
         )}
 
         <div style={styles.rows}>
-          {peers
+          {livePeers
             .slice()
             .sort((a, b) => sumNet(b) - sumNet(a))
             .map((p) => {
@@ -282,7 +306,7 @@ export function PeerComparison() {
             })}
         </div>
 
-        <PeerNotes />
+        <PeerNotes peers={livePeers} />
       </section>
     </div>
   );

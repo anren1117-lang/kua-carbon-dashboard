@@ -5,6 +5,8 @@ import { GRID_MIX_TOTAL_MTCO2E } from '../../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { TOTAL_STUDENTS } from '../../data/students.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, COMPOSED_ANNUAL_KWH, COMPOSED_YTD_KWH } from '../../data/composedYtd.js';
+import { useMeasuredScope2 } from '../../hooks/useMeasuredScope2.js';
+import { ledgerSourceText } from '../../data/electricityLedger.js';
 import { adminFetch } from '../../utils/adminFetch.js';
 import { downloadBlob } from '../../utils/csv.js';
 import { recordUsage } from '../../utils/aiUsageTally.js';
@@ -187,6 +189,7 @@ export default function AdminPlanAgent() {
   // module-level constants on first paint and when no admin records
   // have been entered.
   const live = useMeasuredScopeTotals();
+  const s2 = useMeasuredScope2();
   // Persist only the user-editable fields. Canonical KUA totals
   // (grossMt, sinksMt, enrollment) come fresh from the data layer
   // every time so a stale localStorage snapshot can't override an
@@ -917,11 +920,11 @@ export default function AdminPlanAgent() {
                 : 'Hand-set placeholder for heating fuel + refrigerants + fleet, sized to typical NH boarding-school footprints. KUA fuel deliveries and refrigerant logs have not been integrated.'}
               target="Annual fuel-delivery invoices (heating oil + propane) per building × EPA Stationary Combustion factors. HVAC technician service-report mass balance × IPCC AR6 GWP100 for refrigerants. Fleet fuel-card records × EPA gasoline/diesel factors. Flips estimated → measured."
               sourcePath="src/hooks/useMeasuredScope1.js" />
-            <CtxRow provenance="measured" label={`Scope 2 kWh (${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh Year 1 / ${COMPOSED_YTD_KWH.toLocaleString()} kWh YTD)`}
-              today="KUA Distech Eclypse BMS All Meters page, snapshot 2026-05-03 (123 days into 2026)."
-              target={`Already measured. Improvement: drop the seasonally anchored annualization (×${ANNUALIZE_FACTOR.toFixed(2)} today) once a full year of BMS data is captured.`}
-              sourcePath="src/data/envysionSnapshot.js" />
-            <CtxRow provenance="cited" label={`Scope 2 mtCO₂e (${Math.round(SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized)`}
+            <CtxRow provenance="measured" label={`Scope 2 kWh (${s2.year1Kwh.toLocaleString()} kWh Year 1 / ${s2.ytdKwh.toLocaleString()} kWh through ${s2.asOf})`}
+              today={`Composed from the electricity ledger — ${ledgerSourceText(s2.ledger)}. Admin entries on /admin/scope-2/meter-trends recompose it.`}
+              target={`Already measured. Improvement: drop the seasonally anchored annualization (×${s2.annualizeFactor.toFixed(2)} today) once a full year of BMS data is captured.`}
+              sourcePath="src/data/electricityLedger.js" />
+            <CtxRow provenance="cited" label={`Scope 2 mtCO₂e (${Math.round(s2.annualMt || SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized)`}
               today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.235 kg/kWh, in eGRID NEWE 2022 range."
               target="Already at target methodology. Refresh as eGRID NEWE 2024 publishes (expected late 2026)."
               sourcePath="src/data/gridMix.js" />

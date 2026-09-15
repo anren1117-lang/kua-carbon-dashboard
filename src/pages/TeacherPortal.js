@@ -6,6 +6,7 @@ import { hashUserId } from '../utils/hash.js';
 import { ExplainChart } from '../components/ExplainChart.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Teacher Portal — gated by VITE_TEACHER_PASSWORD (default "kua-teach"
 // in dev). Editorial dashboard: primary actions surfaced as a top
@@ -217,15 +218,21 @@ function Onboarding() {
 // are readable at a glance on a projector or a Chromebook, with no hover
 // required. The ExplainChart button below turns the numbers into a
 // plain-English caption a teacher can read to the class.
-const scopeBars = [
-  { label: 'Scope 1 — direct (heating, fleet)', value: Math.round(SCOPE1_TOTAL_MT), color: '#ef4444' },
-  { label: 'Scope 2 — electricity', value: Math.round(SCOPE2_TOTAL_MT), color: '#f59e0b' },
-  { label: 'Scope 3 — indirect (goods, travel)', value: Math.round(SCOPE3_TOTAL_MT), color: '#8b5cf6' },
-  { label: 'Forest sequestration', value: -Math.round(ANNUAL_SEQUESTRATION_MT), color: '#22c55e' },
-];
+// Built from useMeasuredScopeTotals() so the class sees the same figures the
+// public pages do — Scope 2 recomposes from the electricity ledger.
+function buildScopeBars(live) {
+  return [
+    { label: 'Scope 1 — direct (heating, fleet)', value: Math.round(live?.scope1Mt ?? SCOPE1_TOTAL_MT), color: '#ef4444' },
+    { label: 'Scope 2 — electricity', value: Math.round(live?.scope2Mt ?? SCOPE2_TOTAL_MT), color: '#f59e0b' },
+    { label: 'Scope 3 — indirect (goods, travel)', value: Math.round(live?.scope3Mt ?? SCOPE3_TOTAL_MT), color: '#8b5cf6' },
+    { label: 'Forest sequestration', value: -Math.round(ANNUAL_SEQUESTRATION_MT), color: '#22c55e' },
+  ];
+}
 
 function PortalScopeChart() {
-  const gross = Math.round(GROSS_MT);
+  const live = useMeasuredScopeTotals();
+  const scopeBars = buildScopeBars(live);
+  const gross = Math.round(live.grossMt || GROSS_MT);
   const sink = Math.round(ANNUAL_SEQUESTRATION_MT);
   const net = gross - sink;
   // Scale bars to the largest magnitude so proportions read true.

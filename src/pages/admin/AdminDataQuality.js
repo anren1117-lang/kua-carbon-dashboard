@@ -71,7 +71,7 @@ export default function AdminDataQuality() {
   // Compose the four scope-level rollups.
   const grossTotal = live.grossMt || GROSS_MT;
   const measuredScope1Mt = live.scope1Measured ? live.scope1Mt : 0;
-  const measuredScope2Mt = SCOPE2_TOTAL_MT; // always cited via BMS
+  const measuredScope2Mt = live.scope2Mt || SCOPE2_TOTAL_MT; // always cited via BMS
   const measuredScope3Mt = live.scope3Measured ? live.scope3Mt : 0;
   const measuredSinksMt = live.sinksMeasured ? live.sinkMt : 0;
   const measuredGrossMt = measuredScope1Mt + measuredScope2Mt + measuredScope3Mt;

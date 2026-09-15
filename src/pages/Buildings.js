@@ -8,6 +8,7 @@ import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.
 import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
 // The April export covers its own ~30-day window — annualize it by that
 // window's seasonal share, not by the Jan → Sep YTD factor.
@@ -51,6 +52,8 @@ const CATEGORY_COLORS = {
 };
 
 export default function BuildingsPage() {
+  // Campus annual Scope 2 follows the live electricity ledger.
+  const s2 = useMeasuredScope2();
   const [sortBy, setSortBy] = useState('kwh');
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState(null);
@@ -165,7 +168,7 @@ export default function BuildingsPage() {
           // the canonical annual Scope 2 figure.
           const multSum = monthlyPattern.reduce((s, m) => s + m.multiplier, 0);
           const sparkData = monthlyPattern.map((m, i) => ({
-            value: +((m.multiplier / multSum) * GRID_MIX_ANNUAL_MTCO2E).toFixed(1),
+            value: +((m.multiplier / multSum) * (s2.annualMt || GRID_MIX_ANNUAL_MTCO2E)).toFixed(1),
             measured: measuredKeys.has(`${COMPOSED_YTD_AS_OF.slice(0, 4)}-${String(i + 1).padStart(2, '0')}`),
             month: monthLabels[i],
           }));

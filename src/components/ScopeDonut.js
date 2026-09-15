@@ -4,19 +4,23 @@ import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { useAnimatedNumber } from './AnimatedNumber.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { ExplainChart } from './ExplainChart.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut
 // stays in sync with every other place on the dashboard.
-const segments = [
-  { key: 'scope1',  label: 'Scope 1 — direct',         value: Math.round(SCOPE1_TOTAL_MT),       color: '#ef4444' },
-  { key: 'scope2',  label: 'Scope 2 — electricity',    value: Math.round(SCOPE2_TOTAL_MT),       color: '#f59e0b' },
-  { key: 'scope3',  label: 'Scope 3 — indirect',       value: Math.round(SCOPE3_TOTAL_MT),       color: '#8b5cf6' },
-];
+// Values come from useMeasuredScopeTotals() so the donut follows measured data
+// as it lands — Scope 2 recomposes from the electricity ledger the moment an
+// admin saves a month. The static totals are the first-paint fallback.
+function buildSegments(live) {
+  return [
+    { key: 'scope1',  label: 'Scope 1 — direct',      value: Math.round(live?.scope1Mt ?? SCOPE1_TOTAL_MT), color: '#ef4444' },
+    { key: 'scope2',  label: 'Scope 2 — electricity', value: Math.round(live?.scope2Mt ?? SCOPE2_TOTAL_MT), color: '#f59e0b' },
+    { key: 'scope3',  label: 'Scope 3 — indirect',    value: Math.round(live?.scope3Mt ?? SCOPE3_TOTAL_MT), color: '#8b5cf6' },
+  ];
+}
 const sinkValue = Math.round(ANNUAL_SEQUESTRATION_MT); // pulled out by the campus forest
-const grossTotal = Math.round(GROSS_MT);
-const netTotal = grossTotal - sinkValue;
 
 // SVG arc helper for a donut segment.
 function arcPath(cx, cy, rOuter, rInner, startAngle, endAngle) {
@@ -51,6 +55,10 @@ export function ScopeDonut() {
   const narrow = useIsNarrow();
   const [hover, setHover] = useState(null);
   const spotRef = useSpotlight();
+  const live = useMeasuredScopeTotals();
+  const segments = buildSegments(live);
+  const grossTotal = Math.round(live.grossMt || GROSS_MT);
+  const netTotal = grossTotal - sinkValue;
 
   // Build arc segments
   const cx = 130, cy = 130, rO = 110, rI = 70;

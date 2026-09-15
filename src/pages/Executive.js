@@ -4,6 +4,7 @@ import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/Modul
 import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { SCOPE_TOTALS as SCOPE_TOTALS_CENTRAL, GROSS_MT as GROSS_MT_CENTRAL } from '../data/scopeTotals.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { reductionActionsByVisibility } from '../data/reductionActions.js';
@@ -40,6 +41,7 @@ export default function Executive() {
     scope3Mt: live.scope3Mt,
   };
   const GROSS_MT = live.grossMt || GROSS_MT_FALLBACK;
+  const s2 = useMeasuredScope2();
   const NET_MT = live.netMt ?? NET_MT_FALLBACK;
   const grossProvenance = live.scope1Measured && live.scope3Measured ? 'measured'
     : (live.scope1Measured || live.scope3Measured ? 'measured' : 'estimated');
@@ -325,7 +327,7 @@ export default function Executive() {
           { label: 'Students',         value: TOTAL_STUDENTS,         accent: '#22d3ee' },
           { label: 'Faculty + staff',  value: TOTAL_STAFF,            accent: '#fbbf24' },
           { label: 'mtCO₂e / student', value: perStudent.toFixed(2),  accent: '#86efac', note: 'Net basis' },
-          { label: 'kWh / student',    value: Math.round(GRID_MIX_TOTAL_KWH / TOTAL_STUDENTS).toLocaleString(), accent: '#ef4444' },
+          { label: 'kWh / student',    value: Math.round((s2.year1Kwh || GRID_MIX_TOTAL_KWH) / TOTAL_STUDENTS).toLocaleString(), accent: '#ef4444', note: 'Year 1 basis' },
         ]} />
       </ModuleSection>
 
@@ -333,7 +335,7 @@ export default function Executive() {
         title="Annual electricity equivalents"
         hint="From the kWh side — handy for assemblies and tours."
       >
-        <EnergyEquivalents kwh={GRID_MIX_TOTAL_KWH} label="A year of campus electricity is equivalent to" />
+        <EnergyEquivalents kwh={s2.year1Kwh || GRID_MIX_TOTAL_KWH} label="A year of campus electricity is equivalent to" />
       </ModuleSection>
 
       <ModuleSection title="Direct module links">
