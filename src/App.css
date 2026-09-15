@@ -781,3 +781,75 @@ section details[open] > summary::before {
 @media (prefers-reduced-motion: reduce) {
   .kua-toast-enter { animation: none !important; }
 }
+
+/* Teacher Portal — collapse the two-column work/reference grid to
+   a single column on narrow viewports. Inline styles set the desktop
+   grid-template-columns; this rule overrides on small screens. */
+@media (max-width: 880px) {
+  .kua-portal-twocol {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Teacher Portal onboarding — three numbered steps sit side by side on
+   desktop, stack to a single column on phones / narrow Chromebook
+   split-view so each step stays readable. */
+@media (max-width: 720px) {
+  .kua-onboard-steps {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* APES content viewer — inline SVG figures stretch to fill their
+   frame (which has a max-width set inline). preserveAspectRatio in
+   the SVG keeps the diagram proportional. */
+figure svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* APES viewer responsive layout. The shell is a 3-col grid (unit
+   nav · content · subunit TOC). On narrower screens, drop the right
+   TOC, then drop the left unit nav, ending at single-column on
+   phones. */
+@media (max-width: 1100px) {
+  .kua-apes-shell {
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr) !important;
+  }
+  .kua-apes-shell > aside {
+    display: none !important;
+  }
+}
+@media (max-width: 720px) {
+  .kua-apes-shell {
+    grid-template-columns: 1fr !important;
+  }
+  .kua-apes-shell > nav {
+    display: none !important;
+  }
+}
+
+/* APES viewer print — hide rails, expand reading column, force
+   black-on-white. Reveal all subunits regardless of scroll state. */
+@media print {
+  .kua-apes-shell {
+    display: block !important;
+  }
+  .kua-apes-shell > nav,
+  .kua-apes-shell > aside,
+  .no-print {
+    display: none !important;
+  }
+  .kua-apes-shell > article {
+    color: #000 !important;
+  }
+  .kua-apes-shell figure {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  body, html {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

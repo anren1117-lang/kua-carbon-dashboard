@@ -1,0 +1,53 @@
+# KUA Carbon Dashboard — Measured Electricity Month (methodology & provenance)
+
+**Purpose:** Document exactly how the "Campus electricity, measured" chart on the Scope 2 page was derived from a raw power-meter export, and — just as important — where "measured" stops and "estimated" begins. This is the provenance backing for `src/data/meteredMonth.js`.
+
+**Source data:** Envysion / Distech Eclypse BMS trend export, `MeterTrends_20260914_1909987.csv` — ~110 building power-meter feeds, hourly, **2026-08-16 00:00 → 2026-09-14 19:00** (716 rows). The raw file is not committed; the aggregated daily series lives in `src/data/meteredMonth.js`.
+
+**Provenance taxonomy** (same as `docs/spot-check-sheet.md`):
+- **measured** = from a real meter or invoice in KUA's hands
+- **cited** = published methodology (EPA, IPCC, ISO-NE, etc.) applied to KUA inputs
+- **estimated** = bottom-up placeholder / extrapolation awaiting data integration
+
+---
+
+## What each number is
+
+| Figure | Value (window) | Provenance | Notes |
+|---|---|---|---|
+| Daily grid consumption | 137,358 kWh total | **measured** | Whole-campus draw, deduplicated (see method) |
+| Avg per full day | ~4,589 kWh/day | **measured** | 29 full days; partial Sep 14 excluded from the divisor |
+| On-site solar generation | 8,125 kWh | **measured** | Solar feeds run as negative counters (generation) |
+| Scope 2, gross | ~32.3 mtCO₂e | **cited** | measured kWh × ISO-NE 0.235 kg/kWh — the factor is published, not measured |
+| Annualized | ~1.67 GWh / ~394 mtCO₂e/yr | **estimated** | naive ×365 of a non-representative month — see caveat |
+
+> Only the kWh and solar rows are measurements. The emissions row is measured energy times a *cited* factor; the annualized row is an *extrapolation*. The chart's "Measured data" badge is scoped to the kWh/solar rows for this reason.
+
+---
+
+## Method
+
+1. **Counter differencing.** Every feed reports a *cumulative* kWh counter. Daily consumption = day-over-day difference of the counter (today's last reading − yesterday's last reading). The first day (Aug 16) is anchored on its own within-day first→last delta since there is no Aug 15 reading in the export, so it slightly under-reads; it is also the lowest-load day (empty campus), so the effect on the window total is small.
+
+2. **Mains-vs-sub-feed de-duplication.** Many power meters report a building service `MainFeed` *and* its downstream panel feeds (e.g. `PM_03_MainFeed` is the parent of `PM_03_PP1A`, `PM_03_PPB3`, …). Summing every kWh column would double-count. The rule:
+   - Where a meter has a `MainFeed`, use **only** the main (it already contains its panels).
+   - Where a meter has no main, sum its panel feeds (they are the service points).
+   - **Residual risk:** any load *not* downstream of a metered service main (a bypass feed, a separately-fed annex) is not captured — so the campus total is a slight **under-count**, not an over-count.
+
+3. **Solar.** Solar feeds (`PM_15_FieldSolarFeed`, `PM_15_RoofTopSolarFeed`, `PM_19_SolarFeed`) count backwards; reported here as positive generation. Solar is tracked **separately** and is *not* netted out of the grid-consumption figure, because whether the service mains meter gross building load or net grid import is not established from the export alone. Netting solar against grid draw would only be valid for behind-meter self-consumed generation measured downstream of the tie-in.
+
+4. **Partial final day.** Sep 14 ends 19:00 (~79% of a day). It is included in the window *total* (it is real measured energy) but **excluded** from the per-day average and the annualization, so a partial day is not counted as a full one. On the chart its final point reads low for the same reason — that dip is truncation, not a real drop in use.
+
+---
+
+## Caveats a reviewer should know
+
+- **The annualized figure is not an annual estimate.** This window is a term-*startup ramp*: campus is nearly empty (~2,400 kWh/day) in mid-August and climbs to ~6,000 kWh/day as the term begins. It misses the deep-summer trough and the full winter/spring term. A ×365 extrapolation has an error band easily ±30% with unknown direction. Real annual claims should come from the full-year composed model (`src/data/composedYtd.js`), not this window.
+- **The ~394 mtCO₂e/yr extrapolation is not independent validation of the modeled ~385 mtCO₂e/yr.** Both multiply by the same 0.235 kg/kWh factor, and both annualize from partial windows. Agreement to within a few percent is inside the true uncertainty — treat it as a sanity check on *measured kWh*, not corroboration of the annual total.
+- **Data-quality flags in the raw export.** Seven non-solar feeds counted *backwards* over the window (reversed CT or net-export wiring), the largest being `PM_20_SBKPanelFeed` (−722 kWh), `PM_03_PPB2Feed` (−407), `PM_19_KurthDormMainFeed` (−406). These are small relative to the 137 MWh total but worth flagging to Facilities.
+
+---
+
+## How to refresh
+
+The daily series in `src/data/meteredMonth.js` was generated by differencing the counters and applying the mains/sub-feed rule above. To regenerate from a new export, re-run the same aggregation against the new `MeterTrends_*.csv` and replace `METERED_DAILY`. There is no automated importer yet — the dashboard's meter store keys readings by *building* (`m_elec_<buildingId>`), and this export keys by *power-meter feed* (`PM_xx`), so a `PM_xx → building` mapping (from Facilities) is required before this can flow through `/api/meters/readings/import`.

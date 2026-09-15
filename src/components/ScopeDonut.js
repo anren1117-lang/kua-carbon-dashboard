@@ -4,6 +4,7 @@ import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { useAnimatedNumber } from './AnimatedNumber.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
+import { ExplainChart } from './ExplainChart.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut
@@ -162,6 +163,22 @@ export function ScopeDonut() {
             </div>
           </div>
         </div>
+
+        <ExplainChart
+          chart={{
+            title: 'KUA emissions by scope',
+            summary:
+              'Gross annual greenhouse-gas emissions split into Scope 1 (direct), Scope 2 (purchased electricity), and Scope 3 (indirect), against the CO₂ the campus forest sequesters. Net = gross minus sequestration.',
+            unit: 'mtCO₂e per year',
+            series: [
+              ...arcs.map((a) => ({ label: a.label, value: a.value })),
+              { label: 'Forest sequestration (removed)', value: -sinkValue },
+              { label: 'Gross total', value: grossTotal },
+              { label: 'Net total', value: netTotal },
+            ],
+            note: 'Scope 2 is measured; Scope 1 and 3 are current best estimates. ~340 students, Plainfield NH.',
+          }}
+        />
       </section>
     </div>
   );

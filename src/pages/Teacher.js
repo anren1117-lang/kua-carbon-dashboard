@@ -28,6 +28,82 @@ import {
 // content lives in src/data/lessonLibrary.js so adding a new lesson
 // is a data edit, not a UI change.
 
+// Maps every supported College Board course-id (and common aliases) to
+// the read-to-learn viewer route. Adding a new AP is one entry here
+// plus an entry in src/index.js, instead of editing nested ternaries.
+export const AP_CONTENT_ROUTES = {
+  'AP Environmental Science': '/teacher/ap/apes',
+  'AP Biology': '/teacher/ap/apbio',
+  'AP Chemistry': '/teacher/ap/apchem',
+  'AP Statistics': '/teacher/ap/apstats',
+  'AP US Government and Politics': '/teacher/ap/apusgov',
+  'AP United States Government and Politics': '/teacher/ap/apusgov',
+  'AP Calculus AB': '/teacher/ap/apcalcab',
+  'AP Calculus': '/teacher/ap/apcalcab',
+  'AP Calculus BC': '/teacher/ap/apcalcbc',
+  'AP Calc BC': '/teacher/ap/apcalcbc',
+  'AP Precalculus': '/teacher/ap/apprecalc',
+  'AP Precalc': '/teacher/ap/apprecalc',
+  'AP Psychology': '/teacher/ap/appsych',
+  'AP Macroeconomics': '/teacher/ap/apmacro',
+  'AP Microeconomics': '/teacher/ap/apmicro',
+  'AP Human Geography': '/teacher/ap/aphug',
+  'AP Computer Science Principles': '/teacher/ap/apcsp',
+  'AP CS Principles': '/teacher/ap/apcsp',
+  'AP Physics 1': '/teacher/ap/apphys1',
+  'AP Physics 1: Algebra-Based': '/teacher/ap/apphys1',
+  'AP Physics 2': '/teacher/ap/apphys2',
+  'AP Physics 2: Algebra-Based': '/teacher/ap/apphys2',
+  'AP Physics C: Mechanics': '/teacher/ap/apphyscmech',
+  'AP Physics C Mech': '/teacher/ap/apphyscmech',
+  'AP Physics C: Electricity and Magnetism': '/teacher/ap/apphyscem',
+  'AP Physics C E&M': '/teacher/ap/apphyscem',
+  'AP Physics C: E&M': '/teacher/ap/apphyscem',
+  'AP African American Studies': '/teacher/ap/apafam',
+  'AP AfAm': '/teacher/ap/apafam',
+  'AP Seminar': '/teacher/ap/apseminar',
+  'AP Capstone Seminar': '/teacher/ap/apseminar',
+  'AP Research': '/teacher/ap/apresearch',
+  'AP Capstone Research': '/teacher/ap/apresearch',
+  'AP Italian Language and Culture': '/teacher/ap/apitalian',
+  'AP Italian Language': '/teacher/ap/apitalian',
+  'AP Italian': '/teacher/ap/apitalian',
+  'AP German Language and Culture': '/teacher/ap/apgerman',
+  'AP German Language': '/teacher/ap/apgerman',
+  'AP German': '/teacher/ap/apgerman',
+  'AP United States History': '/teacher/ap/apush',
+  'AP US History': '/teacher/ap/apush',
+  'APUSH': '/teacher/ap/apush',
+  'AP World History': '/teacher/ap/apworld',
+  'AP World History: Modern': '/teacher/ap/apworld',
+  'AP English Language': '/teacher/ap/apenglang',
+  'AP English Language and Composition': '/teacher/ap/apenglang',
+  'AP Lang': '/teacher/ap/apenglang',
+  'AP Computer Science A': '/teacher/ap/apcsa',
+  'AP CS A': '/teacher/ap/apcsa',
+  'AP CSA': '/teacher/ap/apcsa',
+  'AP English Literature': '/teacher/ap/apenglit',
+  'AP English Literature and Composition': '/teacher/ap/apenglit',
+  'AP Lit': '/teacher/ap/apenglit',
+  'AP European History': '/teacher/ap/apeuro',
+  'AP Euro': '/teacher/ap/apeuro',
+  'AP Comparative Government and Politics': '/teacher/ap/apcomp',
+  'AP Comparative Government': '/teacher/ap/apcomp',
+  'AP Comp Gov': '/teacher/ap/apcomp',
+  'AP Art History': '/teacher/ap/apart',
+  'AP Art': '/teacher/ap/apart',
+  'AP Music Theory': '/teacher/ap/apmusic',
+  'AP Music': '/teacher/ap/apmusic',
+  'AP Spanish Language and Culture': '/teacher/ap/apspanish',
+  'AP Spanish Language': '/teacher/ap/apspanish',
+  'AP Spanish': '/teacher/ap/apspanish',
+  'AP French Language and Culture': '/teacher/ap/apfrench',
+  'AP French Language': '/teacher/ap/apfrench',
+  'AP French': '/teacher/ap/apfrench',
+  'AP Latin': '/teacher/ap/aplatin',
+  'AP Latin: Vergil and Caesar': '/teacher/ap/aplatin',
+};
+
 export default function Teacher() {
   return (
     <PasswordGate
@@ -396,10 +472,16 @@ function ApUnitMapSection({ lessonById }) {
       title="AP unit-by-unit map"
       hint="For the highest-fit AP courses, every CED unit is tagged with a fit rating (direct / tangential / none) plus a 5-minute classroom hook where one exists. Units with fit='none' are honest gaps — skip those on the dashboard."
     >
+      <div style={{ marginBottom: 12 }}>
+        <Link to="/teacher/ap" style={styles.apIndexLink}>
+          📚 Browse all 24 AP courses with read-to-learn content →
+        </Link>
+      </div>
       <div style={styles.apCourseGrid}>
         {apUnitMap.map((course) => {
           const isOpen = expandedCourse === course.courseId;
           const fitCounts = countByFit(course);
+          const fullContentRoute = AP_CONTENT_ROUTES[course.courseId] || null;
           return (
             <div key={course.courseId} style={styles.apCourseCard}>
               <button
@@ -409,7 +491,19 @@ function ApUnitMapSection({ lessonById }) {
                 style={styles.apCourseHeadBtn}
               >
                 <div style={{ flex: 1 }}>
-                  <div style={styles.apCourseTitle}>{course.courseId}</div>
+                  <div style={styles.apCourseTitleRow}>
+                    <span style={styles.apCourseTitle}>{course.courseId}</span>
+                    {fullContentRoute && (
+                      <Link
+                        to={fullContentRoute}
+                        onClick={(e) => e.stopPropagation()}
+                        style={styles.apFullContentChip}
+                        aria-label={`Open full ${course.courseId} content`}
+                      >
+                        Full content →
+                      </Link>
+                    )}
+                  </div>
                   <div style={styles.apCourseMeta}>
                     <span style={apFitPillStyle('direct')}>{fitCounts.direct} direct</span>
                     <span style={apFitPillStyle('tangential')}>{fitCounts.tangential} tangential</span>
@@ -425,6 +519,20 @@ function ApUnitMapSection({ lessonById }) {
               {isOpen && (
                 <div style={styles.apCourseBody}>
                   <div style={styles.apOverallFit}>{course.overallFit}</div>
+                  {fullContentRoute && (
+                    <Link to={fullContentRoute} style={styles.apFullContentCTA}>
+                      <span style={{ fontSize: 18, marginRight: 8 }} aria-hidden="true">📖</span>
+                      <div style={{ flex: 1, textAlign: 'left' }}>
+                        <div style={{ fontWeight: 700, color: '#e5e7eb', fontSize: 14 }}>
+                          Read full {course.courseId} content
+                        </div>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                          Read-to-learn unit content · figures · printable worksheets
+                        </div>
+                      </div>
+                      <span style={{ color: '#22c55e', fontWeight: 700 }}>→</span>
+                    </Link>
+                  )}
                   <div style={styles.apUnitList}>
                     {course.units.map((u) => (
                       <div key={u.num} style={styles.apUnitRow}>
@@ -842,7 +950,46 @@ const styles = {
     textAlign: 'left',
     color: 'inherit',
   },
+  apCourseTitleRow: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   apCourseTitle: { fontSize: 15, color: '#e5e7eb', fontWeight: 700 },
+  apFullContentChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '3px 10px',
+    background: 'rgba(34, 197, 94, 0.12)',
+    border: '1px solid rgba(34, 197, 94, 0.4)',
+    borderRadius: 999,
+    fontSize: 11,
+    color: '#22c55e',
+    fontWeight: 700,
+    textDecoration: 'none',
+    letterSpacing: 0.2,
+  },
+  apIndexLink: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '8px 14px',
+    background: 'rgba(34, 197, 94, 0.08)',
+    border: '1px solid rgba(34, 197, 94, 0.35)',
+    borderRadius: 8,
+    fontSize: 13,
+    color: '#22c55e',
+    fontWeight: 600,
+    textDecoration: 'none',
+  },
+  apFullContentCTA: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    padding: '12px 16px',
+    background: 'linear-gradient(180deg, #0f172a 0%, #0b1220 100%)',
+    border: '1px solid #14532d',
+    borderRadius: 8,
+    textDecoration: 'none',
+    color: 'inherit',
+    marginBottom: 14,
+    boxShadow: '0 0 0 1px rgba(34, 197, 94, 0.12) inset',
+  },
   apCourseMeta: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' },
   apCedYear: { fontSize: 11, color: '#64748b', marginLeft: 6 },
   apCourseBody: { marginTop: 14, paddingTop: 12, borderTop: '1px solid #1f2937' },
