@@ -15,7 +15,7 @@
 
 import { monthlyReports } from './monthlyConsumption.js';
 import { seedFeedMonths } from './contiguousMonths2026.js';
-import { SNAPSHOT_AS_OF } from './envysionSnapshot.js';
+import { SNAPSHOT_AS_OF, SNAPSHOT_DAYS_INTO_YEAR } from './envysionSnapshot.js';
 import { monthlyPattern } from './seasonalPatterns.js';
 import {
   composeElectricityLedger,
@@ -103,11 +103,17 @@ export function annualizeFactorForWindow(startIso, endIso) {
     const m = d.getUTCMonth();
     windowKwh += year1Months[m].kwh / daysInMonthKey(`${year}-${String(m + 1).padStart(2, '0')}`);
   }
-  return windowKwh > 0 ? COMPOSED_YEAR1_KWH / windowKwh : 1;
+  // NULL, not 1, when the window doesn't overlap the ledger year at all —
+  // e.g. an export from last year. Returning 1 would silently publish a
+  // 30-day total as if it were the annual figure.
+  return windowKwh > 0 ? COMPOSED_YEAR1_KWH / windowKwh : null;
 }
 
 // envysionSnapshot.js per-building rows are YTD from Jan 1 → SNAPSHOT_AS_OF.
-export const SNAPSHOT_ANNUALIZE_FACTOR = annualizeFactorForWindow(`${SNAPSHOT_AS_OF.slice(0, 4)}-01-01`, SNAPSHOT_AS_OF);
+export const SNAPSHOT_ANNUALIZE_FACTOR = annualizeFactorForWindow(`${SNAPSHOT_AS_OF.slice(0, 4)}-01-01`, SNAPSHOT_AS_OF)
+  // The snapshot sits inside the ledger year today; if it ever doesn't, fall
+  // back to naive linear rather than to a silent ×1.
+  ?? (365 / SNAPSHOT_DAYS_INTO_YEAR);
 
 // Effective annualize factor = projected year 1 ÷ YTD measured.
 // Differs from naive 365/days_covered because the unmeasured days aren't

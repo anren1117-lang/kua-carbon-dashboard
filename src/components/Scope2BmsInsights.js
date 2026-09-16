@@ -145,7 +145,10 @@ export function Scope2BmsInsights() {
       topMeters,
       windowDays: BMS_EXPORT_META.hoursCovered / 24,
     };
-  }, [topLimit]);
+    // Keyed on the export too: these are hook values now, seed on first paint
+    // and replaced when the fetch resolves. Memoizing on [topLimit] alone froze
+    // every insight on the committed export while the header said otherwise.
+  }, [topLimit, bmsExportMeters, BMS_EXPORT_META]);
 
   const buildings = useMemo(() => getEffectiveBuildings(), []);
   const buildingNameById = Object.fromEntries(buildings.map((b) => [b.id, b.name]));
@@ -467,7 +470,7 @@ function Year1ProjectionSection({ s2 }) {
 
   return (
     <section style={styles.card}>
-      <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the data you uploaded)</h3>
+      <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the months captured so far)</h3>
       <p style={styles.cardHint}>
         Built from the measured months already in the dashboard — {ledgerSourceText(s2.ledger)}.
         Those months anchor a calibrated annual baseline
@@ -717,7 +720,7 @@ function TimePatternsSection({ s2, meters }) {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Pattern across time scales</h3>
       <p style={styles.cardHint}>
-        Same campus electricity, three resolutions. Daily and Weekly are rolled up from the 30-day
+        Same campus electricity, three resolutions. Daily and Weekly are rolled up from the
         hourly export (the operational window shown above). Monthly uses the same record as the
         year-to-date table — {ledgerSourceText(s2.ledger)}. Each view comes with a what-and-why
         analysis built from the data itself.
@@ -972,7 +975,7 @@ function MonthlyView({ data }) {
           },
           {
             label: 'Monthly vs the hourly window',
-            text: `Monthly uses the same contiguous record as the year-to-date table: master-meter totals where they exist, scaled building-feed totals otherwise (darker bars; see the uncertainty note under that table). The 30-day hourly export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) feeds the Daily and Weekly views instead.`
+            text: `Monthly uses the same contiguous record as the year-to-date table: master-meter totals where they exist, scaled building-feed totals otherwise (darker bars; see the uncertainty note under that table). The hourly export (${BMS_EXPORT_META.windowStartIso.slice(0, 10)} → ${BMS_EXPORT_META.windowEndIso.slice(0, 10)}) feeds the Daily and Weekly views instead.`
           },
         ]}
       />
@@ -1026,7 +1029,7 @@ function WhittemoreClusterSection({ meters: bmsExportMeters }) {
       boilerStuck: stuckCount(boilers),
       mainStuck:   main && main.direction === 'stuck',
     };
-  }, []);
+  }, [bmsExportMeters]);
 
   if (!data || data.cluster.length === 0) return null;
   const { main, heatPumps, ahus, boilers, others, totalCluster, hpTotal, ahuTotal, boilerTotal, otherTotal, hpStuck, ahuStuck, boilerStuck, mainStuck } = data;
@@ -1128,7 +1131,7 @@ function DayOfWeekSection({ meters: bmsExportMeters }) {
     }
     const meanByDow = buckets.map((b, i) => dayCounts[i] > 0 ? b.total / dayCounts[i] : 0);
     return { buckets, dayCounts, meanByDow };
-  }, []);
+  }, [bmsExportMeters]);
 
   const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const max = Math.max(...data.meanByDow, 1);
@@ -1197,7 +1200,7 @@ function LoadDurationCurveSection({ meters: bmsExportMeters }) {
     }
     hourlySamples.sort((a, b) => b - a); // descending
     return { hourlySamples, totalHours: hourlySamples.length };
-  }, []);
+  }, [bmsExportMeters]);
 
   if (data.totalHours === 0) return null;
   const max = data.hourlySamples[0];
@@ -1272,7 +1275,7 @@ function PeakDemandTimelineSection({ meters: bmsExportMeters }) {
       isWeekend: [0, 6].includes(new Date(date).getUTCDay()),
     }));
     return { series };
-  }, []);
+  }, [bmsExportMeters]);
 
   if (data.series.length === 0) return null;
   const max = Math.max(...data.series.map((s) => s.peakKw));
@@ -1330,7 +1333,7 @@ function EvChargerSection({ meters: bmsExportMeters }) {
     const mtCO2eIfGas = (galGasoline * 8.78) / 1000;
     const scope1To2Saved = mtCO2eIfGas - totalMtScope2;
     return { chargers, totalKwh, totalMtScope2, milesDriven, mtCO2eIfGas, scope1To2Saved };
-  }, []);
+  }, [bmsExportMeters]);
 
   if (!data) return null;
 

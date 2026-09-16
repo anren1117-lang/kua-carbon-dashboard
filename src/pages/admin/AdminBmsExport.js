@@ -3,6 +3,11 @@ import { ModulePage, ModuleSection, MetricGrid, Pill } from '../../components/Mo
 import { ProvenancePill } from '../../components/ProvenancePill.js';
 import { useBmsExport, BMS_EXPORT_TABLE } from '../../hooks/useBmsExport.js';
 import { parseMeterTrendsHourly } from '../../data/parseBmsExport.js';
+import { annualizeFactorForWindow } from '../../data/composedYtd.js';
+
+// Shorter windows get annualized by an enormous multiplier — a 3-day file
+// would scale ×122 — so a stray partial export can't become a building's year.
+const MIN_EXPORT_DAYS = 14;
 import { supabase } from '../../supabaseClient.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { getBmsMeterMap, setBmsMeterMapping, clearBmsMeterMappings, hydrateBmsMeterMap } from '../../data/bmsExportMapping.js';
@@ -78,6 +83,15 @@ export default function AdminBmsExport() {
 
   const saveUpload = async () => {
     if (!upload || savingRef.current) return;
+    const days = Math.round((new Date(upload.meta.windowEndIso) - new Date(upload.meta.windowStartIso)) / 86400000);
+    if (days < MIN_EXPORT_DAYS) {
+      setUploadMsg({ ok: false, text: `That window covers ${days} day${days === 1 ? '' : 's'}. Anything under ${MIN_EXPORT_DAYS} days gets annualized by a huge multiplier, so it would distort every building's year — export at least two weeks.` });
+      return;
+    }
+    if (!annualizeFactorForWindow(upload.meta.windowStartIso.slice(0, 10), upload.meta.windowEndIso.slice(0, 10))) {
+      setUploadMsg({ ok: false, text: `That window (${upload.meta.windowStartIso.slice(0, 10)} → ${upload.meta.windowEndIso.slice(0, 10)}) falls outside the year the dashboard reports, so it can't be annualized. Upload an export from the current reporting year.` });
+      return;
+    }
     savingRef.current = true;
     setBusy(true);
     try {
@@ -104,7 +118,10 @@ export default function AdminBmsExport() {
   };
 
   const deleteUpload = async (row) => {
+    if (savingRef.current) return;
     if (!window.confirm(`Delete the ${row.source_file} window? The dashboard falls back to the next newest, or to the export committed in the app.`)) return;
+    savingRef.current = true;
+    setBusy(true);
     try {
       const { error } = await supabase.from(BMS_EXPORT_TABLE).delete().eq('id', row.id);
       if (error) throw error;
@@ -113,6 +130,9 @@ export default function AdminBmsExport() {
       setUploadMsg({ ok: true, text: `Deleted ${row.source_file}. Reload to see the change.` });
     } catch (err) {
       setUploadMsg({ ok: false, text: err.message });
+    } finally {
+      savingRef.current = false;
+      setBusy(false);
     }
   };
 
@@ -182,13 +202,22 @@ export default function AdminBmsExport() {
               { label: 'Window end',   value: upload.meta.windowEndIso.slice(0, 16).replace('T', ' '),   accent: '#22d3ee' },
               { label: 'Hours',        value: upload.meta.hoursCovered,                                  accent: '#fbbf24' },
               { label: 'Meters',       value: upload.meta.meterCount,                                    accent: '#86efac' },
+              {
+                label: 'Annualize factor',
+                value: (() => {
+                  const f = annualizeFactorForWindow(upload.meta.windowStartIso.slice(0, 10), upload.meta.windowEndIso.slice(0, 10));
+                  return f ? `×${f.toFixed(1)}` : 'n/a';
+                })(),
+                accent: '#a855f7',
+                note: 'what a window total is multiplied by for the per-building year',
+              },
             ]} />
             <div style={styles.metaRow}>
               <span style={styles.metaText}>
                 Biggest loads: {upload.meters.slice(0, 3).map((m) => `${m.id} ${Math.round(m.totalKwh).toLocaleString()} kWh`).join(' · ')}
               </span>
             </div>
-            <button type="button" onClick={saveUpload} disabled={busy} style={styles.dangerBtn}>
+            <button type="button" onClick={saveUpload} disabled={busy} style={styles.primaryBtn}>
               Save this window
             </button>
           </div>
@@ -229,7 +258,7 @@ export default function AdminBmsExport() {
             type="button"
             style={styles.dangerBtn}
             onClick={() => {
-              if (window.confirm('Clear ALL meter→building mappings? Cannot be undone.')) {
+              if (window.confirm('Clear ALL meter→building mappings? Every mapped building drops back to estimated on /buildings, /hotspots and the dorm leaderboard, for everyone. This cannot be undone.')) {
                 clearBmsMeterMappings();
                 refresh();
               }
@@ -255,8 +284,8 @@ export default function AdminBmsExport() {
       <ModuleSection title="What flips estimated → measured once mapped">
         <ul style={styles.flipList}>
           <li><Pill kind="info">/buildings</Pill> the building's daily kWh column for the export window switches from seasonal-pattern proxy to BMS-measured.</li>
-          <li><Pill kind="info">/buildings sparkline</Pill> the campus seasonal pattern adds a measured stretch (Apr 5 – May 4) on top of the existing Jan-Apr master-meter months.</li>
-          <li><Pill kind="info">/hotspots</Pill> April + May daily totals come from the export rather than the projection layer.</li>
+          <li><Pill kind="info">/buildings sparkline</Pill> the campus seasonal pattern adds the measured stretch from this window ({BMS_EXPORT_META.windowStartIso.slice(0, 10)} – {BMS_EXPORT_META.windowEndIso.slice(0, 10)}) on top of the master-meter months.</li>
+          <li><Pill kind="info">/hotspots</Pill> daily totals inside that window come from the export rather than the projection layer.</li>
           <li><Pill kind="info">/trends</Pill> Trend Builder picks up the new meter ids in the building dropdown; selecting one returns hourly samples from the parsed export.</li>
           <li><Pill kind="info">Solar arrays</Pill> mapped solar feeds (PM_15_RoofTopSolarFeed, PM_15_FieldSolarFeed, PM_19_SolarFeed) become the cited source for SOLAR_ANNUAL_KWH on the Executive page.</li>
         </ul>
@@ -362,6 +391,7 @@ const styles = {
   controls: { display: 'flex', gap: 12, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' },
   input: { padding: '8px 12px', background: '#0b1220', border: '1px solid #334155', borderRadius: 6, color: '#e5e7eb', fontSize: 13, minWidth: 280 },
   checkboxLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#cbd5e1' },
+  primaryBtn: { padding: '8px 14px', background: '#134e4a', color: '#99f6e4', border: '1px solid #115e59', borderRadius: 6, fontSize: 12, cursor: 'pointer', fontWeight: 600 },
   dangerBtn: { padding: '8px 14px', background: 'transparent', color: '#fca5a5', border: '1px solid #7f1d1d', borderRadius: 6, fontSize: 12, cursor: 'pointer' },
   list: { display: 'grid', gap: 6 },
   row: { padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderLeft: '4px solid #475569', borderRadius: 6 },

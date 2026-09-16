@@ -58,6 +58,20 @@ describe('annualizeFactorForWindow — each window by its own seasonal share', (
     expect(annualizeFactorForWindow(`${year}-04-05`, `${year}-05-04`)).toBeGreaterThan(8);
   });
 
+  it('returns null for a window outside the reported year, never a silent ×1', () => {
+    const prev = Number(year) - 1;
+    const next = Number(year) + 1;
+    expect(annualizeFactorForWindow(`${prev}-04-01`, `${prev}-04-30`)).toBeNull();
+    expect(annualizeFactorForWindow(`${next}-04-01`, `${next}-04-30`)).toBeNull();
+    // ×1 would publish a 30-day total as the annual figure.
+    expect(annualizeFactorForWindow(`${prev}-04-01`, `${prev}-04-30`)).not.toBe(1);
+  });
+
+  it('still annualizes a window that only partly overlaps the year', () => {
+    const f = annualizeFactorForWindow(`${Number(year) - 1}-12-20`, `${year}-01-10`);
+    expect(f).toBeGreaterThan(1);
+  });
+
   it('puts the Jan–May snapshot between the YTD factor and naive linear', () => {
     expect(SNAPSHOT_ANNUALIZE_FACTOR).toBeGreaterThan(COMPOSED_ANNUALIZE_FACTOR);
     expect(SNAPSHOT_ANNUALIZE_FACTOR).toBeLessThan(365 / 123);

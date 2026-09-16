@@ -187,8 +187,11 @@ export function parseMeterTrendsHourly(text, sourceFile = 'upload.csv') {
   return {
     meta: {
       sourceFile,
-      windowStartIso: ts[0].toISOString(),
-      windowEndIso: ts[ts.length - 1].toISOString(),
+      // Min/max rather than first/last: a newest-first export would otherwise
+      // report a window that runs backwards, and every annualize factor
+      // derived from it would be garbage.
+      windowStartIso: new Date(Math.min(...ts.map((d) => d.getTime()))).toISOString(),
+      windowEndIso: new Date(Math.max(...ts.map((d) => d.getTime()))).toISOString(),
       hoursCovered: ts.length,
       meterCount: summary.length,
       generatedAt: new Date().toISOString(),

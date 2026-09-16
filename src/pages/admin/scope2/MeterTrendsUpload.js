@@ -82,13 +82,15 @@ export function planMonthSave(existingRows, newRows) {
   const ops = [];
   for (const r of newRows) {
     // Same source, same building (campus-wide rows have none) and same month.
-    const stale = existingRows.find((x) => (
+    // ALL matches, not just the first: insert-before-delete tolerates a mid-save
+    // failure leaving a duplicate, and the next save should clear the lot.
+    const stale = existingRows.filter((x) => (
       x.source === r.source
       && (x.building ?? null) === (r.building ?? null)
       && String(x.period_start).slice(0, 10) === r.period_start
     ));
     ops.push({ op: 'insert', row: r });
-    if (stale) ops.push({ op: 'delete', id: stale.id, meta: { period_start: stale.period_start, source: stale.source, kwh: stale.kwh } });
+    for (const s of stale) ops.push({ op: 'delete', id: s.id, meta: { period_start: s.period_start, source: s.source, kwh: s.kwh } });
   }
   return ops;
 }
@@ -152,7 +154,7 @@ function MeterTrendsUpload() {
     try {
       const parsed = uploadToRows(await file.text(), file.name);
       if (parsed.dayCount === 0) {
-        setMsg({ ok: false, text: 'No full days found. Is this the DAILY Meter Trends export? Hourly exports go through scripts/parseBmsExport.mjs.' });
+        setMsg({ ok: false, text: 'No full days found. Is this the DAILY export, with one reading per midnight? An hourly export goes on /admin/bms-export instead.' });
       }
       setUpload({ fileName: file.name, ...parsed });
     } catch (err) {
@@ -327,10 +329,12 @@ function MeterTrendsUpload() {
         <h2 style={s.h2}>Enter one building’s month</h2>
         <p style={p.hint}>
           A whole calendar month for a single building, from the BMS All Meters page with the date
-          range set to that month. This doesn’t change the campus total above — it feeds the
-          per-building figures on <strong>/buildings</strong>, <strong>/hotspots</strong>, the campus
-          map, the dorm leaderboard and the monthly digest, replacing the estimate for that building
-          and month.
+          range set to that month. This doesn’t change the campus total above — it replaces that
+          building’s month on the campus map, its own page, the dorm leaderboard and posters,
+          compare-buildings, month compare, the monthly digest and the energy challenge.
+          {' '}<strong>/buildings</strong> and <strong>/hotspots</strong> don’t use it yet: they rank
+          by the meter mapping and the older snapshot, so those two can disagree with the rest until
+          that ladder is rewired.
         </p>
         <div style={s.formGrid}>
           <label style={s.field}><span style={s.label}>Building</span>
@@ -428,7 +432,8 @@ function LedgerPreview({ title, view, compareTo }) {
               <td style={p.td}>{monthLabel(m.month)}</td>
               <td style={p.td}>{m.days < m.calendarDays ? `${m.days} of ${m.calendarDays}` : m.days}</td>
               <td style={{ ...p.td, ...p.num }}>{fmt(m.kwh)}</td>
-              <td style={p.td}>{m.provenance === 'master' ? 'Measured' : 'Measured · scaled'}</td>
+              {/* Mirrors the public table exactly, including the estimated case. */}
+              <td style={p.td}>{m.provenance === 'master' ? 'Measured' : `${m.estimated ? 'Estimated' : 'Measured'} · scaled`}</td>
               <td style={p.tdMuted}>{String(m.source).startsWith('Admin') ? m.source : 'Seed data file'}</td>
             </tr>
           ))}

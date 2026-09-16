@@ -43,9 +43,13 @@ export default function StudentChallenges() {
     return dorms.map((d) => {
       const dormStudents = students.filter((s) => s.dormId === d.id);
       const points = dormStudents.reduce((s, st) => s + st.carbonPoints, 0);
-      const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === d.buildingId && m.direction !== 'stuck');
+      // Consumption only — generation is stored as a positive magnitude, so a
+      // mapped solar feed would otherwise ADD its output to the dorm's load.
+      const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === d.buildingId && m.direction === 'consumption');
       let kwh = 0;
-      if (mappedMeters.length > 0) {
+      // No factor means the export doesn't overlap the reported year — fall
+      // through to the snapshot rather than annualize it wrongly.
+      if (mappedMeters.length > 0 && EXPORT_ANNUALIZE_FACTOR) {
         const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
         kwh = windowKwh * EXPORT_ANNUALIZE_FACTOR;
       } else {

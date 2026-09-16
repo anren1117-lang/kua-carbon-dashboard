@@ -42,6 +42,7 @@ let sharedLoaded = false;
 // consumers that memoize per-building rows need to know. Version + listeners
 // back the useBmsMeterMap() hook in src/hooks/useBmsMeterMap.js.
 let version = 0;
+let lastLocalWriteAt = 0;
 const listeners = new Set();
 
 function bumpVersion() {
@@ -89,13 +90,18 @@ export function isBmsMeterMapShared() {
  * @returns {Promise<{ ok: boolean, rows: number }>}
  */
 export async function hydrateBmsMeterMap(injectedClient) {
+  const startedAt = Date.now();
   try {
     const supabase = await client(injectedClient);
     const { data, error } = await supabase.from(TABLE).select('meter_id, building_id');
     if (error || !Array.isArray(data)) return { ok: false, rows: 0 };
-    sharedMap = Object.fromEntries(
+    const fetched = Object.fromEntries(
       data.filter((r) => r?.meter_id && r?.building_id).map((r) => [r.meter_id, r.building_id]),
     );
+    // An admin who maps a meter while this fetch is in flight must not watch it
+    // snap back: a local write made after the fetch started wins over the rows
+    // it couldn't have included.
+    sharedMap = lastLocalWriteAt > startedAt ? { ...fetched, ...sharedMap } : fetched;
     sharedLoaded = true;
     bumpVersion();
     return { ok: true, rows: data.length };
@@ -127,6 +133,7 @@ export function setBmsMeterMapping(meterId, buildingId, injectedClient) {
   if (buildingId) nextShared[meterId] = buildingId;
   else delete nextShared[meterId];
   sharedMap = nextShared;
+  lastLocalWriteAt = Date.now();
   bumpVersion();
   void shareMapping(meterId, buildingId, injectedClient);
 }

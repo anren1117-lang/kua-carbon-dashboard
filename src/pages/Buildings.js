@@ -78,10 +78,14 @@ export default function BuildingsPage() {
     // window's factor for another, would give incomparable numbers across rows.
     const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
     return getEffectiveBuildings().map((b) => {
-      const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === b.id && m.direction !== 'stuck');
+      // Consumption only: the parser stores generation as a POSITIVE magnitude,
+      // so a mapped solar feed would otherwise ADD its output to the building's load.
+      const mappedMeters = bmsExportMeters.filter((m) => meterMap[m.id] === b.id && m.direction === 'consumption');
       let kwh = 0;
       let source = 'none';
-      if (mappedMeters.length > 0) {
+      // No factor means the export doesn't overlap the reported year — fall
+      // through to the snapshot rather than annualize it wrongly.
+      if (mappedMeters.length > 0 && EXPORT_ANNUALIZE_FACTOR) {
         const windowKwh = mappedMeters.reduce((s, m) => s + m.totalKwh, 0);
         kwh = windowKwh * EXPORT_ANNUALIZE_FACTOR;
         source = 'bms';
@@ -693,7 +697,7 @@ function BmsExportPanel({ buildingId }) {
     <div style={styles.bmsPanel}>
       <div style={styles.bmsHeader}>
         <ProvenancePill provenance="measured" />
-        <span style={styles.bmsTitle}>BMS export · last 30 days</span>
+        <span style={styles.bmsTitle}>BMS export · {meters[0]?.daily?.length || 0} days</span>
         <span style={styles.bmsMeta}>{meterIds.length} mapped meter{meterIds.length === 1 ? '' : 's'}</span>
       </div>
       <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -751,9 +755,9 @@ function LivePanel({ buildingId }) {
           type="button"
           style={styles.liveBtn}
           onClick={downloadCsv}
-          aria-label="Download last 30 days of readings as CSV"
+          aria-label="Download this window's daily readings as CSV"
         >
-          ↓ Download 30-day CSV
+          ↓ Download daily CSV
         </button>
       </div>
       {enabled && (

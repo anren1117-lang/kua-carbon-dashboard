@@ -42,8 +42,12 @@ export default function Hotspots() {
   // comparable (envysionSnapshot is YTD through 2026-05-03, not annual).
   const meterMap = useBmsMeterMap();
   const bmsByBuilding = {};
-  for (const m of bmsExportMeters) {
-    if (m.direction === 'stuck') continue;
+  // An export that doesn't overlap the reported year has no usable factor —
+  // skip it entirely rather than annualize it wrongly.
+  for (const m of (EXPORT_ANNUALIZE_FACTOR ? bmsExportMeters : [])) {
+    // Consumption only: generation is stored as a positive magnitude, so a
+    // mapped solar feed would otherwise ADD its output to the building's load.
+    if (m.direction !== 'consumption') continue;
     const bId = meterMap[m.id];
     if (!bId) continue;
     bmsByBuilding[bId] = (bmsByBuilding[bId] || 0) + m.totalKwh * EXPORT_ANNUALIZE_FACTOR;
@@ -141,13 +145,13 @@ export default function Hotspots() {
             <span style={hsStyles.trendProvLabel}>Months {Object.keys(measuredMonths).map((k) => k.slice(5)).join(', ') || '(none yet)'}</span>
           </div>
           <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Today:</span> KUA Distech Eclypse BMS All Meters page, monthly displayed totals × ISO-NE 2024 grid factor (0.235 kg/kWh effective). One row per measured month at <code>src/data/monthlyConsumption.js</code>.</div>
-          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> Add a measured row each month as the BMS export ships. By Jan 2027 the full year is measured and the projected segment disappears.</div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> A measured row lands each month as Facilities enters that month's master-meter total in the admin portal. By Jan 2027 the full year is measured and the projected segment disappears.</div>
           <div style={{ ...hsStyles.trendProvRow, marginTop: 14, paddingTop: 14, borderTop: '1px solid #1f2937' }}>
             <ProvenancePill provenance="estimated" />
             <span style={hsStyles.trendProvLabel}>Months {monthlyPattern.map((_, i) => `2026-${String(i + 1).padStart(2, '0')}`).filter((k) => !measuredMonths[k]).map((k) => k.slice(5)).join(', ') || '(none — full year measured)'}</span>
           </div>
           <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Today:</span> Synthetic seasonal-pattern shape (winter heating peak, summer trough) from <code>src/data/seasonalPatterns.js</code>, scaled to plausible NH boarding-school monthly magnitudes. Pattern shape is informed by ISO-NE seasonal load curves; absolute values are placeholders.</div>
-          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> Each month flips estimated → measured the moment its BMS export is added to monthlyConsumption.js. The seasonal-pattern proxy is purely a placeholder until then; it will be removed entirely once a full year is captured.</div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> Each month flips estimated → measured as soon as Facilities enters its total in the admin portal. The seasonal-pattern proxy is purely a placeholder until then; it will be removed entirely once a full year is captured.</div>
         </div>
         <TimeSeriesChart
           data={trendSeries}

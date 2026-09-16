@@ -48,6 +48,18 @@ describe('planMonthSave — replace-by-month write order', () => {
     expect(ops[1].id).toBe('miller-may');
   });
 
+  it('clears every duplicate of a month, not just the first', () => {
+    // Insert-before-delete tolerates a mid-save failure leaving a duplicate;
+    // the next save has to clean up all of them or they accumulate.
+    const existing = [
+      saved('dup-1', '2026-02', MASTER, 185478),
+      saved('dup-2', '2026-02', MASTER, 185478),
+    ];
+    const ops = planMonthSave(existing, [incoming('2026-02', MASTER, 190000)]);
+    expect(ops.map((o) => o.op)).toEqual(['insert', 'delete', 'delete']);
+    expect(ops.slice(1).map((o) => o.id).sort()).toEqual(['dup-1', 'dup-2']);
+  });
+
   it('plans each month of a multi-month upload independently', () => {
     const existing = [saved('jun', '2026-06', FEED, 99000)];
     const ops = planMonthSave(existing, [incoming('2026-06', FEED, 99338), incoming('2026-07', FEED, 116706)]);
