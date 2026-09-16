@@ -2,7 +2,7 @@ import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
-import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { useBmsExport } from '../hooks/useBmsExport.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { reductionActions } from '../data/reductionActions.js';
@@ -22,13 +22,18 @@ const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; /
 
 // The April export covers its own ~30-day window — annualize it by that
 // window's seasonal share, not by the Jan → Sep YTD factor.
-const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
-  BMS_EXPORT_META.windowStartIso.slice(0, 10),
-  BMS_EXPORT_META.windowEndIso.slice(0, 10),
-);
 
 export default function Hotspots() {
   const s2 = useMeasuredScope2();
+  // The active hourly export: the newest uploaded window, else the committed
+  // module. Each window is annualized by its own seasonal share of Year 1.
+  const activeExport = useBmsExport();
+  const bmsExportMeters = activeExport.meters;
+  const BMS_EXPORT_META = activeExport.meta;
+  const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
+    activeExport.meta.windowStartIso.slice(0, 10),
+    activeExport.meta.windowEndIso.slice(0, 10),
+  );
   const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
   // Per-building kWh: prefer BMS-mapped measured data, fall back to
   // envysionSnapshot. Same priority ladder as /buildings — Hotspots

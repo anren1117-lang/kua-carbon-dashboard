@@ -5,17 +5,13 @@ import { students } from '../data/students.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
-import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { useBmsExport } from '../hooks/useBmsExport.js';
 import { useBmsMeterMap } from '../hooks/useBmsMeterMap.js';
 import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow } from '../data/composedYtd.js';
 
 const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
 // Each source is annualized by its own window's seasonal share.
-const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
-  BMS_EXPORT_META.windowStartIso.slice(0, 10),
-  BMS_EXPORT_META.windowEndIso.slice(0, 10),
-);
 
 // Privacy-by-design: every public ranking aggregates at dorm level.
 // Individual students appear nowhere on this page. Per the project
@@ -27,8 +23,16 @@ export default function StudentChallenges() {
   const totalOptedIn = students.filter((s) => s.optInLeaderboard).length;
 
   // The shared meter map arrives after first paint, so the dorm rows have to
-  // recompute when it does.
+  // recompute when it does. Same for the hourly export, which an admin can
+  // replace by uploading a newer window.
   const meterMap = useBmsMeterMap();
+  const activeExport = useBmsExport();
+  const bmsExportMeters = activeExport.meters;
+  // Each window is annualized by its own seasonal share of Year 1.
+  const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
+    activeExport.meta.windowStartIso.slice(0, 10),
+    activeExport.meta.windowEndIso.slice(0, 10),
+  );
 
   const dormRows = useMemo(() => {
     // Same priority ladder as /buildings: BMS-mapped first (annualized
@@ -58,7 +62,7 @@ export default function StudentChallenges() {
         kgPerStudent,
       };
     });
-  }, []);
+  }, [meterMap, bmsExportMeters, EXPORT_ANNUALIZE_FACTOR]);
 
   const sortedByPoints = [...dormRows].sort((a, b) => b.carbonPoints - a.carbonPoints);
   const sortedByEfficiency = [...dormRows]

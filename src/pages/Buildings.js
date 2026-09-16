@@ -5,17 +5,13 @@ import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
-import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportApr2026.js';
+import { useBmsExport } from '../hooks/useBmsExport.js';
 import { useBmsMeterMap } from '../hooks/useBmsMeterMap.js';
 import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
 // The April export covers its own ~30-day window — annualize it by that
 // window's seasonal share, not by the Jan → Sep YTD factor.
-const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
-  BMS_EXPORT_META.windowStartIso.slice(0, 10),
-  BMS_EXPORT_META.windowEndIso.slice(0, 10),
-);
 import { Sparkline } from '../components/Sparkline.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 
@@ -56,6 +52,14 @@ export default function BuildingsPage() {
   // arrives from the shared table after first paint.
   const s2 = useMeasuredScope2();
   const meterMap = useBmsMeterMap();
+  // The active hourly export: the newest uploaded window, else the committed
+  // module. Each window is annualized by its own seasonal share of Year 1.
+  const activeExport = useBmsExport();
+  const bmsExportMeters = activeExport.meters;
+  const EXPORT_ANNUALIZE_FACTOR = annualizeFactorForWindow(
+    activeExport.meta.windowStartIso.slice(0, 10),
+    activeExport.meta.windowEndIso.slice(0, 10),
+  );
   const [sortBy, setSortBy] = useState('kwh');
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState(null);
@@ -102,7 +106,7 @@ export default function BuildingsPage() {
         kgPerOccupant: b.occupants ? (mt * 1000) / b.occupants : 0,
       };
     });
-  }, [meterMap]);
+  }, [meterMap, bmsExportMeters, EXPORT_ANNUALIZE_FACTOR]);
 
   const filtered = filter === 'all' ? rows : rows.filter((r) => r.category === filter);
   const sorted = [...filtered].sort((a, b) => {
@@ -385,6 +389,7 @@ function DormEnergySection({ rows }) {
   // Hooks stay above every early return so the hook order can't change
   // between renders.
   const meterMap = useBmsMeterMap();
+  const { meters: bmsExportMeters } = useBmsExport();
   const dorms = rows.filter((r) => r.category === 'Dorm' && r.dormPopulation > 0);
   if (dorms.length === 0) return null;
   const enriched = dorms.map((d) => {
@@ -444,6 +449,7 @@ function DormEnergySection({ rows }) {
 function CategoryEnergySection({ rows, category, denominatorKey, denominatorLabel, defaultOpen = false }) {
   const buildings = rows.filter((r) => r.category === category);
   const meterMap = useBmsMeterMap();
+  const { meters: bmsExportMeters } = useBmsExport();
   if (buildings.length === 0) return null;
   const enriched = buildings.map((b) => {
     const annualKwh = b.kwh;
@@ -667,6 +673,7 @@ function BmsExportPanel({ buildingId }) {
   // daily kWh series, render as a sparkline + total. Renders nothing
   // when no PM is mapped — keeps the row clean for un-mapped buildings.
   const map = useBmsMeterMap();
+  const { meters: bmsExportMeters } = useBmsExport();
   const meterIds = Object.entries(map).filter(([, b]) => b === buildingId).map(([m]) => m);
   if (meterIds.length === 0) return null;
   const meters = meterIds.map((id) => bmsExportMeters.find((m) => m.id === id)).filter(Boolean);

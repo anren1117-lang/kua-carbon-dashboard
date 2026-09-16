@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ProvenancePill } from './ProvenancePill.js';
-import { BMS_EXPORT_META, bmsExportMeters } from '../data/bmsExportSep2026.js';
+import { useBmsExport } from '../hooks/useBmsExport.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
@@ -62,6 +62,12 @@ function ledgerFootnote(ledger) {
 
 export function Scope2BmsInsights() {
   const [topLimit, setTopLimit] = useState(10);
+  // The active hourly export: the newest window uploaded on /admin/bms-export,
+  // else the module committed in the app. Names kept from the static import
+  // these sections used to read.
+  const activeExport = useBmsExport();
+  const BMS_EXPORT_META = activeExport.meta;
+  const bmsExportMeters = activeExport.meters;
   // Scope 2 composition: the seed data files with any admin ledger months
   // (/admin/scope-2/meter-trends) laid over them.
   const s2 = useMeasuredScope2();
@@ -246,7 +252,7 @@ export function Scope2BmsInsights() {
 
       <Year1ProjectionSection s2={s2} />
 
-      <TimePatternsSection s2={s2} />
+      <TimePatternsSection s2={s2} meters={bmsExportMeters} />
 
       {/* Window summary cards */}
       <div style={styles.summaryGrid}>
@@ -428,11 +434,11 @@ export function Scope2BmsInsights() {
         </div>
       </section>
 
-      <WhittemoreClusterSection />
-      <DayOfWeekSection />
-      <LoadDurationCurveSection />
-      <PeakDemandTimelineSection />
-      <EvChargerSection />
+      <WhittemoreClusterSection meters={bmsExportMeters} />
+      <DayOfWeekSection meters={bmsExportMeters} />
+      <LoadDurationCurveSection meters={bmsExportMeters} />
+      <PeakDemandTimelineSection meters={bmsExportMeters} />
+      <EvChargerSection meters={bmsExportMeters} />
     </div>
   );
 }
@@ -703,9 +709,9 @@ function Year1Chart({ year1Months, totalKwh }) {
 // pattern looks the way it does. The analysis paragraphs are
 // data-driven (peak day computed from the data, anomaly detected
 // statistically, etc.) rather than canned text.
-function TimePatternsSection({ s2 }) {
+function TimePatternsSection({ s2, meters }) {
   const [view, setView] = useState('day');
-  const data = useMemo(() => buildTimePatterns(s2.ytdComponents), [s2.ytdComponents]);
+  const data = useMemo(() => buildTimePatterns(s2.ytdComponents, meters), [s2.ytdComponents, meters]);
 
   return (
     <section style={styles.card}>
@@ -729,7 +735,7 @@ function TimePatternsSection({ s2 }) {
   );
 }
 
-function buildTimePatterns(ytdRows) {
+function buildTimePatterns(ytdRows, bmsExportMeters) {
   // Daily campus totals from the CSV — sum across consumption feeds
   // by date.
   const dailyKwhByDate = new Map();
@@ -994,7 +1000,7 @@ function AnalysisBox({ title, bullets }) {
 // PM_17_* covers the Whittemore complex per the device names in the
 // CSV: HP01-05 (5 heat pumps), AHU01/02, B2BoilerFeed,
 // BarnFieldhouseFeed, ChargerFeed, MainFeed, M42AFeed.
-function WhittemoreClusterSection() {
+function WhittemoreClusterSection({ meters: bmsExportMeters }) {
   const data = useMemo(() => {
     const cluster = bmsExportMeters.filter((m) => m.id.startsWith('PM_17_'));
     if (cluster.length === 0) return null;
@@ -1091,7 +1097,7 @@ function WhittemoreClusterSection() {
 }
 
 // ─── Day-of-week pattern ───────────────────────────────────────────
-function DayOfWeekSection() {
+function DayOfWeekSection({ meters: bmsExportMeters }) {
   const data = useMemo(() => {
     const buckets = Array.from({ length: 7 }, () => ({ total: 0, days: 0 }));
     for (const m of bmsExportMeters) {
@@ -1162,7 +1168,7 @@ function DayOfWeekSection() {
 }
 
 // ─── Load duration curve ──────────────────────────────────────────
-function LoadDurationCurveSection() {
+function LoadDurationCurveSection({ meters: bmsExportMeters }) {
   const data = useMemo(() => {
     // Build a synthetic 30-day × 24-hour campus load series by
     // multiplying each measured day's total by the campus-wide
@@ -1249,7 +1255,7 @@ function LoadDurationCurveSection() {
 }
 
 // ─── Daily peak-demand timeline ───────────────────────────────────
-function PeakDemandTimelineSection() {
+function PeakDemandTimelineSection({ meters: bmsExportMeters }) {
   const data = useMemo(() => {
     // For each day, max peakKw across all main/panel feeds.
     const dailyPeak = new Map();
@@ -1311,7 +1317,7 @@ function PeakDemandTimelineSection() {
 }
 
 // ─── EV charger tracker ───────────────────────────────────────────
-function EvChargerSection() {
+function EvChargerSection({ meters: bmsExportMeters }) {
   const data = useMemo(() => {
     const chargers = bmsExportMeters.filter((m) => /Charger/i.test(m.id));
     if (chargers.length === 0) return null;
