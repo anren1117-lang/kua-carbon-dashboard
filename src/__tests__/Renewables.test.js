@@ -34,6 +34,7 @@ const { setNextResponses, makeQueryHarness } = vi.hoisted(() => {
 vi.mock('../supabaseClient.js', () => ({ supabase: makeQueryHarness() }));
 
 import Renewables from '../pages/Renewables.js';
+import { composeSolarFromRecords } from '../data/scopeTotals.js';
 import { _resetCacheForTests } from '../hooks/measuredCache.js';
 
 beforeEach(() => {
@@ -72,8 +73,14 @@ describe('Renewables page (public /renewables)', () => {
     await waitFor(() => {
       expect(screen.queryByText(/110,000/)).not.toBeNull();
     });
-    // Avoided emissions ≈ 32.09 mt total (29.17 self + 2.92 export).
-    expect(screen.getByText(/32\.09/)).toBeTruthy();
+    // This test's job is that the page DISPLAYS the composed figure — the
+    // arithmetic itself is pinned in dataLayer.test.js. Deriving the expected
+    // string from the same fixture keeps it from breaking every time the grid
+    // factor moves (it fell ~20% in Phase 392 when the stale 643 went away).
+    const expectedTotal = composeSolarFromRecords([
+      { gross_kwh: 110000, self_consumed_kwh: 100000, exported_kwh: 10000 },
+    ]).totalAvoidedMt.toFixed(2);
+    expect(screen.getByText(new RegExp(expectedTotal.replace('.', '\\.')))).toBeTruthy();
     // Solar card now shows the green "Measured" pill.
     const solarHeading = screen.getByText('Solar PV Array');
     const solarCard = solarHeading.closest('div')?.parentElement?.parentElement;

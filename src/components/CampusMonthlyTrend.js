@@ -1,4 +1,5 @@
 import React from 'react';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
 // Tiny SVG bar chart of campus-wide monthly emissions, used as a
 // navigation strip above the campus map. Each bar = one month of
@@ -6,7 +7,9 @@ import React from 'react';
 // highlighted; clicking a bar fires onSelect(month) so the parent
 // can drive its own state. Pure presentational + click handler.
 
-const ISO_NE_KG_PER_KWH = 0.235;
+// One kWh, one number — see gridMix.js. Was 0.235 hardcoded here, which
+// disagreed with the 0.2344 /scope-2 computes from the very same mix.
+const ISO_NE_KG_PER_KWH = KG_PER_KWH;
 
 /**
  * @param {object} props

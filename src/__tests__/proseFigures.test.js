@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SCOPE2_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
 const SRC = path.resolve(new URL('../', import.meta.url).pathname);
 
@@ -94,5 +95,70 @@ describe('teaching prose matches the canonical totals', () => {
     const learn = fs.readFileSync(path.join(SRC, 'components/LearnAgent.js'), 'utf8');
     expect(learn).toContain(GROSS.toLocaleString());
     expect(learn).toContain(NET.toLocaleString());
+  });
+});
+
+// The grid factor drifts the same way the totals do, and it went stale in five
+// places at once before Phase 392 — including a lesson teaching students that
+// ISO-NE's 2024 rate was 643 lb/MWh when the published figure is 597.
+//
+// Context-matched, for the reason the header explains: prose legitimately
+// carries OTHER kg/kWh figures that must not be flagged — ISO-NE's operational
+// rate (~0.271), EPA's published eGRID NEWE rate (~0.246), the US average
+// (~0.37). Only a claim about KUA's EFFECTIVE factor is a claim about this
+// constant, so the word "effective" is what makes a number in scope.
+const EFFECTIVE_FACTOR = /effective[^.\n]{0,70}?(\d\.\d{3})\s*kg/gi;
+const CANONICAL_FACTOR = +KG_PER_KWH.toFixed(3);
+
+const FACTOR_PROSE_FILES = [
+  'components/LearnAgent.js',
+  'components/DailyTip.js',
+  'components/ScopeExplainer.js',
+  'components/NetEstimate.js',
+  'data/lessonLibrary.js',
+  'data/learningContent.js',
+];
+
+function staleFactorsIn(relPath) {
+  const full = path.join(SRC, relPath);
+  if (!fs.existsSync(full)) return [];
+  const stale = [];
+  fs.readFileSync(full, 'utf8').split('\n').forEach((line, i) => {
+    EFFECTIVE_FACTOR.lastIndex = 0;
+    let m;
+    while ((m = EFFECTIVE_FACTOR.exec(line)) !== null) {
+      if (parseFloat(m[1]) !== CANONICAL_FACTOR) {
+        stale.push(`${relPath}:${i + 1} — says the effective factor is ${m[1]}, canonical is ${CANONICAL_FACTOR}`);
+      }
+    }
+  });
+  return stale;
+}
+
+describe('prose states the current grid emission factor', () => {
+  it.each(FACTOR_PROSE_FILES)('%s quotes the canonical effective factor', (relPath) => {
+    expect(staleFactorsIn(relPath)).toEqual([]);
+  });
+
+  it('catches a stale factor rather than matching nothing', () => {
+    const tmp = path.join(SRC, '__tests__/.factor-fixture.js');
+    fs.writeFileSync(tmp, "const a = 'effective rate 0.999 kg/kWh';\n", 'utf8');
+    try {
+      expect(staleFactorsIn('__tests__/.factor-fixture.js')).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('leaves other legitimate kg/kWh figures alone', () => {
+    const tmp = path.join(SRC, '__tests__/.factor-fixture2.js');
+    // ISO-NE's operational rate and EPA's published rate are different
+    // quantities, not stale copies of this one.
+    fs.writeFileSync(tmp, "const a = '597 lb CO2 per MWh, or about 0.271 kg/kWh';\nconst b = 'published eGRID NEWE rate (0.246)';\n", 'utf8');
+    try {
+      expect(staleFactorsIn('__tests__/.factor-fixture2.js')).toEqual([]);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
   });
 });

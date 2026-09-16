@@ -4,6 +4,7 @@
 // and proves the handler → adapter → data layer path works end to end.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
 import metersHandler         from '../../api/meters/index.js';
 import readingsHandler       from '../../api/meters/readings.js';
@@ -1099,7 +1100,7 @@ describe('POST /api/emissions/calculate', () => {
       body: { quantity: 1000, factorId: 'ef_grid_isone_2024' },
     });
     expect(r.statusCode).toBe(200);
-    expect(r.body.kgco2e).toBeCloseTo(235, 1); // 0.235 kg/kWh effective × 1000
+    expect(r.body.kgco2e).toBeCloseTo(1000 * KG_PER_KWH, 1); // effective factor × 1000 kWh
     expect(r.body.factor.unit).toBe('kWh');
   });
 

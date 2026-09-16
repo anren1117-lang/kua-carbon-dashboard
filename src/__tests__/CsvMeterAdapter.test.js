@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CsvMeterAdapter, ingestCsv, _resetCsvStore } from '../adapters/meter/CsvMeterAdapter.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
 const HEADER = 'meter_id,timestamp,value,unit,interval_minutes';
 const validCsv = [
@@ -108,8 +109,9 @@ describe('CsvMeterAdapter.getBuildingEnergy', () => {
 
   it('derives mtCO2e from total kWh via the ISO-NE factor', async () => {
     const e = await CsvMeterAdapter.getBuildingEnergy({ buildingId: 'b_miller', ...WINDOW });
-    // 2300 kWh × 0.235 kg / 1000 = 0.5405 mt
-    expect(e.mtCO2e).toBeCloseTo(0.5405, 3);
+    // 2300 kWh × the canonical grid factor ÷ 1000, derived so a factor change
+    // moves the expectation instead of breaking the test.
+    expect(e.mtCO2e).toBeCloseTo((2300 * KG_PER_KWH) / 1000, 3);
   });
 
   it('returns zeroed totals for a building with no readings', async () => {

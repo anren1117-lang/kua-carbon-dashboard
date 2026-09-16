@@ -163,7 +163,7 @@ export const lessonLibrary = [
       'Compare against US and global averages',
     ],
     dashboardPages: ['/scope-2', '/methodology'],
-    studentTask: 'Recompute the ISO-NE effective output-basis factor (~0.235 kg CO₂/kWh) using the gridMix percentages and per-fuel factors. Discuss why it\'s ~1.5× cleaner than the US average (~0.37 kg/kWh).',
+    studentTask: 'Recompute the ISO-NE effective output-basis factor (~0.234 kg CO₂/kWh) using the gridMix percentages and per-fuel factors. Discuss why it\'s ~1.5× cleaner than the US average (~0.37 kg/kWh), then compare your answer to EPA\'s published eGRID NEWE rate (0.246) and work out why the two differ.',
     teacherPrep: 'Print /methodology emission-factor table as a handout; bring calculators.',
     keyArticles: ['ka_grid_clean'],
   },

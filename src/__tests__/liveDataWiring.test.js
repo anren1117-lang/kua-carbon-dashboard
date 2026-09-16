@@ -43,8 +43,11 @@ const LIVE_HOOKS = [
 // Files that legitimately use statics only to derive a RATE (kg per kWh), or
 // that are the fallback chain itself.
 const RATE_ONLY = new Set([
-  'pages/Renewables2.js',       // KG_PER_KWH = totalMt / totalKwh
-  'pages/StudentChallenges.js', // same rate; its absolute figures come from hooks
+  // Renewables2.js came off this list in Phase 392: it no longer derives a rate
+  // from the absolute totals at all, because its avoided-emissions figure moved
+  // to AVERT's marginal rate. An exemption that has stopped being true is worse
+  // than no exemption — it's a quiet lie inside the guard against quiet lies.
+  'pages/StudentChallenges.js', // rate only; its absolute figures come from hooks
 ]);
 
 // Prose, not a dashboard readout. LearnAgent interpolates the headline figures

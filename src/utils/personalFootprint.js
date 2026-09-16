@@ -15,6 +15,8 @@
 // Output is per-year mtCO₂e + a per-component breakdown so the UI
 // can show "your beef-eating accounts for 1.2 mt of your 4.8 mt."
 
+import { KG_PER_KWH } from '../data/gridMix.js';
+
 // Per-mile car emissions (mixed driving). EPA: 8.78 kg/gal gasoline,
 // ~22 mpg typical → ~0.399 kg/mi. Round to 0.40.
 const KG_PER_MILE_CAR = 0.40;
@@ -39,9 +41,11 @@ const WEEKS_PER_YEAR = 52;
 const MT_PER_STUDENT_HEATING_BASELINE = 3.8;
 const THERMOSTAT_BONUS = { 'always_on': 0, 'turn_down_when_out': -0.07, 'off_when_out': -0.10 };
 
-// Per-shower energy: ~2 kWh electric for a typical 8-min shower
-// (hot water heating dominates). ISO-NE ~0.235 kg/kWh.
-const KG_PER_SHOWER = 2 * 0.235;
+// Per-shower energy: ~2 kWh electric for a typical 8-min shower (hot water
+// heating dominates), priced at the campus grid factor. Imported rather than
+// re-typed: the header promises these factors come from what the dashboard
+// already cites, and a hardcoded copy is how that promise stops being true.
+const KG_PER_SHOWER = 2 * KG_PER_KWH;
 
 /**
  * @param {object} inputs

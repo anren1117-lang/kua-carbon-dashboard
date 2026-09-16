@@ -51,6 +51,7 @@ import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { _resetCacheForTests } from '../hooks/measuredCache.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
@@ -314,7 +315,9 @@ describe('useMeasuredRenewables', () => {
     expect(result.current.geothermalMeasured).toBe(false);
     expect(result.current.measured).toBe(true);
     expect(result.current.solar.grossKwh).toBe(110000);
-    expect(result.current.solar.totalAvoidedMt).toBeCloseTo(32.09, 1);
+    // 100,000 self-consumed + 10,000 exported, priced at AVERT's marginal rate
+    // for New England rooftop PV — not the Scope 2 inventory factor.
+    expect(result.current.solar.totalAvoidedMt).toBeCloseTo((110_000 * avertAvoidedKgPerKwh()) / 1000, 1);
   });
 
   it('flips wind to measured when renewables_wind has rows', async () => {

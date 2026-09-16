@@ -18,6 +18,10 @@ import {
   reportVintageGap,
   intensityChangePct,
   EGRID_LATEST_KG_PER_KWH,
+  AVERT_NEW_ENGLAND_DISTRIBUTED_PV,
+  AVERT_SOURCE,
+  latestAvertYear,
+  avertAvoidedKgPerKwh,
 } from '../data/gridMixHistory.js';
 
 describe('eGRID NEWE vintage table', () => {
@@ -164,6 +168,42 @@ describe('ISO-NE operational series is kept separate from the reporting factor',
     // eGRID's generation mix has no imports column at all — that is the
     // difference that makes the two tables non-comparable line by line.
     for (const v of EGRID_NEWE) expect(v.mix.imports).toBeUndefined();
+  });
+});
+
+describe('AVERT avoided (marginal) rates for rooftop solar', () => {
+  it('holds an ascending series with plausible New England rates', () => {
+    const years = AVERT_NEW_ENGLAND_DISTRIBUTED_PV.map((r) => r.year);
+    expect(years).toEqual([...years].sort((a, b) => a - b));
+    for (const r of AVERT_NEW_ENGLAND_DISTRIBUTED_PV) {
+      // A marginal unit in New England is gas or oil; anything outside this
+      // band is a transcription error, not a grid.
+      expect(r.co2LbPerMwh, `year ${r.year}`).toBeGreaterThan(800);
+      expect(r.co2LbPerMwh, `year ${r.year}`).toBeLessThan(1400);
+    }
+  });
+
+  it('converts to ~0.49 kg CO2 per kWh, worked by hand', () => {
+    // 1079.4 lb/MWh × 0.45359237 kg/lb ÷ 1000 = 0.4896 kg/kWh.
+    expect(avertAvoidedKgPerKwh()).toBeCloseTo(0.4896, 4);
+  });
+
+  it('is roughly DOUBLE the location-based average, which is the whole point', () => {
+    // Displacement is marginal, inventory is average. Collapsing the two
+    // understated the array by about half — the mistake this guards against.
+    const avg = vintageKgPerKwh(latestVintage());
+    expect(avertAvoidedKgPerKwh()).toBeGreaterThan(avg * 1.5);
+    expect(avertAvoidedKgPerKwh()).toBeLessThan(avg * 2.5);
+  });
+
+  it('picks the newest AVERT year available', () => {
+    const years = AVERT_NEW_ENGLAND_DISTRIBUTED_PV.map((r) => r.year);
+    expect(latestAvertYear().year).toBe(Math.max(...years));
+  });
+
+  it('names its source as AVERT, not eGRID or ISO-NE', () => {
+    expect(AVERT_SOURCE).toMatch(/AVERT/i);
+    expect(AVERT_SOURCE).toMatch(/distributed|rooftop/i);
   });
 });
 

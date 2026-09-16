@@ -11,7 +11,8 @@
 // + cited per-fuel emission factors). This file only owns Scope 1 and
 // Scope 3 and the helpers that combine all three.
 
-import { GRID_MIX_ANNUAL_MTCO2E } from './gridMix.js';
+import { GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH } from './gridMix.js';
+import { avertAvoidedKgPerKwh, AVERT_SOURCE } from './gridMixHistory.js';
 
 // ─── Scope 1 ──────────────────────────────────────────────────────
 // Heating fuel (heating oil + propane) + refrigerant leakage + fleet.
@@ -652,8 +653,32 @@ export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 // 643 lb/MWh = 0.2917 kg/kWh sits ~24% above the 0.2344 Scope 2 uses, so one
 // kWh is currently valued two ways depending on which page you are on.
 // Hard-coded here so the composer stays pure (no Supabase fetch).
-export const GRID_FACTOR_LB_PER_MWH = 643.0;
-export const GRID_FACTOR_KG_PER_KWH = +(GRID_FACTOR_LB_PER_MWH * KG_PER_LB / 1000).toFixed(6);
+// Phase 392 — this is now the SAME factor Scope 2 reports on (gridMix.js).
+//
+// It previously read `GRID_FACTOR_LB_PER_MWH = 643.0`, labelled "ISO-NE 2024",
+// which was wrong twice over: ISO-NE's 2024 in-region rate is 597 lb/MWh (643 is
+// a stale figure, most likely 2022), and using ISO-NE's OPERATIONAL rate here
+// while Scope 2 reports on the per-fuel reconstruction meant one kilowatt-hour
+// was valued ~24% differently depending on which page you were standing on.
+//
+// Avoided-emissions figures on /renewables fall by about a fifth as a result.
+// That is the honest direction: the old factor overstated what the solar avoids.
+// CORRECTED WITHIN PHASE 392. My first pass pointed this at the Scope 2
+// inventory factor (0.2344) in the name of "one kWh, one number". That was
+// wrong, and it made this figure worse than the mislabelled 643 it replaced.
+//
+// Scope 2 asks what our consumption emitted — an INVENTORY question, answered
+// with a location-based AVERAGE. Avoided emissions asks what our solar
+// DISPLACED — a consequential question, and what backs down in New England is
+// the marginal unit, almost always gas. EPA's AVERT puts New England
+// rooftop-scale PV at ~1,079 lb/MWh (2023) ≈ 0.49 kg/kWh, about double the
+// average. GHG Protocol treats avoided emissions as consequential modelling
+// explicitly outside Scope 2, which is what licenses two different factors.
+//
+// So this deliberately does NOT follow KG_PER_KWH. Avoided-emissions figures on
+// /renewables roughly double against the first pass.
+export const GRID_FACTOR_KG_PER_KWH = +avertAvoidedKgPerKwh().toFixed(6);
+export const GRID_FACTOR_LB_PER_MWH = +((GRID_FACTOR_KG_PER_KWH * 1000) / KG_PER_LB).toFixed(1);
 
 // Heating-fuel BTU content per gallon — used by the geothermal
 // counterfactual (kWh × COP × 3412.14 → BTU → gallons of fuel that
@@ -702,6 +727,9 @@ export function composeSolarFromRecords(rows) {
     avoidedExportMt,
     totalAvoidedMt: +(avoidedSelfMt + avoidedExportMt).toFixed(2),
     gridKgPerKwh: GRID_FACTOR_KG_PER_KWH,
+    // Named so a caller can't mistake this for the Scope 2 inventory factor.
+    factorBasis: 'marginal (displaced generation)',
+    factorSource: AVERT_SOURCE,
   };
 }
 

@@ -152,6 +152,58 @@ export const ISO_NE_MIX_NEL = {
   source: 'ISO-NE Resource Mix, 2025 preliminary (published 28 January 2026)',
 };
 
+/**
+ * EPA AVERT avoided emission rates, New England region, DISTRIBUTED PV —
+ * the rooftop-scale category, which is what KUA has.
+ *
+ * WHY THIS IS A DIFFERENT NUMBER FROM THE SCOPE 2 FACTOR, and must stay one:
+ *
+ * Scope 2 asks "what were the emissions associated with the electricity we
+ * consumed?" — an INVENTORY question, answered with a location-based AVERAGE
+ * grid factor. Avoided emissions asks "what generation did our solar displace?"
+ * — a CONSEQUENTIAL question, and the generation that actually backs down when
+ * a New England rooftop exports is the MARGINAL unit, almost always gas. So the
+ * marginal rate is roughly double the average, and using the average here
+ * understates what the array achieves by about half.
+ *
+ * GHG Protocol treats avoided emissions as consequential/system-wide impact
+ * modelling, explicitly OUTSIDE Scope 2 inventory accounting, with separate
+ * guidance. That is the licence for two different factors — and the reason
+ * Phase 392's "one kWh, one number" rule does NOT extend to this line. Applying
+ * it here was a mistake, corrected in the same phase: the inventory factor made
+ * this figure worse than the (wrong) number it replaced.
+ *
+ * Rates are CO2, not CO2e. lb/MWh, read from EPA's AVERT v4.3 workbook.
+ */
+export const AVERT_NEW_ENGLAND_DISTRIBUTED_PV = [
+  { year: 2017, co2LbPerMwh: 1187.8 },
+  { year: 2018, co2LbPerMwh: 1176.8 },
+  { year: 2019, co2LbPerMwh: 1120.2 },
+  { year: 2020, co2LbPerMwh: 1095.8 },
+  { year: 2021, co2LbPerMwh: 1095.1 },
+  { year: 2022, co2LbPerMwh: 1117.5 },
+  { year: 2023, co2LbPerMwh: 1079.4 },
+];
+
+export const AVERT_SOURCE = 'EPA AVERT v4.3 avoided emission rates, New England region, distributed (rooftop-scale) PV, published April 2024';
+
+/** AVERT's own annual capacity factor for New England distributed PV. */
+export const AVERT_NE_DISTRIBUTED_PV_CAPACITY_FACTOR = 0.1823;
+
+/** The newest AVERT year we hold. */
+export function latestAvertYear() {
+  return AVERT_NEW_ENGLAND_DISTRIBUTED_PV
+    .reduce((newest, r) => (r.year > newest.year ? r : newest), AVERT_NEW_ENGLAND_DISTRIBUTED_PV[0]);
+}
+
+/**
+ * kg CO2 avoided per kWh of rooftop solar in New England. ~0.49 — about twice
+ * the location-based average, for the reason in the block comment above.
+ */
+export function avertAvoidedKgPerKwh() {
+  return latestAvertYear().co2LbPerMwh * LB_PER_MWH_TO_KG_PER_KWH;
+}
+
 /** kg CO2e per kWh for a vintage row. */
 export function vintageKgPerKwh(vintage) {
   return vintage && Number.isFinite(vintage.co2eLbPerMwh)

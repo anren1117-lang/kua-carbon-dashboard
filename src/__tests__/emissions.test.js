@@ -12,11 +12,14 @@ import {
   perStudentIntensity, perSqftIntensity, meterAnnualKwh,
   totalCampusElectricityKwh, campusKwhShareFactor,
 } from '../utils/aggregation.js';
-import { gridMix } from '../data/gridMix.js';
+import { gridMix, KG_PER_KWH } from '../data/gridMix.js';
 import { meters } from '../data/meters.js';
 
-// ef_grid_isone_2024 is the canonical electricity factor.
-const ISONE = 0.235; // kgCO2e per kWh
+// ef_grid_isone_2024 is the canonical electricity factor. DERIVED, not re-typed:
+// a literal here would just relocate the duplication Phase 392 removed, and the
+// next factor change would break this file again. One test pins the literal
+// value (gridMixFactors.test.js); everything else follows it.
+const ISONE = KG_PER_KWH; // kgCO2e per kWh
 
 describe('quantityToKgCO2e', () => {
   it('multiplies quantity by the factor looked up by id', () => {
@@ -55,8 +58,8 @@ describe('kgToMt / mtToKg', () => {
 
 describe('annualElectricityMt', () => {
   it('converts kWh to mtCO2e via the ISO-NE factor', () => {
-    // 100,000 kWh × 0.235 kg / 1000 = 23.5 mt
-    expect(annualElectricityMt(100_000)).toBeCloseTo(23.5);
+    // 100,000 kWh × the grid factor ÷ 1000 = mt
+    expect(annualElectricityMt(100_000)).toBeCloseTo((100_000 * ISONE) / 1000);
   });
   it('is 0 for 0 kWh', () => {
     expect(annualElectricityMt(0)).toBe(0);

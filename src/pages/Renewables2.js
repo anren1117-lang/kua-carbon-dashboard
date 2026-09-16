@@ -2,7 +2,7 @@ import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { solarSites, solarMonthly, SOLAR_ANNUAL_KWH, SOLAR_ANNUAL_EXPORT_KWH } from '../data/renewables.js';
-import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 import { getBuilding } from '../data/buildings.js';
 import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
 
@@ -11,7 +11,13 @@ import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
 // /renewables-os to avoid colliding with the existing /renewables page
 // during transition.
 
-const KG_PER_KWH = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
+// Avoided emissions are priced at AVERT's MARGINAL rate for New England
+// rooftop PV, not the Scope 2 inventory average — what a rooftop displaces is
+// the marginal gas unit. This used to derive the average rate locally, which
+// meant the headline below roughly HALVED the moment measured solar data
+// landed, because the measured branch already used a different factor. One
+// figure, one basis, whichever branch produces it.
+const AVOIDED_KG_PER_KWH = avertAvoidedKgPerKwh();
 
 export default function Renewables() {
   const live = useMeasuredRenewables();
@@ -24,7 +30,7 @@ export default function Renewables() {
   // shape) and the cited grid factor.
   const useMeasured = live.solarMeasured && live.solar.grossKwh > 0;
   const annualKwh = useMeasured ? live.solar.grossKwh : SOLAR_ANNUAL_KWH;
-  const annualMt = useMeasured ? live.solar.totalAvoidedMt : (SOLAR_ANNUAL_KWH * KG_PER_KWH) / 1000;
+  const annualMt = useMeasured ? live.solar.totalAvoidedMt : (SOLAR_ANNUAL_KWH * AVOIDED_KG_PER_KWH) / 1000;
   const annualSelfConsumed = useMeasured
     ? live.solar.selfKwh
     : SOLAR_ANNUAL_KWH - SOLAR_ANNUAL_EXPORT_KWH;

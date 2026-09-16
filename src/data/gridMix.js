@@ -135,6 +135,25 @@ export const RECONSTRUCTED_KG_PER_KWH = +GRID_MIX_FACTORS
   .reduce((s, f) => s + (f.mixPercent / TOTAL_PCT) * f.emissionFactor * 1000, 0)
   .toFixed(6);
 
+/**
+ * THE grid emission factor. One kWh, one number (Phase 392).
+ *
+ * Everything that turns kilowatt-hours into mtCO2e imports this. Before Phase
+ * 392 the same quantity was hardcoded five separate ways at 0.235
+ * (buildingEmissions, CampusMonthlyTrend, scenarioModel, personalFootprint, the
+ * emissionFactors catalog) with a rival 0.2917 driving the Renewables page — so
+ * /campus-map, /renewables and /scope-2 disagreed about what a kilowatt-hour
+ * costs, by up to 24%.
+ *
+ * This is the per-fuel RECONSTRUCTION, not EPA's published rate. See
+ * FACTOR_RECONCILIATION above for why adopting the published rate is a
+ * governance decision rather than an edit. The reason for routing every
+ * consumer through one export is precisely that when that decision is taken,
+ * every surface moves together instead of one page at a time — which is the
+ * failure mode this project keeps having.
+ */
+export const KG_PER_KWH = RECONSTRUCTED_KG_PER_KWH;
+
 /** The eGRID edition KUA's usage year should be reported against. */
 export const REPORTING_VINTAGE = vintageForUsageYear(KUA_USAGE_YEAR);
 

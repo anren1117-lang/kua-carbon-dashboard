@@ -14,6 +14,8 @@
 // All factor sources match what the rest of the dashboard uses
 // (Methodology page documents each one).
 
+import { KG_PER_KWH } from '../data/gridMix.js';
+
 // NH heat pump assumptions
 const HEAT_PUMP_COP = 3.0;  // conservative cold-climate average
 const BTU_PER_KWH   = 3412;
@@ -56,7 +58,9 @@ export function runScenario({
   heatingElectrifyPct     = 0,
   solarKw                 = 0,
   treePlantingAcres       = 0,
-  gridKgPerKwh            = 0.235,
+  // One kWh, one number — the header above promises "all factor sources match
+  // what the rest of the dashboard uses", which a hardcoded 0.235 quietly broke.
+  gridKgPerKwh            = KG_PER_KWH,
 }) {
   const steps = [];
 

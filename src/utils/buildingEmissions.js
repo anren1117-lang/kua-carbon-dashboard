@@ -46,8 +46,12 @@
 import { buildings } from '../data/buildings.js';
 import { buildingMonthlyHistory } from '../data/monthlyConsumption.js';
 import { seasonalYearFraction } from '../data/seasonalPatterns.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
-const ISO_NE_KG_PER_KWH = 0.235;
+// One kWh, one number — see gridMix.js. Was 0.235, a fifth of a percent away
+// from what /scope-2 computes; small, but it made the campus map disagree with
+// the Scope 2 page about the carbon of the same kilowatt-hour.
+const ISO_NE_KG_PER_KWH = KG_PER_KWH;
 
 // Shared with seasonalYearFraction() — see the note where it's used.
 const MONTH_KEY = /^\d{4}-\d{2}$/;

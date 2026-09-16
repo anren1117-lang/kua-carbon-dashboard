@@ -49,7 +49,7 @@ const SCOPES = [
       `= ${Math.round(SCOPE2_TOTAL_MT)} mtCO₂e/year`,
     ],
     formula: 'measured kWh × Σ (fuel mix share × per-fuel kg/kWh)',
-    factorSource: 'ISO-NE 2024 generation mix + EPA eGRID NEWE per-fuel factors. Effective system rate ≈ 0.235 kg/kWh.',
+    factorSource: 'ISO-NE 2024 generation mix + EPA eGRID NEWE per-fuel factors. Effective system rate ≈ 0.234 kg/kWh — about 5% below EPA\'s published eGRID NEWE rate for the reporting vintage, so this is a conservative-low estimate.',
     peerRange: '0.4 – 2.0 mtCO₂e/student',
     peerComparison: 'KUA is at the LOW end. Two reasons: the New England grid is cleaner than most US regions, and per-student electricity use is moderate.',
   },

@@ -13,13 +13,20 @@
  * @property {number} year
  */
 
+import { KG_PER_KWH } from './gridMix.js';
+
 /** @type {EmissionFactor[]} */
 export const emissionFactors = [
   // Electricity — per-fuel emission factors per kWh of electricity OUTPUT
   // (NOT per kWh of fuel BTU input). These match src/data/gridMix.js
-  // and yield an effective system rate of ~0.235 kg/kWh weighted across
-  // ISO-NE 2024 generation mix — in eGRID NEWE 2022 published range.
-  { id: 'ef_grid_isone_2024', category: 'electricity', subcategory: 'isone_grid', unit: 'kWh', kgco2e_per_unit: 0.235, source: 'ISO-NE 2024 mix × per-fuel output factors', year: 2024 },
+  // and yield an effective system rate of ~0.2344 kg/kWh weighted across the
+  // ISO-NE 2024 generation mix. That sits ~5% BELOW EPA's published eGRID NEWE
+  // rate for the reporting vintage (0.2464) — see FACTOR_RECONCILIATION in
+  // gridMix.js, which publishes the gap rather than quietly closing it.
+  // Not a literal: this catalog row records the factor the dashboard actually
+  // applies, so it derives from the same composition every page uses. A typed
+  // copy here would drift the audit trail away from the arithmetic it documents.
+  { id: 'ef_grid_isone_2024', category: 'electricity', subcategory: 'isone_grid', unit: 'kWh', kgco2e_per_unit: KG_PER_KWH, source: 'ISO-NE 2024 mix × per-fuel output factors (composed in gridMix.js)', year: 2024 },
   { id: 'ef_grid_natgas',      category: 'electricity', subcategory: 'natural_gas',     unit: 'kWh', kgco2e_per_unit: 0.400, source: 'ISO-NE generation mix (combined-cycle output)', year: 2024 },
   { id: 'ef_grid_oil',         category: 'electricity', subcategory: 'oil',             unit: 'kWh', kgco2e_per_unit: 0.780, source: 'EPA eGRID NEWE oil-fired typical', year: 2024 },
   { id: 'ef_grid_coal',        category: 'electricity', subcategory: 'coal',            unit: 'kWh', kgco2e_per_unit: 0.950, source: 'EPA eGRID NEWE coal-fired typical', year: 2024 },

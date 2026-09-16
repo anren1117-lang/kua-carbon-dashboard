@@ -2,6 +2,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { runScenario } from '../utils/scenarioModel.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
 const baseline = {
   scope1Mt: 200,
@@ -59,8 +60,8 @@ describe('runScenario — heating electrification', () => {
 describe('runScenario — solar PV', () => {
   it('offsets Scope 2 by installed kW × capacity factor × grid kg/kWh', () => {
     const r = runScenario({ ...baseline, solarKw: 100 });
-    // 100 kW × 1300 kWh/kW × 0.235 kg/kWh = 30,550 kg = 30.55 mt
-    const expected = (100 * 1300 * 0.235) / 1000;
+    // 100 kW × 1300 kWh/kW/yr × the canonical grid factor, in mt.
+    const expected = (100 * 1300 * KG_PER_KWH) / 1000;
     expect(r.modified.scope2Mt).toBeCloseTo(baseline.scope2Mt - expected, 2);
   });
 

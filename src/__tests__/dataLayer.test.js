@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { composeCommutingMt, composeFleetMt, composeGeothermalFromRecords, composePurchasedGoodsMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, composeSolarFromRecords, composeWindFromRecords, COMMUTE_FACTORS_KG_PER_KM, FLEET_FACTORS_KG_PER_GAL, FUEL_BTU_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GRID_FACTOR_KG_PER_KWH, GRID_FACTOR_LB_PER_MWH, GROSS_MT, PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
-import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, KG_PER_KWH } from '../data/gridMix.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 import { dorms } from '../data/dorms.js';
 import { students, TOTAL_STUDENTS } from '../data/students.js';
 import { staff, TOTAL_STAFF } from '../data/staff.js';
@@ -109,14 +110,16 @@ describe('data layer integrity', () => {
 
 describe('emission math', () => {
   it('converts kWh to kgCO2e using ISO-NE factor', () => {
-    // Per-fuel output factors weighted across ISO-NE 2024 mix → 0.235 kg/kWh.
+    // Per-fuel output factors weighted across the ISO-NE 2024 mix. Derived from
+    // the canonical export so this follows a factor change instead of breaking:
+    // a literal here would just relocate the duplication Phase 392 removed.
     const { kgco2e, factor } = quantityToKgCO2e({ quantity: 1000, factorId: 'ef_grid_isone_2024' });
     expect(factor.unit).toBe('kWh');
-    expect(kgco2e).toBeCloseTo(235, 1);
+    expect(kgco2e).toBeCloseTo(1000 * KG_PER_KWH, 1);
   });
 
   it('annualElectricityMt rolls up large kWh figures correctly', () => {
-    expect(annualElectricityMt(1_000_000)).toBeCloseTo(235, 1);
+    expect(annualElectricityMt(1_000_000)).toBeCloseTo((1_000_000 * KG_PER_KWH) / 1000, 1);
   });
 
   it('kg → mt conversion', () => {
@@ -158,7 +161,7 @@ describe('utilities', () => {
         { id: 'b', name: 'B', kwh: 100 },
       ],
       1100,
-      0.235, // updated to per-fuel output ISO-NE 2024 effective rate
+      KG_PER_KWH, // the canonical effective rate, not a typed copy of it
     );
     expect(hs[0].id).toBe('a');
     expect(['low', 'medium', 'high']).toContain(hs[0].severity);
@@ -1078,9 +1081,15 @@ describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
 
 describe('renewables composers (composeSolarFromRecords / Geothermal / Wind)', () => {
   it('exposes the cited grid factor + fuel BTU table', () => {
-    expect(GRID_FACTOR_LB_PER_MWH).toBe(643.0);
-    // 643 × 0.45359237 / 1000 ≈ 0.29166
-    expect(GRID_FACTOR_KG_PER_KWH).toBeCloseTo(0.29166, 4);
+    // Avoided emissions uses a MARGINAL rate (EPA AVERT, New England
+    // rooftop-scale PV), NOT the Scope 2 inventory factor. Different question:
+    // what generation the solar displaced, versus what our consumption emitted.
+    expect(GRID_FACTOR_KG_PER_KWH).toBeCloseTo(avertAvoidedKgPerKwh(), 6);
+    // The guard that matters — these two must NOT collapse into one number.
+    // An earlier pass made them equal and understated the array by about half.
+    expect(GRID_FACTOR_KG_PER_KWH).not.toBe(KG_PER_KWH);
+    expect(GRID_FACTOR_KG_PER_KWH).toBeGreaterThan(KG_PER_KWH * 1.5);
+    expect(GRID_FACTOR_LB_PER_MWH).toBeCloseTo((GRID_FACTOR_KG_PER_KWH * 1000) / 0.45359237, 1);
     expect(FUEL_BTU_PER_GAL.heating_oil).toBe(138500);
     expect(FUEL_BTU_PER_GAL.propane).toBe(91500);
   });
@@ -1107,10 +1116,14 @@ describe('renewables composers (composeSolarFromRecords / Geothermal / Wind)', (
     expect(r.grossKwh).toBe(110000);
     expect(r.selfKwh).toBe(100000);
     expect(r.exportKwh).toBe(10000);
-    // 100000 × 0.29166 / 1000 ≈ 29.17 mt
-    expect(r.avoidedSelfMt).toBeCloseTo(29.17, 1);
-    expect(r.avoidedExportMt).toBeCloseTo(2.92, 1);
-    expect(r.totalAvoidedMt).toBeCloseTo(32.09, 1);
+    // Priced at AVERT's marginal rate for New England rooftop PV (~0.49
+    // kg/kWh), roughly double the location-based average, because what a
+    // rooftop displaces is the marginal gas unit rather than the average mix.
+    const marginal = avertAvoidedKgPerKwh();
+    expect(r.avoidedSelfMt).toBeCloseTo((100_000 * marginal) / 1000, 1);
+    expect(r.avoidedExportMt).toBeCloseTo((10_000 * marginal) / 1000, 1);
+    expect(r.totalAvoidedMt).toBeCloseTo((110_000 * marginal) / 1000, 1);
+    expect(r.factorBasis).toMatch(/marginal/i);
   });
 
   it('composeSolarFromRecords: null self/export are treated as 0 (gross still counts)', () => {
