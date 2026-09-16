@@ -22,6 +22,8 @@
 //   4. Range labels ("Jan–Apr") are derived here, so page copy never
 //      hardcodes which months came from which source.
 
+import { seasonalShares } from './seasonalPatterns.js';
+
 export const SOURCE_MASTER = 'bms_master_monthly';
 export const SOURCE_FEED_SUM = 'meter_trends_feed_sum';
 
@@ -289,8 +291,11 @@ export function ledgerToYtdComponents(ledger) {
  * @param {{month:string, multiplier:number}[]} pattern  12 entries, Jan → Dec
  */
 export function projectYear1(components, pattern) {
-  const multSum = pattern.reduce((s, m) => s + m.multiplier, 0);
-  const share = pattern.map((m) => m.multiplier / multSum);
+  // One seasonal dialect, shared with the per-building roll-up rather than
+  // recomputed here. Numerically identical to the inline version this replaced
+  // (same reduce, same divisor, same map); it only adds a guard for a
+  // degenerate pattern, where the old form produced NaN shares.
+  const share = seasonalShares(pattern);
 
   const coverage = components
     .map((c) => {

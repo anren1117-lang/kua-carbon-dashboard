@@ -14,8 +14,9 @@
 // construction instead of by repetition.
 //
 // A per-building month must cover the WHOLE calendar month: computeBuildingEmissions
-// averages the months it has and multiplies by 12, so a half month would quietly
-// halve that building's year.
+// divides the months it has by the share of a year those months represent
+// (seasonalYearFraction, weighted by season rather than simply counted), so a
+// half month would quietly halve that building's year.
 
 import { daysInMonthKey } from './electricityLedger.js';
 

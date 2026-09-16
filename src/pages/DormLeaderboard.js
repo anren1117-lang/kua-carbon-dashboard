@@ -22,6 +22,12 @@ export default function DormLeaderboard() {
   const { history: monthlyHistory } = useBuildingMonthlyHistory();
   const { rows } = useMemo(() => computeBuildingEmissions({ monthlyHistory }), [monthlyHistory]);
   const dormRows = rows.filter((r) => r.category === 'Dorm' && r.occupants > 0);
+  // A dorm with no usable coverage annualizes to 0 kWh (yearFraction 0 means
+  // "no basis to annualize from", not "used nothing"). Ranking ascending would
+  // put it first and hand it the trophy for having no data. It is listed as
+  // not yet metered instead of competing.
+  const measuredDorms = dormRows.filter((r) => r.yearFraction > 0 && r.annualKwh > 0);
+  const unmeasuredDorms = dormRows.filter((r) => !(r.yearFraction > 0 && r.annualKwh > 0));
 
   // Build a per-dorm, per-month, per-resident kWh series so the trend
   // arrow has something to compare against.
@@ -40,7 +46,7 @@ export default function DormLeaderboard() {
   const [view, setView] = useState('annual'); // 'annual' | 'latest_month'
 
   const ranked = useMemo(() => {
-    return dormRows.map((d) => {
+    const scored = measuredDorms.map((d) => {
       const kwhAnnualPerResident = d.occupants > 0 ? Math.round(d.annualKwh / d.occupants) : 0;
       const thisMonthKwh = latestMonth ? (history[d.id]?.[latestMonth] || 0) : 0;
       const prevMonthKwh = previousMonth ? (history[d.id]?.[previousMonth] || 0) : 0;
@@ -55,12 +61,16 @@ export default function DormLeaderboard() {
         prevMonthPerResident: Math.round(prevMonthPer),
         pctChange,
       };
-    }).sort((a, b) => {
+    });
+    // Same trap in the month view: a dorm with no reading for that month scores
+    // 0 per resident. It sits the month out rather than topping it.
+    const eligible = view === 'latest_month' ? scored.filter((s) => s.thisMonthKwh > 0) : scored;
+    return eligible.sort((a, b) => {
       // Lower per-resident = better → sort ascending.
       if (view === 'latest_month') return a.thisMonthPerResident - b.thisMonthPerResident;
       return a.kwhAnnualPerResident - b.kwhAnnualPerResident;
     });
-  }, [dormRows, history, latestMonth, previousMonth, view]);
+  }, [measuredDorms, history, latestMonth, previousMonth, view]);
 
   const champion = ranked[0] || null;
   const maxValue = view === 'latest_month'
@@ -70,7 +80,7 @@ export default function DormLeaderboard() {
   return (
     <ModulePage
       title="Dorm energy leaderboard"
-      subtitle={`Ranking the ${dormRows.length} student dorms by electricity per resident — the only fair comparison since a 48-person dorm always uses more total kWh than a 14-person dorm. Lower = better.`}
+      subtitle={`Ranking ${ranked.length} of KUA's ${dormRows.length} student dorms by electricity per resident — the fair comparison, since a 48-person dorm always uses more total kWh than a 14-person dorm. Lower = better. A dorm appears once it has a whole metered month.`}
       toolbar={
         <button
           type="button"
@@ -144,7 +154,7 @@ export default function DormLeaderboard() {
                     <Link to={`/buildings/${d.id}`} style={styles.cardName}>{d.name}</Link>
                     {showTrend && <span style={styles.cardTrend}><TrendBadge pct={trend} /></span>}
                   </div>
-                  <div style={styles.cardMeta}>{d.occupants} residents</div>
+                  <div style={styles.cardMeta}>{d.occupants} residents · {d.monthsCovered} metered month{d.monthsCovered === 1 ? '' : 's'}</div>
                   <div style={styles.cardBarWrap}>
                     <span
                       className="kua-bar-grow"
@@ -170,7 +180,7 @@ export default function DormLeaderboard() {
                   {d.name}
                 </Link>
                 <span style={styles.metaCol}>
-                  {d.occupants} residents
+                  {d.occupants} residents · {d.monthsCovered} mo
                 </span>
                 <span style={styles.barCol}>
                   <span
@@ -207,10 +217,38 @@ export default function DormLeaderboard() {
 
       <ModuleSection title="Where these numbers come from" hint="">
         <p style={styles.fineprint}>
-          Per-resident kWh = (building's measured BMS electricity) ÷ (residents from dorm registry).
-          Annualized when the building has fewer than 12 months of measured data. Doesn't include
-          heating fuel (that's tracked campus-wide on /scope-1, not per-dorm).
+          Per-resident kWh = (dorm's measured BMS electricity ÷ the share of a year those
+          months represent) ÷ (residents from dorm registry). The months are weighted by
+          season rather than simply counted: January is a heavy heating month and July is a
+          light one, so a dorm metered only in winter isn't scaled up as if every month
+          looked like January. With fewer than twelve months, the figure is an estimate of a
+          full year, not a measurement of one. Doesn't include heating fuel (tracked
+          campus-wide on /scope-1, not per-dorm).
         </p>
+        <p style={styles.fineprint}>
+          One caveat worth knowing before reading much into small gaps: the seasonal
+          weighting uses the whole campus's shape, which is driven by heating. Dorms empty
+          out over the summer, so a dorm's real swing between winter and summer is sharper
+          than the campus average — which means a dorm measured only in winter months is
+          still likely to be estimated a little high. A full year of dorm-level readings
+          would remove the assumption entirely; until then it is an estimate with a known
+          lean, not a measurement.
+        </p>
+        {ranked.length > 0 && (
+          <p style={styles.fineprint}>
+            Dorms in this ranking currently rest on{' '}
+            {ranked.every((d) => d.monthsCovered === ranked[0].monthsCovered)
+              ? `the same ${ranked[0].monthsCovered} metered months, so the ranking between them doesn't depend on the seasonal weighting at all.`
+              : `different numbers of metered months (${Math.min(...ranked.map((d) => d.monthsCovered))}–${Math.max(...ranked.map((d) => d.monthsCovered))}). The seasonal weighting is what keeps them comparable; the months column shows what each rests on.`}
+          </p>
+        )}
+        {unmeasuredDorms.length > 0 && (
+          <p style={styles.fineprint}>
+            Not yet ranked, for want of a complete metered month:{' '}
+            {unmeasuredDorms.map((d) => d.name).join(', ')}. These are absent from the
+            ranking rather than shown as zero — no reading is not the same as no electricity.
+          </p>
+        )}
         <p style={styles.fineprint}>
           See the <Link to="/campus-map" style={styles.link}>campus map</Link> for the full
           visual distribution, or click any dorm above for its individual monthly trend +

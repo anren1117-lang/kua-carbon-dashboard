@@ -133,7 +133,11 @@ export default function CampusMap() {
     const csv = toCsv(rows, [
       'id', 'name', 'category', 'sqft', 'occupants',
       'annualKwh', ...(mode === 'monthly' ? ['monthKwh'] : []),
-      'monthsCovered', 'mtCO2e', 'sharePercent', 'kgPerSqft',
+      // yearFraction travels with the export: without it an auditor holding
+      // this CSV can't reproduce annualKwh from its own columns, because
+      // monthsCovered no longer implies the divisor (four winter months and
+      // four summer months give different answers).
+      'monthsCovered', 'yearFraction', 'mtCO2e', 'sharePercent', 'kgPerSqft',
     ]);
     const today = new Date().toISOString().slice(0, 10);
     const suffix = mode === 'monthly' ? `_${selectedMonth}` : '';
@@ -145,13 +149,13 @@ export default function CampusMap() {
 
   const subtitle = mode === 'monthly'
     ? `Slice of campus emissions for ${formatMonthLabel(selectedMonth)}. Each box is sized by sqft and colored by per-sqft intensity for that month's reading. Click any building for detail.`
-    : `Where the ${totalMt.toLocaleString()} mtCO₂e of measured electricity emissions actually come from. Each box is one of KUA's ${rows.length} tracked buildings, sized by square footage and colored by per-sqft emissions intensity. Click any building for detail.`;
+    : `Where the ${totalMt.toLocaleString()} mtCO₂e of campus electricity emissions come from. Each box is one of KUA's ${rows.length} tracked buildings, sized by square footage and colored by per-sqft emissions intensity. Figures are scaled to a full year from the months actually metered, so they are an estimate of a year rather than a measurement of one. Click any building for detail.`;
 
   return (
     <ModulePage title="Campus map — emissions distribution" subtitle={subtitle}>
       <ModuleSection
         title="Campus zones"
-        hint={`Schematic layout grouped by category — not geographically accurate (we don't yet have building coordinates). Sizes are scaled by sqft. Colors show kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. Based on ${monthsObserved} months of measured BMS data${mode === 'monthly' ? ', currently viewing one month' : ', annualized'}.`}
+        hint={`Schematic layout grouped by category — not geographically accurate (we don't yet have building coordinates). Sizes are scaled by sqft. Colors show kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. ${monthsObserved} distinct month${monthsObserved === 1 ? '' : 's'} of BMS data across the campus${mode === 'monthly' ? ', currently viewing one month' : ', each building scaled to a year from the months it actually has'}. Individual buildings may rest on fewer months than that total — open one to see how many.`}
       >
         <CampusMonthlyTrend
           monthlyTotals={campusMonthlyTotals()}
@@ -362,8 +366,8 @@ export default function CampusMap() {
             </div>
             <div style={styles.detailNote}>
               {mode === 'monthly'
-                ? `Reading is for ${formatMonthLabel(selectedMonth)} alone. Annualized-equivalent figures use month × 12 so the color scale stays comparable across views.`
-                : `Measured over ${selected.monthsCovered} month${selected.monthsCovered === 1 ? '' : 's'} of BMS data, annualized.`}
+                ? `Reading is for ${formatMonthLabel(selectedMonth)} alone. The annualized equivalent divides it by that month's share of a normal year (about ${(selected.yearFraction * 100).toFixed(1)}%) rather than by a flat twelfth, so a winter month and a summer month scale differently and the colour scale stays comparable across views.`
+                : `Measured over ${selected.monthsCovered} month${selected.monthsCovered === 1 ? '' : 's'} of BMS data — about ${(selected.yearFraction * 100).toFixed(0)}% of a year once each month is weighted for season — then scaled to a full year.`}
               {' '}Emissions = kWh × 0.235 kg/kWh (ISO-NE 2024 effective).
             </div>
             <a href={`/buildings/${selected.id}`} style={styles.detailLink}>

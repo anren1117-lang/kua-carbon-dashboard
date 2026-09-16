@@ -68,7 +68,13 @@ export default function EnergyChallenge() {
 
   // Two scoreboards: efficiency (lowest per-resident this month) +
   // improvement (biggest reduction vs last month).
-  const byEfficiency = useMemo(() => [...standings].sort((a, b) => a.thisPer - b.thisPer), [standings]);
+  // A dorm with no reading for the focused month scores 0 per resident, so
+  // sorting ascending would award "most efficient" for missing data. Only dorms
+  // with an actual reading for that month compete.
+  const byEfficiency = useMemo(
+    () => [...standings].filter((s) => s.thisKwh > 0).sort((a, b) => a.thisPer - b.thisPer),
+    [standings],
+  );
   const byImprovement = useMemo(() => {
     return [...standings]
       .filter((s) => s.pctChange !== null)
