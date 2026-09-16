@@ -5,9 +5,10 @@ import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, SNAPSHOT_ANNUALIZE_FACTOR, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { ProvenancePill } from './ProvenancePill.js';
-import { gridMix, composeGridMix } from '../data/gridMix.js';
+import { gridMix, composeGridMix, zeroEmissionPercent, effectiveKgPerKwh, GRID_MIX_YEAR } from '../data/gridMix.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { EnergyEquivalents } from './EnergyEquivalents.js';
+import { carbonEquivalents } from '../utils/equivalents.js';
 
 // The original campus-electricity dashboard — live emissions counter, time
 // analysis, per-building data, ISO-NE grid mix breakdown. Lives on /scope-2
@@ -360,9 +361,18 @@ export function Scope2LiveDashboard() {
 
           <div style={styles.statsGrid}>
             <div style={styles.statCard}><p style={styles.statLabel}>Total Electricity</p><p style={styles.statValue}>{totalKwh.toLocaleString()}</p><p style={styles.statUnit}>kWh/year</p></div>
-            <div style={styles.statCard}><p style={styles.statLabel}>Zero-Emission</p><p style={styles.statValue}>48%</p><p style={styles.statUnit}>of grid mix</p></div>
+            {/* Says which definition it is using. The lessons teach ~48%, which
+                counts net imports as clean; this counts only sources with a
+                zero emission factor, so it lands at 41%. Both are defensible —
+                leaving the reader to spot a 7-point gap between two pages of
+                the same site is not. */}
+            <div style={styles.statCard}><p style={styles.statLabel}>Zero-Emission</p><p style={styles.statValue}>{zeroEmissionPercent(liveGridMix)}%</p><p style={styles.statUnit}>of generation, imports excluded</p></div>
             <div style={styles.statCard}><p style={styles.statLabel}>Buildings</p><p style={styles.statValue}>{buildingsData.length}</p><p style={styles.statUnit}>monitored</p></div>
-            <div style={styles.statCard}><p style={styles.statLabel}>Emission Factor</p><p style={styles.statValue}>0.096</p><p style={styles.statUnit}>kg CO2/kWh</p></div>
+            {/* Was hardcoded at 0.096 — wrong by a factor of 2.4 against the
+                site's own arithmetic, and it had been on the page long enough
+                to be quoted. Derived from the live mix now, so it moves with
+                the data like every other figure on this component. */}
+            <div style={styles.statCard}><p style={styles.statLabel}>Emission Factor</p><p style={styles.statValue}>{effectiveKgPerKwh(liveGridMix)}</p><p style={styles.statUnit}>kg CO2e/kWh</p></div>
           </div>
 
           <div style={{ maxWidth: 700, margin: '0 auto 20px' }}>
@@ -370,28 +380,51 @@ export function Scope2LiveDashboard() {
           </div>
 
           <div style={styles.mixSummary}>
-            <h3 style={styles.sectionTitle}>ISO New England Grid Mix (2024)</h3>
+            <h3 style={styles.sectionTitle}>ISO New England grid mix ({GRID_MIX_YEAR})</h3>
+            {/* Mapped from the same rows that produce the emissions above,
+                rather than seven hand-typed percentages that could drift away
+                from the arithmetic beside them. */}
             <div style={styles.mixGrid}>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#ef4444'}}></span>Natural Gas: 51%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#8b5cf6'}}></span>Nuclear: 23%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#22c55e'}}></span>Renewables: 12%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#06b6d4'}}></span>Net Imports: 7%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#3b82f6'}}></span>Hydro: 6%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#f97316'}}></span>Oil: 1%</div>
-              <div style={styles.mixItem}><span style={{...styles.mixDot, backgroundColor: '#6b7280'}}></span>Coal: 0.23%</div>
+              {liveGridMix.map((r) => (
+                <div key={r.source} style={styles.mixItem}>
+                  <span style={{ ...styles.mixDot, backgroundColor: r.color }}></span>
+                  {r.label || r.source}: {r.mixPercent}%
+                </div>
+              ))}
             </div>
           </div>
 
           <div style={styles.equivSection}>
             <h3 style={styles.sectionTitle}>Environmental Impact Equivalents</h3>
-            <div style={styles.equivGrid}>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🚗</span><p style={styles.equivValue}>48</p><p style={styles.equivLabel}>Cars driven for 1 year</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🌳</span><p style={styles.equivValue}>3,660</p><p style={styles.equivLabel}>Trees needed to offset</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>🏠</span><p style={styles.equivValue}>25</p><p style={styles.equivLabel}>Homes energy for 1 year</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>✈️</span><p style={styles.equivValue}>56</p><p style={styles.equivLabel}>Cross-country flights</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>⛽</span><p style={styles.equivValue}>24,900</p><p style={styles.equivLabel}>Gallons of gasoline</p></div>
-              <div style={styles.equivCard}><span style={styles.equivIcon}>💡</span><p style={styles.equivValue}>21,200</p><p style={styles.equivLabel}>100W bulbs for 1 year</p></div>
-            </div>
+            {/* These six were hardcoded against a ~220 mt baseline while this
+                page computed 390 — "48 cars" back-solves to 220.8 mt, and the
+                bulb figure was out by 11× in the other direction. Worse than
+                the 0.096 card, and in the same tab. carbonEquivalents() already
+                holds these EPA constants and follows the live total.
+                "Cross-country" also became "Transatlantic": the constant behind
+                it is ICAO's 1.4 mt transatlantic flight, not a domestic one. */}
+            {(() => {
+              const eq = carbonEquivalents(yearlyEmissions);
+              const cards = [
+                ['🚗', eq.carYears,       'Cars driven for 1 year'],
+                ['🌳', eq.treeYears,      'Trees needed to offset'],
+                ['🏠', eq.homeYears,      'Homes energy for 1 year'],
+                ['✈️', eq.transatFlights, 'Transatlantic flights'],
+                ['⛽', eq.galsGasoline,   'Gallons of gasoline'],
+                ['💡', eq.bulbsPerYear,   '100W bulbs for 1 year'],
+              ];
+              return (
+                <div style={styles.equivGrid}>
+                  {cards.map(([icon, value, label]) => (
+                    <div key={label} style={styles.equivCard}>
+                      <span style={styles.equivIcon}>{icon}</span>
+                      <p style={styles.equivValue}>{value.toLocaleString()}</p>
+                      <p style={styles.equivLabel}>{label}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </>
       )}

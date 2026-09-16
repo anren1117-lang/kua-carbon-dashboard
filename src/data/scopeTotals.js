@@ -638,10 +638,20 @@ export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 // Scope 2 here — that would double-count. Avoided-emission lines
 // are reported separately as informational.
 
-// ISO-NE 2024 grid factor — same value as emission_factors row
-// `iso_ne_grid_co2_lb_per_mwh`. Hard-coded here so the composer is
-// pure (no Supabase fetch). Update both places if the cited factor
-// changes.
+// MISLABELLED — 643.0 is NOT ISO-NE's 2024 rate. ISO-NE published 597 lb/MWh
+// generation-only (560 including imports) for 2024, and 633 for 2023; 643 is a
+// stale figure, most likely 2022 (that attribution is second-hand; the part
+// confirmed against ISO-NE directly is simply that 643 is not 2024).
+//
+// Left at 643 for now rather than silently corrected, because this factor sets
+// the avoided-emissions figures on the public Renewables page, and changing it
+// moves published numbers — the same reason gridMix.js exposes its own factor
+// gap instead of closing it. Two further problems to settle in that same pass:
+// this is ISO-NE's OPERATIONAL rate while Scope 2 reports on eGRID's
+// location-based rate (different boundaries — eGRID nets out biogenic CO2), and
+// 643 lb/MWh = 0.2917 kg/kWh sits ~24% above the 0.2344 Scope 2 uses, so one
+// kWh is currently valued two ways depending on which page you are on.
+// Hard-coded here so the composer stays pure (no Supabase fetch).
 export const GRID_FACTOR_LB_PER_MWH = 643.0;
 export const GRID_FACTOR_KG_PER_KWH = +(GRID_FACTOR_LB_PER_MWH * KG_PER_LB / 1000).toFixed(6);
 

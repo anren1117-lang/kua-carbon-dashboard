@@ -6,11 +6,22 @@ import { Scope2BmsInsights } from '../components/Scope2BmsInsights';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { ledgerSourceText } from '../data/electricityLedger.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
+import {
+  effectiveKgPerKwh,
+  GRID_MIX_YEAR,
+  KUA_USAGE_YEAR,
+  VINTAGE_GAP,
+  FACTOR_RECONCILIATION,
+} from '../data/gridMix.js';
 
 // Helper for the action-math blocks below — keeps the educational figures in
 // sync with the grid factor. Everything that depends on the composed kWh is
 // derived inside the component from the live ledger instead.
-const KG_PER_KWH = 0.235;
+//
+// Was hardcoded at 0.235 while the live dashboard on this same page computed
+// 0.2344 from the per-fuel rows — two figures for one quantity, thirty lines of
+// DOM apart. Derived from the same composition now.
+const KG_PER_KWH = effectiveKgPerKwh();
 const fmtKwh = (n) => Math.round(n).toLocaleString();
 const fmtMt  = (kg) => (kg / 1000).toFixed(1);
 
@@ -43,7 +54,7 @@ function Scope2() {
       <p style={styles.subtitle}>
         Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
         {hasMonths ? `composed from real measured BMS data — ${ledgerSourceText(s2.ledger)}.` : 'not composed yet — no measured months are on the page.'} Emissions intensity is per-fuel output factors weighted by
-        ISO-NE 2024 generation mix (~0.235 kg/kWh effective).
+        ISO-NE {GRID_MIX_YEAR} generation mix ({KG_PER_KWH} kg/kWh effective).
       </p>
       <div style={styles.card}>
         <div style={styles.row}>
@@ -52,7 +63,22 @@ function Scope2() {
         </div>
         <div style={styles.row}>
           <span style={styles.label}>Grid emission factor (effective)</span>
-          <span style={styles.value}>~0.235 kg CO₂/kWh (per-fuel ISO-NE 2024 mix)</span>
+          <span style={styles.value}>{KG_PER_KWH} kg CO₂e/kWh (per-fuel ISO-NE {GRID_MIX_YEAR} mix)</span>
+        </div>
+        {/* The two rows below are the point of making the grid time-aware: a
+            factor has a vintage, and ours is older than the electricity it
+            prices. Saying so here is what stops the number reading as timeless. */}
+        <div style={styles.row}>
+          <span style={styles.label}>Factor vintage</span>
+          <span style={styles.value}>
+            EPA eGRID NEWE {VINTAGE_GAP.vintage} — {VINTAGE_GAP.yearsStale} years older than the {KUA_USAGE_YEAR} electricity it prices
+          </span>
+        </div>
+        <div style={styles.row}>
+          <span style={styles.label}>Against EPA's published rate</span>
+          <span style={styles.value}>
+            {FACTOR_RECONCILIATION.publishedKgPerKwh} kg CO₂e/kWh published — this page runs {FACTOR_RECONCILIATION.gapPct}% below it, so Scope 2 here is a conservative-low estimate
+          </span>
         </div>
         <div style={styles.row}>
           <span style={styles.label}>YTD electricity (composed)</span>
