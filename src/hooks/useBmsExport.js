@@ -43,12 +43,15 @@ export function useBmsExport() {
 
   useEffect(() => {
     let cancelled = false;
+    // A long TTL on purpose: the payload is a ~340 KB summary that only
+    // changes when an admin uploads, and BmsExportPanel mounts this hook once
+    // per expanded building — a short TTL would refetch it on every expand.
     cachedFetch('bmsExport', () => supabase
       .from(BMS_EXPORT_TABLE)
       .select('id, source_file, window_start, window_end, hours_covered, meter_count, summary, created_at')
       .order('window_end', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(1))
+      .limit(1), { ttlMs: 10 * 60 * 1000 })
       .then((res) => {
         if (cancelled) return;
         if (res?.error) {

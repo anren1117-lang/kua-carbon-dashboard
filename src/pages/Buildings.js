@@ -4,7 +4,7 @@ import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
-import { campusMonthlyTotals, monthlyReports } from '../data/monthlyConsumption.js';
+import { monthlyReports } from '../data/monthlyConsumption.js';
 import { useBmsExport } from '../hooks/useBmsExport.js';
 import { useBmsMeterMap } from '../hooks/useBmsMeterMap.js';
 import { SNAPSHOT_ANNUALIZE_FACTOR, annualizeFactorForWindow, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
@@ -166,10 +166,17 @@ export default function BuildingsPage() {
 
       <ModuleSection
         title="Campus seasonal pattern"
-        hint="Aggregate shape over the year. Winter peaks reflect heating-driven plug load; summer dip is everyone-off-campus. Solid line = months measured from BMS; dashed = months still on the seasonal-pattern proxy."
+        hint="Aggregate shape over the year. Winter peaks reflect heating-driven plug load; summer dip is everyone-off-campus. Solid = months measured at the meter, whether from the campus master meter or scaled from the building feeds; dashed = months still on the seasonal-pattern proxy."
       >
         {(() => {
-          const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
+          // From the live ledger, not the static file: these counts move when
+          // an admin saves a month, and a scaled month is not a master-meter
+          // reading — saying so is the difference between honest and tidy.
+          const masterKeys = new Set(s2.ledger.months.filter((m) => m.provenance === 'master').map((m) => m.month));
+          const scaledKeys = new Set(s2.ledger.months.filter((m) => m.provenance === 'scaled').map((m) => m.month));
+          const measuredKeys = new Set([...masterKeys, ...scaledKeys]);
+          const masterCount = masterKeys.size;
+          const scaledCount = scaledKeys.size;
           const measuredCount = measuredKeys.size;
           const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           // monthlyPattern.emissions is calibrated to a legacy ~213 mt
@@ -201,18 +208,25 @@ export default function BuildingsPage() {
               </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
                 <ProvenancePill provenance="measured" />
-                <span style={{ fontSize: 12, color: '#cbd5e1' }}>{measuredCount} month{measuredCount === 1 ? '' : 's'} from KUA Distech Eclypse BMS (solid)</span>
+                <span style={{ fontSize: 12, color: '#cbd5e1' }}>{masterCount} month{masterCount === 1 ? '' : 's'} from the campus master meter (solid)</span>
+                {scaledCount > 0 && (
+                  <>
+                    <span style={{ width: 12 }} />
+                    <ProvenancePill provenance="measured" label="Measured · scaled" />
+                    <span style={{ fontSize: 12, color: '#cbd5e1' }}>{scaledCount} month{scaledCount === 1 ? '' : 's'} from building feeds, scaled to match it</span>
+                  </>
+                )}
                 <span style={{ width: 12 }} />
                 <ProvenancePill provenance="estimated" />
                 <span style={{ fontSize: 12, color: '#cbd5e1' }}>{12 - measuredCount} month{12 - measuredCount === 1 ? '' : 's'} from seasonal-pattern proxy (dashed)</span>
               </div>
               <div style={{ marginTop: 10, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
                 <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 }}>Today:</span>
-                Measured months pull from <code>monthlyConsumption.js</code> (master-meter displayedTotal × ISO-NE 2024 grid factor). Projected months use <code>seasonalPatterns.monthlyPattern</code> — winter heating peak / summer trough shape, scaled to plausible NH magnitudes.
+                Measured months are the campus master-meter totals Facilities enters each month, times the ISO-NE 2024 grid factor; scaled months are building-feed totals matched to the master meter. Projected months use the New Hampshire seasonal shape — winter heating peak / summer trough shape, scaled to plausible NH magnitudes.
               </div>
               <div style={{ marginTop: 4, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
                 <span style={{ color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 6 }}>Target:</span>
-                Each month flips dashed → solid as its BMS export ships; the seasonal-pattern proxy is removed once a full year is measured (~Jan 2027).
+                Each month flips dashed → solid as Facilities enters it in the admin portal; the seasonal-pattern proxy is removed once a full year is measured (~Jan 2027).
               </div>
             </>
           );
@@ -766,7 +780,7 @@ function LivePanel({ buildingId }) {
           {error && <div role="alert" style={{ ...styles.liveStatus, color: '#fca5a5' }}>Error: {error}</div>}
           {data && (
             <div style={styles.liveGrid}>
-              <Field label="Live total (30d)" value={`${data.totalKwh.toLocaleString()} kWh`} />
+              <Field label="Live total (window)" value={`${data.totalKwh.toLocaleString()} kWh`} />
               <Field label="Peak demand" value={`${data.peakKw} kW`} />
               <Field label="Live mtCO₂e" value={data.mtCO2e.toFixed(3)} />
               <Field label="Live kg/sqft" value={data.mtCO2ePerSqft.toFixed(2)} />

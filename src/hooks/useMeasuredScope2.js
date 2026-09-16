@@ -24,6 +24,24 @@ import { composeScope2Mt } from '../data/gridMix.js';
 
 export const SCOPE2_TABLE = 'scope2_meter_readings';
 
+/**
+ * The one query for scope2_meter_readings, shared by this hook and
+ * useBuildingMonthlyHistory. They cache under the same key, so whichever
+ * mounts first serves the other — if the two select lists ever drift apart,
+ * the second hook silently gets the first one's columns. One fetcher removes
+ * that whole class of bug.
+ *
+ * id breaks ties: created_at is transaction-start, so two rows written in one
+ * transaction would otherwise have no deterministic order.
+ */
+export function fetchScope2Rows(supabaseClient) {
+  return supabaseClient
+    .from(SCOPE2_TABLE)
+    .select('id, period_start, period_end, building, kwh, data_quality, source, notes, created_at')
+    .order('created_at', { ascending: true })
+    .order('id', { ascending: true });
+}
+
 /** Supabase rows (oldest → newest) → the full Scope 2 composition. Pure. */
 export function composeScope2FromRows(rows) {
   const admin = rowsToLedgerInputs(rows);
@@ -64,13 +82,7 @@ export function useMeasuredScope2() {
 
   useEffect(() => {
     let cancelled = false;
-    cachedFetch('scope2', () => supabase
-      .from(SCOPE2_TABLE)
-      .select('id, period_start, period_end, building, kwh, data_quality, source, notes, created_at')
-      // id breaks ties: created_at is transaction-start, so two rows saved in
-      // the same transaction would otherwise have no deterministic order.
-      .order('created_at', { ascending: true })
-      .order('id', { ascending: true }))
+    cachedFetch('scope2', () => fetchScope2Rows(supabase))
       .then((res) => {
         if (cancelled) return;
         if (res?.error) {

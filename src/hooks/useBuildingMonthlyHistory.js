@@ -20,11 +20,15 @@ import {
   mergeBuildingMonthlyHistory,
   adminBuildingMonthKeys,
 } from '../data/buildingMonths.js';
-import { SCOPE2_TABLE } from './useMeasuredScope2.js';
+import { fetchScope2Rows } from './useMeasuredScope2.js';
+import { COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 
 /** Supabase rows (oldest → newest) → merged history + provenance. Pure. */
 export function composeBuildingHistoryFromRows(rows) {
-  const { history: admin, ignored } = rowsToBuildingMonths(rows);
+  // Restricted to the year the dashboard reports: computeBuildingEmissions
+  // averages whatever months it holds, so a stray 2025 month would quietly
+  // drag a building's 2026 figure.
+  const { history: admin, ignored } = rowsToBuildingMonths(rows, { year: COMPOSED_YTD_AS_OF.slice(0, 4) });
   return {
     history: mergeBuildingMonthlyHistory(buildingMonthlyHistory(), admin),
     adminKeys: adminBuildingMonthKeys(admin),
@@ -48,11 +52,7 @@ export function useBuildingMonthlyHistory() {
 
   useEffect(() => {
     let cancelled = false;
-    cachedFetch('scope2', () => supabase
-      .from(SCOPE2_TABLE)
-      .select('id, period_start, period_end, building, kwh, data_quality, source, notes, created_at')
-      .order('created_at', { ascending: true })
-      .order('id', { ascending: true }))
+    cachedFetch('scope2', () => fetchScope2Rows(supabase))
       .then((res) => {
         if (cancelled) return;
         if (res?.error) {

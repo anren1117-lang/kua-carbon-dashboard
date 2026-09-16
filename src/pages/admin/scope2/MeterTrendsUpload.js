@@ -335,6 +335,8 @@ function MeterTrendsUpload() {
           {' '}<strong>/buildings</strong> and <strong>/hotspots</strong> don’t use it yet: they rank
           by the meter mapping and the older snapshot, so those two can disagree with the rest until
           that ladder is rewired.
+          {' '}One month on its own is scaled to a year by ×12, so a single winter or summer month
+          reads high or low for that building — enter a few months before treating one as its year.
         </p>
         <div style={s.formGrid}>
           <label style={s.field}><span style={s.label}>Building</span>

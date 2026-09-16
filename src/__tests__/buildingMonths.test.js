@@ -58,6 +58,20 @@ describe('rowsToBuildingMonths', () => {
     expect(ignored).toHaveLength(2);
   });
 
+  it('keeps months outside the reported year out of that year’s average', () => {
+    const { history, ignored } = rowsToBuildingMonths(
+      [row('b_miller', '2025-05', 41000), row('b_miller', '2026-05', 42000)],
+      { year: '2026' },
+    );
+    expect(history).toEqual({ b_miller: { '2026-05': 42000 } });
+    expect(ignored[0].reason).toMatch(/outside the reported year/);
+  });
+
+  it('accepts any year when none is given', () => {
+    const { history } = rowsToBuildingMonths([row('b_miller', '2025-05', 41000)]);
+    expect(history.b_miller['2025-05']).toBe(41000);
+  });
+
   it('rejects zero, negative and non-numeric readings', () => {
     const { history, ignored } = rowsToBuildingMonths([
       row('b_miller', '2026-05', 0),

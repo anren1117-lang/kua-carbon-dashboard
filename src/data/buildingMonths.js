@@ -26,7 +26,7 @@ export const SOURCE_BUILDING_MONTHLY = 'building_monthly';
  * Later rows win for the same building-month, so pass rows oldest → newest.
  * @returns {{ history: Record<string, Record<string, number>>, ignored: {id: any, reason: string}[] }}
  */
-export function rowsToBuildingMonths(rows) {
+export function rowsToBuildingMonths(rows, { year } = {}) {
   const history = {};
   const ignored = [];
   for (const r of Array.isArray(rows) ? rows : []) {
@@ -49,6 +49,10 @@ export function rowsToBuildingMonths(rows) {
     }
     if (r.kwh === null || r.kwh === '' || !Number.isFinite(kwh)) { reject('kWh is not a number'); continue; }
     if (!(kwh > 0)) { reject('kWh must be greater than zero'); continue; }
+    if (year && month.slice(0, 4) !== String(year)) {
+      reject(`outside the reported year (${year})`);
+      continue;
+    }
 
     if (!history[r.building]) history[r.building] = {};
     history[r.building][month] = kwh;
