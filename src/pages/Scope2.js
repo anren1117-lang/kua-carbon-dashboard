@@ -13,6 +13,7 @@ import {
   VINTAGE_GAP,
   FACTOR_RECONCILIATION,
 } from '../data/gridMix.js';
+import { weatherContextText } from '../data/degreeDays.js';
 
 // Helper for the action-math blocks below — keeps the educational figures in
 // sync with the grid factor. Everything that depends on the composed kWh is
@@ -80,6 +81,17 @@ function Scope2() {
             {FACTOR_RECONCILIATION.publishedKgPerKwh} kg CO₂e/kWh published — this page runs {FACTOR_RECONCILIATION.gapPct}% below it, so Scope 2 here is a conservative-low estimate
           </span>
         </div>
+        {/* The annualization above scales part of a year to a whole one using an
+            ASSUMED seasonal shape. Weather is what makes that assumption right
+            or wrong, and it was invisible here until now. Stated as weather,
+            not as energy: heating at KUA is oil and propane (Scope 1), so this
+            is context for reading the figure, not a claim about electricity. */}
+        {weatherContextText(KUA_USAGE_YEAR) && (
+          <div style={styles.row}>
+            <span style={styles.label}>Weather this year</span>
+            <span style={styles.value}>{weatherContextText(KUA_USAGE_YEAR)}</span>
+          </div>
+        )}
         <div style={styles.row}>
           <span style={styles.label}>YTD electricity (composed)</span>
           <span style={styles.value}>{hasMonths ? `${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh through ${COMPOSED_YTD_AS_OF}` : 'No measured months yet'}</span>

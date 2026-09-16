@@ -99,6 +99,18 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Weather is measured now (Phase 393)
+
+`src/data/degreeDays.js` holds heating degree days for **KLEB (Lebanon Municipal Airport)**, ~13 miles from campus, base 65°F. Until this existed there was **no weather data anywhere in the tree** — seasonality was asserted by the multiplier table in `seasonalPatterns.js` and never measured, so a mild winter read as an efficiency win the school didn't earn. That matters more since Phase 390, because the per-building annualization divides by that same assumed shape.
+
+It is not a small effect: **Jan–Aug 2026 ran 9.1% milder than normal** (March −17.8%, April −18.3%, August −85.2%). `/scope-2`'s methodology card now says so, in weather terms rather than energy terms — heating at KUA is oil and propane (Scope 1), so this is context for reading the figure, not a claim about electricity.
+
+**Provenance.** Actuals from NOAA's Regional Climate Centers **ACIS** service; normals are **1991–2020**, verified two independent ways — ACIS and NCEI's published normals agree month for month (1401.1/1401 … 1184.2/1184), annual 7,333.5 both ways. The NWS climate sheet for this station is **still 1961–1990** and totals 7,825 HDD, 6.7% above the current normal (equivalently today's normal is 6.3% below it — mind which denominator). Normalizing against the old sheet would inject the bias this module removes.
+
+**Partial months are excluded, never averaged in.** September 2026 held 15 of 30 days when captured, so `hddActual(2026, 9)` returns `null` and `compareToNormal(2026)` compares 8 months, not 9 — the same whole-month rule as `buildingMonths.js`.
+
+**There is deliberately no `weatherNormalizedKwh()`.** ENERGY STAR Portfolio Manager (Kissock's E-Tracker) fits a per-fuel change-point regression of monthly energy against temperature, needs **24 months (12 minimum)** and a minimum **R² of 0.4–0.7**, and warns some buildings have *no usable fit* because base load swamps weather — plausible here, since KUA heats with fuel, not electricity. KUA has 4 measured building-months and 9 campus feed-months. `NORMALIZATION_READINESS.ready` is `false` with the reason and citation attached, and a test asserts no function matching `/normaliz/` is exported, so a fitted-on-9-points number can't appear by accident.
+
 ### One kWh, one number (Phase 392)
 
 **`KG_PER_KWH` in `gridMix.js` is THE grid emission factor.** Everything that turns kilowatt-hours into mtCO₂e imports it. Before Phase 392 the same quantity was valued four ways: 0.2344 (the Scope 2 composition), **0.235** hardcoded in five modules (`buildingEmissions`, `CampusMonthlyTrend`, `scenarioModel`, `personalFootprint`, the `emissionFactors` catalog), **0.2917** driving renewables avoided-emissions, and a lesson teaching students **0.292**. So /campus-map, /renewables and /scope-2 disagreed by up to 24% about the carbon of one kilowatt-hour.
