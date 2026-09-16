@@ -6,6 +6,7 @@ import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js
 import { monthlyReports } from '../data/monthlyConsumption.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { energyEquivalents } from '../utils/equivalents.js';
+import { weatherContextText } from '../data/degreeDays.js';
 
 // /dorm-leaderboard — apples-to-apples kWh-per-resident ranking
 // across the 11 student dorms. Larger dorms ALWAYS use more
@@ -234,6 +235,20 @@ export default function DormLeaderboard() {
           would remove the assumption entirely; until then it is an estimate with a known
           lean, not a measurement.
         </p>
+        {/* The seasonal weighting assumes a NORMAL year's shape. When the actual
+            year isn't normal, every figure resting on winter months inherits the
+            difference — and students are ranked on these. Said in weather terms,
+            because dorm heating is oil and propane, so this bears on the shape
+            being assumed rather than directly on the electricity measured. */}
+        {latestMonth && weatherContextText(Number(latestMonth.slice(0, 4))) && (
+          <p style={styles.fineprint}>
+            <strong>Weather this year.</strong>{' '}
+            {weatherContextText(Number(latestMonth.slice(0, 4)))} The seasonal weighting
+            above assumes a normal year's shape, so a year that runs milder or colder than
+            normal pushes every dorm's annualized figure the same way — which is worth
+            remembering before reading a small gap between two dorms as effort.
+          </p>
+        )}
         {ranked.length > 0 && (
           <p style={styles.fineprint}>
             Dorms in this ranking currently rest on{' '}
