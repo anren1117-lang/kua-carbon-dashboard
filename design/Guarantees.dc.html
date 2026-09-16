@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #0b1220; }
+    a { color: #22d3ee; } a:hover { color: #67e8f9; }
+    .kua { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           font-feature-settings: 'cv11', 'ss01'; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</helmet>
+
+<div class="kua" style="background: #0b1220; color: #e5e7eb; padding: 40px 34px; width: 470px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">
+
+  <div style="display: flex; flex-direction: column; gap: 9px; padding-bottom: 18px; border-bottom: 1px solid #1f2937;">
+    <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">Keeping it that way</div>
+    <div style="font-size: 23px; font-weight: 650; letter-spacing: -0.014em; line-height: 1.2; color: #f1f5f9; text-wrap: pretty;">The risk is the page added next year</div>
+    <div style="font-size: 13px; line-height: 1.55; color: #cbd5e1; text-wrap: pretty;">Connecting the pages once was the easy half. A page written months from now can quietly go back to the old built-in number. Three things stop that.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: baseline; gap: 9px;">
+      <div class="mono" style="font-size: 11px; color: #64748b;">01</div>
+      <div style="font-size: 14.5px; font-weight: 600; color: #e5e7eb;">The built-in figure is a first frame, not an answer</div>
+    </div>
+    <div style="font-size: 12.5px; line-height: 1.55; color: #94a3b8; padding-left: 26px;">It exists so a page isn&rsquo;t blank in the moment before the real data arrives. If a page is still showing it once the data has landed, that is a fault, not a fallback.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: baseline; gap: 9px;">
+      <div class="mono" style="font-size: 11px; color: #64748b;">02</div>
+      <div style="font-size: 14.5px; font-weight: 600; color: #e5e7eb;">The site refuses to build if a page forgets</div>
+    </div>
+    <div style="font-size: 12.5px; line-height: 1.55; color: #94a3b8; padding-left: 26px;">An automatic check reads every page before release. If one displays a kilowatt-hour or tonnes total without also reading one of the five live sources, the release stops and the page is named. This kind of mistake never shows itself otherwise &mdash; nothing breaks, the page simply disagrees with the rest of the site &mdash; which is why it needs a check rather than a careful reviewer.</div>
+    <div class="mono" style="font-size: 11px; color: #0e7490; padding-left: 26px;">liveDataWiring.test.js</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: baseline; gap: 9px;">
+      <div class="mono" style="font-size: 11px; color: #64748b;">03</div>
+      <div style="font-size: 14.5px; font-weight: 600; color: #e5e7eb;">Two exceptions, both written down</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; line-height: 1.55; color: #94a3b8; padding-left: 26px;">
+      <div><span style="color: #cbd5e1; font-weight: 600;">Emission rates.</span> The kilograms of CO&#8322;e per kilowatt-hour don&rsquo;t change when the campus total does, so pages may use them directly. Checked from 400,000 to 2.5 million kilowatt-hours &mdash; either side of the campus&rsquo;s 1.66 million.</div>
+      <div><span style="color: #cbd5e1; font-weight: 600;">Teaching material.</span> Four sentences in the student lessons quote the headline figures and are written by hand. A second check fails if they drift away from the real totals.</div>
+    </div>
+    <div class="mono" style="font-size: 11px; color: #0e7490; padding-left: 26px;">proseFigures.test.js</div>
+  </div>
+
+  <div style="margin-top: 4px; background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 9px;">
+    <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #94a3b8;">Where this came from &middot; 15 September 2026</div>
+    <div style="font-size: 12.5px; line-height: 1.55; color: #cbd5e1;">The Scope 2 live dashboard had been left behind when the other pages moved onto live data. Its four tabs, Time Analysis among them, kept working from the built-in annual figure, so entering a month moved the rest of the site and not them. Its month grid decided which months counted as measured from a fixed list, so a newly entered month could never appear there at all.</div>
+    <div style="font-size: 12.5px; line-height: 1.55; color: #94a3b8;">Both are fixed. The check described in 02 was in place before the fix, and it flagged one further page that had been missed.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

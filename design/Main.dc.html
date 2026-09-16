@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #0b1220; }
+    a { color: #22d3ee; } a:hover { color: #67e8f9; }
+    .kua { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           font-feature-settings: 'cv11', 'ss01'; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</helmet>
+
+<div class="kua" style="background: #0b1220; color: #e5e7eb; padding: 40px 40px 34px; width: 1520px; box-sizing: border-box;">
+
+  <!-- Masthead -->
+  <div style="display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; border-bottom: 1px solid #1f2937;">
+    <div class="mono" style="font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">KUA Carbon Dashboard &middot; Scope 2, purchased electricity &middot; 16 September 2026</div>
+    <div style="font-size: 34px; font-weight: 650; letter-spacing: -0.017em; line-height: 1.12; color: #f1f5f9; max-width: 900px; text-wrap: pretty;">What happens to a number after someone types it in</div>
+    <div style="font-size: 15px; line-height: 1.55; color: #cbd5e1; max-width: 1000px; text-wrap: pretty;">Four things get entered through the admin portal. Every <em style="font-style: normal; color: #e5e7eb; font-weight: 600;">electricity</em> figure on the site is then computed from them &mdash; the pages no longer carry totals typed in by hand. Fuel, travel and waste reach the site by their own routes and aren&rsquo;t shown here. This is the electricity path, left to right.</div>
+    <div style="font-size: 12.5px; line-height: 1.5; color: #64748b; max-width: 1000px; text-wrap: pretty;">Two words used throughout: the <span style="color: #94a3b8;">BMS</span> is the building management system, the campus&rsquo;s own network of meters. The <span style="color: #94a3b8;">reporting year</span> is the twelve months the dashboard currently covers. Text <span class="mono" style="color: #0e7490;">in this colour</span> names the underlying file or table, for anyone who wants to look it up.</div>
+  </div>
+
+  <!-- Flow -->
+  <div style="display: grid; grid-template-columns: 296px 40px 336px 40px 292px 40px 396px; gap: 0; align-items: start; padding-top: 26px;">
+
+    <!-- 1. ADMIN INPUTS -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #1f2937;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">1 &middot; Entered by a person</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">Behind the admin log-in. Each one is refused rather than guessed at when it doesn&rsquo;t qualify.</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 7px;">
+        <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">Campus master-meter month</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">One number: what the campus master meter read for a finished month. It is the meter the utility bills against.</div>
+        <div class="mono" style="font-size: 11px; color: #0e7490;">bms_master_monthly</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 7px;">
+        <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">Per-building month</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">One building&rsquo;s kilowatt-hours for one whole calendar month. A partial month is refused on entry.</div>
+        <div class="mono" style="font-size: 11px; color: #0e7490;">building_monthly</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 7px;">
+        <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">Meter &rarr; building map</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">Which meter belongs to which building. Held centrally, so every user sees the same mapping.</div>
+        <div class="mono" style="font-size: 11px; color: #0e7490;">bms_meter_map</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 7px;">
+        <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">Hourly export</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">An hour-by-hour spreadsheet downloaded from the BMS. Fourteen days minimum; an export from outside the reporting year is refused.</div>
+        <div class="mono" style="font-size: 11px; color: #0e7490;">bms_export_summaries</div>
+      </div>
+    </div>
+
+    <!-- chevron -->
+    <div style="align-self: center; display: flex; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
+    <!-- 2. COMPOSITION -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #1f2937;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">2 &middot; The rules, written once</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">There is one answer to each of these questions, and every page reads it.</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">How a month&rsquo;s campus total is chosen</div>
+          <div class="mono" style="font-size: 11px; color: #0e7490;">electricityLedger.js</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px; font-size: 12.5px; line-height: 1.5; color: #cbd5e1;">
+          <div><span style="color: #22c55e; font-weight: 600;">If a master-meter month exists,</span> it is used as it stands.</div>
+          <div><span style="color: #fbbf24; font-weight: 600;">Otherwise,</span> add up the individual building meters and multiply by a scale factor &mdash; between them they don&rsquo;t cover the whole campus.</div>
+          <div style="color: #94a3b8;">That factor comes from the months where both numbers exist, so it is measured rather than assumed.</div>
+          <div style="color: #94a3b8;">If it falls outside 0.5&ndash;1.5, the month is withheld instead of published.</div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">Whole months only</div>
+          <div class="mono" style="font-size: 11px; color: #0e7490;">buildingMonths.js</div>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #cbd5e1;">A building&rsquo;s month counts only if it covers the full calendar month and falls inside the reporting year. Half a month sitting beside a full one would look like a building that had halved its use.</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="font-size: 14px; font-weight: 600; color: #e5e7eb;">Turning a short window into a year</div>
+          <div class="mono" style="font-size: 11px; color: #0e7490;">parseBmsExport.js</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px; font-size: 12.5px; line-height: 1.5; color: #cbd5e1;">
+          <div>A thirty-day export is scaled up by <em style="color: #e5e7eb; font-style: normal; font-weight: 600;">its own</em> share of the year. January and July are not the same thirty days.</div>
+          <div style="color: #94a3b8;">An export that falls outside the reporting year returns nothing at all. The alternative &mdash; treating it as a full year &mdash; would publish one month&rsquo;s total as if it were twelve.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- chevron -->
+    <div style="align-self: center; display: flex; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
+    <!-- 3. HOOKS -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #1f2937;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">3 &middot; Five ways to read it</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">A page asks for what it needs and never works the total out for itself. Pages that use two of these are counted in both.</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 13px 15px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="mono" style="font-size: 12.5px; font-weight: 600; color: #22d3ee;">useMeasuredScope2</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">The campus total: year to date, the projection to a full year, and which months are measured.</div>
+        <div style="font-size: 11.5px; color: #64748b;">Read by 10 places</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 13px 15px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="mono" style="font-size: 12.5px; font-weight: 600; color: #22d3ee;">useMeasuredScopeTotals</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">Electricity combined with the other two scopes, for anything showing a whole-school footprint.</div>
+        <div style="font-size: 11.5px; color: #64748b;">Read by 11 places</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 13px 15px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="mono" style="font-size: 12.5px; font-weight: 600; color: #22d3ee;">useBuildingMonthlyHistory</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">Month by month for one building, or all of them side by side.</div>
+        <div style="font-size: 11.5px; color: #64748b;">Read by 9 places</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 13px 15px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="mono" style="font-size: 12.5px; font-weight: 600; color: #22d3ee;">useBmsExport</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">The most recent hourly window &mdash; overnight load, peak hours, the shape of a weekday.</div>
+        <div style="font-size: 11.5px; color: #64748b;">Read by 4 places</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 13px 15px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="mono" style="font-size: 12.5px; font-weight: 600; color: #22d3ee;">useBmsMeterMap</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">Which meter is which building, so an hourly export can be split up by building.</div>
+        <div style="font-size: 11.5px; color: #64748b;">Read by 3 places</div>
+      </div>
+    </div>
+
+    <!-- chevron -->
+    <div style="align-self: center; display: flex; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
+    <!-- 4. SURFACES -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #1f2937;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">4 &middot; What moves when a month is entered</div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: #94a3b8;">All of it, together, the moment the data lands. That is the requirement the rest of this diagram exists to meet.</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 13.5px; font-weight: 600; color: #86efac;">Scope 2</div>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; line-height: 1.45; color: #cbd5e1;">
+          <div>The live dashboard and all four of its tabs &mdash; Overview, Time Analysis, Buildings, Energy Sources</div>
+          <div style="color: #94a3b8;">Meter insights &middot; scope explainer &middot; net estimate</div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 13.5px; font-weight: 600; color: #86efac;">Buildings and places</div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #cbd5e1;">Buildings &middot; building detail &middot; campus map &middot; compare buildings &middot; hotspots &middot; month compare</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 13.5px; font-weight: 600; color: #86efac;">What students see</div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #cbd5e1;">Dorm leaderboard &middot; dorm posters &middot; energy challenge &middot; student challenges &middot; monthly digest</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 13.5px; font-weight: 600; color: #86efac;">What the board sees</div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #cbd5e1;">Executive summary &middot; annual report &middot; goals &middot; actions &middot; scenarios</div>
+      </div>
+
+      <div style="background: #0f172a; border: 1px solid #1f2937; border-radius: 6px; padding: 14px 15px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 13.5px; font-weight: 600; color: #86efac;">The front page</div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #cbd5e1;">Headline totals &middot; the emissions breakdown chart &middot; the written summary</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer band -->
+  <div style="margin-top: 26px; padding-top: 18px; border-top: 1px solid #1f2937; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">The rule every figure follows</div>
+      <div style="font-size: 12.5px; line-height: 1.55; color: #cbd5e1;">Show the live value; fall back to the number built into the site only while the live one is still loading. That built-in number is what appears in the first instant a page opens &mdash; never what it settles on.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div class="mono" style="font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #64748b;">Provenance travels with the figure</div>
+      <div style="font-size: 12.5px; line-height: 1.55; color: #cbd5e1;">Each number carries how it was arrived at, all the way to the page: <span style="color: #86efac;">measured</span>, <span style="color: #22d3ee;">cited</span>, <span style="color: #fbbf24;">estimated</span>, or <span style="color: #cbd5e1;">scaled</span> where the building-meter rule above was used. A reader can always tell which one they are looking at.</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

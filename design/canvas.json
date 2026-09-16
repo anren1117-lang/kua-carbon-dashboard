@@ -1,0 +1,7 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1520, "h": 1260, "title": "The path a number takes" },
+    { "file": "Guarantees.dc.html", "x": 1620, "y": 0, "w": 470, "h": 1260, "title": "Keeping it that way" }
+  ],
+  "launch": { "view": "canvas" }
+}
