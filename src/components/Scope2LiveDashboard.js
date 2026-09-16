@@ -4,9 +4,9 @@ import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, SNAPSHOT_ANNUALIZE_FACTOR, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
-import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { ProvenancePill } from './ProvenancePill.js';
-import { gridMix } from '../data/gridMix.js';
+import { gridMix, composeGridMix } from '../data/gridMix.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { EnergyEquivalents } from './EnergyEquivalents.js';
 
 // The original campus-electricity dashboard — live emissions counter, time
@@ -45,11 +45,18 @@ function initialEmissions(annualMt, measuredYtdMt) {
 }
 
 export function Scope2LiveDashboard() {
+  // Every figure on this component — Overview, Time Analysis, Buildings and
+  // Energy Sources — comes from the live composition, so entering a month in
+  // the admin portal moves these tabs with the rest of the dashboard. The
+  // static exports are the first-paint fallback only.
+  const s2 = useMeasuredScope2();
+  const liveAnnualMt = s2.annualMt || +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
+  const liveYtdMt = s2.ytdMt || GRID_MIX_TOTAL_MTCO2E;
+
   // Annual baseline (Year 1 projection) — referenced before useState
   // so we can seed the counters with actual measured YTD + current
   // elapsed time instead of 0.
-  const seedAnnualMt = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
-  const seed = initialEmissions(seedAnnualMt, GRID_MIX_TOTAL_MTCO2E);
+  const seed = initialEmissions(liveAnnualMt, liveYtdMt);
   const [currentEmissions, setCurrentEmissions] = useState(seed.cur);
   const [todayEmissions, setTodayEmissions] = useState(seed.day);
   const [monthEmissions, setMonthEmissions] = useState(seed.month);
@@ -62,10 +69,10 @@ export function Scope2LiveDashboard() {
   // Annual baseline derived from the seasonally-anchored Year 1
   // projection (composedYtd.js). The factor accounts for where in the
   // year the measured YTD falls, which naive linear annualization ignores.
-  const yearlyEmissions = +(GRID_MIX_TOTAL_MTCO2E * ANNUALIZE_FACTOR).toFixed(1);
+  const yearlyEmissions = liveAnnualMt;
   // Annualized for the same reason as yearlyEmissions above — the
   // "kWh/year" stat below would be wrong showing the YTD figure.
-  const totalKwh = Math.round(GRID_MIX_TOTAL_KWH * ANNUALIZE_FACTOR);
+  const totalKwh = s2.year1Kwh || Math.round(GRID_MIX_TOTAL_KWH * ANNUALIZE_FACTOR);
   const emissionsPerSecond = yearlyEmissions / (365 * 24 * 60 * 60);
   const emissionsPerMinute = yearlyEmissions / (365 * 24 * 60);
   const emissionsPerHour = yearlyEmissions / (365 * 24);
@@ -215,12 +222,17 @@ export function Scope2LiveDashboard() {
   // EMISSIONS" (yearlyEmissions, ~390 mt). Annualize the per-source
   // rows here so the breakdown adds up to the footer instead of being
   // ~38% short.
-  const emissionsData = gridMix.map((m) => ({
+  // Per-fuel rows recomposed from the live YTD kWh, then annualized by the
+  // live factor — so the breakdown adds up to the footer above it whatever
+  // data has been entered.
+  const liveGridMix = s2.ytdKwh > 0 ? composeGridMix(s2.ytdKwh) : gridMix;
+  const liveAnnualizeFactor = s2.annualizeFactor || ANNUALIZE_FACTOR;
+  const emissionsData = liveGridMix.map((m) => ({
     source: m.source,
-    emissions: +(m.mtCO2e * ANNUALIZE_FACTOR).toFixed(1),
+    emissions: +(m.mtCO2e * liveAnnualizeFactor).toFixed(1),
     percentage: m.percentOfEmissions,
     mixPercent: m.mixPercent,
-    kwhUsed: Math.round(m.kwhUsed * ANNUALIZE_FACTOR),
+    kwhUsed: Math.round(m.kwhUsed * liveAnnualizeFactor),
     color: m.color,
     emissionFactor: m.emissionFactor,
     ...(sourceNarrative[m.source] || {}),
@@ -253,11 +265,13 @@ export function Scope2LiveDashboard() {
     // Anchor the year counter on actual measured YTD (which already
     // reflects the real seasonal shape) rather than linear-prorating the
     // annual figure.
-    setYearEmissions(GRID_MIX_TOTAL_MTCO2E);
+    setYearEmissions(liveYtdMt);
     setMonthEmissions((msInMonth / msPerMonth) * emissionsPerMonth);
     setTodayEmissions((msInDay / msPerDay) * emissionsPerDay);
-    setCurrentEmissions(GRID_MIX_TOTAL_MTCO2E);
-  }, [emissionsPerMonth, emissionsPerDay]);
+    setCurrentEmissions(liveYtdMt);
+    // Keyed on liveYtdMt too: the counters seed once, so without this they'd
+    // stay on the fallback after the live composition resolves.
+  }, [emissionsPerMonth, emissionsPerDay, liveYtdMt]);
 
   useEffect(() => {
     if (!isLive) return;
@@ -407,7 +421,9 @@ export function Scope2LiveDashboard() {
             <p style={styles.hint}>Emissions vary with heating demand. Months with a green border carry measured BMS data; the rest are seasonal-pattern projections until the BMS export ships.</p>
             <div style={styles.monthGrid}>
               {(() => {
-                const measuredKeys = new Set(campusMonthlyTotals().map((r) => r.month));
+                // From the live ledger, so a month entered in the admin portal
+                // marks itself measured here too.
+                const measuredKeys = new Set(s2.ledger.months.map((m) => m.month));
                 return monthlyData.map((m, i) => {
                   const measured = measuredKeys.has(`${COMPOSED_YTD_AS_OF.slice(0, 4)}-${String(i + 1).padStart(2, '0')}`);
                   return (
