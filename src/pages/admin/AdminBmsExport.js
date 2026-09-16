@@ -1,7 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../../components/ModuleShell.js';
 import { ProvenancePill } from '../../components/ProvenancePill.js';
-import { BMS_EXPORT_META, bmsExportMeters } from '../../data/bmsExportApr2026.js';
+import { useBmsExport, BMS_EXPORT_TABLE } from '../../hooks/useBmsExport.js';
+import { parseMeterTrendsHourly } from '../../data/parseBmsExport.js';
+import { supabase } from '../../supabaseClient.js';
+import { logAdminWrite } from '../../utils/adminAudit.js';
 import { getBmsMeterMap, setBmsMeterMapping, clearBmsMeterMappings, hydrateBmsMeterMap } from '../../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../../data/assetInventory.js';
 
@@ -32,6 +35,86 @@ export default function AdminBmsExport() {
   }, []);
   const [filter, setFilter] = useState('');
   const [showOnlyUnmapped, setShowOnlyUnmapped] = useState(false);
+
+  // The active hourly export: the newest uploaded window, or the module
+  // committed in the app when nothing has been uploaded. Names kept from the
+  // static import this page used to read, so the view below is unchanged.
+  const activeExport = useBmsExport();
+  const BMS_EXPORT_META = activeExport.meta;
+  const bmsExportMeters = activeExport.meters;
+
+  const [upload, setUpload] = useState(null);
+  const [uploads, setUploads] = useState([]);
+  const [uploadMsg, setUploadMsg] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const savingRef = useRef(false);
+
+  // List stored uploads WITHOUT their summaries — each is ~340 KB, and this
+  // list only needs the window.
+  const refreshUploads = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from(BMS_EXPORT_TABLE)
+        .select('id, source_file, window_start, window_end, hours_covered, meter_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      setUploads(error ? [] : (data || []));
+    } catch { setUploads([]); }
+  }, []);
+  useEffect(() => { refreshUploads(); }, [refreshUploads]);
+
+  const onExportFile = async (e) => {
+    const file = e.target.files?.[0];
+    setUploadMsg(null);
+    setUpload(null);
+    if (!file) return;
+    try {
+      const parsed = parseMeterTrendsHourly(await file.text(), file.name);
+      setUpload(parsed);
+    } catch (err) {
+      setUploadMsg({ ok: false, text: `Couldn't read that export: ${err.message}` });
+    }
+  };
+
+  const saveUpload = async () => {
+    if (!upload || savingRef.current) return;
+    savingRef.current = true;
+    setBusy(true);
+    try {
+      const row = {
+        source_file: upload.meta.sourceFile,
+        window_start: upload.meta.windowStartIso,
+        window_end: upload.meta.windowEndIso,
+        hours_covered: upload.meta.hoursCovered,
+        meter_count: upload.meta.meterCount,
+        summary: upload.meters,
+      };
+      const { error } = await supabase.from(BMS_EXPORT_TABLE).insert([row]);
+      if (error) throw error;
+      logAdminWrite({ action: 'insert', table: BMS_EXPORT_TABLE, payload: { source_file: row.source_file, window_end: row.window_end, meter_count: row.meter_count } });
+      setUploadMsg({ ok: true, text: `Saved ${upload.meta.sourceFile}. Reload to draw the operational views from it.` });
+      setUpload(null);
+      await refreshUploads();
+    } catch (err) {
+      setUploadMsg({ ok: false, text: `${err.message}. If the table is missing, apply supabase/migrations/20260915140000_bms_export_summaries.sql.` });
+    } finally {
+      savingRef.current = false;
+      setBusy(false);
+    }
+  };
+
+  const deleteUpload = async (row) => {
+    if (!window.confirm(`Delete the ${row.source_file} window? The dashboard falls back to the next newest, or to the export committed in the app.`)) return;
+    try {
+      const { error } = await supabase.from(BMS_EXPORT_TABLE).delete().eq('id', row.id);
+      if (error) throw error;
+      logAdminWrite({ action: 'delete', table: BMS_EXPORT_TABLE, payload: { id: row.id, source_file: row.source_file } });
+      await refreshUploads();
+      setUploadMsg({ ok: true, text: `Deleted ${row.source_file}. Reload to see the change.` });
+    } catch (err) {
+      setUploadMsg({ ok: false, text: err.message });
+    }
+  };
 
   const buildings = useMemo(() => getEffectiveBuildings(), []);
   const map = useMemo(() => getBmsMeterMap(), [tick]);
@@ -70,13 +153,60 @@ export default function AdminBmsExport() {
         <div style={styles.metaRow}>
           <ProvenancePill provenance="measured" />
           <span style={styles.metaText}>Source: <code>{BMS_EXPORT_META.sourceFile}</code> · parsed {BMS_EXPORT_META.generatedAt.slice(0, 10)}</span>
-          <span style={styles.metaText}>To refresh: re-run <code>node scripts/parseBmsExport.mjs &lt;newer.csv&gt; src/data/bmsExportSep2026.js</code> and commit.</span>
+          <span style={styles.metaText}>
+            {activeExport.fromUpload
+              ? 'Drawn from the newest export uploaded below.'
+              : 'Drawn from the export committed in the app — upload a newer one below to replace it without a deploy.'}
+          </span>
           <span style={styles.metaText}>
             {shared?.ok
               ? `Meter→building mapping is shared with every admin (${shared.rows} row${shared.rows === 1 ? '' : 's'} saved).`
               : 'Meter→building mapping is saved in this browser only. Apply supabase/migrations/20260915120000_bms_meter_map.sql to share it with the other admins.'}
           </span>
         </div>
+      </ModuleSection>
+
+      <ModuleSection
+        title="Upload a newer hourly export"
+        hint="The hourly Meter Trends CSV (one reading per hour). It's parsed in your browser with the same code the command-line script runs — nothing is saved until you confirm."
+      >
+        {uploadMsg && (
+          <div style={{ ...styles.metaText, color: uploadMsg.ok ? '#86efac' : '#fca5a5', marginBottom: 10 }}>{uploadMsg.text}</div>
+        )}
+        <input type="file" accept=".csv,text/csv" onChange={onExportFile} style={styles.input} />
+
+        {upload && (
+          <div style={{ marginTop: 14 }}>
+            <MetricGrid metrics={[
+              { label: 'Window start', value: upload.meta.windowStartIso.slice(0, 16).replace('T', ' '), accent: '#22d3ee' },
+              { label: 'Window end',   value: upload.meta.windowEndIso.slice(0, 16).replace('T', ' '),   accent: '#22d3ee' },
+              { label: 'Hours',        value: upload.meta.hoursCovered,                                  accent: '#fbbf24' },
+              { label: 'Meters',       value: upload.meta.meterCount,                                    accent: '#86efac' },
+            ]} />
+            <div style={styles.metaRow}>
+              <span style={styles.metaText}>
+                Biggest loads: {upload.meters.slice(0, 3).map((m) => `${m.id} ${Math.round(m.totalKwh).toLocaleString()} kWh`).join(' · ')}
+              </span>
+            </div>
+            <button type="button" onClick={saveUpload} disabled={busy} style={styles.dangerBtn}>
+              Save this window
+            </button>
+          </div>
+        )}
+
+        {uploads.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div style={styles.metaText}>Stored windows (newest first) — the top one is what the dashboard draws:</div>
+            <ul style={styles.flipList}>
+              {uploads.map((u) => (
+                <li key={u.id}>
+                  <code>{u.source_file}</code> · {String(u.window_start).slice(0, 10)} → {String(u.window_end).slice(0, 10)} · {u.hours_covered} h · {u.meter_count} meters
+                  {' '}<button type="button" onClick={() => deleteUpload(u)} style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 12 }}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </ModuleSection>
 
       <ModuleSection
