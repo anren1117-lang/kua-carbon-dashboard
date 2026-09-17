@@ -338,9 +338,9 @@ const paths = [
         type: 'quiz',
         question: 'A student drives 1,000 miles solo in a 25-mpg car. Another student flies the same 1,000 miles. Who emits more CO₂?',
         options: [
-          { text: 'They emit about the same', correct: false, explanation: 'Close but not equal — depends on flight type and car occupancy. At these specific values the flight emits slightly more.' },
-          { text: 'The driver emits more', correct: false, explanation: 'Drive: 1,000 / 25 × 8.78 = 351 kg CO₂. Less than the flight per passenger.' },
-          { text: 'The flight emits more', correct: true, explanation: 'Right. **Drive: 1,000 mi / 25 mpg × 8.78 kg/gal = ~351 kg CO₂**. **Flight: 1,000 mi × 0.395 kg/passenger-mi (with radiative forcing) = ~395 kg**. So flying solo is slightly worse than driving solo at this distance. With multiple drivers (carpool), driving wins by a lot. Above ~1,000 mi the math usually favors flying because of fuel economy at cruising altitude.' },
+          { text: 'They emit about the same', correct: false, explanation: '351 kg driving against 294 kg flying is about a 16% gap — close enough that who else is in the car decides it, but not equal.' },
+          { text: 'The driver emits more', correct: true, explanation: 'Right, and it catches most people out. **Drive: 1,000 mi / 25 mpg × 8.78 kg/gal = ~351 kg CO₂.** **Flight: 1,000 mi × 0.294 kg/passenger-mi (DEFRA 2024 short-haul economy, including non-CO₂ effects) = ~294 kg.** An aircraft splits its fuel across ~180 passengers, so per *person* it beats one person alone in a car. Occupancy is what flips it: two people in that car is ~176 kg each, comfortably under the flight.' },
+          { text: 'The flight emits more', correct: false, explanation: 'The intuitive answer, but solo driving loses here — 351 kg against 294 kg. Flying only comes out worse per passenger once the car is carrying two or more people.' },
           { text: 'Driving has zero emissions if the car is electric', correct: false, explanation: 'EVs aren\'t zero emissions — they shift emissions from tailpipe to power plant. On the New England grid, an EV emits ~0.09 kg/mi (90 kg for 1,000 mi). Still much lower than gas, but not zero.' },
         ],
       },
@@ -1400,19 +1400,19 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: drive vs fly for 700 miles',
-        scenario: 'Round trip 700 miles. (a) Solo drive in a 25 mpg car. (b) Domestic flight, economy. Gasoline = 8.78 kg CO₂/gal. Short-haul air = 0.395 kg CO₂e/passenger-mi.',
+        scenario: 'Round trip 700 miles. (a) Solo drive in a 25 mpg car. (b) Domestic flight, economy. Gasoline = 8.78 kg CO₂/gal. Short-haul air = 0.294 kg CO₂e/passenger-mi.',
         given: [
           { label: 'Distance', value: '700 mi' },
           { label: 'Car MPG', value: '25' },
           { label: 'Gasoline factor', value: '8.78 kg/gal' },
-          { label: 'Air factor', value: '0.395 kg/passenger-mi' },
+          { label: 'Air factor', value: '0.294 kg/passenger-mi' },
         ],
         question: 'Which is lower, and by how much?',
         options: [
-          { text: 'Drive: 246 kg, Fly: 277 kg — fly is slightly worse solo', correct: true, explanation: 'Right. DRIVE: 700/25 × 8.78 = 245.8 kg. FLY: 700 × 0.395 = 276.5 kg. Driving wins by ~30 kg solo. With 2-3 passengers, driving wins by a lot more (per passenger). Below ~500 mi, driving usually wins; above ~1,000 mi, flying often wins on CO₂.' },
+          { text: 'Drive: 246 kg, Fly: 206 kg — driving solo is worse', correct: true, explanation: 'Right. DRIVE: 700/25 × 8.78 = 245.8 kg. FLY: 700 × 0.294 = 205.8 kg. Economy flying beats one person in a 25-mpg car by ~40 kg. Occupancy is the whole story: two people in that car is ~123 kg each, well under the flight, and three makes driving the clear winner.' },
           { text: 'Drive: 24 kg', correct: false, explanation: 'You divided by 25 then forgot to multiply by the gas factor.' },
-          { text: 'Both ~280 kg', correct: false, explanation: 'Close but not equal.' },
-          { text: 'Fly: 100 kg — flying is always greener', correct: false, explanation: 'A common myth. Flying is more efficient per passenger-mile than solo driving on **long** trips, but for a short 700-mile round trip, solo driving in a fuel-efficient car is comparable or slightly better. The "flying is greenest" assumption only holds when the alternative is one driver in a gas-guzzler.' },
+          { text: 'Both ~280 kg', correct: false, explanation: 'Neither leg is 280 — driving is 246 kg and flying 206 kg. Work them out separately.' },
+          { text: 'Fly: 100 kg — flying is always greener', correct: false, explanation: 'The number is wrong — it is 206 kg, not 100 — and so is "always". Flying does beat SOLO driving at this distance, but a car with two or more people beats the flight. The honest rule is about occupancy, not about mode.' },
         ],
       },
       {

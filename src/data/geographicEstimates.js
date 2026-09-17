@@ -323,13 +323,25 @@ const COHORTS = {
 
 // Per-passenger-mile factors (kg CO2e). DEFRA 2024 with radiative
 // forcing where applicable.
+//
+// Air factors corrected in the Scope 3 audit (Phase 404). They previously
+// read 0.255 short / 0.241 long, which matched no row of the published
+// table and put SHORT-haul above LONG-haul. DEFRA 2024 "Business travel-
+// air", economy class, using the factor set that includes the indirect
+// effects of non-CO2 emissions (the set DEFRA tells organisations to use):
+//   short-haul to/from UK, economy  0.18287 kg CO2e/passenger-km
+//   long-haul  to/from UK, economy  0.20011 kg CO2e/passenger-km
+// x 1.609344 km/mi gives the per-mile figures below. Long-haul economy is
+// HIGHER than short-haul economy in DEFRA 2024 — the opposite of the usual
+// "short hops are worst" intuition, which holds per-flight (takeoff
+// dominates) but not per passenger-km in this published set.
 const KG_PER_MI = {
   car_solo:     0.351,           // EPA passenger vehicle, 25 mpg
   car_carpool:  0.351 / 2.5,     // 2.5-person avg carpool effective
   bus_long:     0.072,           // DEFRA 2024 coach with RF n/a
   rail:         0.045,           // DEFRA 2024 national rail
-  air_short:    0.255,           // DEFRA 2024 short-haul, with RF
-  air_long:     0.241,           // DEFRA 2024 long-haul, with RF
+  air_short:    0.294,           // DEFRA 2024 short-haul economy, incl. non-CO2
+  air_long:     0.322,           // DEFRA 2024 long-haul economy, incl. non-CO2
 };
 
 // ─── Day students: 3 method cross-check ─────────────────────────
@@ -416,14 +428,16 @@ export const SCOPE3_US_BOARDER_TRAVEL = _usBoarderTravel;
 // ─── International boarders: 4 method cross-check ───────────────
 const _intlTravel = (() => {
   // Method A: ICAO calculator anchored on East-Asia-heavy cohort.
-  // BOS↔China RT ≈ 13.4K mi × 0.241 kg/passenger-mi (DEFRA long-haul
-  // with RF) ≈ 3.2 mt/RT. Weighted across countries: avg 3.0 mt/RT.
-  const A_mtPerRt = 3.0;
+  // BOS↔China RT ≈ 13.4K mi × 0.322 kg/passenger-mi (DEFRA long-haul
+  // economy incl. non-CO2 effects) ≈ 4.3 mt/RT. Weighted across countries
+  // (Europe and Latin America are shorter): avg 4.0 mt/RT.
+  // Was 3.0, derived from the superseded 0.241 factor — Phase 404.
+  const A_mtPerRt = 4.0;
   const A_rtsPerYr = 1.6;
   const A = {
     label: 'ICAO + DEFRA long-haul weighted by source country',
     mt: COHORTS.international.count * A_rtsPerYr * A_mtPerRt,
-    basis: `${COHORTS.international.count} international boarders × ${A_rtsPerYr} RTs/yr × ~${A_mtPerRt} mt/RT (East-Asia-heavy cohort weighted: BOS↔Beijing/Shanghai/Tokyo/Seoul/HKG ~3.0-3.4 mt/RT × DEFRA long-haul 0.241 kg/passenger-mi with RF).`,
+    basis: `${COHORTS.international.count} international boarders × ${A_rtsPerYr} RTs/yr × ~${A_mtPerRt} mt/RT (East-Asia-heavy cohort weighted: BOS↔Beijing/Shanghai/Tokyo/Seoul/HKG ~4.0-4.6 mt/RT × DEFRA long-haul economy 0.322 kg/passenger-mi incl. non-CO2 effects).`,
   };
   // Method B: explicit by-source-country distance × cohort split.
   // Assumed cohort: 30 East Asia (avg 6800 mi one-way), 10 Europe
@@ -439,7 +453,7 @@ const _intlTravel = (() => {
   const B = {
     label: 'Explicit source-country split',
     mt: B_mt,
-    basis: `Assumed source-country distribution (East Asia 30 / Europe 10 / Latin America 5 / Other 5) × source-specific great-circle distances × 1.6 RTs/yr avg × DEFRA long-haul 0.241 kg/passenger-mi with RF.`,
+    basis: `Assumed source-country distribution (East Asia 30 / Europe 10 / Latin America 5 / Other 5) × source-specific great-circle distances × 1.6 RTs/yr avg × DEFRA long-haul economy 0.322 kg/passenger-mi incl. non-CO2 effects.`,
   };
   // Method C: Yale-published international per-FTE figure.
   // Yale Office of Sustainability cites 4-6 mt/yr per international

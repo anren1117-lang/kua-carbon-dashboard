@@ -125,6 +125,25 @@ const KG_PER_LB = 0.45359237;
 // EEIO v2.0 KUA-typical weighted average across paper / IT / cleaning
 // / apparel sectors — same value SCOPE3_GOODS_RANGE.central is built
 // around.
+// AUDIT (Phase 404): the citation above named "EEIO v2.0", which is a
+// model, not the published factor set. The actual dataset is EPA's Supply
+// Chain GHG Emission Factors v1.3 — kg CO2e per 2022 USD at PURCHASER
+// prices, AR5 GWP100, 1,016 NAICS-6 commodities.
+//
+// The value is left at 0.40 deliberately. Measured against v1.3, the four
+// sectors this factor claims to average come out far lower:
+//   paper (322)            mean 0.537   (n=11)
+//   computers/elec (334)   mean 0.096   (n=24)
+//   soap/cleaning (3256)   mean 0.315   (n=4)
+//   apparel (315)               0.120   (n=7)
+//   unweighted mean             0.222
+// Across all 1,016 commodities the median is 0.173 and the p90 is 0.595,
+// so 0.40 sits near the 80th percentile for a basket dominated by
+// electronics and apparel. Repricing to ~0.222 would cut the purchased-
+// goods line from ~1,315 mt to ~666 mt and drop GROSS emissions ~15%.
+// That is a headline movement resting on a spend mix nobody has measured
+// (the $3M is itself a placeholder), so it is a decision for KUA, not a
+// silent edit. Published here rather than quietly closed.
 export const PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD = 0.40;
 
 /**
@@ -430,6 +449,12 @@ export const SCOPE3_COHORT_FACTORS_MT_PER_STUDENT = {
 // values mean the disposal pathway is a net carbon avoidance vs the
 // assumed counterfactual (e.g. recycling steel/paper offsets virgin
 // production). Keys mirror waste_type strings the admin form writes.
+// AUDIT NOTE (Phase 404): WARM v16 was released December 2023 and
+// supersedes v15/v15.1. These values were NOT relabelled to v16, because
+// the v16 factor tables were not checked against them — a refreshed
+// version number over unrefreshed numbers is exactly the failure the
+// Scope 1 audit caught. Waste is ~5 mt (0.1% of gross), so the refresh is
+// filed rather than rushed.
 export const WASTE_FACTORS_MT_PER_TON = {
   'Landfill':   0.52,
   'Recycling': -0.10,
@@ -452,13 +477,18 @@ function wasteTons(row) {
 
 // Per-trip mtCO2e estimate by destination region. Used for study_abroad
 // and faculty_travel rows where each row is a single trip (not an annual
-// per-student multiplier). DEFRA long-haul 0.241 kg/passenger-mi with
-// radiative forcing × typical great-circle BOS↔region distances.
+// per-student multiplier). DEFRA 2024 long-haul ECONOMY 0.322
+// kg/passenger-mi (incl. the indirect effects of non-CO2 emissions)
+// × typical great-circle BOS↔region distances.
+//
+// Rescaled in Phase 404 by 0.322/0.241 = 1.336. The old values were built
+// on 0.241, which matched no row of the published DEFRA table.
 const TRIP_MT_BY_REGION = {
-  domestic: 0.5,   // BOS↔continental US, mostly drive or short-haul fly
-  europe:   2.4,   // BOS↔EU long-haul
-  asia:     3.0,   // BOS↔East Asia long-haul (matches intl student RT)
-  other:    2.5,   // catch-all for South America, Africa, Oceania
+  domestic: 0.5,   // BOS↔continental US, mostly DRIVE — unchanged, the
+                   // car factor (0.351 kg/mi) did not move
+  europe:   3.2,   // BOS↔EU long-haul (was 2.4)
+  asia:     4.0,   // BOS↔East Asia long-haul (was 3.0; matches intl student RT)
+  other:    3.3,   // catch-all for South America, Africa, Oceania (was 2.5)
 };
 
 // Map a destination_country string (free-text from the admin form) to

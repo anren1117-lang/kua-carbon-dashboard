@@ -834,15 +834,17 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
   });
 
   it('adds per-trip mt for study_abroad and faculty_travel rows', () => {
-    // 1 China study-abroad (asia 3.0) + 1 USA faculty trip (domestic 0.5) = 3.5 mt
-    // Plus 1 day student × 1.4 mt = 1.4 mt → 5 mt total travel row
+    // 1 China study-abroad (asia 4.0) + 1 USA faculty trip (domestic 0.5) = 4.5 mt
+    // Plus 1 day student × 1.4 mt = 1.4 mt → 6 mt total travel row.
+    // asia was 3.0 until Phase 404 corrected TRIP_MT_BY_REGION to the
+    // published DEFRA long-haul economy factor.
     const r = composeScope3FromRecords({
       dayStudents: [{}],
       studyAbroad: [{ destination_country: 'China' }],
       facultyTravel: [{ destination_country: 'USA' }],
     });
     const travel = r.breakdown.find((b) => b.source.toLowerCase().includes('student travel'));
-    expect(travel.mt).toBe(5);
+    expect(travel.mt).toBe(6);
   });
 
   it('flips waste row to MEASURED with EPA WARM net factors per stream', () => {
@@ -930,7 +932,7 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
     expect(intl.count).toBe(25);
     expect(intl.mt).toBe(125); // 25 × 5.0
     expect(trips.count).toBe(2);
-    expect(trips.mt).toBe(4);  // 3.0 (China) + 0.5 (USA) = 3.5 → 4 (rounded)
+    expect(trips.mt).toBe(5);  // 4.0 (China) + 0.5 (USA) = 4.5 → 5 (rounded)
   });
 
   it('cohortDetail rows mark themselves estimated when their cohort is empty', () => {

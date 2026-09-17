@@ -44,8 +44,14 @@ export const emissionFactors = [
   { id: 'ef_r134a', category: 'refrigerant', subcategory: 'r134a', unit: 'kg', kgco2e_per_unit: 1530, source: 'IPCC AR6 GWP100', year: 2024 },
 
   // Travel
-  { id: 'ef_air_short', category: 'travel', subcategory: 'air_short_haul',     unit: 'passenger-mile', kgco2e_per_unit: 0.395, source: 'DEFRA 2024 (avg short-haul economy)', year: 2024 },
-  { id: 'ef_air_long',  category: 'travel', subcategory: 'air_long_haul',      unit: 'passenger-mile', kgco2e_per_unit: 0.193, source: 'DEFRA 2024 (avg long-haul economy)', year: 2024 },
+  // Corrected in Phase 404. These read 0.395 short / 0.193 long, on two
+  // DIFFERENT bases: 0.193 is the long-haul economy figure EXCLUDING
+  // non-CO2 effects (0.11812 kg/pkm x 1.609), while 0.395 matched no
+  // published row at all. Both now come from one basis — DEFRA 2024
+  // economy, including indirect non-CO2 effects, per passenger-mile.
+  // Note long-haul is the HIGHER of the two.
+  { id: 'ef_air_short', category: 'travel', subcategory: 'air_short_haul',     unit: 'passenger-mile', kgco2e_per_unit: 0.294, source: 'DEFRA 2024 short-haul economy, incl. non-CO2 effects (0.18287 kg/passenger-km)', year: 2024 },
+  { id: 'ef_air_long',  category: 'travel', subcategory: 'air_long_haul',      unit: 'passenger-mile', kgco2e_per_unit: 0.322, source: 'DEFRA 2024 long-haul economy, incl. non-CO2 effects (0.20011 kg/passenger-km)', year: 2024 },
   { id: 'ef_car_avg',   category: 'travel', subcategory: 'passenger_car_avg',  unit: 'mile',           kgco2e_per_unit: 0.351, source: 'EPA Greenhouse Gases from a Typical Passenger Vehicle', year: 2024 },
   { id: 'ef_bus',       category: 'travel', subcategory: 'school_bus',         unit: 'mile',           kgco2e_per_unit: 1.96,  source: 'EPA medium/heavy duty diesel', year: 2024 },
 
@@ -63,16 +69,23 @@ export const emissionFactors = [
   { id: 'ef_food_veg',      category: 'food', subcategory: 'vegetables', unit: 'kg', kgco2e_per_unit: 0.5,  source: 'Poore & Nemecek 2018', year: 2018 },
   { id: 'ef_food_fruit',    category: 'food', subcategory: 'fruit',    unit: 'kg', kgco2e_per_unit: 0.4,  source: 'Poore & Nemecek 2018', year: 2018 },
 
-  // Waste (EPA WARM v15)
-  { id: 'ef_waste_landfill_mixed', category: 'waste', subcategory: 'landfill_mixed', unit: 'kg', kgco2e_per_unit: 0.467, source: 'EPA WARM v15', year: 2023 },
-  { id: 'ef_waste_recycling',      category: 'waste', subcategory: 'recycling',      unit: 'kg', kgco2e_per_unit: -1.07, source: 'EPA WARM v15 (avoided)', year: 2023 },
-  { id: 'ef_waste_compost',        category: 'waste', subcategory: 'compost_food',   unit: 'kg', kgco2e_per_unit: -0.18, source: 'EPA WARM v15 (avoided)', year: 2023 },
+  // Waste (EPA WARM v15.1 — v16 released Dec 2023 supersedes this; values
+  // not yet refreshed against v16, see WASTE_FACTORS_MT_PER_TON note)
+  { id: 'ef_waste_landfill_mixed', category: 'waste', subcategory: 'landfill_mixed', unit: 'kg', kgco2e_per_unit: 0.467, source: 'EPA WARM v15.1', year: 2023 },
+  { id: 'ef_waste_recycling',      category: 'waste', subcategory: 'recycling',      unit: 'kg', kgco2e_per_unit: -1.07, source: 'EPA WARM v15.1 (avoided)', year: 2023 },
+  { id: 'ef_waste_compost',        category: 'waste', subcategory: 'compost_food',   unit: 'kg', kgco2e_per_unit: -0.18, source: 'EPA WARM v15.1 (avoided)', year: 2023 },
 
-  // Procurement (EEIO Cat 1 spend-based, USD-denominated)
-  { id: 'ef_proc_paper',     category: 'procurement', subcategory: 'paper',          unit: 'USD', kgco2e_per_unit: 0.420, source: 'US EPA EEIO v2.0', year: 2023 },
-  { id: 'ef_proc_it',        category: 'procurement', subcategory: 'it_equipment',   unit: 'USD', kgco2e_per_unit: 0.380, source: 'US EPA EEIO v2.0', year: 2023 },
-  { id: 'ef_proc_cleaning',  category: 'procurement', subcategory: 'cleaning',       unit: 'USD', kgco2e_per_unit: 0.330, source: 'US EPA EEIO v2.0', year: 2023 },
-  { id: 'ef_proc_uniforms',  category: 'procurement', subcategory: 'apparel',        unit: 'USD', kgco2e_per_unit: 0.510, source: 'US EPA EEIO v2.0', year: 2023 },
+  // Procurement (Cat 1 spend-based, USD-denominated). Corrected in Phase
+  // 404: these were hand-set round numbers cited to "US EPA EEIO v2.0",
+  // which is a model rather than a published factor set. Each row now
+  // carries the EPA Supply Chain GHG Emission Factors v1.3 value for the
+  // NAICS-6 commodity the purchases actually are (kg CO2e per 2022 USD at
+  // purchaser prices, with margins, AR5 GWP100). IT was overstated ~6.5x
+  // and apparel ~4.25x; cleaning was slightly understated.
+  { id: 'ef_proc_paper',     category: 'procurement', subcategory: 'paper',          unit: 'USD', kgco2e_per_unit: 0.296, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 322230 Stationery Product Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
+  { id: 'ef_proc_it',        category: 'procurement', subcategory: 'it_equipment',   unit: 'USD', kgco2e_per_unit: 0.058, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 334111 Electronic Computer Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
+  { id: 'ef_proc_cleaning',  category: 'procurement', subcategory: 'cleaning',       unit: 'USD', kgco2e_per_unit: 0.355, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 325611 Soap & Detergent Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
+  { id: 'ef_proc_uniforms',  category: 'procurement', subcategory: 'apparel',        unit: 'USD', kgco2e_per_unit: 0.120, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 315 Apparel Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
 ];
 
 const factorsById = Object.fromEntries(emissionFactors.map((f) => [f.id, f]));

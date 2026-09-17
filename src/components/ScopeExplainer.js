@@ -69,7 +69,7 @@ const SCOPES = [
       'Commuting: per-person miles × 2 × days × weeks × mode factor',
     ],
     formula: 'Σ over sub-categories — each row carries its own factor',
-    factorSource: 'EPA Supply Chain (EEIO); EPA WARM v15; DEFRA 2024 air-travel; EPA Hub upstream factors',
+    factorSource: 'EPA Supply Chain GHG Emission Factors v1.3; EPA WARM v15.1; DEFRA 2024 air-travel (economy, incl. non-CO₂); EPA Hub upstream factors',
     peerRange: '1.5 – 4.5 mtCO₂e/student',
     peerComparison: 'KUA is at the HIGH end because of the large international student cohort — long-haul flights are by far the most carbon-intensive travel mode (~3 mtCO₂e per round trip to Asia).',
   },

@@ -41,7 +41,7 @@ export default function Procurement() {
   return (
     <ModulePage
       title="Procurement"
-      subtitle="Paper, IT, cleaning, apparel, and other purchased goods. Emissions estimated using the EPA EEIO v2.0 spend-based factors — useful for screening high-impact categories before deeper LCA work."
+      subtitle="Paper, IT, cleaning, apparel, and other purchased goods. Emissions estimated using EPA Supply Chain GHG Emission Factors v1.3 (kg CO₂e per 2022 USD at purchaser prices) — useful for screening high-impact categories before deeper LCA work."
     >
       <MetricGrid metrics={[
         { label: 'Total spend',     value: `$${totalSpend.toLocaleString()}`, accent: '#fbbf24' },
