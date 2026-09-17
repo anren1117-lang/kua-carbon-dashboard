@@ -101,6 +101,18 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The campus map defaults to the real map (Phase 402)
+
+`/campus-map` opened in **Schematic** mode — flat teal boxes grouped by category — when the page has had a **Photo** mode since Phase 249 that overlays energy dots on KUA's official hand-illustrated campus map. The user's words: *"the map is so ugly just keep the original map."* Photo is now the default; Schematic stays one click away as the magnitude-comparison view.
+
+**Why Schematic reads badly at current data:** the intensity legend advertises five colour bands (<4 / 4–8 / 8–16 / 16–30 / >30 kg per sqft), but every building on campus falls in the first band — Barrette tops out at 3.62. So every box renders identical teal and the colour encoding, which is the whole point of the view, conveys nothing. That's the *data*, not a bug, so it wasn't "fixed" by faking colour.
+
+**The heading and hint were hardcoded for schematic.** With photo as the default the page read "Campus zones — Schematic layout grouped by category, **not geographically accurate** (we don't yet have building coordinates)" directly above a geographically accurate illustration of the campus, and called the dots "boxes". `LAYOUT_COPY` now keys title and hint off `layoutMode` for all four modes.
+
+**The campus total was still 417.69 mtCO₂e** — 10 kg resolution on a sum of nineteen four-month extrapolations. Phase 400 fixed this one level down and left the headline; it now takes the same coverage-based rounding (418).
+
+Also trimmed: the subtitle had grown to four dense lines of methodology across Phases 390/391/400. The caveat that matters ("estimated for a full year from the months actually metered") stays; the rest was accumulation.
+
 ### Scope 1 factor audit (Phase 401)
 
 The session had spent itself on Scope 2 — **390 mt, and the only measured scope** — while Scope 1 (~1,350 mt) and Scope 3 (~2,635 mt) carry ±40% bands and lines ending "not yet integrated". This is the start of correcting that imbalance. Every factor checked against the **EPA GHG Emission Factors Hub 2025** (extracted locally from EPA's own xlsx) and **IPCC AR6**, not from memory.

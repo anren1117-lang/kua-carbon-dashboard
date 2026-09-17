@@ -8,7 +8,7 @@ import { layoutBoxesGeo } from '../utils/geoLayout.js';
 import { buildingPositions, allPositionsAreEstimated, allPositionsAreCitedOrBetter } from '../data/buildingPositions.js';
 import { toCsv, downloadCsv } from '../utils/csv.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
-import { formatModelledKwh, formatModelledMt } from '../utils/modelledPrecision.js';
+import { formatModelledKwh, formatModelledMt, toSigFigs, sigFigsForCoverage } from '../utils/modelledPrecision.js';
 import { CampusPhotoMap } from '../components/CampusPhotoMap.js';
 import { CampusSatelliteMap } from '../components/CampusSatelliteMap.js';
 import { Icon } from '../components/Icon.js';
@@ -27,6 +27,30 @@ import { Icon } from '../components/Icon.js';
 // Hand-picked positions for each building inside its category zone.
 // The zone boxes themselves are stacked vertically with horizontal
 // flow inside each zone (see ZONE_LAYOUT below).
+// Heading and hint follow the selected layout. These used to be hardcoded for
+// schematic, so once photo became the default the page described a "schematic
+// layout ... not geographically accurate (we don't yet have building
+// coordinates)" directly above a geographically accurate illustration of the
+// campus — and called the dots "boxes".
+const LAYOUT_COPY = {
+  photo: {
+    title: 'Campus map',
+    hint: "Energy on the official KUA campus illustration — the same bird's-eye view as the admissions materials, so a building you already recognise carries its own number. Dot size is square footage.",
+  },
+  schematic: {
+    title: 'Campus zones',
+    hint: 'Schematic layout grouped by category — deliberately not geographic. Boxes are sized by square footage, so this view compares magnitudes rather than locating anything.',
+  },
+  geographic: {
+    title: 'Campus map — geographic',
+    hint: 'Buildings placed by latitude and longitude on a blank canvas, from positions taken off the official campus map rather than surveyed.',
+  },
+  satellite: {
+    title: 'Campus map — satellite',
+    hint: 'Real aerial imagery with a marker at each building; pan and zoom enabled.',
+  },
+};
+
 const CATEGORY_ZONES = ['Academic', 'Athletic', 'Dorm', 'Other'];
 const ZONE_HEAD_HEIGHT = 28;
 const ZONE_PADDING     = 16;
@@ -115,7 +139,12 @@ export default function CampusMap() {
   // 'geographic' = lat/lng projected onto a blank canvas
   // 'photo'      = energy-intensity dots overlaid on the official KUA campus map image
   // 'satellite'  = real satellite imagery of campus (Esri World Imagery) + markers
-  const [layoutMode, setLayoutMode] = useState('schematic');
+  // Photo is the default: it's the actual KUA campus illustration with energy
+  // dots on it, which is what a reader recognises as "the campus map". The
+  // schematic by-category boxes are a diagnostic view — useful, but abstract,
+  // and every box renders the same colour at current data so the intensity
+  // legend does no work there. Schematic stays one click away.
+  const [layoutMode, setLayoutMode] = useState('photo');
 
   const { rows, totalKwh, totalMt, monthsObserved, mode, availableMonths } = useMemo(
     () => computeBuildingEmissions({ month: selectedMonth, monthlyHistory: buildingHistory }),
@@ -148,15 +177,26 @@ export default function CampusMap() {
   const top5 = [...rows].sort((a, b) => b.mtCO2e - a.mtCO2e).slice(0, 5);
   const hottest = [...rows].filter((r) => r.kgPerSqft > 0).sort((a, b) => b.kgPerSqft - a.kgPerSqft).slice(0, 5);
 
+  // The campus figure is a sum of 19 four-month extrapolations, so it gets the
+  // same coverage-based rounding as the per-building numbers (Phase 400). It
+  // was rendering as 417.69 — 10 kg resolution on an estimate of a year.
+  const campusCoverage = rows.find((r) => r.yearFraction > 0)?.yearFraction ?? 0;
+  const totalMtShown = toSigFigs(totalMt, sigFigsForCoverage(campusCoverage)).toLocaleString();
+
+  // "Box" is only true in schematic mode; photo and satellite draw dots, and
+  // the default is now photo. Saying "each box" over a picture of the campus
+  // is the kind of small wrongness that makes a reader distrust the rest.
+  const unitWord = layoutMode === 'schematic' || layoutMode === 'geographic' ? 'box' : 'dot';
+
   const subtitle = mode === 'monthly'
-    ? `Slice of campus emissions for ${formatMonthLabel(selectedMonth)}. Each box is sized by sqft and colored by per-sqft intensity for that month's reading. Click any building for detail.`
-    : `Where the ${totalMt.toLocaleString()} mtCO₂e of campus electricity emissions come from. Each box is one of KUA's ${rows.length} tracked buildings, sized by square footage and colored by per-sqft emissions intensity. Figures are scaled to a full year from the months actually metered, so they are an estimate of a year rather than a measurement of one. Click any building for detail.`;
+    ? `Slice of campus emissions for ${formatMonthLabel(selectedMonth)}. Each ${unitWord} is sized by sqft and coloured by per-sqft intensity for that month's reading. Click any building for detail.`
+    : `Where the ${totalMtShown} mtCO₂e of campus electricity emissions come from — one ${unitWord} per building, sized by square footage and coloured by per-sqft intensity. Estimated for a full year from the months actually metered. Click any building for detail.`;
 
   return (
     <ModulePage title="Campus map — emissions distribution" subtitle={subtitle}>
       <ModuleSection
-        title="Campus zones"
-        hint={`Schematic layout grouped by category — not geographically accurate (we don't yet have building coordinates). Sizes are scaled by sqft. Colors show kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. ${monthsObserved} distinct month${monthsObserved === 1 ? '' : 's'} of BMS data across the campus${mode === 'monthly' ? ', currently viewing one month' : ', each building scaled to a year from the months it actually has'}. Individual buildings may rest on fewer months than that total — open one to see how many.`}
+        title={LAYOUT_COPY[layoutMode]?.title ?? 'Campus map'}
+        hint={`${LAYOUT_COPY[layoutMode]?.hint ?? ''} Colour shows kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. Built from ${monthsObserved} month${monthsObserved === 1 ? '' : 's'} of BMS data${mode === 'monthly' ? ', currently viewing one' : ', each building scaled to a year from the months it actually has'} — individual buildings may rest on fewer, so open one to see how many.`}
       >
         <CampusMonthlyTrend
           monthlyTotals={campusMonthlyTotals()}
