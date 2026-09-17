@@ -148,7 +148,7 @@ export default function Scenarios() {
           onChange={setSolarKw}
           min={0} max={1000} step={25}
           color="#22d3ee"
-          help="At NH typical 1,300 kWh/kW/yr. KUA's existing 30 kW Whittemore array would be ~30 here; 500 kW is roughly 1.5 acres of panels."
+          help="At NH typical 1,300 kWh/kW/yr, priced at the marginal generation this displaces. KUA's existing arrays total 60 kW (40 kW and 12 kW at Miller, 8 kW at Kurth) — so 60 here; 500 kW is roughly 1.5 acres of panels."
         />
         <Slider
           label="Plant additional acres of forest"

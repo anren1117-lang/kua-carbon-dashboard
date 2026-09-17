@@ -3,6 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { runScenario } from '../utils/scenarioModel.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 
 const baseline = {
   scope1Mt: 200,
@@ -58,11 +59,36 @@ describe('runScenario — heating electrification', () => {
 });
 
 describe('runScenario — solar PV', () => {
-  it('offsets Scope 2 by installed kW × capacity factor × grid kg/kWh', () => {
+  it('offsets Scope 2 at the MARGINAL rate, not the inventory average', () => {
     const r = runScenario({ ...baseline, solarKw: 100 });
-    // 100 kW × 1300 kWh/kW/yr × the canonical grid factor, in mt.
-    const expected = (100 * 1300 * KG_PER_KWH) / 1000;
+    // 100 kW × 1300 kWh/kW/yr × AVERT's displaced-generation rate, in mt.
+    // Solar displaces the marginal unit (gas in New England), so pricing it
+    // at the location-based average understated this by about half.
+    const expected = (100 * 1300 * avertAvoidedKgPerKwh()) / 1000;
     expect(r.modified.scope2Mt).toBeCloseTo(baseline.scope2Mt - expected, 2);
+  });
+
+  it('keeps the two factors distinct — a merge would halve modelled solar', () => {
+    // THE GUARD. If someone collapses solarDisplacedKgPerKwh back onto
+    // gridKgPerKwh, the offset drops by ~2x and this fails. Same
+    // unit-versus-question trap Phase 392 fixed in composeSolarFromRecords.
+    const marginal = runScenario({ ...baseline, solarKw: 100 });
+    const asAverage = runScenario({ ...baseline, solarKw: 100, solarDisplacedKgPerKwh: KG_PER_KWH });
+    const marginalOffset = baseline.scope2Mt - marginal.modified.scope2Mt;
+    const averageOffset = baseline.scope2Mt - asAverage.modified.scope2Mt;
+    expect(marginalOffset).toBeGreaterThan(averageOffset * 1.5);
+  });
+
+  it('still prices NEW electric load at the inventory average, not the marginal rate', () => {
+    // Electrification ADDS consumption, so it belongs at the average. If this
+    // ever started using the marginal rate, electrifying would look ~2x worse.
+    const r = runScenario({ ...baseline, heatingElectrifyPct: 50 });
+    const added = r.modified.scope2Mt - baseline.scope2Mt;
+    const rAtMarginal = runScenario({
+      ...baseline, heatingElectrifyPct: 50, gridKgPerKwh: avertAvoidedKgPerKwh(),
+    });
+    const addedAtMarginal = rAtMarginal.modified.scope2Mt - baseline.scope2Mt;
+    expect(added).toBeLessThan(addedAtMarginal);
   });
 
   it('0 kW solar is a no-op', () => {

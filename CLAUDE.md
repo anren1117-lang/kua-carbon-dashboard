@@ -101,6 +101,16 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The scenario model asks two questions (Phase 397)
+
+`utils/scenarioModel.js` took a single `gridKgPerKwh` and used it for two opposite things: step 2 **adds** Scope 2 when heating electrifies (new load consumed → location-based average, correct) and step 3 **offsets** Scope 2 for new solar (generation displaced → marginal rate). Pricing displacement at the inventory average understated modelled solar by about half on `/scenarios`, a public planning surface whose presets go to 500 kW.
+
+Now two parameters: `gridKgPerKwh` (inventory, `KG_PER_KWH`) and `solarDisplacedKgPerKwh` (marginal, `avertAvoidedKgPerKwh()`). Two tests guard the split in both directions — one fails if they're merged back (solar offset drops ~2×), one fails if electrification ever starts using the marginal rate (electrifying would look ~2× worse than it is). Same unit-versus-question distinction as Phase 392's `composeSolarFromRecords`.
+
+**`NH_SOLAR_KWH_PER_KW_YR = 1300` deliberately stays**, and the file now says why. Three solar figures coexist and are *different quantities*, not rivals to reconcile: AVERT's 0.1823 (~1,597 kWh/kW/yr) is a **regional average** for pricing displaced generation; `renewables.js` describes **KUA's actual installation**; and 1,300 is a **planning assumption for arrays that don't exist yet**. I briefly filed the spread between them as a defect — it wasn't, and the investigation is recorded so it isn't re-filed.
+
+**Two real findings for Facilities, surfaced while scoping**, both about KUA's existing solar rather than the model: of three "operational" arrays only one reports — `PM_15_FieldSolarFeed` is stuck at −25,226 across the whole window, and `PM_19_SolarFeed` reads as a *net consumer* (counter rising day and night: reversed CT clamp, or not a solar feed). So `SOLAR_ANNUAL_KWH` rests on a single array's single measured month scaled by a PVWatts shape, and `capacityKwDc` is estimated from peak kW × 1.2 rather than inverter nameplate.
+
 ### One academic calendar, two day-counts (Phase 395)
 
 `src/data/academicCalendar.js`. Four places counted the school year and two disagreed: `personalFootprint.js` used **170** while `geographicEstimates.js` used **180** for the same day-student commute, and `scopeTotals.js` defaulted admin-entered rows to 5 × 36 (= 180). A student using `/personal-footprint` was shown "170 school days" while the institutional inventory assumed 180 — about 6% apart, on a figure the same person could see twice in one sitting.

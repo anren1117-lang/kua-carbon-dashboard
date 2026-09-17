@@ -15,12 +15,29 @@
 // (Methodology page documents each one).
 
 import { KG_PER_KWH } from '../data/gridMix.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 
 // NH heat pump assumptions
 const HEAT_PUMP_COP = 3.0;  // conservative cold-climate average
 const BTU_PER_KWH   = 3412;
 
-// Solar capacity factor (NH, fixed-tilt)
+// Solar yield for HYPOTHETICAL new arrays (NH, fixed-tilt). 1300 kWh/kW/yr.
+//
+// Deliberately not reconciled with the two other solar figures in this
+// codebase, because all three are different quantities:
+//
+//   • AVERT publishes 0.1823 (~1,597 kWh/kW/yr) for New England distributed
+//     PV — a REGIONAL AVERAGE, used in gridMixHistory.js to price displaced
+//     generation, not to predict a specific roof's output.
+//   • renewables.js describes KUA's ACTUAL installation, where two of three
+//     meters are unusable (one stuck, one reading as a net consumer), so its
+//     annual figure rests on a single array's single measured month.
+//   • This is a planning assumption for arrays that don't exist yet.
+//
+// 1300 is the conservative end for NH fixed-tilt. Revisit when the inverter
+// nameplate inventory and the two broken solar meters are sorted out — until
+// then, a site-specific number would be less trustworthy than this one, not
+// more.
 const NH_SOLAR_KWH_PER_KW_YR = 1300;
 
 // Forest sequestration (Birdsey 1992, closed-canopy)
@@ -58,9 +75,15 @@ export function runScenario({
   heatingElectrifyPct     = 0,
   solarKw                 = 0,
   treePlantingAcres       = 0,
-  // One kWh, one number — the header above promises "all factor sources match
-  // what the rest of the dashboard uses", which a hardcoded 0.235 quietly broke.
+  // TWO factors, because this model asks two different questions.
+  //
+  // gridKgPerKwh (inventory, location-based average) prices electricity the
+  // campus CONSUMES — used when heating electrifies and new load appears.
+  //
+  // solarDisplacedKgPerKwh (marginal) prices generation the campus DISPLACES.
+  // See step 3. Passing one value for both understates solar by ~2x.
   gridKgPerKwh            = KG_PER_KWH,
+  solarDisplacedKgPerKwh  = avertAvoidedKgPerKwh(),
 }) {
   const steps = [];
 
@@ -93,9 +116,18 @@ export function runScenario({
     });
   }
 
-  // 3. Solar offset → installed kW × 1300 kWh/kW/yr × grid factor
+  // 3. Solar offset → installed kW × 1300 kWh/kW/yr × the MARGINAL grid factor
+  //
+  // Note which factor this uses, and why it is not the one above. Step 2
+  // ADDS emissions to the inventory (new electric load consumed → the
+  // location-based average is right). This step models DISPLACEMENT: what
+  // generation backs down when the array exports. In New England that is the
+  // marginal unit, almost always gas, which EPA AVERT puts at roughly twice
+  // the average. Pricing displacement at the inventory average understated
+  // modelled solar by about half — the same unit-versus-question conflation
+  // Phase 392 corrected in composeSolarFromRecords.
   const solarKwh   = solarKw * NH_SOLAR_KWH_PER_KW_YR;
-  const solarOffsetMt = (solarKwh * gridKgPerKwh) / 1000;
+  const solarOffsetMt = (solarKwh * solarDisplacedKgPerKwh) / 1000;
   const scope2AfterSolar = scope2AfterElectrification - solarOffsetMt;
   if (solarKw > 0) {
     steps.push({
