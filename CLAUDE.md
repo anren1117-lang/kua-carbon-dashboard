@@ -101,6 +101,36 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Sweeping the inventory-vs-marginal error on purpose (Phase 410)
+
+By this point the same error had been found five times — the grid factor, the heat-pump quiz, the recycling credit, purchased goods, the solar lever — and **every one of them turned up by accident** while looking for something else. So this pass went hunting: every calculation whose language is *avoided / displaced / offset*, checked against the factor it actually uses.
+
+Most of the surface was clean. `scenarioModel.js`, `GRID_FACTOR_KG_PER_KWH`, LearnAgent's heat-pump quiz and the Phase 409 solar lever all use the AVERT marginal rate and say why; Drawdown and Scenarios carry no factors of their own.
+
+Two were not. `Scope2BmsInsights.js` priced each solar feed's "avoided" figure at the **inventory** rate, understating measured on-campus generation by about half — and it contradicted the repo's own house rule, since `composeSolarFromRecords()` prices both self-consumed and exported solar at the marginal rate and tags its output `factorBasis: 'marginal (displaced generation)'` precisely so a caller cannot mistake it. Its neighbours were checked and left alone: net Scope 2 in window, and EV charger load, are **consumption**, where the inventory rate belongs.
+
+`DailyTip` conflated two quantities rather than being flatly wrong — "offsets ~150 mt of scope 2" used the inventory rate for something it called an offset. It now states both: ~152 mt off the reported Scope 2, ~318 mt actually avoided at the margin.
+
+The lesson worth keeping: this class of defect does not announce itself, because the units always match and the arithmetic is always right. It is only visible if you ask which *question* a factor was published to answer.
+
+### The solar lever was priced at the wrong rate (Phase 409)
+
+Scope 2's action blocks carried eight hardcoded `0.235` figures against a canonical 0.2344. Most were harmless display drift — the LED and HVAC blocks already **computed** with `KG_PER_KWH` and only the printed formula said 0.235, so the number on screen was right and the caption describing it was wrong. Those are now interpolated rather than retyped.
+
+One was not cosmetic. The solar block priced displaced generation at the inventory average: `127,000 × 0.235 = 29,800 kg ≈ 30 mtCO₂e/yr`. Solar displaces whichever plant is running at the margin, and that plant is dirtier than the average, so at the AVERT rate the same array avoids **~62 mt** — roughly double. The range and impact band moved with it (~44–85 per 100 kW). This was the Phase 392 error still sitting in a student-facing worked example, two phases after the data layer was fixed.
+
+Also fixed: a data row claiming "matches gridMix.js" while showing a value `gridMix.js` does not produce, and `scenarioModel`'s JSDoc advertising a `0.235` default when the real default is `KG_PER_KWH`. `Scope2.js` joined the prose tripwire — with the literals replaced by interpolation there is nothing left for it to catch today, which is the point: it fires the moment someone retypes a factor into the copy.
+
+### The methodology page catches up with the audit (Phase 408)
+
+The school-board-facing source list still described the factors as they were before Phases 404–407. Waste said WARM *"net factors"* — the exact phrasing Phase 407 disproved, since it implies credits. Air travel said "DEFRA conversion factors" with no year and no statement of the non-CO₂ basis. Purchased goods said "EEIO" with no version and no dollar-year, which is the whole ballgame for a spend-based factor. Food and passenger vehicles had no rows at all, despite both driving visible numbers.
+
+Each row now names its exact table and basis, including the two places where the choice of basis decides the answer: DEFRA's with/without non-CO₂ sets, and EPA's Category 5 waste factors versus WARM's life-cycle ones.
+
+`Methodology.js` was also **not** in the prose drift tripwire despite being the most citation-critical page in the repo — and it carried the grid factor as 0.235 against a canonical 0.234. Both fixed.
+
+No new surface was built: `/whats-new` and `/methodology` already existed, so the audit narrative went into the existing changelog (three entries, written for a non-specialist reader) rather than a new page.
+
 ### Recycling is not a credit in an inventory (Phase 407)
 
 Phase 404 deliberately refused to relabel the waste factors "v16" without checking them. Checking them found something bigger than a version bump.
