@@ -4,6 +4,14 @@ import { useBmsExport } from '../hooks/useBmsExport.js';
 import { getBmsMeterMap } from '../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
+
+// Solar AVOIDS emissions at the marginal rate, not the inventory average —
+// the house rule composeSolarFromRecords() already encodes (it tags its
+// output factorBasis: 'marginal (displaced generation)'). The inventory
+// KG_PER_KWH below is for electricity the campus CONSUMES; using it for
+// displaced generation understates solar by about half. Phase 410.
+const AVERT_KG_PER_KWH = avertAvoidedKgPerKwh();
 import { CAMPUS_FEED_RE } from '../data/campusFeeds.js';
 import { MONTH_ABBR, ledgerSourceText, monthRangeLabel } from '../data/electricityLedger.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
@@ -306,7 +314,7 @@ export function Scope2BmsInsights() {
                     peak {s.peakKw} kW · {pctOfTotalSolar.toFixed(0)}% of campus solar
                   </div>
                   <div style={styles.solarMeta}>
-                    avoided ~{((s.totalKwh * KG_PER_KWH) / 1000).toFixed(2)} mtCO₂e in window
+                    avoided ~{((s.totalKwh * AVERT_KG_PER_KWH) / 1000).toFixed(2)} mtCO₂e in window (marginal)
                   </div>
                 </div>
               );

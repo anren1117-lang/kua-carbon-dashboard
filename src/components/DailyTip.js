@@ -101,7 +101,7 @@ const TIPS = [
   {
     icon: '☀️',
     title: 'Solar pays back in NH',
-    body: 'A 500 kW solar install would generate ~650,000 kWh/yr (NH capacity factor ~1,300 kWh/kW). That offsets ~150 mt of scope 2 emissions.',
+    body: 'A 500 kW solar install would generate ~650,000 kWh/yr (NH capacity factor ~1,300 kWh/kW). That cuts KUA\'s reported Scope 2 by ~152 mt — and because solar displaces whichever plant is running at the margin, which is dirtier than the grid average, the real atmospheric saving is closer to ~318 mt.',
     link: '/scenarios',
     linkText: 'Model it',
   },
