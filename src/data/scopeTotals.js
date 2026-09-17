@@ -171,8 +171,16 @@ export function composePurchasedGoodsMt(rows) {
 // average; carpool effective per-passenger; transit / bike / walk /
 // EV from DEFRA + ICCT.
 export const COMMUTE_FACTORS_KG_PER_KM = {
-  car_solo: 0.218,    // EPA passenger vehicle avg ~0.218 kg/km (~0.351 kg/mi)
-  carpool:  0.087,    // 0.218 / 2.5 effective passenger share
+  // Corrected in Phase 406. These read 0.218/0.087 and claimed to be the
+  // "EPA passenger vehicle avg", but 0.218 kg/km (0.351 kg/mi) is not an
+  // EPA figure — it is 8.78 kg/gal at a 25 mpg assumption. EPA publishes a
+  // factor for exactly this calculation: GHG Emission Factors Hub 2025,
+  // Table 10 (Scope 3 Category 6 Business Travel and Category 7 Employee
+  // Commuting), Passenger Car, distance-based method —
+  //   0.297 kg CO2 + 0.0059 g CH4 + 0.0053 g N2O per vehicle-mile
+  //   = 0.29857 kg CO2e/mi at AR5 GWPs = 0.1855 kg/km.
+  car_solo: 0.1855,   // EPA Hub 2025 Table 10, Passenger Car, CO2e @ AR5
+  carpool:  0.0742,   // 0.1855 / 2.5 effective passenger share
   transit:  0.103,    // DEFRA bus + light rail blend
   bike:     0,
   walk:     0,

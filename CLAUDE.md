@@ -101,6 +101,26 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### One car, three EPA numbers (Phase 406)
+
+`Scope3.js` showed a solo-car factor of 0.404 kg CO₂e/passenger-mi; the data layer used 0.351 (and 0.218 kg/km). Both cited EPA. Checking the sources found **three** different published figures answering slightly different questions:
+
+| source | value | implied mpg |
+|---|---|---|
+| EPA Green Vehicle Guide, "typical passenger vehicle" | 0.400 kg CO₂/mi | 22.2 |
+| **EPA GHG Emission Factors Hub 2025, Table 10, Passenger Car** | **0.2986 kg CO₂e/mi** | ~29.6 |
+| what the repo used | 0.351 / 0.404 | 25 / — |
+
+Neither 0.351 nor 0.404 is an EPA number. 0.351 is 8.78 kg/gal at a 25 mpg assumption wearing an EPA label; 0.404 was cited to "EPA GHG Hub Mobile Combustion", a table that says 0.297.
+
+The Hub settles it without a judgement call: **Table 10 is "Scope 3 Category 6: Business Travel and Category 7: Employee Commuting"**, distance-based — exactly the calculation the commuting model performs. Passenger Car is 0.297 kg CO₂ + 0.0059 g CH₄ + 0.0053 g N₂O per vehicle-mile, so 0.29857 kg CO₂e at AR5 GWPs, or 0.1855 kg/km.
+
+Adopted as canonical wherever the repo cites EPA: `COMMUTE_FACTORS_KG_PER_KM` (0.218 → 0.1855, carpool 0.087 → 0.0742), `ef_car_avg`, `transportation.js` carpool avoidance, `reductionActions`, `Scope3.js` (whose worked carpool example recomputes to 41.8 / 20.9 / 20.9 mt), and `personalFootprint.js` (0.40 → 0.2986, since that file computes a commute and its header promises Hub sourcing).
+
+**Kept at 0.351 where 25 mpg is an explicit premise**, relabelled as an assumption rather than an EPA citation: the LearnAgent drive-vs-fly quizzes state "25 mpg" in the problem, and `geographicEstimates`' commuting Methods A/B/C deliberately cross-check three fleet bases (25 mpg, ICCT EV-adjusted 0.30, ICCT 2018 0.366). Collapsing A onto the EPA figure would have destroyed a spread that exists on purpose — the label was wrong there, not the number.
+
+Incidental corroboration: Hub Table 2 gives Diesel at **10.21 kg/gallon**, independently confirming the Phase 401 correction. Table 10 also publishes a short-haul air factor (0.207 kg CO₂/passenger-mile), an EPA alternative to the DEFRA figures Phase 404 made consistent — noted, not adopted.
+
 ### The food factors were not the slice they claimed (Phase 405)
 
 Phase 404 filed the food factors as "looks wrong, probably isn't" — the file's comment said **cradle-to-farm-gate**, which would have explained meat sitting below the headline figures. Pulling OWID's per-stage supply-chain breakdown (land-use change / farm / feed / processing / transport / retail / packaging / losses) disproved it:

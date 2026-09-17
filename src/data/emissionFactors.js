@@ -52,7 +52,10 @@ export const emissionFactors = [
   // Note long-haul is the HIGHER of the two.
   { id: 'ef_air_short', category: 'travel', subcategory: 'air_short_haul',     unit: 'passenger-mile', kgco2e_per_unit: 0.294, source: 'DEFRA 2024 short-haul economy, incl. non-CO2 effects (0.18287 kg/passenger-km)', year: 2024 },
   { id: 'ef_air_long',  category: 'travel', subcategory: 'air_long_haul',      unit: 'passenger-mile', kgco2e_per_unit: 0.322, source: 'DEFRA 2024 long-haul economy, incl. non-CO2 effects (0.20011 kg/passenger-km)', year: 2024 },
-  { id: 'ef_car_avg',   category: 'travel', subcategory: 'passenger_car_avg',  unit: 'mile',           kgco2e_per_unit: 0.351, source: 'EPA Greenhouse Gases from a Typical Passenger Vehicle', year: 2024 },
+  // Phase 406: was 0.351 while citing EPA's "Typical Passenger Vehicle"
+  // page, which actually publishes ~400 g CO2/mi at 22.2 mpg. 0.351 matched
+  // neither that nor the Hub. Now the Hub's own Scope 3 Cat 6/7 factor.
+  { id: 'ef_car_avg',   category: 'travel', subcategory: 'passenger_car_avg',  unit: 'mile',           kgco2e_per_unit: 0.2986, source: 'EPA GHG Emission Factors Hub 2025, Table 10 (Scope 3 Cat 6/7), Passenger Car — 0.297 kg CO2 + CH4/N2O per vehicle-mile, CO2e at AR5', year: 2025 },
   { id: 'ef_bus',       category: 'travel', subcategory: 'school_bus',         unit: 'mile',           kgco2e_per_unit: 1.96,  source: 'EPA medium/heavy duty diesel', year: 2024 },
 
   // Food — kg CO2e per kg of product, FULL SUPPLY CHAIN (land-use change

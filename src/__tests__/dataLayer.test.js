@@ -1050,12 +1050,13 @@ describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
   });
 
   it('composeCommutingMt: solo car commute math', () => {
-    // 12 mi one-way × 2 RT × 1.609 km/mi × 5 days × 36 weeks × 0.218 kg/km
-    //   ≈ 1515 kg ≈ 1.52 mt
+    // 12 mi one-way × 2 RT × 1.609 km/mi × 5 days × 36 weeks × 0.1855 kg/km
+    //   ≈ 1290 kg ≈ 1.29 mt. Was 0.218/1.52 until Phase 406 moved the
+    //   factor to EPA Hub Table 10 (Scope 3 Cat 7).
     const mt = composeCommutingMt([
       { mode: 'car_solo', one_way_miles: 12, days_per_week: 5, weeks_per_year: 36 },
     ]);
-    expect(mt).toBeCloseTo(1.52, 1);
+    expect(mt).toBeCloseTo(1.29, 1);
   });
 
   it('composeCommutingMt: zero-emission modes', () => {
@@ -1068,7 +1069,7 @@ describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
 
   it('composeCommutingMt: defaults days=5, weeks=36 when missing', () => {
     const mt = composeCommutingMt([{ mode: 'car_solo', one_way_miles: 12 }]);
-    expect(mt).toBeCloseTo(1.52, 1);
+    expect(mt).toBeCloseTo(1.29, 1);
   });
 
   it('composeCommutingMt: skips unknown mode', () => {
@@ -1076,12 +1077,12 @@ describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
       { mode: 'car_solo', one_way_miles: 12, days_per_week: 5, weeks_per_year: 36 },
       { mode: 'spaceship', one_way_miles: 100, days_per_week: 5 },
     ]);
-    expect(mt).toBeCloseTo(1.52, 1);
+    expect(mt).toBeCloseTo(1.29, 1);
   });
 
   it('exposes the new factor tables', () => {
     expect(PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD).toBe(0.40);
-    expect(COMMUTE_FACTORS_KG_PER_KM.car_solo).toBe(0.218);
+    expect(COMMUTE_FACTORS_KG_PER_KM.car_solo).toBe(0.1855);
     expect(COMMUTE_FACTORS_KG_PER_KM.bike).toBe(0);
   });
 
@@ -1102,7 +1103,7 @@ describe('composePurchasedGoodsMt + composeCommutingMt (Phase 34)', () => {
     expect(r.provenance).toBe('measured');
     const commute = r.breakdown.find((b) => b.source.toLowerCase() === 'commuting');
     expect(commute.provenance).toBe('measured');
-    expect(commute.mt).toBe(2); // 1.52 → round 2
+    expect(commute.mt).toBe(1); // 1.29 → round 1
   });
 });
 

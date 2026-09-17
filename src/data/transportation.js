@@ -96,7 +96,7 @@ export const carpoolTrips = (() => {
         passengerCount: passengers,
         baselineMode: 'solo_drive',
         avoidedVehicleMiles: miles * passengers,
-        estimatedKgCO2eAvoided: Math.round(miles * passengers * 0.351 * 10) / 10,
+        estimatedKgCO2eAvoided: Math.round(miles * passengers * 0.2986 * 10) / 10,
         verificationStatus: 'self_reported',
       });
     }

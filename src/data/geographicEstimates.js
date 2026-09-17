@@ -336,7 +336,11 @@ const COHORTS = {
 // "short hops are worst" intuition, which holds per-flight (takeoff
 // dominates) but not per passenger-km in this published set.
 const KG_PER_MI = {
-  car_solo:     0.351,           // EPA passenger vehicle, 25 mpg
+  car_solo:     0.351,           // 8.78 kg/gal ÷ 25 mpg ASSUMPTION — not an
+                                 // EPA published figure. EPA Hub 2025 Table 10
+                                 // gives 0.2986 kg CO2e/mi; kept distinct here
+                                 // because A/B/C below cross-check three fleet
+                                 // bases on purpose (Phase 406).
   car_carpool:  0.351 / 2.5,     // 2.5-person avg carpool effective
   bus_long:     0.072,           // DEFRA 2024 coach with RF n/a
   rail:         0.045,           // DEFRA 2024 national rail
@@ -582,7 +586,7 @@ const _commutingRange = (() => {
     // STAFF_WORK_DAYS, not INSTRUCTIONAL_DAYS: staff also work orientation,
     // exam periods and professional days. Equal today, free to diverge.
     mt: 52 * 12 * 2 * STAFF_WORK_DAYS * 0.351 / 1000,
-    basis: `52 staff × 12 mi avg one-way (Upper Valley ACS commute distribution) × 2 RT × ${STAFF_WORK_DAYS} days × 0.351 kg/mi (EPA passenger vehicle, 25 mpg).`,
+    basis: `52 staff × 12 mi avg one-way (Upper Valley ACS commute distribution) × 2 RT × ${STAFF_WORK_DAYS} days × 0.351 kg/mi (8.78 kg/gal ÷ 25 mpg NH light-duty assumption, not an EPA published factor).`,
   };
   // Method B: ICCT US light-duty effective fleet 2023 includes EVs.
   // Lower because EV penetration is starting to bend the avg.

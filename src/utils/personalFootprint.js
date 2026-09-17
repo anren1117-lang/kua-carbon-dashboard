@@ -18,9 +18,17 @@
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { INSTRUCTIONAL_DAYS, STUDENT_RESIDENCY_WEEKS } from '../data/academicCalendar.js';
 
-// Per-mile car emissions (mixed driving). EPA: 8.78 kg/gal gasoline,
-// ~22 mpg typical → ~0.399 kg/mi. Round to 0.40.
-const KG_PER_MILE_CAR = 0.40;
+// Per-mile car emissions. EPA GHG Emission Factors Hub 2025, Table 10
+// (Scope 3 Cat 6 Business Travel / Cat 7 Employee Commuting), Passenger
+// Car, distance-based: 0.297 kg CO2 + 0.0059 g CH4 + 0.0053 g N2O per
+// vehicle-mile = 0.2986 kg CO2e/mi at AR5 GWPs.
+//
+// Was 0.40, from EPA's "typical passenger vehicle" page (~400 g/mi at
+// 22.2 mpg). Both are EPA and both are real; they answer different
+// questions — the fleet average ON THE ROAD versus the factor EPA
+// publishes for commuting inventories. This file computes a commute, so
+// it takes the commuting factor. The gap is stated rather than hidden.
+const KG_PER_MILE_CAR = 0.2986;
 // Was 170 here while the institutional inventory assumed 180 for the same
 // commute — about 6% apart, and both numbers visible to the same student.
 // One source now; see academicCalendar.js for why it is two constants, not one.

@@ -117,7 +117,8 @@ describe('the student-facing calculator uses the shared constant', () => {
     const r = estimatePersonalFootprint({ studentType: 'day', commuteMilesOneWay: 10 });
     const commute = r.components.find((c) => /commute/i.test(c.label));
     // 10 mi one-way x 2 x days x 0.40 kg/mi, in tonnes.
-    expect(commute.mt).toBeCloseTo((10 * 2 * INSTRUCTIONAL_DAYS * 0.40) / 1000, 2);
+    // 0.40 until Phase 406 adopted the EPA Hub Table 10 commuting factor.
+    expect(commute.mt).toBeCloseTo((10 * 2 * INSTRUCTIONAL_DAYS * 0.2986) / 1000, 2);
   });
 
   it('shows the same figure in the note a student reads', () => {
