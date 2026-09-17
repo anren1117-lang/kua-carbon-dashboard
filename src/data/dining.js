@@ -13,13 +13,17 @@
  * @property {number} kgco2ePerServing
  */
 
+// Per-serving figures rescaled in Phase 405 by each protein's own
+// correction ratio, so whatever portion size was originally assumed is
+// preserved rather than re-guessed. See emissionFactors.js for why the
+// per-kg factors moved.
 const mealCategories = /** @type {const} */ ([
-  { category: 'beef',       proteinType: 'beef',     factorPerServing: 6.0 },
-  { category: 'pork',       proteinType: 'pork',     factorPerServing: 1.4 },
-  { category: 'chicken',    proteinType: 'chicken',  factorPerServing: 1.2 },
-  { category: 'fish',       proteinType: 'fish',     factorPerServing: 1.0 },
-  { category: 'vegetarian', proteinType: 'eggs',     factorPerServing: 0.45 },
-  { category: 'vegan',      proteinType: 'legumes',  factorPerServing: 0.30 },
+  { category: 'beef',       proteinType: 'beef',     factorPerServing: 9.95 },
+  { category: 'pork',       proteinType: 'pork',     factorPerServing: 2.46 },
+  { category: 'chicken',    proteinType: 'chicken',  factorPerServing: 1.98 },
+  { category: 'fish',       proteinType: 'fish',     factorPerServing: 2.72 },
+  { category: 'vegetarian', proteinType: 'eggs',     factorPerServing: 0.47 },
+  { category: 'vegan',      proteinType: 'legumes',  factorPerServing: 0.33 },
 ]);
 
 /** @type {DiningMenuItem[]} */

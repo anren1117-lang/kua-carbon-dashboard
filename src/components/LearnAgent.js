@@ -291,7 +291,7 @@ const paths = [
           { text: 'Always turning off your dorm light when you leave', correct: false, explanation: 'Helpful but small — about **5 kg CO₂/year** saved. Worth doing as a habit; not enough to be your top priority.' },
           { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about **3,000 kg CO₂** — about **600× as much as a year of conscientious light-switching**. If you can only pick one thing, the flight is where the leverage is. The math is just the difference in scale: aviation per-passenger-km factor (with radiative forcing) × thousands of km.' },
           { text: 'Recycling every plastic bottle for a year', correct: false, explanation: 'Recycling matters but is small in carbon terms — maybe **30 kg CO₂/year** for a typical student. It saves resources and reduces virgin-material production, but the climate impact is modest compared to travel or diet.' },
-          { text: 'Switching from beef to chicken for one weekly meal all year', correct: false, explanation: 'Significant but smaller than a flight reduction — about **300 kg CO₂/year** saved (36 weeks × 0.15 kg beef × 54 kg/kg difference). About 10× the recycling impact, but still 10× LESS than skipping a single flight.' },
+          { text: 'Switching from beef to chicken for one weekly meal all year', correct: false, explanation: 'Significant but smaller than a flight reduction — about **484 kg CO₂/year** saved (36 weeks × 0.15 kg beef × 89.6 kg/kg difference). Around 16× the recycling impact, but still roughly 6× LESS than skipping a single flight.' },
         ],
       },
       {
@@ -328,7 +328,7 @@ const paths = [
         type: 'quiz',
         question: 'Per kilogram of food, which has the LARGEST carbon footprint?',
         options: [
-          { text: 'Beef', correct: true, explanation: 'Right. Beef ≈ **60 kg CO₂e per kg** — far higher than chicken (~6), rice (~4), or beans (~0.9). Cattle digestion produces methane (a 28× GWP gas), and cattle require enormous amounts of land and feed compared to other foods. Switching beef meals to chicken or plants is one of the most impactful single dietary changes.' },
+          { text: 'Beef', correct: true, explanation: 'Right. Beef ≈ **99.5 kg CO₂e per kg** — far higher than chicken (~9.9), rice (~4.5), or beans (~1.0). Cattle digestion produces methane (a 28× GWP gas), and cattle require enormous amounts of land and feed compared to other foods. Switching beef meals to chicken or plants is one of the most impactful single dietary changes.' },
           { text: 'Chicken', correct: false, explanation: 'Chicken is ~6 kg CO₂e/kg — about 10× lower than beef. Significant compared to plants but much smaller than ruminant meat.' },
           { text: 'Rice', correct: false, explanation: 'Rice is ~4 kg CO₂e/kg — moderately high among plant foods because flooded paddy fields produce methane. Still 15× lower than beef per kg.' },
           { text: 'Potatoes', correct: false, explanation: 'Potatoes are about ~0.4 kg CO₂e/kg — among the lowest of any food. Roughly 150× less impact per kg than beef.' },
@@ -1418,7 +1418,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Food choices — pound-for-pound',
-        body: '1 kg beef ≈ 60 kg CO₂e. 1 kg chicken: ~6. 1 kg rice: ~4 (mostly methane from paddy fields). 1 kg beans: ~0.9. 1 kg potatoes: ~0.4. Ruminant meat is roughly 10× chicken and 50–100× plant foods.',
+        body: '1 kg beef ≈ 99.5 kg CO₂e. 1 kg chicken: ~9.9. 1 kg rice: ~4.5 (mostly methane from paddy fields). 1 kg beans: ~1.0. 1 kg potatoes: ~0.46. Ruminant meat is roughly 10× chicken and 100–200× plant foods.',
       },
       {
         type: 'math',
@@ -1428,14 +1428,14 @@ const paths = [
           { label: 'Meals/week swapped', value: '1 (half of 2)' },
           { label: 'School weeks', value: '36' },
           { label: 'Beef per meal', value: '0.15 kg' },
-          { label: 'Beef factor', value: '60 kg CO₂e/kg' },
-          { label: 'Chicken factor', value: '6 kg CO₂e/kg' },
+          { label: 'Beef factor', value: '99.5 kg CO₂e/kg' },
+          { label: 'Chicken factor', value: '9.9 kg CO₂e/kg' },
         ],
         question: 'Annual savings from this one swap:',
         options: [
           { text: '~3 kg CO₂e', correct: false, explanation: 'Way too low. You probably forgot to multiply by the 36 weeks.' },
-          { text: '~292 kg CO₂e', correct: true, explanation: 'Right. 36 swaps × 0.15 kg × (60 − 6) = 36 × 8.1 = 291.6 kg CO₂e ≈ 0.29 mt. One student over four years saves ~1.2 mt just from one weekly swap.' },
-          { text: '~3,000 kg CO₂e', correct: false, explanation: 'Used the full beef factor instead of the difference. Remember: the **swap** only avoids the beef-vs-chicken delta (54 kg/kg), not the entire beef footprint.' },
+          { text: '~484 kg CO₂e', correct: true, explanation: 'Right. 36 swaps × 0.15 kg × (99.5 − 9.9) = 36 × 13.44 = 483.8 kg CO₂e ≈ 0.48 mt. One student over four years saves ~1.9 mt from one weekly swap.' },
+          { text: '~3,000 kg CO₂e', correct: false, explanation: 'Used the full beef factor instead of the difference. Remember: the **swap** only avoids the beef-vs-chicken delta (89.6 kg/kg), not the entire beef footprint.' },
           { text: '~30 kg CO₂e', correct: false, explanation: 'Off by a factor of 10. You may have used 0.015 kg (15 g) instead of 0.15 kg (150 g) per portion.' },
         ],
       },
@@ -1443,10 +1443,10 @@ const paths = [
         type: 'quiz',
         question: 'Which has the biggest carbon footprint per pound?',
         options: [
-          { text: 'Beef', correct: true, explanation: 'Right. Cattle digestion produces **methane** (a 28× greenhouse gas); cattle also take more land, water, and feed per pound of meat. Beef is ~10× chicken and 50–100× plant foods.' },
-          { text: 'Chicken', correct: false, explanation: 'Chicken is much lower than beef (~6 kg CO₂e/kg vs ~60 for beef). Chickens grow fast, eat less per pound of meat, and don\'t produce methane the way cattle do.' },
-          { text: 'Wheat', correct: false, explanation: 'Plant foods are usually lowest. Wheat is ~1 kg CO₂e/kg — about 60× lower than beef.' },
-          { text: 'Lamb', correct: false, explanation: 'Lamb is high (~24 kg CO₂e/kg) — also a ruminant that produces methane — but still less than beef per pound on most lifecycle datasets.' },
+          { text: 'Beef', correct: true, explanation: 'Right. Cattle digestion produces **methane** (a 28× greenhouse gas); cattle also take more land, water, and feed per pound of meat. Beef is ~10× chicken and 100–200× plant foods.' },
+          { text: 'Chicken', correct: false, explanation: 'Chicken is much lower than beef (~9.9 kg CO₂e/kg vs ~99.5 for beef). Chickens grow fast, eat less per pound of meat, and don\'t produce methane the way cattle do.' },
+          { text: 'Wheat', correct: false, explanation: 'Plant foods are usually lowest. Wheat is ~1.6 kg CO₂e/kg — about 60× lower than beef.' },
+          { text: 'Lamb', correct: false, explanation: 'Lamb is high (~39.7 kg CO₂e/kg) — also a ruminant that produces methane — but still less than beef per pound on most lifecycle datasets.' },
         ],
       },
       {

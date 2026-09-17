@@ -92,7 +92,7 @@ const QUIZ_BANK = [
     options: [
       { text: '2×',   correct: false, explanation: 'Too low — the difference is much bigger because cattle are ruminants and produce methane.' },
       { text: '5×',   correct: false, explanation: 'Closer, but still low. The headline figure is ~10× per kg.' },
-      { text: '10×',  correct: true,  explanation: 'Right. Beef averages ~60 kg CO₂e/kg vs chicken ~6 kg/kg — about a 10× difference.' },
+      { text: '10×',  correct: true,  explanation: 'Right. Beef averages ~99.5 kg CO₂e/kg vs chicken ~9.9 kg/kg — about a 10× difference.' },
       { text: '100×', correct: false, explanation: 'That gap is closer to beef vs vegetables. Beef vs chicken is ~10×.' },
     ],
   },

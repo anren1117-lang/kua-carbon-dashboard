@@ -1110,7 +1110,11 @@ describe('POST /api/emissions/calculate', () => {
       body: { quantity: 1, category: 'food', subcategory: 'beef' },
     });
     expect(r.statusCode).toBe(200);
-    expect(r.body.kgco2e).toBeCloseTo(60, 1);
+    // 1 kg x the beef factor. Deliberately a literal, not the imported
+    // constant: a test that reads the same value it guards cannot catch a
+    // wrong one. Was 60 until Phase 405 corrected beef to the
+    // full-supply-chain figure.
+    expect(r.body.kgco2e).toBeCloseTo(99.5, 1);
   });
 
   it('404s on unknown factor', async () => {

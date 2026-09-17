@@ -55,19 +55,38 @@ export const emissionFactors = [
   { id: 'ef_car_avg',   category: 'travel', subcategory: 'passenger_car_avg',  unit: 'mile',           kgco2e_per_unit: 0.351, source: 'EPA Greenhouse Gases from a Typical Passenger Vehicle', year: 2024 },
   { id: 'ef_bus',       category: 'travel', subcategory: 'school_bus',         unit: 'mile',           kgco2e_per_unit: 1.96,  source: 'EPA medium/heavy duty diesel', year: 2024 },
 
-  // Food (cradle-to-farm-gate, kg CO2e per kg edible food)
-  { id: 'ef_food_beef',     category: 'food', subcategory: 'beef',     unit: 'kg', kgco2e_per_unit: 60.0, source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_lamb',     category: 'food', subcategory: 'lamb',     unit: 'kg', kgco2e_per_unit: 24.0, source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_pork',     category: 'food', subcategory: 'pork',     unit: 'kg', kgco2e_per_unit: 7.0,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_chicken',  category: 'food', subcategory: 'chicken',  unit: 'kg', kgco2e_per_unit: 6.0,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_fish',     category: 'food', subcategory: 'fish',     unit: 'kg', kgco2e_per_unit: 5.0,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_dairy',    category: 'food', subcategory: 'dairy',    unit: 'kg', kgco2e_per_unit: 3.2,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_eggs',     category: 'food', subcategory: 'eggs',     unit: 'kg', kgco2e_per_unit: 4.5,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_rice',     category: 'food', subcategory: 'rice',     unit: 'kg', kgco2e_per_unit: 4.0,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_grains',   category: 'food', subcategory: 'grains',   unit: 'kg', kgco2e_per_unit: 1.4,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_legumes',  category: 'food', subcategory: 'legumes',  unit: 'kg', kgco2e_per_unit: 0.9,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_veg',      category: 'food', subcategory: 'vegetables', unit: 'kg', kgco2e_per_unit: 0.5,  source: 'Poore & Nemecek 2018', year: 2018 },
-  { id: 'ef_food_fruit',    category: 'food', subcategory: 'fruit',    unit: 'kg', kgco2e_per_unit: 0.4,  source: 'Poore & Nemecek 2018', year: 2018 },
+  // Food — kg CO2e per kg of product, FULL SUPPLY CHAIN (land-use change
+  // + feed + farm + processing + transport + retail + packaging + losses).
+  //
+  // Corrected in Phase 405. The comment here previously said
+  // "cradle-to-farm-gate", which the data does not support: farm-gate for
+  // beef (beef herd) is 82.15 and the full chain is 99.48, while this file
+  // carried 60. Meanwhile the plant rows sat at the FULL-chain values
+  // (rice 4.0 vs 4.45, peas 0.9 vs 0.98, vegetables 0.5 vs 0.53). It was
+  // not one slice applied consistently — it was the older circulated
+  // "beef 60 / chicken 6" teaching set mixed with current totals, so the
+  // meat rows understated by 40-170%.
+  //
+  // Values are OWID's per-kg compilation of Poore & Nemecek (2018). Worth
+  // citing that way: the paper reported per 100 g protein and per 1,000
+  // kcal, and OWID derived the per-kg figures.
+  //
+  // Beef is the beef-herd figure (99.48). Dairy-herd beef is 33.3 — US
+  // supply is a mix, so this is deliberately the conservative-high end
+  // rather than an unsourced blend. Fruit uses Apples (0.43), the only
+  // fruit in KUA's purchase records.
+  { id: 'ef_food_beef',     category: 'food', subcategory: 'beef',     unit: 'kg', kgco2e_per_unit: 99.5, source: 'Poore & Nemecek 2018 via OWID per-kg (beef herd, full supply chain)', year: 2018 },
+  { id: 'ef_food_lamb',     category: 'food', subcategory: 'lamb',     unit: 'kg', kgco2e_per_unit: 39.7, source: 'Poore & Nemecek 2018 via OWID per-kg (lamb & mutton, full supply chain)', year: 2018 },
+  { id: 'ef_food_pork',     category: 'food', subcategory: 'pork',     unit: 'kg', kgco2e_per_unit: 12.3, source: 'Poore & Nemecek 2018 via OWID per-kg (pig meat, full supply chain)', year: 2018 },
+  { id: 'ef_food_chicken',  category: 'food', subcategory: 'chicken',  unit: 'kg', kgco2e_per_unit: 9.9,  source: 'Poore & Nemecek 2018 via OWID per-kg (poultry meat, full supply chain)', year: 2018 },
+  { id: 'ef_food_fish',     category: 'food', subcategory: 'fish',     unit: 'kg', kgco2e_per_unit: 13.6, source: 'Poore & Nemecek 2018 via OWID per-kg (farmed fish, full supply chain)', year: 2018 },
+  { id: 'ef_food_dairy',    category: 'food', subcategory: 'dairy',    unit: 'kg', kgco2e_per_unit: 3.2,  source: 'Poore & Nemecek 2018 via OWID per-kg (milk, full supply chain)', year: 2018 },
+  { id: 'ef_food_eggs',     category: 'food', subcategory: 'eggs',     unit: 'kg', kgco2e_per_unit: 4.7,  source: 'Poore & Nemecek 2018 via OWID per-kg (eggs, full supply chain)', year: 2018 },
+  { id: 'ef_food_rice',     category: 'food', subcategory: 'rice',     unit: 'kg', kgco2e_per_unit: 4.5,  source: 'Poore & Nemecek 2018 via OWID per-kg (rice, full supply chain)', year: 2018 },
+  { id: 'ef_food_grains',   category: 'food', subcategory: 'grains',   unit: 'kg', kgco2e_per_unit: 1.6,  source: 'Poore & Nemecek 2018 via OWID per-kg (wheat & rye, full supply chain)', year: 2018 },
+  { id: 'ef_food_legumes',  category: 'food', subcategory: 'legumes',  unit: 'kg', kgco2e_per_unit: 1.0,  source: 'Poore & Nemecek 2018 via OWID per-kg (peas, full supply chain)', year: 2018 },
+  { id: 'ef_food_veg',      category: 'food', subcategory: 'vegetables', unit: 'kg', kgco2e_per_unit: 0.5,  source: 'Poore & Nemecek 2018 via OWID per-kg (other vegetables, full supply chain)', year: 2018 },
+  { id: 'ef_food_fruit',    category: 'food', subcategory: 'fruit',    unit: 'kg', kgco2e_per_unit: 0.43, source: 'Poore & Nemecek 2018 via OWID per-kg (apples, full supply chain)', year: 2018 },
 
   // Waste (EPA WARM v15.1 — v16 released Dec 2023 supersedes this; values
   // not yet refreshed against v16, see WASTE_FACTORS_MT_PER_TON note)

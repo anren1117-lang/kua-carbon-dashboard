@@ -101,6 +101,30 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The food factors were not the slice they claimed (Phase 405)
+
+Phase 404 filed the food factors as "looks wrong, probably isn't" — the file's comment said **cradle-to-farm-gate**, which would have explained meat sitting below the headline figures. Pulling OWID's per-stage supply-chain breakdown (land-use change / farm / feed / processing / transport / retail / packaging / losses) disproved it:
+
+| food | farm-gate | full chain | repo had |
+|---|---|---|---|
+| Beef (beef herd) | 82.15 | 99.48 | **60** |
+| Lamb & mutton | 30.96 | 39.72 | **24** |
+| Fish (farmed) | 11.09 | 13.63 | **5** |
+| Poultry | 6.89 | 9.87 | **6** |
+| Rice | 3.53 | 4.45 | **4.0** |
+| Peas | 0.72 | 0.98 | **0.9** |
+| Other vegetables | 0.18 | 0.53 | **0.5** |
+
+The plant rows, eggs and dairy were already at the **full-chain** values; only the meat rows were low, and low against farm-gate too. So it was never one slice applied consistently — it was the older circulated "beef 60 / chicken 6" teaching set mixed with current totals, with the meat rows understating by 40–170%. All rows now carry OWID's per-kg compilation of Poore & Nemecek, cited that way because the paper published per 100 g protein and per 1,000 kcal — the per-kg figures are OWID's derivation.
+
+Beef uses the beef-herd figure (99.48). Dairy-herd beef is 33.3 and US supply is a mix, so this is deliberately the conservative-high end rather than an unsourced blend — the same call the repo makes on the eGRID gap.
+
+**No headline moved.** `SCOPE3_DINING_RANGE` is built from per-*meal* benchmarks (0.70 / 0.85 / 1.10 kg CO₂e/meal), not from these factors, so the 235 mt dining line is untouched. `ef_food_*` reaches only the `/dining` demo purchase table — and roughly eight student-facing teaching surfaces, which is the real reason this mattered.
+
+Dependent content corrected with it: `KG_PER_BEEF_SERVING` 9 → 15 (150 g × 99.5), the beef-swap quiz (292 → 484 kg, so its correct option moved), the "10× less than a flight" claim (now ~6×), `DailyTip`, `learningContent`, `chatbotMatch`, and an APES worked example. `dining.js` per-serving values were rescaled by each protein's own correction ratio so the original portion assumptions survive rather than being re-guessed.
+
+Three teaching claims were checked and **survive** the correction: beef:chicken is still ~10× (99.48/9.87 = 10.1), wheat is still ~60× lower than beef (63×), and lamb still ranks below beef. Beef vs plant foods moves from "50–100×" to "100–200×".
+
 ### Scope 3 factor audit (Phase 404)
 
 Scope 3 is ~2,635 mt — the largest and least-verified scope. Every load-bearing factor was checked against the primary source. Three were wrong, one is wrong but too consequential to change alone, and one looks wrong but isn't.

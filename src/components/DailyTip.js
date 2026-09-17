@@ -27,7 +27,7 @@ const TIPS = [
   {
     icon: '🥗',
     title: 'Skip beef one day a week',
-    body: 'Beef is the highest-carbon food per serving (~9 kg CO₂e per 150g portion). One beefless day per week per student = ~160 mt/year campus-wide.',
+    body: 'Beef is the highest-carbon food per serving (~15 kg CO₂e per 150g portion). One beefless day per week per student = ~265 mt/year campus-wide.',
     link: '/your-footprint',
     linkText: 'See your beef impact',
   },

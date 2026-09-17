@@ -33,9 +33,10 @@ const SCHOOL_DAYS_PER_YEAR = INSTRUCTIONAL_DAYS;
 const MT_PER_DOMESTIC_FLIGHT = 0.6;
 const MT_PER_INTL_FLIGHT     = 2.5;
 
-// Beef per kg: 60 kg CO₂e (the headline figure on /chatbot). A
-// "beef serving" is ~150 g — call it ~9 kg CO₂e per serving.
-const KG_PER_BEEF_SERVING = 9;
+// Beef per kg: 99.5 kg CO₂e (Poore & Nemecek via OWID, beef herd, full
+// supply chain). A "beef serving" is ~150 g — call it ~15 kg CO₂e per
+// serving. Was 9, built on the superseded 60 kg/kg figure — Phase 405.
+const KG_PER_BEEF_SERVING = 15;
 // Was 52 — a full calendar year of campus beef and dorm showers for students
 // who go home for summer, winter and spring breaks. The page invites students
 // to "audit + push back on" each assumption, so this one is now both smaller

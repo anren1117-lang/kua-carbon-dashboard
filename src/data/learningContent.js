@@ -53,7 +53,7 @@ export const knowledgeArticles = [
     topic: 'food',
     readingLevel: 'intermediate',
     keywords: ['beef', 'chicken', 'food', 'meat'],
-    body: 'Cattle are ruminants that produce methane during digestion (a greenhouse gas 28× as potent as CO2 over 100 years). They also need more land, feed, and water per pound of meat than chickens. The result: beef averages around 60 kg CO2e per kg, while chicken averages around 6 — about 10× lower.',
+    body: 'Cattle are ruminants that produce methane during digestion (a greenhouse gas 28× as potent as CO2 over 100 years). They also need more land, feed, and water per pound of meat than chickens. The result: beef averages around 99.5 kg CO2e per kg, while chicken averages around 9.9 — about 10× lower.',
     sourceDoc: 'Poore & Nemecek 2018',
   },
   {

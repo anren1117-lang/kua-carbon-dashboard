@@ -106,8 +106,9 @@ describe('the residency assumption is visible to the student who is asked to aud
   it('prices beef at residency weeks, not a calendar year', () => {
     const r = estimatePersonalFootprint({ studentType: 'us_boarding', beefFrequency: 'weekly' });
     const beef = r.components.find((c) => /beef/i.test(c.label));
-    // 1 serving/week x residency weeks x ~9 kg, in tonnes.
-    expect(beef.mt).toBeCloseTo((1 * STUDENT_RESIDENCY_WEEKS * 9) / 1000, 2);
+    // 1 serving/week x residency weeks x ~15 kg, in tonnes.
+    // Was 9 until Phase 405 corrected beef to the full-supply-chain factor.
+    expect(beef.mt).toBeCloseTo((1 * STUDENT_RESIDENCY_WEEKS * 15) / 1000, 2);
   });
 });
 

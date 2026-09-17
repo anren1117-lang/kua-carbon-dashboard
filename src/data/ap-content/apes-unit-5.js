@@ -1376,7 +1376,7 @@ Forest products replacing fossil fuels or concrete (in buildings) can be net-pos
       name: 'GHG footprint of food',
       equation: 'kg CO₂eq = (kg food) × (emissions factor)',
       meaning: 'Multiply food consumption by its carbon intensity.',
-      example: 'Switching one meal of beef (200 g) to chicken: 200 g × (60 - 6) g CO₂/g = 10.8 kg CO₂eq avoided per meal.',
+      example: 'Switching one meal of beef (200 g) to chicken: 200 g × (99.5 - 9.9) g CO₂/g = 17.9 kg CO₂eq avoided per meal.',
     },
   ],
   practice: [
