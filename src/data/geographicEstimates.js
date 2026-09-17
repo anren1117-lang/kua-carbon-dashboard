@@ -40,12 +40,22 @@ import { INSTRUCTIONAL_DAYS, STAFF_WORK_DAYS } from './academicCalendar.js';
 
 // ─── Climate + geography constants ────────────────────────────────
 
-// Plainfield NH sits in IECC climate zone 6A. Lebanon (closest NOAA
-// station) reports 7,400 HDD on the 1991-2020 normals. KUA is at
-// slightly higher elevation than Lebanon (700 ft vs 600 ft) so a
-// small upward adjustment is justified — using 7,500 HDD as the
-// design value, in line with ASHRAE handbook for the upper Connecticut
-// River valley.
+// Plainfield NH sits in IECC climate zone 6A. Lebanon Municipal (KLEB, the
+// closest NOAA station) reports 7,333.5 HDD on the 1991-2020 normals —
+// verified against NCEI's published normals AND ACIS, month for month, and
+// stored as HDD_NORMAL_1991_2020 in degreeDays.js. This comment previously
+// said 7,400, which overstated the station slightly and so made the
+// adjustment below look smaller than it actually is.
+//
+// KUA sits a little higher than the station (~700 ft vs ~600 ft), so a modest
+// upward adjustment is justified: 7,500 HDD as the DESIGN value, in line with
+// the ASHRAE handbook for the upper Connecticut River valley. That is +2.3%
+// on the measured normal, not the +1.4% the old comment implied.
+//
+// DO NOT "reconcile" this onto degreeDays.js's measured normal. A design value
+// and a station normal are different quantities: one sizes heating load, the
+// other describes what the weather actually did. Use HDD_NORMAL_1991_2020 for
+// weather comparisons, and this for load estimates.
 export const KUA_HDD_BASE_65 = 7500;
 
 // Distance from Plainfield to common student-travel anchors. Used
