@@ -44,23 +44,55 @@ export function composeScope1() {
 // Used by composeScope1FromBills() to convert fuel-delivery invoices
 // into a Scope 1 heating component. Keep keys spelled exactly as the
 // admin form's `fuel_type` dropdown so the lookup is direct.
+// EPA GHG Emission Factors Hub 2025, Table 1 (Stationary Combustion).
+// Values are CO2 ONLY — the Hub publishes CH4 and N2O in separate columns and
+// they are not included here, so these are kg CO2/gal, not kg CO2e/gal. The
+// CH4/N2O contribution for these fuels is well under 1% of the CO2 term.
+//
+// Corrected in the Scope 1 audit. 'Heating Oil' read 10.16, which matches no
+// EPA row: Distillate Fuel Oil No. 1 is 10.18 and No. 2 is 10.21. KUA burns
+// No. 2 (geographicEstimates labels it so, and the BTU/gal constant used for
+// the geothermal counterfactual is 138,500, which is No. 2). Nothing in the
+// repo documented 10.16 as a deliberate blend, so it was a wrong number under
+// a right label. Effect is ~0.5% on a 1,290 mt heating line whose own stated
+// range is 891-1,867 — a citation fix, not a materiality one.
+//
+// 'Diesel' read 10.18, which is the No. 1 oil row, not diesel. Diesel is 10.21.
+// Reachability, so nobody over-reads the corrections below: only 'Heating Oil'
+// and 'Propane' are live. useMeasuredScope1.js tags every row as one of those
+// two, and the geothermal counterfactual maps to the same pair. Vehicles go
+// through FLEET_FACTORS_KG_PER_GAL instead. 'Diesel' and 'Gasoline' are kept
+// because fuel_bills.fuel_type is free text and could emit them — a wrong
+// number is still wrong even when nothing reads it — but fixing them moved no
+// published figure.
 export const FUEL_FACTORS_KG_PER_GAL = {
-  'Heating Oil': 10.16,
-  'Propane':      5.72,
-  'Diesel':      10.18,
-  'Gasoline':     8.89,
+  'Heating Oil': 10.21, // Distillate Fuel Oil No. 2 — LIVE, drives the heating line
+  'Propane':      5.72, // Propane (NOT the separate "LPG" row, which is 5.68) — LIVE
+  'Diesel':      10.21, // Distillate Fuel Oil No. 2 / diesel — not currently reached
+  'Gasoline':     8.78, // Motor Gasoline — not currently reached
 };
 
-// EPA Mobile Combustion factors (kg CO2e per gallon, including
-// combustion + N2O + CH4 from incomplete combustion). Used by
-// composeFleetMt(). Same numeric values as FUEL_FACTORS_KG_PER_GAL
-// for diesel/gasoline/propane — kept as a separate map so future
-// refinements (e.g. light-duty vs heavy-duty diesel) can diverge.
+// EPA GHG Emission Factors Hub 2025, Table 2 (Mobile Combustion).
+//
+// CO2 ONLY. The previous comment claimed these included "combustion + N2O +
+// CH4"; they don't — the Hub carries mobile CH4/N2O in Table 4, keyed by
+// vehicle type AND model year, which this codebase doesn't collect. Claiming
+// CO2e while storing CO2 overstated what the number was.
+//
+// Gasoline read 8.89, matching no EPA row; Motor Gasoline is 8.78, which is
+// already what emissionFactors.js and geographicEstimates use. KUA's fleet is
+// three gasoline vehicles and two diesel buses, so this one moves the fleet
+// line rather than being cosmetic.
+//
+// Kept as a SEPARATE map from the stationary factors even where the values
+// coincide: EPA publishes stationary and mobile combustion separately, they
+// can diverge in future editions, and merging them would be the unit-vs-
+// question mistake this codebase has made before.
 export const FLEET_FACTORS_KG_PER_GAL = {
-  'Gasoline':  8.89,
-  'Diesel':   10.21,
-  'Propane':   5.72,
-  'CNG':       5.85, // EPA Hub: ~5.85 kg CO2e per gallon-equivalent
+  'Gasoline':  8.78, // Motor Gasoline
+  'Diesel':   10.21, // Diesel Fuel
+  'Propane':   5.72, // Propane
+  'CNG':       5.85, // per gallon-equivalent; Hub lists CNG per scf (0.05444)
 };
 
 // IPCC AR6 Working Group I Chapter 7 GWP100 values for the
@@ -69,13 +101,20 @@ export const FLEET_FACTORS_KG_PER_GAL = {
 // Order of magnitude varies by chemical; R-22 is ~5x worse per kg
 // than R-410A which is ~5x worse than R-1234yf.
 export const REFRIGERANT_GWP100 = {
-  'R-410A':   2256,
-  'R-134a':   1530,
-  'R-22':     1960,
-  'R-404A':   4728,
-  'R-407C':   1908,
-  'R-32':      771,
-  'R-1234yf':    4,
+  'R-410A':   2256,   // AR6 (blend: R-32 + R-125, 50/50 by mass)
+  'R-134a':   1530,   // AR6 pure compound. AR5 gave 1300 — don't mix vintages.
+  'R-22':     1960,   // AR6 pure compound (HCFC, Montreal phase-out, legacy kit)
+  'R-404A':   4728,   // AR6 (blend: R-125 + R-143a + R-134a)
+  'R-407C':   1908,   // AR6 (blend: R-32 + R-125 + R-134a)
+  'R-32':      771,   // AR6 pure compound
+  // Was 4, which is the AR4-era / EU F-Gas Regulation figure — so this one row
+  // was a different vintage from the other six, under a single "AR6" label.
+  // AR6 gives 0.501: an unsaturated fluorocarbon with an atmospheric lifetime
+  // of about ten days cannot have a GWP-100 of 4, which is the physical check
+  // that makes this unambiguous rather than a matter of which table you read.
+  // Sourcing note: corroborated across two secondary AR6 tables rather than
+  // read out of AR6 WG1 Ch.7 directly — flagged so nobody treats it as primary.
+  'R-1234yf':  0.501,
   'other':    2000, // generic mid-band fallback for unknown blends
 };
 

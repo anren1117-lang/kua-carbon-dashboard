@@ -96,8 +96,8 @@ describe('useMeasuredScope1', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.measured).toBe(true);
     expect(result.current.provenance).toBe('measured');
-    // 100,000 gal × 10.16 kg/gal = 1,016,000 kg = 1,016 mt heating
-    // + fleet 54 + refrigerants 7 = ~1,077 mt
+    // 100,000 gal × the EPA No. 2 oil factor (10.21) = 1,021 mt heating
+    // + fleet 54 + refrigerants 7 = ~1,082 mt
     expect(result.current.totalMt).toBeGreaterThan(1000);
     expect(result.current.totalMt).toBeLessThan(1100);
   });
@@ -113,8 +113,8 @@ describe('useMeasuredScope1', () => {
     const { result } = renderHook(() => useMeasuredScope1());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.measured).toBe(true);
-    // 50,000 gal × 10.16 kg/gal = 508,000 kg = 508 mt heating
-    // + fleet 54 + refrigerants 7 = ~569 mt
+    // 50,000 gal × the EPA No. 2 oil factor (10.21) = ~511 mt heating
+    // + fleet 54 + refrigerants 7 = ~572 mt
     expect(result.current.totalMt).toBeGreaterThan(500);
     expect(result.current.totalMt).toBeLessThan(600);
   });
@@ -140,7 +140,8 @@ describe('useMeasuredScope1', () => {
     const { result } = renderHook(() => useMeasuredScope1());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.measured).toBe(true);
-    // 1,000 gal × 8.89 kg/gal = 8.89 mt fleet + heating placeholder
+    // 1,000 gal × the EPA Motor Gasoline factor (8.78) = 8.78 mt fleet
+    // + heating placeholder
     expect(result.current.totalMt).toBeGreaterThan(1290); // heating placeholder
   });
 

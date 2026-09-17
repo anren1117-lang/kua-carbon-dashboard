@@ -90,11 +90,16 @@ export const TRAVEL_ANCHORS_MI = {
 // All from EPA GHG Emission Factors Hub 2024 unless noted.
 
 export const FUEL_FACTORS = {
-  heating_oil_2:  { kg_per_gal: 10.16, source: 'EPA Stationary Combustion Table 2 (Distillate Fuel Oil #2)', year: 2024 },
-  propane:        { kg_per_gal: 5.72,  source: 'EPA Stationary Combustion Table 2 (LPG)',                    year: 2024 },
-  natural_gas:    { kg_per_therm: 5.31, source: 'EPA Stationary Combustion (Natural gas)',                   year: 2024 },
-  gasoline:       { kg_per_gal: 8.78,  source: 'EPA Mobile Combustion (Motor gasoline)',                     year: 2024 },
-  diesel:         { kg_per_gal: 10.21, source: 'EPA Mobile Combustion (Distillate Fuel Oil #2 / diesel)',    year: 2024 },
+  // Verified against the EPA GHG Emission Factors Hub 2025 during the Scope 1
+  // audit. heating_oil_2 read 10.16 while its own label said "#2" — EPA puts
+  // No. 2 at 10.21 (No. 1 is 10.18). CO2 only; CH4/N2O sit in separate columns.
+  heating_oil_2:  { kg_per_gal: 10.21, source: 'EPA GHG Emission Factors Hub 2025, Stationary Combustion (Distillate Fuel Oil No. 2)', year: 2025 },
+  // NB: EPA lists "Propane" (5.72) and "Liquefied Petroleum Gases (LPG)" (5.68)
+  // as DIFFERENT rows. The value here is the Propane row; the label said LPG.
+  propane:        { kg_per_gal: 5.72,  source: 'EPA GHG Emission Factors Hub 2025, Stationary Combustion (Propane)',                   year: 2025 },
+  natural_gas:    { kg_per_therm: 5.31, source: 'EPA GHG Emission Factors Hub 2025, Stationary Combustion (Natural Gas)',              year: 2025 },
+  gasoline:       { kg_per_gal: 8.78,  source: 'EPA GHG Emission Factors Hub 2025, Mobile Combustion (Motor Gasoline)',                year: 2025 },
+  diesel:         { kg_per_gal: 10.21, source: 'EPA GHG Emission Factors Hub 2025, Mobile Combustion (Diesel Fuel)',                   year: 2025 },
 };
 
 // Heating value of #2 heating oil = 138,500 BTU/gal (EIA Annual Energy

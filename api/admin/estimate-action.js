@@ -49,7 +49,7 @@ KUA fingerprint (use this — DO NOT generalize):
 - Scope totals — Scope 1: ~1,350 mt central (range 891–1,867 across 3 methods). Scope 2: ~390 mt measured ±5%. Scope 3: ~2,635 mt central (range 1,726–3,720 across 3-4 methods × 8 components: purchased goods ~1,315 dominates, student travel ~760 next, then dining ~235, upstream fuel ~230, commuting ~90, waste ~5). Heating oil dominates Scope 1; purchased goods + student travel dominate Scope 3.
 
 Anchor your estimate against these whole-school annual mtCO2e benchmarks:
-- Heat-pump retrofit, single dorm (Densmore-class): 30–55 mt/yr (4-8K gal oil × 10.16 kg/gal × 70% displacement after Scope 2 add-back).
+- Heat-pump retrofit, single dorm (Densmore-class): 30–55 mt/yr (4-8K gal oil × 10.21 kg/gal × 70% displacement after Scope 2 add-back).
 - Heating-oil to heat-pump, full campus: 600–900 mt/yr (~70% of bottom-up Scope 1 heating ≈ 1,234 mt).
 - Building envelope upgrade (insulation + air sealing) per building: 8–20 mt/yr (15-25% heating reduction × per-building gal).
 - LED retrofit (remaining T8s campus-wide): 6–10 mt/yr (most KUA fixtures already LED; this targets the residual fluorescent inventory).

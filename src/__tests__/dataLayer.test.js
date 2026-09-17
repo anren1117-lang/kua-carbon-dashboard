@@ -540,7 +540,10 @@ describe('composeScope1FromBills (live Supabase fuel_bills → measured Scope 1)
   });
 
   it('flips heating row to MEASURED when any rows present, with correct kg → mt math', () => {
-    // 100,000 gal heating oil × 10.16 kg/gal = 1,016,000 kg = 1,016 mt heating.
+    // Derived from the exported factor so the next EPA edition moves this
+    // expectation instead of breaking the file. One place pins the literals
+    // (see 'exposes FLEET_FACTORS_KG_PER_GAL...' below).
+    const expected = Math.round((100_000 * FUEL_FACTORS_KG_PER_GAL['Heating Oil']) / 1000);
     const r = composeScope1FromBills([
       { fuel_type: 'Heating Oil', gallons: 50000 },
       { fuel_type: 'Heating Oil', gallons: 50000 },
@@ -548,19 +551,19 @@ describe('composeScope1FromBills (live Supabase fuel_bills → measured Scope 1)
     expect(r.provenance).toBe('measured');
     const heatingRow = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
     expect(heatingRow.provenance).toBe('measured');
-    expect(heatingRow.mt).toBe(1016);
+    expect(heatingRow.mt).toBe(expected);
   });
 
-  it('mixes fuel types using EPA factors (oil 10.16 + propane 5.72)', () => {
-    // 1,000 gal oil = 10.16 mt; 1,000 gal propane = 5.72 mt; sum 15.88.
+  it('mixes fuel types using the EPA stationary-combustion factors', () => {
     const r = composeScope1FromBills([
       { fuel_type: 'Heating Oil', gallons: 1000 },
       { fuel_type: 'Propane',     gallons: 1000 },
     ]);
     const heatingRow = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
-    expect(heatingRow.mt).toBe(16); // 15.88 → round → 16
-    expect(FUEL_FACTORS_KG_PER_GAL['Heating Oil']).toBe(10.16);
-    expect(FUEL_FACTORS_KG_PER_GAL['Propane']).toBe(5.72);
+    const expected = Math.round(
+      (1000 * FUEL_FACTORS_KG_PER_GAL['Heating Oil'] + 1000 * FUEL_FACTORS_KG_PER_GAL['Propane']) / 1000,
+    );
+    expect(heatingRow.mt).toBe(expected);
   });
 
   it('skips rows with unknown fuel_type or invalid gallons rather than silently bucketing', () => {
@@ -595,7 +598,7 @@ describe('composeScope1FromBills (live Supabase fuel_bills → measured Scope 1)
   });
 
   it('flips fleet to MEASURED when scope1_fleet_records rows present', () => {
-    // 100 gal gasoline × 8.89 kg/gal = 889 kg = 0.889 mt → round 1
+    // 100 gal gasoline × the EPA Motor Gasoline factor → rounds to 1 mt
     const r = composeScope1FromBills([], {
       fleetRecords: [{ fuel_type: 'Gasoline', gallons: 100 }],
     });
@@ -651,28 +654,30 @@ describe('composeFleetMt + composeRefrigerantMt (component helpers)', () => {
   });
 
   it('composeFleetMt: applies EPA Mobile Combustion factors per fuel', () => {
-    // 1000 gal diesel × 10.21 = 10,210 kg = 10.21 mt
-    expect(composeFleetMt([{ fuel_type: 'Diesel', gallons: 1000 }])).toBeCloseTo(10.21, 2);
-    // 1000 gal gasoline × 8.89 = 8.89 mt
-    expect(composeFleetMt([{ fuel_type: 'Gasoline', gallons: 1000 }])).toBeCloseTo(8.89, 2);
+    expect(composeFleetMt([{ fuel_type: 'Diesel', gallons: 1000 }]))
+      .toBeCloseTo(FLEET_FACTORS_KG_PER_GAL.Diesel, 2);
+    expect(composeFleetMt([{ fuel_type: 'Gasoline', gallons: 1000 }]))
+      .toBeCloseTo(FLEET_FACTORS_KG_PER_GAL.Gasoline, 2);
   });
 
   it('composeFleetMt: also accepts lowercase fuel_type from legacy scope1_fleet schema', () => {
     // The existing admin form writes 'gasoline' / 'diesel' (lowercase).
     // Phase 32 reconciliation: the composer normalizes to capitalized
     // before factor lookup so legacy data isn't silently dropped.
-    expect(composeFleetMt([{ fuel_type: 'gasoline', gallons: 1000 }])).toBeCloseTo(8.89, 2);
-    expect(composeFleetMt([{ fuel_type: 'diesel', gallons: 1000 }])).toBeCloseTo(10.21, 2);
+    expect(composeFleetMt([{ fuel_type: 'gasoline', gallons: 1000 }]))
+      .toBeCloseTo(FLEET_FACTORS_KG_PER_GAL.Gasoline, 2);
+    expect(composeFleetMt([{ fuel_type: 'diesel', gallons: 1000 }]))
+      .toBeCloseTo(FLEET_FACTORS_KG_PER_GAL.Diesel, 2);
   });
 
   it('composeFleetMt: skips unknown fuel_type and invalid gallons', () => {
     const mt = composeFleetMt([
-      { fuel_type: 'Gasoline', gallons: 100 },     // 0.889 mt
+      { fuel_type: 'Gasoline', gallons: 100 },     // the only counted row
       { fuel_type: 'NotARealFuel', gallons: 999 }, // skipped
       { fuel_type: 'Diesel', gallons: 'banana' },  // skipped
       { fuel_type: 'Diesel', gallons: -50 },       // skipped (negative)
     ]);
-    expect(mt).toBeCloseTo(0.889, 2);
+    expect(mt).toBeCloseTo((100 * FLEET_FACTORS_KG_PER_GAL.Gasoline) / 1000, 2);
   });
 
   it('composeRefrigerantMt: empty input → 0 mt', () => {
@@ -705,11 +710,31 @@ describe('composeFleetMt + composeRefrigerantMt (component helpers)', () => {
     expect(mt).toBeCloseTo(0.91, 1);
   });
 
-  it('exposes FLEET_FACTORS_KG_PER_GAL + REFRIGERANT_GWP100 for callers', () => {
-    expect(FLEET_FACTORS_KG_PER_GAL.Gasoline).toBe(8.89);
+  // THE ONE PLACE THAT PINS THE LITERALS. Every other fuel assertion derives
+  // from these maps, so a new EPA edition changes this test and nothing else.
+  // Values verified against the EPA GHG Emission Factors Hub 2025 and IPCC AR6.
+  it('exposes the EPA + IPCC factors, at their published values', () => {
+    // Motor Gasoline. Was 8.89, which matches no EPA row.
+    expect(FLEET_FACTORS_KG_PER_GAL.Gasoline).toBe(8.78);
     expect(FLEET_FACTORS_KG_PER_GAL.Diesel).toBe(10.21);
+    // Distillate Fuel Oil No. 2. Was 10.16, which matches no EPA row either —
+    // No. 1 is 10.18 and No. 2 is 10.21.
+    expect(FUEL_FACTORS_KG_PER_GAL['Heating Oil']).toBe(10.21);
+    // EPA lists Propane (5.72) and LPG (5.68) as separate rows; this is Propane.
+    expect(FUEL_FACTORS_KG_PER_GAL['Propane']).toBe(5.72);
     expect(REFRIGERANT_GWP100['R-410A']).toBe(2256);
-    expect(REFRIGERANT_GWP100['R-1234yf']).toBe(4);
+    // Was 4 — the AR4-era / EU F-Gas figure sitting in a map labelled AR6.
+    // AR6 gives 0.501; a ~10-day atmospheric lifetime cannot give 4.
+    expect(REFRIGERANT_GWP100['R-1234yf']).toBeCloseTo(0.501, 3);
+  });
+
+  it('keeps stationary and mobile factors as separate maps', () => {
+    // EPA publishes them separately and they can diverge in a future edition.
+    // Merging them because today's values coincide would be the unit-vs-
+    // question mistake this codebase has made before.
+    expect(FUEL_FACTORS_KG_PER_GAL).not.toBe(FLEET_FACTORS_KG_PER_GAL);
+    expect(FUEL_FACTORS_KG_PER_GAL['Gasoline']).toBeDefined();
+    expect(FLEET_FACTORS_KG_PER_GAL.Gasoline).toBeDefined();
   });
 });
 

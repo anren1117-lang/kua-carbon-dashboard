@@ -101,6 +101,24 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Scope 1 factor audit (Phase 401)
+
+The session had spent itself on Scope 2 — **390 mt, and the only measured scope** — while Scope 1 (~1,350 mt) and Scope 3 (~2,635 mt) carry ±40% bands and lines ending "not yet integrated". This is the start of correcting that imbalance. Every factor checked against the **EPA GHG Emission Factors Hub 2025** (extracted locally from EPA's own xlsx) and **IPCC AR6**, not from memory.
+
+**Four wrong values, all under confident citations:**
+- `FUEL_FACTORS_KG_PER_GAL['Heating Oil']` was **10.16**, matching no EPA row — No. 1 oil is 10.18, No. 2 is 10.21. KUA burns No. 2 (the 138,500 BTU/gal constant confirms it). Now 10.21. **Live**: moves the heating line 1,236.4 → 1,242.0 mt, ~0.5% inside a stated 891–1,867 band, so a citation fix rather than a materiality one.
+- `FLEET_FACTORS_KG_PER_GAL.Gasoline` was **8.89**, also matching no EPA row; Motor Gasoline is **8.78**, already what two other files used. **Live** — KUA's fleet is three petrol vehicles.
+- Stationary `'Diesel'` was **10.18**, which is the No. 1 *oil* row, not diesel. Corrected to 10.21 but **not reached** — only 'Heating Oil' and 'Propane' ever enter `composeScope1FromBills`.
+- `REFRIGERANT_GWP100['R-1234yf']` was **4** — the AR4-era / EU F-Gas figure — inside a map labelled "IPCC AR6". AR6 gives **0.501**. The other six GWPs verified correct. A ~10-day atmospheric lifetime cannot yield a GWP-100 of 4, which is the physical check that settles it.
+
+**Propane 5.72 is right** — my 5.68 suspicion was wrong. EPA lists "Propane" (5.72) and "LPG" (5.68) as *different rows*, and the code picked correctly; only the label said LPG.
+
+**These are CO₂, not CO₂e.** The Hub keeps CH₄/N₂O in separate columns, and mobile CH₄/N₂O is keyed by vehicle type *and model year*, which this codebase doesn't collect. The old `FLEET_FACTORS` comment claimed the values included N₂O and CH₄; they don't.
+
+**Stationary and mobile stay separate maps** even where values now coincide — EPA publishes them separately and they can diverge. Merging them would repeat the unit-vs-question error.
+
+Tests derive from the exported maps; **one** test pins the literals, so a future EPA edition changes that test and nothing else.
+
 ### Show the precision the evidence supports (Phase 400)
 
 `utils/modelledPrecision.js`. `/buildings/:id` rendered **"22,213 kWh"** and `mtCO₂e.toFixed(2)` for figures extrapolated from **four** metered months divided by a seasonal share — every digit past the third an artefact of a model that itself moved 13.7% in Phase 390 and 5% again in Phase 392. False precision is not cosmetic: it is a silent claim about data quality to a reader with no way to check it.
