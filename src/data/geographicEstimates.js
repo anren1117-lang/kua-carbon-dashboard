@@ -35,7 +35,7 @@
 import { buildings } from './buildings.js';
 import { fleetVehicles } from './transportation.js';
 import { TOTAL_STUDENTS } from './students.js';
-import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
+import { ANNUAL_SEQUESTRATION_MT, forestStands } from './sinks.js';
 import { INSTRUCTIONAL_DAYS, STAFF_WORK_DAYS } from './academicCalendar.js';
 
 // ─── Climate + geography constants ────────────────────────────────
@@ -740,32 +740,46 @@ const _sinksRange = (() => {
     mt: totalAcres * 2.1,
     basis: `${totalAcres.toLocaleString()} acres × 2.1 mtCO2e/acre/yr (Birdsey 1992 USDA WO-59 average for US closed-canopy forest, mixed-age stands).`,
   };
-  // Method B: USDA NH FIA Morin et al. 2020 — NH-specific.
-  // NH forests average 31.8 tons C/acre × ~1% annual growth ≈ 1.17 mt
-  // C/acre/yr × 44/12 = 4.3 mtCO2e/acre/yr at high end of NH FIA range,
-  // but most stands run lower; use 2.65 mtCO2e/acre/yr blended for
-  // mixed-stand NH inventory (per published USDA NH FIA tables).
+  // Method B: USDA NH FIA — NH-specific, rebuilt in Phase 411.
+  //
+  // The old version applied the C -> CO2e conversion TWICE. It read
+  // "31.8 tons C/acre × ~1% annual growth ≈ 1.17 mt C/acre/yr × 44/12 =
+  // 4.3 mtCO2e" — but 31.8 × 1% = 0.318 t C/acre/yr, and 0.318 × 44/12 is
+  // already 1.17 mtCO2e. The 1.17 was the answer, not an intermediate, so
+  // multiplying again inflated it 3.67x. It then discarded both numbers and
+  // used 2.65, which is Method C's figure, making this "independent" method
+  // a restatement of the dashboard's own result.
+  const B_tonsCPerAcre = 31.8;   // NH FIA average standing carbon
+  const B_growthRate   = 0.01;   // ~1%/yr
+  const B_rate = +(B_tonsCPerAcre * B_growthRate * (44 / 12)).toFixed(2); // 1.17
   const B = {
-    label: 'USDA NH Forest Inventory Analysis (Morin 2020)',
-    mt: totalAcres * 2.65,
-    basis: `${totalAcres.toLocaleString()} acres × 2.65 mtCO2e/acre/yr (Morin et al. 2020 USDA NH Forest Inventory and Analysis — NH forests average 31.8 tons C/acre with ~1% annual growth, blended for KUA's stand mix).`,
+    label: 'USDA NH Forest Inventory Analysis (standing carbon × growth)',
+    mt: totalAcres * B_rate,
+    basis: `${totalAcres.toLocaleString()} acres × ${B_rate} mtCO2e/acre/yr (USDA NH Forest Inventory and Analysis: NH forests average ${B_tonsCPerAcre} tons C/acre, ~${B_growthRate * 100}% annual growth → ${(B_tonsCPerAcre * B_growthRate).toFixed(3)} t C/acre/yr × 44/12).`,
   };
-  // Method C: Nowak 2013 stand-specific weighted (richer biological
-  // method using species mix). Gives the higher bound for the
-  // open-grown component (~4.2 mtCO2e/acre/yr) plus closed-canopy
-  // (~2.4) blended. KUA stands per sinks.js average ~2.65 mt/acre.
+  // Method C: the per-stand inventory. NOT AN INDEPENDENT CHECK — this is
+  // the figure the dashboard adopts (ANNUAL_SEQUESTRATION_MT), so it cannot
+  // corroborate itself. Kept in the spread to show where the adopted number
+  // sits relative to published rates, which is at the very top.
+  //
+  // Its rates also lean on Nowak 2013, an URBAN-tree study. That is the
+  // right source for the 40 open-grown acres and a stretch for the other
+  // 960 acres of closed canopy.
   const C = {
-    label: 'Nowak 2013 stand-specific (KUA forestStands inventory)',
+    label: 'KUA per-stand inventory (the adopted figure — not independent)',
     mt: ANNUAL_SEQUESTRATION_MT, // already computed in sinks.js from per-stand rates
-    basis: `Per-stand inventory in src/data/sinks.js: ${forestStandsCount()} stands × stand-specific sequestration rates from Nowak et al. 2013 (open-grown vs closed-canopy weighted by KUA's actual forest type mix).`,
+    basis: `Per-stand inventory in src/data/sinks.js: ${forestStands.length} stands × stand-specific rates (open-grown from Nowak et al. 2013, closed-canopy from Birdsey 1992), weighted by KUA's forest-type mix. This is the dashboard's own adopted total, listed for comparison rather than as corroboration.`,
   };
-  return rangeFromMethods([A, B, C]);
+  // Method D: EPA GHG Equivalencies — the authoritative national net rate,
+  // and the only genuinely independent number in this set. Added Phase 411.
+  const D_rate = 1.00;
+  const D = {
+    label: 'EPA GHG Equivalencies — average US forest, net',
+    mt: totalAcres * D_rate,
+    basis: `${totalAcres.toLocaleString()} acres × ${D_rate.toFixed(2)} mtCO2e/acre/yr (EPA Greenhouse Gas Equivalencies Calculator, from USDA Forest Service data in the Inventory of U.S. Greenhouse Gas Emissions and Sinks 1990–2022). Covers all five carbon pools and is NET of harvest, removals and decomposition — which is why it sits below the growth-only rates above. EPA cautions it may not represent any individual region.`,
+  };
+  return rangeFromMethods([A, B, C, D]);
 })();
-function forestStandsCount() {
-  // Lazy-imported to avoid a circular dep concern; sinks.js already
-  // exports forestStands but we just want the count.
-  return 7; // matches src/data/sinks.js current entries
-}
 export const SINKS_RANGE = _sinksRange;
 export const SINKS_BOTTOM_UP_MT = Math.round(_sinksRange.central);
 export const SINKS_COMPONENT_RANGES = [

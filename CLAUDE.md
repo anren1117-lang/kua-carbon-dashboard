@@ -101,6 +101,33 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The forest sink had never been audited (Phase 411)
+
+Scopes 1, 2 and 3 all got audited. Sinks did not — and at ~2,650 mtCO₂e it is the **single largest number in the inventory**, larger than any Scope 3 component, and the one that produces the net-negative framing and the "KUA looks low because we measure our forest" claim. Three defects, none of which required a primary source to see:
+
+**A circular corroboration.** The "3-method cross-check" had Method B labelled *USDA NH Forest Inventory Analysis* — but it used 2.65 mtCO₂e/acre/yr, which is exactly the per-stand inventory's own average, i.e. Method C's number. Its comment even conceded it ("KUA stands per sinks.js average ~2.65"). So two of three methods were one number wearing two hats, both landing on 2,650, and the range test passed trivially because the adopted figure *was* the high end. This is the Phase 390 failure repeating: agreement between figures that share a source is not agreement.
+
+**A double unit conversion.** Method B's stated derivation read "31.8 tons C/acre × ~1% annual growth ≈ 1.17 mt C/acre/yr × 44/12 = 4.3 mtCO₂e". But 31.8 × 1% = 0.318 t C/acre/yr, and 0.318 × 44/12 **is** 1.17 mtCO₂e — the 1.17 was the answer, not an intermediate. Applying 44/12 again inflated it 3.67×. The method then used neither 1.17 nor 4.3; it used 2.65.
+
+**A citation stretched past its scope.** The open-grown rate of 4.2 comes from Nowak et al. 2013, an **urban-tree** study — correct for the 40 acres of open-grown campus trees, a stretch across the other 960 acres of closed canopy. `Methodology.js` also named the wrong journal: the 7.69 kg C/m² and 0.28 kg C/m²/yr figures are from *Environmental Pollution* 178, not *Urban Forestry & Urban Greening*.
+
+**What replaced it.** EPA's GHG Equivalencies figure — **1.00 mtCO₂e per acre per year** for average US forest, from USDA Forest Service data in the Inventory of U.S. GHG Emissions and Sinks 1990–2022 — is now Method D, and the only genuinely independent number in the set. The spread became:
+
+| method | mt | rate |
+|---|---|---|
+| EPA GHG Equivalencies (net) | 1,000 | 1.00 |
+| USDA NH FIA (standing C × growth) | 1,170 | 1.17 |
+| Birdsey 1992 (US closed-canopy avg) | 2,100 | 2.10 |
+| KUA per-stand inventory (**adopted**) | 2,650 | 2.65 |
+
+Central 1,730, and the adopted figure sits at the very top.
+
+**Why they differ, and why 2.65 is not automatically wrong.** EPA's 1.00 covers all five carbon pools and is *net* of harvest, removals and decomposition, so it is dragged down by logging across the national estate. Birdsey's 2.1 and Nowak's 4.2 are growth of standing trees. An unharvested woodlot should legitimately beat the national net average — this is the same unit-versus-question split as the grid factor, not a straightforward error. But adopting a rate above even Birdsey's closed-canopy average is a **choice**, resting on per-stand rates that the file's own header admits are placeholders rather than a forest inventory.
+
+Repricing to ~1,000–1,200 mt would roughly **double** the net balance (1,725 → ~3,300) and move per-student net from ~5.0 to ~9–10, which relocates KUA from the low end of the peer chart to mid-pack. Far too large to change autonomously, so it is filed (#16) and the range is published honestly instead, with the adopted figure named as the top of it.
+
+New test: the cross-check methods must be **distinct numbers**. A range assembled from an echo overstates agreement, and nothing previously caught that.
+
 ### Sweeping the inventory-vs-marginal error on purpose (Phase 410)
 
 By this point the same error had been found five times — the grid factor, the heat-pump quiz, the recycling credit, purchased goods, the solar lever — and **every one of them turned up by accident** while looking for something else. So this pass went hunting: every calculation whose language is *avoided / displaced / offset*, checked against the factor it actually uses.

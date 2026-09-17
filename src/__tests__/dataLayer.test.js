@@ -1006,6 +1006,17 @@ describe('canonical scope-totals invariants', () => {
     expect(ANNUAL_SEQUESTRATION_MT).toBeLessThanOrEqual(SINKS_RANGE.high);
   });
 
+  it('the sinks cross-check methods are distinct numbers, not one restated', async () => {
+    // Phase 411. Two of the three original methods produced the SAME total
+    // (2,650): one was labelled "USDA NH FIA" but used the per-stand
+    // inventory's own average, so a "3-method cross-check" was really two
+    // methods plus an echo. A range built from an echo overstates agreement.
+    const { SINKS_RANGE } = await import('../data/geographicEstimates.js');
+    const totals = SINKS_RANGE.methods.map((m) => Math.round(m.mt));
+    expect(totals.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(totals).size).toBe(totals.length);
+  });
+
   it('per-student net falls in the published peer-school 2-15 mt envelope', async () => {
     const { GROSS_MT } = await import('../data/scopeTotals.js');
     const { ANNUAL_SEQUESTRATION_MT } = await import('../data/sinks.js');

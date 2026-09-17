@@ -10,7 +10,7 @@ const sources = [
   { domain: 'Purchased goods', source: 'EPA Supply Chain GHG Emission Factors v1.3', use: 'Spend-based Scope 3 Cat 1 estimates — kg CO₂e per 2022 USD at purchaser prices, AR5 GWPs, across 1,016 NAICS-6 commodities.' },
   { domain: 'Food', source: 'Poore & Nemecek (2018), Science — per-kg figures via Our World in Data', use: 'Full supply-chain kg CO₂e per kg of product (beef 99.5, poultry 9.9, rice 4.5, peas 1.0). The paper reported per 100 g protein and per 1,000 kcal; the per-kg conversion is OWID\'s.' },
   { domain: 'Vehicles & commuting', source: 'EPA GHG Emission Factors Hub 2025, Table 10 (Scope 3 Categories 6 and 7)', use: 'Passenger car, distance-based: 0.297 kg CO₂ plus CH₄/N₂O per vehicle-mile = 0.2986 kg CO₂e at AR5 GWPs.' },
-  { domain: 'Tree sequestration', source: 'Nowak et al. (2013), Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage, 0.28 kg C/m²/yr sequestration' },
+  { domain: 'Tree sequestration', source: 'Nowak, Greenfield, Hoehn & Lapoint (2013), Environmental Pollution 178', use: '7.69 kg C/m² of tree cover stored, 0.28 kg C/m²/yr sequestered — an URBAN-tree study, so it fits KUA\'s open-grown campus trees and is a stretch for closed-canopy forest.' },
   { domain: 'Soil & forest carbon', source: 'Morin et al. (2020), USDA NH forest inventory; Birdsey (1992)', use: 'Land-use-weighted soil carbon baselines' },
   { domain: 'AI ingestion', source: 'Dagdelen et al. (2024), Nature Communications', use: 'LLM-based structured extraction approach' },
   { domain: 'Heat pumps (scenarios)', source: 'NREL cold-climate heat pump field data + DOE technical reports', use: 'COP 3.0 conservative cold-climate seasonal average — used by the /scenarios "electrify heating" lever' },
