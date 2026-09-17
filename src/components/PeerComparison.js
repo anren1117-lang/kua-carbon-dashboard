@@ -30,34 +30,34 @@ const KUA_SCOPE2_ANNUAL_MT = GRID_MIX_ANNUAL_MTCO2E;
 const round1 = (n) => Math.round(n * 10) / 10;
 
 const peers = [
-  { name: 'KUA',                          type: 'boarding-secondary', isUs: true,
+  { name: 'KUA',                          type: 'boarding-secondary', isUs: true, provenance: 'cited', sinksQuantified: true,
     scope1:  round1(KUA_SCOPE1_TOTAL_MT / TOTAL_STUDENTS),
     scope2:  round1(KUA_SCOPE2_ANNUAL_MT / TOTAL_STUDENTS),
     scope3:  round1(KUA_SCOPE3_TOTAL_MT / TOTAL_STUDENTS),
     sinks:   round1(-ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS),
     offsets: 0,
     note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${KUA_SCOPE1_TOTAL_MT.toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(KUA_SCOPE2_ANNUAL_MT).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${GRID_MIX_TOTAL_MTCO2E.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${KUA_SCOPE3_TOTAL_MT.toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at mid-estimate sequestration.` },
-  { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary',
+  { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
     scope1: 4.0, scope2: 1.5, scope3: 4.5, sinks: 0, offsets: 0,
-    note: 'Larger boarding cohort, older buildings on heating oil; sinks not quantified in their reporting.' },
-  { name: 'Phillips Academy Andover (MA)',type: 'boarding-secondary',
+    note: 'ESTIMATED SHAPE, not a published figure. Exeter publishes a 2023 plan ("Building from Strength Toward a Zero Carbon Future") with targets — 75% cut in Scope 1+2 from a 2005 baseline by 2031, zero by 2050, and roughly 60% achieved since 2005 — but no per-student inventory and no Scope 3 breakdown we could locate. The split above is an order-of-magnitude sketch for a larger boarding cohort in older buildings on heating oil. Sinks: not quantified in their reporting, which is not the same as zero.' },
+  { name: 'Phillips Academy Andover (MA)',type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
     scope1: 3.5, scope2: 1.5, scope3: 4.0, sinks: 0, offsets: 0,
-    note: 'Cold-climate boarding peer; figure approximate from their climate action plan.' },
-  { name: 'Lawrenceville School (NJ)',    type: 'boarding-secondary',
+    note: 'ESTIMATED SHAPE, not a published figure. Andover publishes a Climate Action Plan 2019–2030 (adopted 2018) with a 30% mtCO₂e reduction target plus water and 90%-diversion waste goals, and annual FY tracking — but no per-student inventory we could locate. Sinks: not quantified, which is not the same as zero.' },
+  { name: 'Lawrenceville School (NJ)',    type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
     scope1: 3.0, scope2: 2.0, scope3: 4.0, sinks: 0, offsets: 0,
-    note: 'Mixed heating sources; significant student travel.' },
-  { name: 'Choate Rosemary Hall (CT)',    type: 'boarding-secondary',
+    note: 'ESTIMATED SHAPE. We did not locate a published inventory for Lawrenceville and did not research it directly — treat this row as an illustrative boarding-school profile only. Sinks: not quantified.' },
+  { name: 'Choate Rosemary Hall (CT)',    type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
     scope1: 3.0, scope2: 1.5, scope3: 3.5, sinks: 0, offsets: 0,
-    note: 'Comparable peer profile; sinks not separately reported.' },
-  { name: 'Middlebury College',           type: 'college',
-    scope1: 2.0, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: -5.5,
-    note: 'Reached "carbon neutral" status in 2016 by purchasing offsets and RECs equal to gross emissions; biomass plant reduced Scope 1.' },
-  { name: 'Williams College',             type: 'college',
+    note: 'ESTIMATED SHAPE. We did not locate a published inventory for Choate and did not research it directly — illustrative peer profile only. Sinks: not quantified.' },
+  { name: 'Middlebury College',           type: 'college', provenance: 'estimated', sinksQuantified: false,
+    scope1: 2.0, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: 0,
+    note: 'ESTIMATED SHAPE for the scope split. The neutrality story, however, is documented and was previously described incorrectly here: Middlebury reached carbon neutrality in 2016 mostly through REAL REDUCTIONS — a $12M biomass plant cut No. 6 fuel oil by 91% (2M → ~185,000 gal), three solar arrays totalling 1,150 kW supply ~8% of electricity, and 87 Efficiency Vermont projects saved 4.52M kWh. The residual was closed with carbon credits quantified from their OWN 2,100 acres of Bread Loaf forestland, preserved in perpetuity under a Vermont Land Trust easement. The old drawdown figure of −5.5 was unsourced and is removed rather than guessed at.' },
+  { name: 'Williams College',             type: 'college', provenance: 'estimated', sinksQuantified: false,
     scope1: 2.5, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: 0,
-    note: 'Cold-climate residential college, comparable physical plant to a large boarding school.' },
-  { name: 'Yale University',              type: 'university',
+    note: 'ESTIMATED SHAPE. We did not locate a published inventory for Williams and did not research it directly — illustrative cold-climate residential-college profile. Sinks: not quantified.' },
+  { name: 'Yale University',              type: 'university', provenance: 'estimated', sinksQuantified: false,
     scope1: 1.5, scope2: 1.0, scope3: 1.5, sinks: 0, offsets: 0,
-    note: 'Larger institution; per-FTE often lower from scale economies in central plant.' },
+    note: 'ESTIMATED SHAPE, not a published per-capita figure. Yale publishes progress in PERCENTAGES (Scope 1+2 down ~28% against a 2015 baseline; a 2005 baseline of 263,119 mtCO₂e; Scope 3 category trends against 2020) rather than a per-FTE number we could cite. Sinks: not quantified.' },
 ];
 
 const segColors = {
@@ -168,9 +168,12 @@ function PeerNotes({ peers }) {
             <strong style={{ color: '#fbbf24' }}>Caveat:</strong> Cross-institutional comparison is
             harder than these bars suggest. Valls-Val &amp; Bovea (2021) reviewed 35 university
             footprint studies and found that Scope 3 inclusion, denominators, and offset treatment
-            vary enough that absolute numbers are often not directly comparable. Middlebury reaches
-            "net zero" by purchasing offsets equal to gross emissions — a financial drawdown, not a
-            physical one. Sinks at most peer schools are simply not quantified.
+            vary enough that absolute numbers are often not directly comparable. Middlebury's 2016
+            neutrality came mostly from real reductions — a biomass plant that cut fuel oil 91%, plus
+            solar and efficiency work — with the residual closed by credits quantified from their own
+            2,100-acre Bread Loaf forest. An earlier version of this page called that "purchasing
+            offsets equal to gross emissions", which was wrong. Sinks at most peer schools are not
+            quantified at all, and a zero in this chart means unmeasured, not absent.
           </div>
           <div style={styles.notesTitle}>Per-row notes</div>
           <ul style={styles.noteList}>
@@ -241,6 +244,11 @@ export function PeerComparison() {
             Each bar splits one school's per-student annual footprint into Scope 1, 2, and 3
             contributions (right of zero) and any drawdowns from on-campus sequestration or
             purchased offsets (left of zero). The vertical line marks the net.
+            {' '}<strong style={{ color: '#fbbf24' }}>Read the peer bars as illustrative shapes, not
+            published data:</strong> none of these schools publishes a per-student inventory we could
+            cite. Exeter and Andover publish reduction targets, Yale publishes percentage progress,
+            and for several we found no inventory at all. Only KUA's row is computed from this
+            dashboard's own figures — which is exactly why it should not be read as a ranking.
           </p>
           <div style={styles.legend}>
             {Object.entries(segLabels).map(([k, label]) => (

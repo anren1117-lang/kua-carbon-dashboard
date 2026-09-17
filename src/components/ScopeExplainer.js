@@ -32,7 +32,7 @@ const SCOPES = [
     formula: 'Σ(gallons × factor) + Σ((recharge − reclaim) × GWP) + fleet',
     factorSource: 'EPA GHG Emission Factors Hub (2024); IPCC AR6 WG1 Ch.7 for refrigerants',
     peerRange: '1.5 – 4.0 mtCO₂e/student',
-    peerComparison: 'KUA sits at the LOW end of the boarding-school range. Exeter and Andover are 3.5–4.0 — they have larger heated square-footage per student and more buildings on heating oil.',
+    peerComparison: 'KUA sits at the low end of the boarding-school range on this line. The 3.5–4.0 figures shown for Exeter and Andover are SCOPE 1 ONLY (their gross per-student totals are nearer 9–10), and both are illustrative estimates — neither school publishes a per-student inventory. The reasoning is larger heated square-footage per student and more buildings on heating oil.',
   },
   {
     key: 'scope2', color: '#f59e0b', label: 'Scope 2', title: 'Purchased Electricity',
@@ -90,7 +90,7 @@ const SCOPES = [
     formula: 'Σ(tree biomass × 0.5 × 44/12) + Σ(land area × forest-type rate)',
     factorSource: 'Nowak et al. (2013); Birdsey (1992); USDA Urban Tree Database',
     peerRange: '0 measured at most peer schools',
-    peerComparison: `KUA is the only school in the peer chart with a quantified physical sink. Middlebury reaches "net zero" by purchasing offsets — a financial drawdown, not physical. Our forest pulling ~${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e is REAL sequestration.`,
+    peerComparison: `KUA is the only school in the peer chart that counts a physical sink INSIDE its inventory — elsewhere a zero means unmeasured, not absent. The nearest comparison is Middlebury, which quantified its own 2,100-acre Bread Loaf forest and monetised it as tradable credits rather than reporting it as a sink. Same physical carbon, different accounting treatment. Our ~${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e sits in the sink line; theirs sat in the offset line.`,
   },
 ];
 

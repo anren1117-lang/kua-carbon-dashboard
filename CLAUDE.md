@@ -101,6 +101,20 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The peer chart made a false claim about a named school (Phase 412)
+
+The peer comparison is the dashboard's most load-bearing external claim — that KUA is low per student — and it had never been checked. Two findings.
+
+**Not one peer row traces to a published figure.** All seven are hand-typed, almost every value a multiple of 0.5, and no row carries a report name, year or URL. Checking what these schools actually publish: **Exeter** has a 2023 plan with *targets* (75% Scope 1+2 cut from 2005 by 2031, ~60% achieved) and no per-student inventory; **Andover** has a 2019–2030 plan with a 30% reduction target and FY tracking, no per-student inventory; **Yale** publishes percentage progress (Scope 1+2 −28% vs 2015; 2005 baseline 263,119 mtCO₂e), not a per-FTE figure. Lawrenceville, Choate and Williams were not researched, and now say so rather than implying a search came up empty. Every row is labelled `provenance: 'estimated'`, and the disclosure moved out of the collapsed "caveats" toggle into the visible blurb.
+
+Also fixed: `sinks: 0` on every peer was rendering as a measured zero when it means *not quantified* — the same conflation the rest of the audit has been removing, and the one that flatters KUA, since the entire "we look low because we measure our forest" story rests on it.
+
+**The Middlebury claim was simply wrong.** Five places said Middlebury "reaches net zero by purchasing offsets equal to gross emissions — a financial drawdown, not physical", contrasted against KUA's "REAL" forest. The record: a $12M biomass plant cut No. 6 fuel oil **91%** (2M → ~185,000 gal), three solar arrays totalling 1,150 kW supply ~8% of electricity, 87 Efficiency Vermont projects saved 4.52M kWh, and the residual was closed with credits quantified from **their own 2,100 acres of Bread Loaf forestland** under a Vermont Land Trust easement. So neutrality came mostly from real reductions, and the offsets are their own land — the very thing KUA claims as its differentiator. The repo also contradicted itself: the AASHE-STARS lesson already described it accurately.
+
+The honest distinction, now used everywhere: KUA reports its forest as a **sink inside the inventory**; Middlebury **monetised** theirs as tradable credits. Same physical carbon, different accounting treatment — and a credit carries an obligation a sink does not, since it is sold once and the forest must stay unlogged for the claim to hold. Middlebury's unsourced `offsets: -5.5` was removed rather than re-guessed.
+
+Worth stating plainly: this was a false statement about a third party, published to a school-board audience, and it happened to flatter the school publishing it. Those are the claims to check first, not last.
+
 ### The forest sink had never been audited (Phase 411)
 
 Scopes 1, 2 and 3 all got audited. Sinks did not — and at ~2,650 mtCO₂e it is the **single largest number in the inventory**, larger than any Scope 3 component, and the one that produces the net-negative framing and the "KUA looks low because we measure our forest" claim. Three defects, none of which required a primary source to see:
