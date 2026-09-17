@@ -1006,6 +1006,26 @@ describe('canonical scope-totals invariants', () => {
     expect(ANNUAL_SEQUESTRATION_MT).toBeLessThanOrEqual(SINKS_RANGE.high);
   });
 
+  it('every peer row is labelled estimated, and no peer claims a measured sink', async () => {
+    // Phase 412. The peer rows are illustrative shapes: none of these schools
+    // publishes a per-student inventory we could cite. Two things must stay
+    // true or the chart starts reading as data again —
+    //   1. every non-KUA row carries provenance 'estimated';
+    //   2. no peer row claims a quantified sink, because a 0 there means
+    //      NOT MEASURED, and rendering it as a real zero is what made KUA
+    //      look low for free.
+    const { peers } = await import('../components/PeerComparison.js');
+    const us = peers.filter((p) => p.isUs);
+    expect(us).toHaveLength(1);
+    expect(us[0].provenance).toBe('cited');
+    for (const p of peers.filter((x) => !x.isUs)) {
+      expect(p.provenance, `${p.name} provenance`).toBe('estimated');
+      expect(p.sinksQuantified, `${p.name} sinksQuantified`).toBe(false);
+      expect(p.sinks, `${p.name} must not claim sink drawdown`).toBe(0);
+      expect(p.offsets, `${p.name} offsets must be sourced or zero`).toBe(0);
+    }
+  });
+
   it('the sinks cross-check methods are distinct numbers, not one restated', async () => {
     // Phase 411. Two of the three original methods produced the SAME total
     // (2,650): one was labelled "USDA NH FIA" but used the per-stand
@@ -1017,15 +1037,24 @@ describe('canonical scope-totals invariants', () => {
     expect(new Set(totals).size).toBe(totals.length);
   });
 
-  it('per-student net falls in the published peer-school 2-15 mt envelope', async () => {
+  it('per-student net falls inside the published HEI per-student range', async () => {
     const { GROSS_MT } = await import('../data/scopeTotals.js');
     const { ANNUAL_SEQUESTRATION_MT } = await import('../data/sinks.js');
     const { TOTAL_STUDENTS } = await import('../data/students.js');
     const perStudent = (GROSS_MT - ANNUAL_SEQUESTRATION_MT) / TOTAL_STUDENTS;
-    // Gutiérrez-Mosquera et al. 2024 envelope for HEI footprints,
-    // applied to KUA's residential-secondary scale.
-    expect(perStudent).toBeGreaterThan(2);
-    expect(perStudent).toBeLessThan(15);
+    // Phase 413. This asserted a "2-15 mt envelope" credited to
+    // Gutiérrez-Mosquera et al. 2024. That paper is real but paywalled, and
+    // the envelope could not be verified against it — so a test was
+    // enforcing a number nobody had read. Replaced with the figure actually
+    // published in Valls-Val & Bovea (2021), Clean Technologies and
+    // Environmental Policy, which normalised the 35 HEI footprints it
+    // reviewed: mean 2.67 tCO2e/student, range 0.06 to 10.94.
+    //
+    // Only the RANGE is asserted. KUA is currently ~5.07, above the 2.67
+    // mean — but falling below the mean would be an improvement, not a
+    // regression, so pinning that direction would be wrong.
+    expect(perStudent).toBeGreaterThan(0.06);
+    expect(perStudent).toBeLessThan(10.94);
   });
 
   it('Scope 3 placeholder breakdown rows sum to within ±2 mt of the headline', async () => {

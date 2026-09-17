@@ -101,6 +101,22 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The citations, checked against the papers (Phase 413)
+
+Phase 412 found a false claim about a named school. The same question applies to the academic citations, and one number was doing an enormous amount of work: **"Valls-Val & Bovea (2021) reviewed 35 university footprint studies" appears in nine places**, including the visible caveat on the peer chart. One unverified figure repeated nine times reads as established fact.
+
+**It checks out.** *Clean Technologies and Environmental Policy*, PMID 34456663 — "of the articles reviewed, 35 are aimed specifically at calculating the CF of HEI." The methodology findings are real too: no standardisation of "the time metric (year, semester), functional unit (student, employee, area) and data collection boundary".
+
+**But one attribution was embellished.** The sink lesson said the paper found sequestration "rarely measured **even at institutions with significant forested land**". That clause is not in the paper. What the paper actually says is sharper and now replaces it: only **14%** of the 35 studies calculated any compensation potential, and where they did it offset **0.09%–18%** of gross; another 26% raised reforestation as a recommendation rather than a measurement.
+
+**The paper also handed over something better.** It normalises the 35 footprints to **mean 2.67 mtCO₂e/student, range 0.06–10.94** — a genuinely citable per-student benchmark. That now appears on the peer chart, where it is worth more than the seven illustrative rows, and KUA's ~5.1 is stated as sitting *above* the mean.
+
+**A test was enforcing an unread number.** `dataLayer.test.js` asserted per-student net inside a "2–15 mt envelope" credited to Gutiérrez-Mosquera et al. 2024. The paper is real but paywalled (Springer 303s to an identity provider), and the envelope could not be confirmed — so a test was policing a figure nobody had read. It now asserts the verified 0.06–10.94 range. Deliberately the range only: KUA falling below the 2.67 mean would be an improvement, not a regression, so pinning that direction would have been wrong.
+
+**Cordero et al. (2020) was understated, not overstated.** Four places said students "made measurable behavior changes for years afterward". PLOS ONE pone.0206266 is more specific and more useful: graduates surveyed **at least five years** after an intensive one-year course cut about **2.86 tCO₂e per person per year**. Vagueness is not always the safe direction — here it gave away the strongest evidence for the dashboard's own premise.
+
+Three sites (`:1155`, `:1173`, `:1216`, `:1243`) were checked and left alone because they were accurate. Also committed here: `peers` is now exported and guarded by a test asserting every non-KUA row stays `estimated` with no claimed sink, so Phase 412's correction cannot quietly revert.
+
 ### The peer chart made a false claim about a named school (Phase 412)
 
 The peer comparison is the dashboard's most load-bearing external claim — that KUA is low per student — and it had never been checked. Two findings.

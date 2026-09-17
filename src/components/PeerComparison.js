@@ -7,10 +7,16 @@ import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 
-// Per-student mtCO2e breakdown drawn from publicly disclosed sustainability reports.
-// Cross-institutional comparison has real limits (Valls-Val & Bovea 2021): Scope 3
-// inclusion, denominators, and reporting years differ. Each row is a defensible
-// order-of-magnitude shape, not a precise claim.
+// Per-student mtCO2e breakdown. The peer rows are ILLUSTRATIVE SHAPES, not
+// figures drawn from published reports — Phase 412 checked, and none of these
+// schools publishes a per-student inventory that can be cited.
+//
+// Cross-institutional comparison has real limits (Valls-Val & Bovea 2021):
+// that review of 35 HEI footprints found no standardisation of the time
+// metric, the functional unit (student vs employee vs floor area), or the
+// data-collection boundary. It also gives the one per-student benchmark here
+// that IS citable: mean 2.67 tCO2e/student across the 35 studies, ranging
+// from 0.06 to 10.94. KUA's ~5.1 sits above that mean, inside the range.
 //
 // scope1 = on-site combustion (heating fuel, refrigerants, fleet)
 // scope2 = purchased electricity (location-based)
@@ -29,7 +35,7 @@ import { SCOPE1_TOTAL_MT as KUA_SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT as KUA_SCOPE3_T
 const KUA_SCOPE2_ANNUAL_MT = GRID_MIX_ANNUAL_MTCO2E;
 const round1 = (n) => Math.round(n * 10) / 10;
 
-const peers = [
+export const peers = [
   { name: 'KUA',                          type: 'boarding-secondary', isUs: true, provenance: 'cited', sinksQuantified: true,
     scope1:  round1(KUA_SCOPE1_TOTAL_MT / TOTAL_STUDENTS),
     scope2:  round1(KUA_SCOPE2_ANNUAL_MT / TOTAL_STUDENTS),
@@ -168,7 +174,7 @@ function PeerNotes({ peers }) {
             <strong style={{ color: '#fbbf24' }}>Caveat:</strong> Cross-institutional comparison is
             harder than these bars suggest. Valls-Val &amp; Bovea (2021) reviewed 35 university
             footprint studies and found that Scope 3 inclusion, denominators, and offset treatment
-            vary enough that absolute numbers are often not directly comparable. Middlebury's 2016
+            vary enough that absolute numbers are often not directly comparable. That same review gives the one citable per-student benchmark on this page: across 35 institutions the mean was 2.67 mtCO₂e/student, ranging from 0.06 to 10.94 — and only 14% had quantified any on-campus compensation at all. Middlebury's 2016
             neutrality came mostly from real reductions — a biomass plant that cut fuel oil 91%, plus
             solar and efficiency work — with the residual closed by credits quantified from their own
             2,100-acre Bread Loaf forest. An earlier version of this page called that "purchasing
