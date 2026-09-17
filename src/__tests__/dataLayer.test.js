@@ -848,7 +848,9 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
   });
 
   it('flips waste row to MEASURED with EPA WARM net factors per stream', () => {
-    // 10 tons landfill × 0.52 + 5 tons recycling × -0.10 = 5.2 - 0.5 = 4.7 mt
+    // 10 tons landfill × 0.58 + 5 tons recycling × 0.09 = 5.8 + 0.45 = 6.25 mt.
+    // Recycling ADDS now: Phase 407 moved these to EPA Hub Table 9 (Scope 3
+    // Cat 5), which excludes avoided emissions, so no pathway is a credit.
     const r = composeScope3FromRecords({
       wasteRecords: [
         { waste_type: 'Landfill', amount: 10, unit: 'tons' },
@@ -858,11 +860,11 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
     expect(r.provenance).toBe('measured');
     const waste = r.breakdown.find((b) => b.source.toLowerCase() === 'waste');
     expect(waste.provenance).toBe('measured');
-    expect(waste.mt).toBe(5); // 4.7 → round → 5
+    expect(waste.mt).toBe(6); // 6.25 → round → 6
   });
 
   it('handles pounds → tons unit conversion in waste rows', () => {
-    // 4000 lbs landfill = 2 tons × 0.52 = 1.04 mt → round 1
+    // 4000 lbs landfill = 2 tons × 0.58 = 1.16 mt → round 1
     const r = composeScope3FromRecords({
       wasteRecords: [{ waste_type: 'Landfill', amount: 4000, unit: 'pounds' }],
     });
@@ -873,13 +875,13 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
   it('skips waste rows with unknown waste_type or invalid amount', () => {
     const r = composeScope3FromRecords({
       wasteRecords: [
-        { waste_type: 'Landfill',     amount: 10, unit: 'tons' }, // counted: 5.2 mt
+        { waste_type: 'Landfill',     amount: 10, unit: 'tons' }, // counted: 5.8 mt
         { waste_type: 'NotAStream',   amount: 50, unit: 'tons' }, // skipped
         { waste_type: 'Landfill',     amount: 'banana' },         // skipped
       ],
     });
     const waste = r.breakdown.find((b) => b.source.toLowerCase() === 'waste');
-    expect(waste.mt).toBe(5);
+    expect(waste.mt).toBe(6);
     expect(waste.method).toMatch(/2 skipped/);
   });
 
@@ -898,9 +900,15 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
   });
 
   it('exposes WASTE_FACTORS_MT_PER_TON for callers and tests', () => {
-    expect(WASTE_FACTORS_MT_PER_TON.Landfill).toBe(0.52);
-    expect(WASTE_FACTORS_MT_PER_TON.Recycling).toBe(-0.10);
-    expect(WASTE_FACTORS_MT_PER_TON.Composting).toBe(0.04);
+    // EPA Hub 2025 Table 9 (Scope 3 Cat 5), MT CO2e per short ton.
+    // Recycling and composting are POSITIVE: Table 9 excludes avoided
+    // emissions, so no disposal pathway is a credit. Were 0.52 / -0.10 /
+    // 0.04 on WARM's life-cycle basis until Phase 407.
+    expect(WASTE_FACTORS_MT_PER_TON.Landfill).toBe(0.58);
+    expect(WASTE_FACTORS_MT_PER_TON.Recycling).toBe(0.09);
+    expect(WASTE_FACTORS_MT_PER_TON.Composting).toBe(0.11);
+    // Composting must stay cheaper than landfilling — the teaching claim.
+    expect(WASTE_FACTORS_MT_PER_TON.Composting).toBeLessThan(WASTE_FACTORS_MT_PER_TON.Landfill);
   });
 
   it('round-trip with composeScope3() (no records) matches placeholder breakdown sum', () => {

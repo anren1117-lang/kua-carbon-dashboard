@@ -101,6 +101,22 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Recycling is not a credit in an inventory (Phase 407)
+
+Phase 404 deliberately refused to relabel the waste factors "v16" without checking them. Checking them found something bigger than a version bump.
+
+The repo priced recycling at **−0.10** and composting at **−0.18** — negative, on the stated reasoning that those pathways are "a net carbon avoidance vs the assumed counterfactual." WARM's Exhibit 1-1 does publish such figures (mixed recyclables recycled: −2.80 MTCO₂E/short ton), because WARM is a *life-cycle* model crediting avoided virgin production.
+
+That is the wrong question for an inventory, and EPA says so directly. The GHG Emission Factors Hub, **Table 9 — "Scope 3 Category 5: Waste Generated in Operations"** — notes the factors *"do not include avoided emissions impact from any of the disposal methods. This exclusion is an adjustment to the life-cycle factors in the WARM tool. Thus the waste factors presented above will not directly match the factors published in the WARM tool."* Recycling excludes avoided process energy and forest carbon storage; composting excludes fertilizer offset and soil carbon storage; landfilling excludes energy recovery and sequestration.
+
+So **every Cat 5 factor is positive**, and the repo's negatives were crediting KUA for virgin manufacturing it never performed — the identical error to pricing avoided electricity at the inventory grid rate. Adopted (MT CO₂e/short ton, AR4): Landfill 0.52 → **0.58**, Recycling −0.10 → **+0.09**, Composting 0.04 → **+0.11**, E-Waste 0.30 → **+0.02**. `emissionFactors.js` converts at ×1.10231: 0.467 → **0.639**, −1.07 → **+0.099**, −0.18 → **+0.121**.
+
+How much this mattered: `geographicEstimates`' best-case waste method returned a **negative total footprint** (about −4.6 mt) — the campus earning carbon by throwing things away. The three methods now come out near 13.8 / 19.7 / 32.7 mt.
+
+The teaching claim survives intact and gets sharper: composting still beats landfilling, 0.11 against 0.58. It is a **smaller emission, not a credit** — which is the more useful thing for a student to know.
+
+Two things left alone on purpose. `Hazardous` (0.50) has no WARM or Hub category and is now labelled unsourced rather than given an invented value. And the placeholder breakdown's hardcoded `Waste: 5 mt` sums into `SCOPE3_PLACEHOLDER_MT`; the corrected basis implies ~22 mt, but moving it would desync that headline constant, so the gap is stated in place.
+
 ### One car, three EPA numbers (Phase 406)
 
 `Scope3.js` showed a solo-car factor of 0.404 kg CO₂e/passenger-mi; the data layer used 0.351 (and 0.218 kg/km). Both cited EPA. Checking the sources found **three** different published figures answering slightly different questions:

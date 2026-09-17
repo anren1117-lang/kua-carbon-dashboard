@@ -72,7 +72,7 @@ const rows = [
     low: Math.round(SCOPE3_GOODS_RANGE.low + SCOPE3_DINING_RANGE.low + SCOPE3_WASTE_RANGE.low + SCOPE3_COMMUTING_RANGE.low + SCOPE3_UPSTREAM_FUEL_RANGE.low),
     high: Math.round(SCOPE3_GOODS_RANGE.high + SCOPE3_DINING_RANGE.high + SCOPE3_WASTE_RANGE.high + SCOPE3_COMMUTING_RANGE.high + SCOPE3_UPSTREAM_FUEL_RANGE.high),
     provenance: 'cited',
-    currentMethod: 'Standard methodologies applied to guessed inputs: EEIO spend-based emissions for Cat 1 (purchased goods), Poore & Nemecek 2018 for dining (boarder + day meal counts × meal-class kg CO₂e), EPA WARM v15.1 for waste, GHG Protocol Cat 7 for commuting, ~15–20% uplift on Scope 1+2 for upstream fuel. KUA-specific spend, meal counts, waste tonnage, and commute distances are placeholders.',
+    currentMethod: 'Standard methodologies applied to guessed inputs: EEIO spend-based emissions for Cat 1 (purchased goods), Poore & Nemecek 2018 for dining (boarder + day meal counts × meal-class kg CO₂e), EPA Hub 2025 Table 9 (Scope 3 Cat 5) for waste, GHG Protocol Cat 7 for commuting, ~15–20% uplift on Scope 1+2 for upstream fuel. KUA-specific spend, meal counts, waste tonnage, and commute distances are placeholders.',
     futureMethod:  'Pull real annual spend from KUA Business Office (mapped to USEEIO sectors). Replace dining estimate with Sodexo/SAGE invoices (item-level food cost × Poore & Nemecek). Replace waste assumption with hauler invoices (tons by stream). Replace commute estimate with HR-collected zip-code survey × ICCT fleet fuel-economy. Methodologies stay; row flips estimated → cited.',
   },
   {

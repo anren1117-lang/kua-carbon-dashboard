@@ -91,11 +91,14 @@ export const emissionFactors = [
   { id: 'ef_food_veg',      category: 'food', subcategory: 'vegetables', unit: 'kg', kgco2e_per_unit: 0.5,  source: 'Poore & Nemecek 2018 via OWID per-kg (other vegetables, full supply chain)', year: 2018 },
   { id: 'ef_food_fruit',    category: 'food', subcategory: 'fruit',    unit: 'kg', kgco2e_per_unit: 0.43, source: 'Poore & Nemecek 2018 via OWID per-kg (apples, full supply chain)', year: 2018 },
 
-  // Waste (EPA WARM v15.1 — v16 released Dec 2023 supersedes this; values
-  // not yet refreshed against v16, see WASTE_FACTORS_MT_PER_TON note)
-  { id: 'ef_waste_landfill_mixed', category: 'waste', subcategory: 'landfill_mixed', unit: 'kg', kgco2e_per_unit: 0.467, source: 'EPA WARM v15.1', year: 2023 },
-  { id: 'ef_waste_recycling',      category: 'waste', subcategory: 'recycling',      unit: 'kg', kgco2e_per_unit: -1.07, source: 'EPA WARM v15.1 (avoided)', year: 2023 },
-  { id: 'ef_waste_compost',        category: 'waste', subcategory: 'compost_food',   unit: 'kg', kgco2e_per_unit: -0.18, source: 'EPA WARM v15.1 (avoided)', year: 2023 },
+  // Waste — EPA GHG Emission Factors Hub 2025, Table 9 (Scope 3 Category 5:
+  // Waste Generated in Operations), AR4 GWPs, converted from metric tons
+  // CO2e/short ton to kg/kg (x 1.10231). Avoided emissions are EXCLUDED per
+  // EPA's own note, so recycling and composting are positive here: they are
+  // smaller emissions than landfilling, not credits. Phase 407.
+  { id: 'ef_waste_landfill_mixed', category: 'waste', subcategory: 'landfill_mixed', unit: 'kg', kgco2e_per_unit: 0.639, source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Mixed MSW landfilled (0.58 MT CO2e/short ton)', year: 2025 },
+  { id: 'ef_waste_recycling',      category: 'waste', subcategory: 'recycling',      unit: 'kg', kgco2e_per_unit: 0.099, source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Mixed Recyclables recycled (0.09 MT CO2e/short ton, avoided emissions excluded)', year: 2025 },
+  { id: 'ef_waste_compost',        category: 'waste', subcategory: 'compost_food',   unit: 'kg', kgco2e_per_unit: 0.121, source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Food Waste composted (0.11 MT CO2e/short ton, avoided emissions excluded)', year: 2025 },
 
   // Procurement (Cat 1 spend-based, USD-denominated). Corrected in Phase
   // 404: these were hand-set round numbers cited to "US EPA EEIO v2.0",

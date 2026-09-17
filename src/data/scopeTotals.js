@@ -426,7 +426,7 @@ const SCOPE3_PLACEHOLDER_BREAKDOWN = [
   { source: 'Dining (food production)',                  mt:  235, provenance: 'estimated', method: 'Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated.' },
   { source: 'Upstream fuel',                             mt:  230, provenance: 'estimated', method: '~17% upstream uplift on bottom-up Scope 1 (refinery + transport for heating oil + propane + fleet fuels).' },
   { source: 'Commuting',                                 mt:   90, provenance: 'estimated', method: '52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated.' },
-  { source: 'Waste',                                     mt:    5, provenance: 'estimated', method: '420 people × per-day generation × diversion-split scenarios × EPA WARM v15.1 net factors. Hauler invoices (tons by stream) not yet integrated.' },
+  { source: 'Waste',                                     mt:    5, provenance: 'estimated', method: '420 people × per-day generation × diversion-split scenarios × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors. NOTE: this 5 mt row was derived under the old credit-taking factors; on the corrected Cat 5 basis the same activity is ~22 mt. Not moved here because this row sums into SCOPE3_PLACEHOLDER_MT — see the waste range in geographicEstimates.js for the corrected figure. Hauler invoices (tons by stream) not yet integrated.' },
 ];
 
 export function composeScope3() {
@@ -453,22 +453,31 @@ export const SCOPE3_COHORT_FACTORS_MT_PER_STUDENT = {
   international: 5.0,
 };
 
-// EPA WARM v15.1 net factors (mtCO2e per short ton waste). Negative
-// values mean the disposal pathway is a net carbon avoidance vs the
-// assumed counterfactual (e.g. recycling steel/paper offsets virgin
-// production). Keys mirror waste_type strings the admin form writes.
-// AUDIT NOTE (Phase 404): WARM v16 was released December 2023 and
-// supersedes v15/v15.1. These values were NOT relabelled to v16, because
-// the v16 factor tables were not checked against them — a refreshed
-// version number over unrefreshed numbers is exactly the failure the
-// Scope 1 audit caught. Waste is ~5 mt (0.1% of gross), so the refresh is
-// filed rather than rushed.
+// EPA GHG Emission Factors Hub 2025, Table 9 — "Scope 3 Category 5: Waste
+// Generated in Operations" (metric tons CO2e per SHORT TON, AR4 GWPs).
+// Keys mirror waste_type strings the admin form writes.
+//
+// EVERY VALUE IS POSITIVE, and that is the correction (Phase 407). These
+// previously carried negative factors for recycling and composting, on the
+// reasoning that those pathways are "a net carbon avoidance vs the assumed
+// counterfactual". That is WARM's life-cycle framing, and it is the wrong
+// question for an inventory: EPA's note on Table 9 says the factors "do not
+// include avoided emissions impact from any of the disposal methods. This
+// exclusion is an adjustment to the life-cycle factors in the WARM tool."
+// Recycling excludes avoided process/transport energy and forest carbon
+// storage; composting excludes fertilizer offset and soil carbon storage;
+// landfilling excludes energy recovery and landfill sequestration.
+//
+// Crediting KUA for virgin production it never performed is the same error
+// as pricing avoided electricity at the inventory grid rate — a
+// consequential number doing an inventory's job. Composting still beats
+// landfilling here (0.11 vs 0.58); it is a smaller emission, not a credit.
 export const WASTE_FACTORS_MT_PER_TON = {
-  'Landfill':   0.52,
-  'Recycling': -0.10,
-  'Composting': 0.04,
-  'Hazardous':  0.50,
-  'E-Waste':    0.30,
+  'Landfill':   0.58,  // Mixed MSW, landfilled
+  'Recycling':  0.09,  // Mixed Recyclables, recycled (was -0.10)
+  'Composting': 0.11,  // Food Waste, composted (was 0.04)
+  'Hazardous':  0.50,  // UNSOURCED — no WARM/Hub category for this stream
+  'E-Waste':    0.02,  // Mixed Electronics, recycled (was 0.30)
 };
 
 // Convert a row's amount + unit field to short tons (the unit
@@ -639,7 +648,7 @@ export function composeScope3FromRecords(records = {}) {
       mt: Math.round(wasteMt),
       provenance: wasteMeasured ? 'measured' : 'estimated',
       method: wasteMeasured
-        ? `${waste.length} waste row${waste.length === 1 ? '' : 's'} × EPA WARM v15.1 net factors${wasteSkipped > 0 ? ` (${wasteSkipped} skipped — unknown waste_type or invalid amount)` : ''}.`
+        ? `${waste.length} waste row${waste.length === 1 ? '' : 's'} × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors${wasteSkipped > 0 ? ` (${wasteSkipped} skipped — unknown waste_type or invalid amount)` : ''}.`
         : (placeholderRow('waste')?.method || ''),
     },
   ];

@@ -544,27 +544,30 @@ const _wasteRange = (() => {
   // Method A: low generation + high diversion (current EPA-recommended
   // school waste profile).
   const A_kg = peopleOnCampus * 0.4 * daysPerYr;
-  const A_mt = (A_kg * 0.50 * 0.467 + A_kg * 0.30 * -1.07 + A_kg * 0.20 * -0.18) / 1000;
+  // Phase 407: was (0.467, -1.07, -0.18). The negative recycling/compost
+  // credits made this method return a NEGATIVE waste footprint (~-4.6 mt),
+  // which is WARM's life-cycle framing answering an inventory's question.
+  const A_mt = (A_kg * 0.50 * 0.639 + A_kg * 0.30 * 0.099 + A_kg * 0.20 * 0.121) / 1000;
   const A = {
     label: 'Low generation + high diversion (best-case)',
     mt: A_mt,
-    basis: `${peopleOnCampus} people × 0.4 kg/person/day × ${daysPerYr} days × 50/30/20 landfill/recycle/compost split × EPA WARM v15.1.`,
+    basis: `${peopleOnCampus} people × 0.4 kg/person/day × ${daysPerYr} days × 50/30/20 landfill/recycle/compost split × EPA Hub 2025 Table 9 (Scope 3 Cat 5, avoided emissions excluded).`,
   };
   // Method B: KUA-typical (current operational pattern).
   const B_kg = peopleOnCampus * 0.5 * daysPerYr;
-  const B_mt = (B_kg * 0.60 * 0.467 + B_kg * 0.25 * -1.07 + B_kg * 0.15 * -0.18) / 1000;
+  const B_mt = (B_kg * 0.60 * 0.639 + B_kg * 0.25 * 0.099 + B_kg * 0.15 * 0.121) / 1000;
   const B = {
     label: 'KUA-typical operational pattern',
     mt: B_mt,
-    basis: `${peopleOnCampus} people × 0.5 kg/person/day × ${daysPerYr} days × 60/25/15 split × EPA WARM v15.1.`,
+    basis: `${peopleOnCampus} people × 0.5 kg/person/day × ${daysPerYr} days × 60/25/15 split × EPA Hub 2025 Table 9 (Scope 3 Cat 5).`,
   };
   // Method C: high generation + low diversion (upper bound).
   const C_kg = peopleOnCampus * 0.7 * daysPerYr;
-  const C_mt = (C_kg * 0.75 * 0.467 + C_kg * 0.20 * -1.07 + C_kg * 0.05 * -0.18) / 1000;
+  const C_mt = (C_kg * 0.75 * 0.639 + C_kg * 0.20 * 0.099 + C_kg * 0.05 * 0.121) / 1000;
   const C = {
     label: 'High generation + low diversion (worst-case)',
     mt: C_mt,
-    basis: `${peopleOnCampus} people × 0.7 kg/person/day × ${daysPerYr} days × 75/20/5 split × EPA WARM v15.1.`,
+    basis: `${peopleOnCampus} people × 0.7 kg/person/day × ${daysPerYr} days × 75/20/5 split × EPA Hub 2025 Table 9 (Scope 3 Cat 5).`,
   };
   const all = [A, B, C];
   return {
@@ -808,7 +811,7 @@ export const BOTTOM_UP_BREAKDOWN = [
     scope: 'Scope 3', component: 'Waste',
     mt: SCOPE3_WASTE_BOTTOM_UP_MT,
     basis: SCOPE3_WASTE_DETAIL.basis,
-    citations: ['EPA SMM 2020', 'EPA WARM v15.1'],
+    citations: ['EPA SMM 2020', 'EPA GHG Emission Factors Hub 2025 Table 9'],
   },
   {
     scope: 'Scope 3', component: 'Faculty / staff commute',
