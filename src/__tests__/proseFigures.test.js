@@ -120,6 +120,10 @@ const EFFECTIVE_FACTOR_GRAMS = /effective[^.\n]{0,70}?(\d{2,4})\s*g\s*CO/gi;
 const CANONICAL_GRAMS = Math.round(KG_PER_KWH * 1000);
 
 const FACTOR_PROSE_FILES = [
+  // The methodology page is the most citation-critical surface in the repo
+  // and was NOT guarded until Phase 408 — it carried 0.235 while canonical
+  // was 0.234.
+  'pages/Methodology.js',
   'components/LearnAgent.js',
   'components/DailyTip.js',
   'components/ScopeExplainer.js',

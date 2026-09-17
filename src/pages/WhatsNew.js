@@ -13,6 +13,26 @@ import { Icon } from '../components/Icon.js';
 
 const ENTRIES = [
   {
+    date: '2026-09-17',
+    category: 'data',
+    title: 'Recycling and composting are no longer counted as carbon credits',
+    body: 'Our waste factors came from EPA\'s WARM tool, which credits recycling for the virgin manufacturing it displaces. That is the right number for a life-cycle study and the wrong one for an inventory — it was crediting KUA for factory emissions elsewhere. We switched to EPA\'s Scope 3 Category 5 factors, where every disposal route is a positive emission. Composting still beats landfilling (0.11 vs 0.58 mtCO₂e per short ton); it is a smaller emission, not a credit.',
+    link: '/methodology',
+  },
+  {
+    date: '2026-09-17',
+    category: 'data',
+    title: 'Every Scope 3 emission factor re-checked against its original source',
+    body: 'We audited the factors behind travel, food, purchased goods, commuting and waste. Several did not match the source they cited: two different air-travel factors both claimed to be DEFRA 2024 and neither was, IT procurement was overstated about 6.5×, and the food figures mixed farm-gate and full-supply-chain numbers. All are now corrected and each row on the methodology page names its exact table.',
+    link: '/methodology',
+  },
+  {
+    date: '2026-09-17',
+    category: 'feature',
+    title: 'Three new charts on the homepage',
+    body: 'A waterfall showing gross emissions stepping down through the campus forest to the net figure, an uncertainty chart showing that the biggest number is also the least certain, and a bar showing how much of the footprint actually rests on meters — currently about 9%.',
+  },
+  {
     date: '2026-05-18',
     category: 'design',
     title: 'Cursor-following spotlight + Apple Vision Pro-style tilt on the homepage hero',
