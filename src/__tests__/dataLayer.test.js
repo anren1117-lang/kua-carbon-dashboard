@@ -1183,7 +1183,7 @@ describe('renewables composers (composeSolarFromRecords / Geothermal / Wind)', (
   it('composeGeothermalFromRecords: heating-oil counterfactual math', () => {
     // 1000 kWh × 3.5 COP × 3412.14 BTU/kWh = 11,942,490 BTU
     // / 138500 BTU/gal = 86.23 gal of heating oil
-    // × 10.16 kg/gal = 876 kg = 0.88 mt avoided
+    // × 10.21 kg/gal = 880 kg = 0.88 mt avoided
     const r = composeGeothermalFromRecords([
       { kwh_input: 1000, cop: 3.5, avoided_fuel_type: 'heating_oil' },
     ]);

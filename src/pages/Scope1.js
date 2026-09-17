@@ -5,11 +5,12 @@ import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
+import { DegreeDayChart } from '../components/DegreeDayChart.js';
 
 const SCOPE1_PER_STUDENT = +(SCOPE1_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
 const categories = [
-  { name: 'Heating Fuel', desc: 'Heating oil and propane delivered to campus boilers and water heaters.', factor: 'EPA GHG Emission Factors Hub: 10.16 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane', status: 'In dashboard (fuel_bills table)' },
+  { name: 'Heating Fuel', desc: 'Heating oil and propane delivered to campus boilers and water heaters.', factor: 'EPA GHG Emission Factors Hub 2025: 10.21 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane', status: 'In dashboard (fuel_bills table)' },
   { name: 'Refrigerant Leakage', desc: 'Fugitive HVAC refrigerant emissions from technician service reports.', factor: 'IPCC AR6 global warming potentials', status: 'Planned' },
   { name: 'Fleet Vehicles', desc: 'Campus-owned vans and trucks via fuel-card records.', factor: 'EPA GHG Emission Factors Hub (gasoline / diesel)', status: 'Planned' },
 ];
@@ -58,7 +59,7 @@ function Scope1() {
             heading: 'Why it dominates in New Hampshire',
             body: [
               'Cold winters mean heating runs eight months a year. Most KUA buildings burn either #2 heating oil or propane.',
-              'Burning one gallon of heating oil releases 10.16 kg CO₂ — about the same as driving a typical car 25 miles.',
+              'Burning one gallon of heating oil releases 10.21 kg CO₂ — about the same as driving a typical car 25 miles.',
               'A single boarding-school dorm on oil heat can use 4,000–8,000 gallons per winter, producing 40–80 mtCO₂e from that one building.',
             ],
           },
@@ -92,7 +93,7 @@ function Scope1() {
           futureMethod: 'Heating fuel → annual delivery invoices per building entered via Admin Portal (fuel_bills table) × EPA factors → flips to MEASURED. Refrigerants → HVAC technician service-report mass balance × IPCC AR6 GWP100 → MEASURED. Fleet → KUA fuel-card records × EPA Mobile Combustion factors → MEASURED. Once all three integrate, this page reads measured end-to-end.',
         }}
         references={[
-          { title: 'EPA GHG Emission Factors Hub (2024)', source: 'Stationary Combustion Table 2', use: '10.16 kg CO₂/gal heating oil; 5.72 kg CO₂/gal propane' },
+          { title: 'EPA GHG Emission Factors Hub (2025)', source: 'Stationary Combustion, Distillate Fuel Oil No. 2', use: '10.21 kg CO₂/gal heating oil; 5.72 kg CO₂/gal propane' },
           { title: 'IPCC AR6 Working Group I, Chapter 7', source: '2021', use: 'GWP100 values for refrigerants (R-410A 2256, R-134a 1530, etc.)' },
           { title: 'EPA GHG Emission Factors Hub — Mobile Combustion', use: '8.78 kg CO₂/gal gasoline; 10.21 kg CO₂/gal diesel for fleet vehicles' },
           { title: 'GHG Protocol Refrigerants Tool', use: 'Mass-balance method: emissions = (recharge − reclaim) × GWP100' },
@@ -104,7 +105,7 @@ function Scope1() {
             detail: 'Replaces a dorm\'s oil/propane boiler with an electric heat pump. New Scope 2 load is roughly 1/3 the original Scope 1 emissions because heat pumps deliver 2.5–3.5 kWh of heat per 1 kWh of electricity, and the New England grid is ~3× cleaner than oil per BTU delivered.',
             data: [
               { input: 'Annual heating oil per dorm', value: '4,000 – 8,000 gal/yr', source: 'Boarding-school facilities surveys (NEEP 2022)' },
-              { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Emission Factors Hub 2024, Stationary Combustion' },
+              { input: 'Heating oil emission factor', value: '10.21 kg CO₂/gal', source: 'EPA GHG Emission Factors Hub 2025, Stationary Combustion (No. 2 oil)' },
               { input: 'Heating oil heat content (HHV)', value: '138,500 BTU/gal', source: 'EIA Energy Calculator' },
               { input: 'Boiler thermal efficiency', value: '80%', source: 'ASHRAE 90.1 typical for in-service systems' },
               { input: 'Cold-climate heat pump COP', value: '2.0 – 3.0', source: 'NEEP Cold Climate Air-Source Heat Pump Specification' },
@@ -112,7 +113,7 @@ function Scope1() {
             ],
             math: [
               '# Worked example: 6,000 gal/yr dorm at COP 2.5',
-              'old_emissions = 6,000 gal × 10.16 kg/gal = 60,960 kg ≈ 61.0 mtCO₂e',
+              'old_emissions = 6,000 gal × 10.21 kg/gal = 61,260 kg ≈ 61.3 mtCO₂e',
               '',
               'heat_delivered_btu = 6,000 × 138,500 × 0.80 = 665M BTU',
               'heat_delivered_kwh = 665M / 3,412 BTU/kWh = 195,000 kWh',
@@ -131,11 +132,11 @@ function Scope1() {
             data: [
               { input: 'Heating reduction from envelope retrofit', value: '20 – 30%', source: 'DOE Building America Solution Center; ENERGY STAR Home Performance' },
               { input: 'Annual heating oil per dorm', value: '4,000 – 8,000 gal/yr', source: 'NEEP 2022' },
-              { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Hub 2024' },
+              { input: 'Heating oil emission factor', value: '10.21 kg CO₂/gal', source: 'EPA GHG Hub 2025' },
             ],
             math: [
-              '# Low: 4,000 gal × 20% reduction × 10.16 = 8.1 mtCO₂e/yr',
-              '# High: 8,000 gal × 30% reduction × 10.16 = 24.4 mtCO₂e/yr',
+              '# Low: 4,000 gal × 20% reduction × 10.21 = 8.2 mtCO₂e/yr',
+              '# High: 8,000 gal × 30% reduction × 10.21 = 24.5 mtCO₂e/yr',
             ],
           },
           {
@@ -145,11 +146,11 @@ function Scope1() {
             data: [
               { input: 'Heating reduction per 1°F × 8 hrs setback', value: '~7%', source: 'EPA ENERGY STAR Programmable Thermostat guidance' },
               { input: 'Total campus heating fuel', value: '~111,000 gal/yr oil + ~19,000 gal propane (bottom-up estimate)', source: 'KUA Scope 1 estimate, this dashboard' },
-              { input: 'Heating oil emission factor', value: '10.16 kg CO₂/gal', source: 'EPA GHG Hub 2024' },
+              { input: 'Heating oil emission factor', value: '10.21 kg CO₂/gal', source: 'EPA GHG Hub 2025' },
             ],
             math: [
               '# 2°F overnight setback ≈ 7% reduction (one full 8-hr window)',
-              '# campus = 111,000 gal × 7% × 10.16 = 78,943 kg ≈ 79 mtCO₂e/yr',
+              '# campus = 111,000 gal × 7% × 10.21 = 79,331 kg ≈ 79 mtCO₂e/yr',
               '# realistic implementation across mixed building stock: 8-67 mt range',
             ],
           },
@@ -192,6 +193,8 @@ function Scope1() {
           },
         ]}
       />
+
+      <DegreeDayChart />
 
       <div style={styles.list}>
         {categories.map((c) => (

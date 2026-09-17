@@ -314,7 +314,7 @@ const paths = [
         question: 'A student who organizes a successful campaign to retrofit ONE dorm from oil heat to a heat pump has helped reduce KUA\'s annual emissions by roughly:',
         options: [
           { text: '~3 mtCO₂e', correct: false, explanation: 'That\'s about a single international flight saved — meaningful at the individual scale, but a heat-pump retrofit is bigger because heating is a major Scope 1 source for the entire building, not just one person.' },
-          { text: '~38 mtCO₂e', correct: true, explanation: 'Right. A single 6,000-gal/year oil boiler replaced with a cold-climate heat pump (COP 2.5) on the New England grid saves about **38 mtCO₂e/year** — and that savings continues every year for the lifetime of the heat pump (~15-20 years). One organized student campaign can lock in **hundreds of mtCO₂e** of avoided emissions over the equipment\'s lifetime.' },
+          { text: '~43 mtCO₂e', correct: true, explanation: 'Right. A single 6,000-gal/year oil boiler replaced with a cold-climate heat pump (COP 2.5) on the New England grid saves about **43 mtCO₂e/year** — and that savings continues every year for the lifetime of the heat pump (~15-20 years). One organized student campaign can lock in **hundreds of mtCO₂e** of avoided emissions over the equipment\'s lifetime.' },
           { text: '~500 mtCO₂e', correct: false, explanation: 'A bit too high — that\'s closer to the campus-wide impact of converting MULTIPLE buildings. ~500 mt is roughly what KUA would save by retrofitting most of its largest buildings to heat pumps over time.' },
           { text: '~0.5 mtCO₂e', correct: false, explanation: 'Way too low — that\'s closer to a small individual habit change. Retrofits to building HVAC systems affect entire structures and produce institution-scale savings.' },
         ],
@@ -322,7 +322,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'And one bigger lever — what you push for',
-        body: '**Civic and institutional action** is often the most underrated category — and the most impactful for a student in particular.\n\nWhy? Because **institutional emissions dwarf personal emissions**. A KUA student who organizes a successful campaign to switch a dorm from oil heating to a heat pump has just contributed to a **38 mtCO₂e/year reduction** — roughly **20× that student\'s own personal footprint** for years to come. A student who advocates effectively for clean-electricity procurement, or for protecting the campus forest from development, can move numbers in the **hundreds of mtCO₂e**.\n\nForms civic action takes:\n\n**Voting** for candidates and ballot measures with strong climate commitments.\n**Organizing** at school — proposing a policy, joining the sustainability committee, building coalitions of students and faculty.\n**Choosing colleges and employers** based on their climate stance. Universities and companies pay attention to applicant priorities.\n**Speaking up** about specific decisions — building a new parking lot vs preserving forest, fuel choices for campus heating, what gets served in the dining hall.\n**Participating in democratic processes** more broadly — climate policy is set largely by governments.\n\nThe research backs this up. Cordero et al. (2020) found students who calculated their own carbon footprints **continued to make pro-environmental choices for years afterward** — not just personal choices, but institutional and civic ones. **Knowing the math gave them confidence to advocate for change.**',
+        body: '**Civic and institutional action** is often the most underrated category — and the most impactful for a student in particular.\n\nWhy? Because **institutional emissions dwarf personal emissions**. A KUA student who organizes a successful campaign to switch a dorm from oil heating to a heat pump has just contributed to a **43 mtCO₂e/year reduction** — roughly **20× that student\'s own personal footprint** for years to come. A student who advocates effectively for clean-electricity procurement, or for protecting the campus forest from development, can move numbers in the **hundreds of mtCO₂e**.\n\nForms civic action takes:\n\n**Voting** for candidates and ballot measures with strong climate commitments.\n**Organizing** at school — proposing a policy, joining the sustainability committee, building coalitions of students and faculty.\n**Choosing colleges and employers** based on their climate stance. Universities and companies pay attention to applicant priorities.\n**Speaking up** about specific decisions — building a new parking lot vs preserving forest, fuel choices for campus heating, what gets served in the dining hall.\n**Participating in democratic processes** more broadly — climate policy is set largely by governments.\n\nThe research backs this up. Cordero et al. (2020) found students who calculated their own carbon footprints **continued to make pro-environmental choices for years afterward** — not just personal choices, but institutional and civic ones. **Knowing the math gave them confidence to advocate for change.**',
       },
       {
         type: 'quiz',
@@ -412,13 +412,13 @@ const paths = [
       },
       {
         type: 'concept',
-        heading: 'AP Chem: where the EPA factor 10.16 kg CO₂/gal comes from',
+        heading: 'AP Chem: where the EPA factor 10.21 kg CO₂/gal comes from',
         body: 'Heating oil (#2 distillate) is mostly C₁₂H₂₃-ish hydrocarbons — about 87% carbon by mass. The combustion reaction is: CₓHᵧ + (x + y/4) O₂ → x CO₂ + (y/2) H₂O. The EPA factor isn\'t magic — it\'s the carbon mass per gallon converted to CO₂ via stoichiometry. Every fuel\'s factor is derived this way; you can do it yourself.',
       },
       {
         type: 'math',
         heading: 'Math: derive the heating-oil factor from first principles',
-        scenario: 'Heating oil is approximately 87% carbon by mass, with density 0.84 kg/L and 3.785 L/gallon. Use stoichiometry to derive the kg of CO₂ produced when one gallon is fully combusted, and verify it matches the EPA published value (10.16 kg CO₂/gal).',
+        scenario: 'Heating oil is approximately 87% carbon by mass, with density 0.84 kg/L and 3.785 L/gallon. Use stoichiometry to derive the kg of CO₂ produced when one gallon is fully combusted, and compare it to the EPA published value (10.21 kg CO₂/gal).',
         given: [
           { label: 'Mass per gallon', value: '0.84 kg/L × 3.785 L/gal = 3.18 kg/gal' },
           { label: 'Carbon fraction by mass', value: '0.87' },
@@ -429,7 +429,7 @@ const paths = [
         question: 'kg CO₂ produced per gallon (complete combustion):',
         options: [
           { text: '~3.18 kg CO₂/gal', correct: false, explanation: 'That\'s the mass of the FUEL per gallon, not the CO₂ produced. Combustion produces CO₂ that contains the fuel\'s carbon plus added oxygen — heavier than the original fuel.' },
-          { text: '~10.16 kg CO₂/gal', correct: true, explanation: 'Right. 3.18 kg/gal × 0.87 (C fraction) = 2.77 kg C/gal × 44.01/12.01 = 10.15 kg CO₂/gal. The EPA factor is just stoichiometry on a typical fuel composition. Same approach derives propane (5.72), gasoline (8.78), diesel (10.21) from their molecular formulas.' },
+          { text: '~10.2 kg CO₂/gal', correct: true, explanation: 'Right. 3.18 kg/gal × 0.87 (C fraction) = 2.77 kg C/gal × 44.01/12.01 = 10.15 kg CO₂/gal — within 1% of EPA\'s published 10.21. The small gap is the interesting part: 87% carbon and 0.84 kg/L are round numbers for a fuel whose real composition varies by refinery and season, so first-principles stoichiometry lands close to the published factor without reproducing it. The same approach derives propane (5.72) and gasoline (8.78) from their formulas; diesel shares heating oil\'s 10.21 because both are #2 distillate.' },
           { text: '~24 kg CO₂/gal', correct: false, explanation: 'Too high. You may have multiplied by 12.01/44.01 backwards. The C → CO₂ ratio is 44/12 ≈ 3.67, not 12/44.' },
           { text: '~5.5 kg CO₂/gal', correct: false, explanation: 'About right for propane (5.72) but too low for heating oil. Heating oil has more carbon per gallon than propane because it\'s denser and longer-chain hydrocarbons.' },
         ],
@@ -734,16 +734,16 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: KUA\'s Scope 1 from heating fuel',
-        scenario: 'Suppose KUA receives 95,000 gallons of #2 heating oil deliveries in one fiscal year. The EPA emission factor is 10.16 kg CO₂/gal.',
+        scenario: 'Suppose KUA receives 95,000 gallons of #2 heating oil deliveries in one fiscal year. The EPA emission factor is 10.21 kg CO₂/gal.',
         given: [
           { label: 'Heating oil', value: '95,000 gal' },
-          { label: 'EPA factor', value: '10.16 kg CO₂/gal' },
+          { label: 'EPA factor', value: '10.21 kg CO₂/gal' },
         ],
         question: 'Annual Scope 1 from heating oil:',
         options: [
-          { text: '~96.5 mtCO₂e', correct: false, explanation: 'Off by 10× (you may have divided by 1,000 once too many times).' },
-          { text: '~965 mtCO₂e', correct: true, explanation: 'Right. 95,000 × 10.16 = 965,200 kg = 965.2 mtCO₂e.' },
-          { text: '~9,650 mtCO₂e', correct: false, explanation: 'Off by 10× the other way (kg → mt divides by 1,000, not multiplies).' },
+          { text: '~97 mtCO₂e', correct: false, explanation: 'Off by 10× (you may have divided by 1,000 once too many times).' },
+          { text: '~970 mtCO₂e', correct: true, explanation: 'Right. 95,000 × 10.21 = 969,950 kg = 970.0 mtCO₂e.' },
+          { text: '~9,700 mtCO₂e', correct: false, explanation: 'Off by 10× the other way (kg → mt divides by 1,000, not multiplies).' },
           { text: '~95 mtCO₂e', correct: false, explanation: 'You may have used the gallon count alone without applying the emission factor.' },
         ],
       },
@@ -1082,19 +1082,19 @@ const paths = [
         scenario: 'A KUA dorm currently burns 6,000 gallons of heating oil per year through an 80% efficient boiler. Replace it with a cold-climate heat pump (COP 2.5) on the New England grid. Calculate the annual emissions savings.',
         given: [
           { label: 'Heating oil', value: '6,000 gal/yr' },
-          { label: 'Oil emission factor', value: '10.16 kg CO₂/gal' },
+          { label: 'Oil emission factor', value: '10.21 kg CO₂/gal' },
           { label: 'Oil HHV', value: '138,500 BTU/gal' },
           { label: 'Boiler efficiency', value: '80%' },
           { label: 'Heat pump COP', value: '2.5' },
           { label: 'BTU/kWh', value: '3,412' },
-          { label: 'Grid factor', value: '0.292 kg CO₂/kWh' },
+          { label: 'Grid factor', value: '0.234 kg CO₂/kWh (location-based inventory rate)' },
         ],
         question: 'Approximate annual savings:',
         options: [
           { text: '~5 mtCO₂e/yr', correct: false, explanation: 'Walk through old vs new emissions separately.' },
-          { text: '~38 mtCO₂e/yr', correct: true, explanation: 'Right. OLD: 6,000 × 10.16 = 61 mt. NEW: 6,000 × 138,500 × 0.80 = 665M BTU; ÷ 3,412 = 195,000 kWh thermal; ÷ 2.5 = 78,000 kWh electric; × 0.292 = 22.8 mt. Savings = 61 − 22.8 = 38 mtCO₂e/yr.' },
+          { text: '~43 mtCO₂e/yr', correct: true, explanation: 'Right. OLD: 6,000 × 10.21 = 61.3 mt. NEW: 6,000 × 138,500 × 0.80 = 665M BTU; ÷ 3,412 = 195,000 kWh thermal; ÷ 2.5 = 78,000 kWh electric; × 0.234 = 18.3 mt. Savings = 61.3 − 18.3 = 43.0 mtCO₂e/yr. Worth knowing: 0.234 is the INVENTORY rate — the average of everything on the grid — and it answers "what does KUA now report?" If you instead ask "what does the atmosphere actually see?", you need the MARGINAL rate for the plants that ramp to serve new load (~0.49 kg/kWh via EPA AVERT), which gives ~38 mt of new emissions and only ~23 mt of real savings. Same retrofit, same kilowatt-hours, two different questions.' },
           { text: '~61 mtCO₂e/yr', correct: false, explanation: 'You assumed the heat pump uses zero energy. The heat pump still consumes real electricity; the saving is the difference between old and new emissions.' },
-          { text: '~85 mtCO₂e/yr', correct: false, explanation: 'Too high — recheck. The combined emissions chain doesn\'t cross 60 mt for old or 25 mt for new.' },
+          { text: '~85 mtCO₂e/yr', correct: false, explanation: 'Too high — recheck. The old system is ~61 mt and the new one ~18 mt, so the saving can never exceed 61.' },
         ],
       },
       {
@@ -1279,34 +1279,34 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: stack-rank three reduction levers',
-        scenario: '(a) Heat pump retrofit on one dorm using 6,000 gal/yr oil → ~38 mt savings. (b) LED retrofit cutting electricity 12% from current 2.3M kWh. (c) 30 international students take 1 fewer round trip to East Asia.',
+        scenario: '(a) Heat pump retrofit on one dorm using 6,000 gal/yr oil → ~43 mt savings. (b) LED retrofit cutting electricity 12% from current 2.3M kWh. (c) 30 international students take 1 fewer round trip to East Asia.',
         given: [
-          { label: '(a) Heat pump', value: '~38 mt savings' },
-          { label: '(b) LED retrofit', value: '12% × 2.3M kWh × 0.292 kg/kWh' },
+          { label: '(a) Heat pump', value: '~43 mt savings' },
+          { label: '(b) LED retrofit', value: '12% × 2.3M kWh × 0.234 kg/kWh (inventory rate)' },
           { label: '(c) 30 students × 1 fewer trip', value: '× ~2.93 mtCO₂e per trip' },
         ],
         question: 'Order biggest to smallest:',
         options: [
-          { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 2.93 ≈ 88 mt. (b) = 0.12 × 2,300,000 × 0.292 / 1,000 ≈ 81 mt. (a) = 38 mt.' },
+          { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 2.93 ≈ 88 mt. (b) = 0.12 × 2,300,000 × 0.234 / 1,000 ≈ 65 mt. (a) = 43 mt. Notice how much work the electricity factor is doing here: swap the inventory rate for the marginal rate and (b) jumps to ~135 mt, which reorders the whole list. Which factor you pick decides the answer, so say which question you are asking before you rank anything.' },
           { text: '(a) > (b) > (c)', correct: false, explanation: 'Heat pump is real but smallest at this scale. The flight reduction across 30 students dominates.' },
           { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × ~3 mt per round trip ≈ 88 mt, larger than the LED retrofit.' },
-          { text: '(b) > (c) > (a)', correct: false, explanation: 'Close on the order — (c) is slightly larger than (b). 30 × 2.93 = 87.9 vs LED 80.6.' },
+          { text: '(b) > (c) > (a)', correct: false, explanation: 'Wrong on the basis this question gave you — at the stated inventory rate (c) = 87.9 mt beats LED at 64.7 mt. It would be RIGHT on a marginal factor (~0.49 kg/kWh), where the LED retrofit reaches ~135 mt. Not a careless answer, just one to a different question.' },
         ],
       },
       {
         type: 'math',
         heading: 'Math: cost-effectiveness ($/ton CO₂ avoided)',
-        scenario: 'Suppose the heat-pump retrofit costs $80,000 (net of fuel-cost savings) and reduces emissions by 38 mtCO₂e/yr for 20 years. The LED retrofit costs $40,000 and saves 50 mtCO₂e/yr for 15 years. Calculate $ per ton CO₂ avoided for each, ignoring discounting.',
+        scenario: 'Suppose the heat-pump retrofit costs $80,000 (net of fuel-cost savings) and reduces emissions by 43 mtCO₂e/yr for 20 years. The LED retrofit costs $40,000 and saves 50 mtCO₂e/yr for 15 years. Calculate $ per ton CO₂ avoided for each, ignoring discounting.',
         given: [
           { label: 'Heat pump cost', value: '$80,000' },
-          { label: 'Heat pump savings', value: '38 mt/yr × 20 yrs = 760 mt' },
+          { label: 'Heat pump savings', value: '43 mt/yr × 20 yrs = 860 mt' },
           { label: 'LED cost', value: '$40,000' },
           { label: 'LED savings', value: '50 mt/yr × 15 yrs = 750 mt' },
         ],
         question: 'Approximate $/ton CO₂ avoided:',
         options: [
-          { text: 'Heat pump ~$105/ton; LED ~$53/ton', correct: true, explanation: 'Right. Heat pump: $80K / 760 mt ≈ $105/ton. LED: $40K / 750 mt ≈ $53/ton. The LED retrofit is roughly 2× more cost-effective per ton avoided. This is how a "marginal abatement cost curve" gets built — order interventions by $/ton, do the cheap ones first.' },
-          { text: 'Heat pump ~$2,100/ton; LED ~$800/ton', correct: false, explanation: 'You divided by yearly savings, not lifetime savings. Multiply the annual savings by the project lifetime first.' },
+          { text: 'Heat pump ~$93/ton; LED ~$53/ton', correct: true, explanation: 'Right. Heat pump: $80K / 860 mt ≈ $93/ton. LED: $40K / 750 mt ≈ $53/ton. The LED retrofit is roughly 2× more cost-effective per ton avoided. This is how a "marginal abatement cost curve" gets built — order interventions by $/ton, do the cheap ones first.' },
+          { text: 'Heat pump ~$1,860/ton; LED ~$800/ton', correct: false, explanation: 'You divided by yearly savings, not lifetime savings. Multiply the annual savings by the project lifetime first.' },
           { text: 'Heat pump ~$50/ton; LED ~$80/ton', correct: false, explanation: 'You may have inverted the ratios. The heat pump costs MORE per ton than the LED retrofit at these specific cost and savings figures.' },
           { text: 'Heat pump ~$80/ton; LED ~$40/ton', correct: false, explanation: 'You may have used $ alone without dividing by total tons saved over the project lifetime. The denominator is annual savings × years.' },
         ],
@@ -1319,7 +1319,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'The biggest infrastructural lever: heat pumps',
-        body: 'Replacing a single 6,000-gal/year oil boiler with a cold-climate heat pump (COP 2.5) saves ~38 mtCO₂e/yr per dorm.',
+        body: 'Replacing a single 6,000-gal/year oil boiler with a cold-climate heat pump (COP 2.5) saves ~43 mtCO₂e/yr per dorm.',
       },
       {
         type: 'concept',
@@ -1353,11 +1353,11 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA replaces 4 dorm boilers with heat pumps over 5 years. Each saves ~38 mtCO₂e/yr. What\'s the total emission reduction by year 10?',
+        question: 'KUA replaces 4 dorm boilers with heat pumps over 5 years. Each saves ~43 mtCO₂e/yr. What\'s the total emission reduction by year 10?',
         options: [
-          { text: '~152 mtCO₂e total', correct: false, explanation: 'That\'s just one year of savings × 4 dorms. The savings RECUR every year for the heat pumps\' lifetimes.' },
-          { text: '~1,160 mtCO₂e cumulative', correct: true, explanation: 'Right. Year 1: 1 dorm × 38 = 38. Year 2: 2 × 38 = 76. ... Year 5: 5 × 38 = 190. Years 6-10 all 5 × 38 = 190. Cumulative through year 10: 38 + 76 + 114 + 152 + 190 + 5×190 = 1,520 mtCO₂e (or ~1,160 if you count from year 1 with each dorm starting in year of installation only). The compounding of recurring savings is why infrastructure changes have outsized long-term impact.' },
-          { text: '~38 mtCO₂e total', correct: false, explanation: 'That\'s one dorm in one year — way too small.' },
+          { text: '~172 mtCO₂e total', correct: false, explanation: 'That\'s just one year of savings × 4 dorms. The savings RECUR every year for the heat pumps\' lifetimes.' },
+          { text: '~1,460 mtCO₂e cumulative', correct: true, explanation: 'Right. The four dorms come online one per year in years 1–4, and each keeps saving 43 mt/yr from then on. Dorm 1 runs for 10 years, dorm 2 for 9, dorm 3 for 8, dorm 4 for 7 — 34 dorm-years in all. 34 × 43 ≈ 1,460 mtCO₂e through year 10. Recurring savings are why infrastructure changes have outsized long-term impact: even the last dorm installed still delivers seven years of savings inside the window.' },
+          { text: '~43 mtCO₂e total', correct: false, explanation: 'That\'s one dorm in one year — way too small.' },
           { text: '~10,000 mtCO₂e total', correct: false, explanation: 'Way too high — that would require ~30 retrofitted dorms or much higher per-dorm savings.' },
         ],
       },

@@ -101,6 +101,20 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Charts mounted where they teach (Phase 403)
+
+Five chart components existed but four were never mounted, and `Scope2.js` referenced `GridVintageChart` with no import — the page was broken on disk. Now: `DegreeDayChart` on Scope 1 (weather against the 1991–2020 normal), `GridVintageChart` on Scope 2 (same kWh, five eGRID vintages), and `NetBalanceWaterfall` / `ScopeRangeChart` / `MeasuredShareChart` in a band under "By scope" on the homepage.
+
+The three homepage charts are built to be read in one order: **what the total is made of**, **how sure each part is**, and **how much of it rests on meters**. The last one is the one that visibly redraws when admin data lands — today roughly 9% of the gross footprint is measured, and the hatched slices are the work remaining. `ScopeRangeChart` carries the claim the dashboard had only ever made in prose: Scope 3's uncertainty band alone is several times the entire Scope 2 figure, so the biggest number is also the least trustworthy one.
+
+**A factor sweep came out of it.** Phase 401 corrected heating oil 10.16 → 10.21 in `scopeTotals.js` but nine other files still cited the old value — `emissionFactors.js` (a live data row), `CarbonMath.js`, `Methodology.js`, two admin pages, `ScopeExplainer.js`, `NetEstimate.js`, and four `LearnAgent.js` quiz blocks. Two quizzes had their **correct option change** (95,000 gal: 965 → 970 mt; the heat-pump retrofit: 38 → 43 mt), which is why the answer keys were read in full before editing rather than regex-replaced. `LearnAgent.js` also still carried `0.292 kg/kWh`, a grid factor that stopped existing in Phase 392.
+
+Two of those quizzes now teach the inventory-vs-marginal distinction outright instead of hiding it: a retrofit's saving is ~43 mt against the location-based inventory rate (what KUA reports) but only ~23 mt against the AVERT marginal rate (what the atmosphere sees). In the stack-rank question the choice of factor **reorders the answer**, and the distractor that is correct under a marginal factor says so rather than being marked simply wrong.
+
+Unrelated defect found in the same file: the four-boiler cumulative question said four dorms, walked five in its explanation, derived 1,520, then contradicted its own option text (1,160) in a parenthetical. Rebuilt on the question's own premise — 34 dorm-years, ~1,460 mtCO₂e.
+
+`teachingCharts.test.js` mocks the composer hook rather than Supabase, so the empty, partial and missing-field states are exercised directly — including a regression guard for `sinkMt` vs `sinksMt`, where the wrong name renders nothing at all instead of throwing.
+
 ### The campus map defaults to the real map (Phase 402)
 
 `/campus-map` opened in **Schematic** mode — flat teal boxes grouped by category — when the page has had a **Photo** mode since Phase 249 that overlays energy dots on KUA's official hand-illustrated campus map. The user's words: *"the map is so ugly just keep the original map."* Photo is now the default; Schematic stays one click away as the magnitude-comparison view.

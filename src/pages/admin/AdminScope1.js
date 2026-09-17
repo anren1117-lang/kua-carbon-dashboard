@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const items = [
-  { to: '/admin/scope-1/heating-oil',   name: 'Heating Oil',   table: 'scope1_heating_oil',   status: 'Live form', desc: 'Delivery records for #2 distillate. EPA Hub factor 10.16 kg CO₂/gal.' },
+  { to: '/admin/scope-1/heating-oil',   name: 'Heating Oil',   table: 'scope1_heating_oil',   status: 'Live form', desc: 'Delivery records for #2 distillate. EPA Hub factor 10.21 kg CO₂/gal.' },
   { to: '/admin/scope-1/propane',       name: 'Propane',       table: 'scope1_propane',       status: 'Live form', desc: 'Delivery records for LPG. EPA Hub factor 5.72 kg CO₂/gal.' },
   { to: '/admin/scope-1/refrigerants',  name: 'Refrigerants',  table: 'scope1_refrigerants',  status: 'Live form', desc: 'Mass-balance: (recharge − reclaim) × IPCC AR6 GWP100.' },
   { to: '/admin/scope-1/fleet',         name: 'Fleet vehicles',table: 'scope1_fleet',         status: 'Live form', desc: 'Fuel-card gallons or odometer miles for campus-owned vehicles.' },

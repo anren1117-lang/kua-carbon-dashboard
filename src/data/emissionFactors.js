@@ -33,7 +33,7 @@ export const emissionFactors = [
   { id: 'ef_grid_imports',     category: 'electricity', subcategory: 'imports',         unit: 'kWh', kgco2e_per_unit: 0.300, source: 'NYISO + Quebec hydro blend midpoint', year: 2024 },
 
   // Heating fuels (Scope 1)
-  { id: 'ef_fuel_oil_2',  category: 'fuel', subcategory: 'heating_oil_no2', unit: 'gallon', kgco2e_per_unit: 10.16, source: 'EPA GHG Emission Factors Hub 2024', year: 2024 },
+  { id: 'ef_fuel_oil_2',  category: 'fuel', subcategory: 'heating_oil_no2', unit: 'gallon', kgco2e_per_unit: 10.21, source: 'EPA GHG Emission Factors Hub 2025', year: 2025 },
   { id: 'ef_propane',     category: 'fuel', subcategory: 'propane',         unit: 'gallon', kgco2e_per_unit: 5.72,  source: 'EPA GHG Emission Factors Hub 2024', year: 2024 },
   { id: 'ef_natgas_therm',category: 'fuel', subcategory: 'natural_gas',     unit: 'therm',  kgco2e_per_unit: 5.31,  source: 'EPA GHG Emission Factors Hub 2024', year: 2024 },
   { id: 'ef_gasoline',    category: 'fuel', subcategory: 'gasoline',        unit: 'gallon', kgco2e_per_unit: 8.78,  source: 'EPA GHG Emission Factors Hub 2024', year: 2024 },

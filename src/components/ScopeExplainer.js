@@ -25,7 +25,7 @@ const SCOPES = [
     calculation: [
       'Heating fuel is the dominant source. We multiply gallons delivered (from invoices) by an EPA combustion factor:',
       'gallons × kg CO₂ per gallon = mtCO₂e',
-      'Heating oil: 10.16 kg CO₂/gal · Propane: 5.72 kg CO₂/gal',
+      'Heating oil: 10.21 kg CO₂/gal · Propane: 5.72 kg CO₂/gal',
       'Refrigerants: (recharge − reclaim) lb × GWP100 from IPCC AR6',
       'Fleet: gallons of fuel-card records × EPA mobile combustion factor',
     ],

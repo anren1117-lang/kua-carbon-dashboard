@@ -54,14 +54,14 @@ const QUESTIONS = [
   {
     id: 'q4',
     level: 'standard',
-    setup: 'Heating oil emits 10.16 kg CO₂ per gallon (EPA factor). If KUA Facilities delivered 130,000 gallons of heating oil this year, what\'s the Scope 1 contribution from heating oil in mt?',
-    answer: 1321,
+    setup: 'Heating oil emits 10.21 kg CO₂ per gallon (EPA factor). If KUA Facilities delivered 130,000 gallons of heating oil this year, what\'s the Scope 1 contribution from heating oil in mt?',
+    answer: 1327,
     unit: 'mtCO₂e',
     tolerance: 0.05,
     work: [
-      '130,000 gal × 10.16 kg/gal = 1,320,800 kg CO₂',
-      '1,320,800 kg ÷ 1,000 = ~1,321 mtCO₂e',
-      'Factor source: EPA GHG Emission Factors Hub, "Stationary Combustion" table.',
+      '130,000 gal × 10.21 kg/gal = 1,327,300 kg CO₂',
+      '1,327,300 kg ÷ 1,000 = ~1,327 mtCO₂e',
+      'Factor source: EPA GHG Emission Factors Hub 2025, "Stationary Combustion" table, Distillate Fuel Oil No. 2.',
     ],
   },
   {

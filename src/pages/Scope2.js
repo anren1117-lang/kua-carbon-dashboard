@@ -14,6 +14,7 @@ import {
   FACTOR_RECONCILIATION,
 } from '../data/gridMix.js';
 import { weatherContextText } from '../data/degreeDays.js';
+import { GridVintageChart } from '../components/GridVintageChart.js';
 
 // Helper for the action-math blocks below — keeps the educational figures in
 // sync with the grid factor. Everything that depends on the composed kWh is
@@ -109,6 +110,12 @@ function Scope2() {
           <span style={styles.value}>Liberty monthly bill (TBD)</span>
         </div>
       </div>
+      {/* The vintage rows above say the factor is three years older than the
+          electricity it prices. This shows what that costs: the same kWh,
+          priced at every published grid year. Gains a bar when eGRID2024
+          lands, with no code change. */}
+      <GridVintageChart kwh={COMPOSED_ANNUAL_KWH} />
+
       <Scope2LiveDashboard />
 
       <Scope2BmsInsights />

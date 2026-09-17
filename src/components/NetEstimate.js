@@ -43,7 +43,7 @@ const rows = [
     name: 'Scope 1 — Heating fuel',
     low: Math.round(SCOPE1_HEATING_RANGE.low), high: Math.round(SCOPE1_HEATING_RANGE.high),
     provenance: 'cited',
-    currentMethod: 'Hand-set 100k–150k gal heating-oil-equivalent assumption × EPA Stationary Combustion factor (10.16 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane). The gallons figure is a guess sized to typical NH boarding-school footprints, not measured.',
+    currentMethod: 'Hand-set 100k–150k gal heating-oil-equivalent assumption × EPA Stationary Combustion factor (10.21 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane). The gallons figure is a guess sized to typical NH boarding-school footprints, not measured.',
     futureMethod:  'Replace the gallons assumption with KUA Facilities annual fuel-delivery invoices (heating oil + propane) per building. EPA factors stay; once invoices feed the fuel_bills table, this row flips estimated → measured.',
   },
   {

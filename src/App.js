@@ -4,6 +4,9 @@ import { NetEstimate } from './components/NetEstimate';
 import { PeerComparison } from './components/PeerComparison';
 import { ScopeDonut } from './components/ScopeDonut';
 import { ScopeExplainer } from './components/ScopeExplainer';
+import { NetBalanceWaterfall } from './components/NetBalanceWaterfall';
+import { ScopeRangeChart } from './components/ScopeRangeChart';
+import { MeasuredShareChart } from './components/MeasuredShareChart';
 import { AISummary } from './components/AISummary';
 import { NewsStrip } from './components/NewsStrip';
 import { DormLeaderboardPreview } from './components/DormLeaderboardPreview';
@@ -39,6 +42,12 @@ function App() {
       <SectionHeader label="Breakdown" title="By scope" icon={Icon.Bolt} />
       <ScopeDonut />
       <ScopeExplainer />
+
+      <div style={styles.chartBand}>
+        <NetBalanceWaterfall />
+        <ScopeRangeChart />
+        <MeasuredShareChart />
+      </div>
 
       <SectionHeader label="Context" title="How KUA compares" icon={Icon.HelpCircle} />
       <PeerComparison />
@@ -146,6 +155,7 @@ function App() {
 
 const styles = {
   container: { minHeight: '100vh', backgroundColor: '#0b1220', padding: '20px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#e5e7eb' },
+  chartBand: { maxWidth: 1100, margin: '8px auto 0', padding: '0 16px' },
   header: { textAlign: 'center', marginBottom: 40, paddingBottom: 28, borderBottom: '1px solid #1f2937' },
   logo: {
     width: 64, height: 64,
