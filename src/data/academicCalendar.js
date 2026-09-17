@@ -50,6 +50,27 @@ export const STAFF_WORK_DAYS = 180;
 export const COMMUTE_WEEKS_DEFAULT = 36;
 export const COMMUTE_DAYS_PER_WEEK_DEFAULT = 5;
 
+/**
+ * Weeks a BOARDING student is actually resident on campus — a third quantity
+ * again, distinct from both constants above.
+ *
+ * personalFootprint.js priced beef and dorm showers at 52 weeks, a full
+ * calendar year, for students who go home for summer, winter and spring
+ * breaks. That overstates both rows.
+ *
+ * 34 is an estimate, and the honest bounds are worth stating: INSTRUCTIONAL_DAYS
+ * implies roughly 36 teaching weeks, but boarders are resident across weekends
+ * within a term, while a long summer plus winter and spring breaks removes
+ * something like 14-16 weeks from the calendar year. So the defensible band is
+ * ~32-38 weeks and 34 sits in the middle of it. It is NOT derived from a
+ * published calendar, because the Major Dates Calendar that would settle it is
+ * not in this repo — the same gap that left INSTRUCTIONAL_DAYS estimated.
+ *
+ * Day students are a different case again: they sleep at home, so dorm showers
+ * don't apply to them at all, and their dining is term-time only.
+ */
+export const STUDENT_RESIDENCY_WEEKS = 34;
+
 export const CALENDAR_PROVENANCE = {
   provenance: 'estimated',
   termStructure: 'three trimesters',

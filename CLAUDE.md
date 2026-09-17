@@ -101,6 +101,16 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### A boarder is not on campus for 52 weeks (Phase 399)
+
+`personalFootprint.js` priced beef and dorm showers at `WEEKS_PER_YEAR = 52` — a full calendar year of campus meals and dorm hot water for students who go home for summer, winter and spring. `academicCalendar.js` now exports **`STUDENT_RESIDENCY_WEEKS = 34`**, a *third* quantity distinct from both day-counts above: residency includes weekends inside a term, which teaching weeks don't, and excludes the breaks, which the calendar year doesn't.
+
+**34 is an estimate and the file states its bounds**: `INSTRUCTIONAL_DAYS` implies ~36 teaching weeks, boarders are resident across weekends within a term, and summer plus winter plus spring removes roughly 14–16 weeks — so the defensible band is ~32–38 and 34 sits mid-range. Not derived from a published calendar, because the Major Dates Calendar that would settle it still isn't in the repo (same gap as Phase 395). A test pins it inside that band.
+
+**The assumption is now visible where the student is asked to audit it.** `/your-footprint` renders each row's note under "Audit + push back on any of them" — but the beef row didn't show its weeks multiplier at all while the shower row did. Both now read "× 34 weeks on campus", and the shower row adds "term-time only — breaks excluded". Tests assert both notes contain the constant and that neither says 52.
+
+Effect on a typical boarder: beef 0.92 mt, showers 0.11 mt — down about a third from the calendar-year basis. No test pinned those absolute figures before, which is why the overstatement survived; three now do.
+
 ### The tripwire had a unit-shaped blind spot (Phase 398)
 
 Phase 392 added a grid-factor drift guard to `proseFigures.test.js`, context-matched on the word "effective". It missed the first thing it should have caught: `learningContent.js` taught the effective rate as **"about 235 g CO2/kWh"**, and the regex only matched a **kg** form (`\d\.\d{3}\s*kg`). A guard against stale figures that only recognises one unit is a guard with a hole in it. There is now a grams pattern too, with a fixture test proving it fires — and a second fixture proving it still ignores the legitimate US-average "~370 g/kWh" sitting in the same sentence (requiring `CO` after the `g` is what separates them).

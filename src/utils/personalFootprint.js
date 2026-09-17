@@ -16,7 +16,7 @@
 // can show "your beef-eating accounts for 1.2 mt of your 4.8 mt."
 
 import { KG_PER_KWH } from '../data/gridMix.js';
-import { INSTRUCTIONAL_DAYS } from '../data/academicCalendar.js';
+import { INSTRUCTIONAL_DAYS, STUDENT_RESIDENCY_WEEKS } from '../data/academicCalendar.js';
 
 // Per-mile car emissions (mixed driving). EPA: 8.78 kg/gal gasoline,
 // ~22 mpg typical → ~0.399 kg/mi. Round to 0.40.
@@ -36,7 +36,11 @@ const MT_PER_INTL_FLIGHT     = 2.5;
 // Beef per kg: 60 kg CO₂e (the headline figure on /chatbot). A
 // "beef serving" is ~150 g — call it ~9 kg CO₂e per serving.
 const KG_PER_BEEF_SERVING = 9;
-const WEEKS_PER_YEAR = 52;
+// Was 52 — a full calendar year of campus beef and dorm showers for students
+// who go home for summer, winter and spring breaks. The page invites students
+// to "audit + push back on" each assumption, so this one is now both smaller
+// and stated in the rows it drives. See academicCalendar.js for the bounds.
+const WEEKS_PER_YEAR = STUDENT_RESIDENCY_WEEKS;
 
 // Dorm thermostat impact: a degree of setback during winter saves
 // ~3% of heating energy. KUA heats ~340 students with ~1,290 mt of
@@ -121,7 +125,7 @@ export function estimatePersonalFootprint(inputs = {}) {
     {
       label: 'Beef in your diet',
       mt: round2(beefMt),
-      note: `${beefServingsPerWeek} serving${beefServingsPerWeek === 1 ? '' : 's'}/week × ~${KG_PER_BEEF_SERVING} kg CO₂e per serving`,
+      note: `${beefServingsPerWeek} serving${beefServingsPerWeek === 1 ? '' : 's'}/week × ${WEEKS_PER_YEAR} weeks on campus × ~${KG_PER_BEEF_SERVING} kg CO₂e per serving`,
     },
     {
       label: 'Dorm thermostat habit',
@@ -135,7 +139,7 @@ export function estimatePersonalFootprint(inputs = {}) {
     {
       label: 'Showers (hot water + electricity)',
       mt: round2(showerMt),
-      note: `${showers} showers/week × ${WEEKS_PER_YEAR} weeks × ~${(KG_PER_SHOWER).toFixed(2)} kg per shower`,
+      note: `${showers} showers/week × ${WEEKS_PER_YEAR} weeks on campus × ~${(KG_PER_SHOWER).toFixed(2)} kg per shower (term-time only — breaks excluded)`,
     },
   ];
 

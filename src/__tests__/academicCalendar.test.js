@@ -12,6 +12,7 @@ import {
   COMMUTE_WEEKS_DEFAULT,
   COMMUTE_DAYS_PER_WEEK_DEFAULT,
   CALENDAR_PROVENANCE,
+  STUDENT_RESIDENCY_WEEKS,
 } from '../data/academicCalendar.js';
 import { estimatePersonalFootprint } from '../utils/personalFootprint.js';
 
@@ -57,6 +58,56 @@ describe('provenance is honest about being an estimate', () => {
 
   it('records the term structure it is estimating against', () => {
     expect(CALENDAR_PROVENANCE.termStructure).toMatch(/trimester/i);
+  });
+});
+
+describe('residency weeks are a third quantity, not a reuse of either day-count', () => {
+  it('is fewer than a calendar year — breaks are not on campus', () => {
+    // Was 52: a full calendar year of campus beef and dorm showers for a
+    // student who goes home for summer, winter and spring.
+    expect(STUDENT_RESIDENCY_WEEKS).toBeLessThan(52);
+  });
+
+  it('sits inside the defensible band, roughly 32-38 weeks', () => {
+    // Below ~32 would ignore that boarders are resident across weekends within
+    // a term; above ~38 would ignore the length of the summer break.
+    expect(STUDENT_RESIDENCY_WEEKS).toBeGreaterThanOrEqual(32);
+    expect(STUDENT_RESIDENCY_WEEKS).toBeLessThanOrEqual(38);
+  });
+
+  it('is its own constant, not a reuse of the teaching-week default', () => {
+    // Residency counts weekends inside a term; COMMUTE_WEEKS_DEFAULT counts
+    // teaching weeks for a day student driving in. Different questions, so
+    // they should not collapse onto one symbol.
+    //
+    // (An earlier draft compared against COMMUTE_WEEKS_DEFAULT * DAYS_PER_WEEK,
+    // which is 180 DAYS — comparing weeks to days, trivially unequal, and
+    // therefore a guard that proved nothing.)
+    expect(typeof STUDENT_RESIDENCY_WEEKS).toBe('number');
+    expect(STUDENT_RESIDENCY_WEEKS).not.toBe(COMMUTE_WEEKS_DEFAULT);
+  });
+});
+
+describe('the residency assumption is visible to the student who is asked to audit it', () => {
+  it('states the weeks in the beef row, which previously hid its multiplier', () => {
+    const r = estimatePersonalFootprint({ studentType: 'us_boarding', beefFrequency: 'weekly' });
+    const beef = r.components.find((c) => /beef/i.test(c.label));
+    expect(beef.note).toContain(String(STUDENT_RESIDENCY_WEEKS));
+    expect(beef.note).not.toContain('52');
+  });
+
+  it('states the weeks in the shower row and says breaks are excluded', () => {
+    const r = estimatePersonalFootprint({ studentType: 'us_boarding', showersPerWeek: 7 });
+    const shower = r.components.find((c) => /shower/i.test(c.label));
+    expect(shower.note).toContain(String(STUDENT_RESIDENCY_WEEKS));
+    expect(shower.note).toMatch(/break/i);
+  });
+
+  it('prices beef at residency weeks, not a calendar year', () => {
+    const r = estimatePersonalFootprint({ studentType: 'us_boarding', beefFrequency: 'weekly' });
+    const beef = r.components.find((c) => /beef/i.test(c.label));
+    // 1 serving/week x residency weeks x ~9 kg, in tonnes.
+    expect(beef.mt).toBeCloseTo((1 * STUDENT_RESIDENCY_WEEKS * 9) / 1000, 2);
   });
 });
 
