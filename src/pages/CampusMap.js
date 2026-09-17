@@ -8,6 +8,7 @@ import { layoutBoxesGeo } from '../utils/geoLayout.js';
 import { buildingPositions, allPositionsAreEstimated, allPositionsAreCitedOrBetter } from '../data/buildingPositions.js';
 import { toCsv, downloadCsv } from '../utils/csv.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
+import { formatModelledKwh, formatModelledMt } from '../utils/modelledPrecision.js';
 import { CampusPhotoMap } from '../components/CampusPhotoMap.js';
 import { CampusSatelliteMap } from '../components/CampusSatelliteMap.js';
 import { Icon } from '../components/Icon.js';
@@ -344,12 +345,12 @@ export default function CampusMap() {
               {mode === 'monthly' ? (
                 <>
                   <DetailStat label={`${formatMonthLabel(selectedMonth)} electricity`} value={`${(selected.monthKwh || 0).toLocaleString()} kWh`} />
-                  <DetailStat label="Annualized equivalent"  value={`${selected.annualKwh.toLocaleString()} kWh/yr`} />
+                  <DetailStat label="Annualized equivalent"  value={`${formatModelledKwh(selected.annualKwh, selected.yearFraction)} kWh/yr`} />
                 </>
               ) : (
-                <DetailStat label="Annual electricity" value={`${selected.annualKwh.toLocaleString()} kWh`} />
+                <DetailStat label="Annual electricity" value={`${formatModelledKwh(selected.annualKwh, selected.yearFraction)} kWh`} />
               )}
-              <DetailStat label={mode === 'monthly' ? 'Annualized emissions' : 'Annual emissions'} value={`${selected.mtCO2e.toFixed(2)} mtCO₂e`} />
+              <DetailStat label={mode === 'monthly' ? 'Annualized emissions' : 'Annual emissions'} value={`${formatModelledMt(selected.mtCO2e, selected.yearFraction)} mtCO₂e`} />
               <DetailStat label="Share of campus"   value={`${selected.sharePercent}%`} />
               <DetailStat label="Square feet"       value={selected.sqft.toLocaleString()} />
               <DetailStat label="Daily occupants"   value={selected.occupants.toLocaleString()} />

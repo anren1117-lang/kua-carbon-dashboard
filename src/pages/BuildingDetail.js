@@ -7,6 +7,7 @@ import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js
 import { toCsv, downloadCsv } from '../utils/csv.js';
 import { Icon } from '../components/Icon.js';
 import { CopyButton } from '../components/CopyButton.js';
+import { formatModelledKwh, formatModelledMt, coverageCaveat } from '../utils/modelledPrecision.js';
 
 // /buildings/:id — single-building deep view. Links target this page
 // from the campus map's selected-building detail panel and from the
@@ -86,10 +87,23 @@ export default function BuildingDetail() {
       {building.category === 'Dorm' && row && <DormSpotlight id={id} row={row} rows={rows} occupants={building.occupants} />}
 
       {row ? (
-        <ModuleSection title="Headline numbers" hint="Annualized from the months of measured BMS data this building has.">
+        <ModuleSection
+          title="Headline numbers"
+          hint={(() => {
+            // Say how much of the year these rest on. "Annualized" alone let a
+            // reader assume a measured year; four months is not that.
+            const caveat = coverageCaveat(row.yearFraction, row.monthsCovered);
+            return caveat
+              ? `Annualized from the months of measured BMS data this building has — ${caveat}. Rounded to the precision that coverage supports.`
+              : 'Annualized from the months of measured BMS data this building has.';
+          })()}
+        >
           <div style={styles.statGrid}>
-            <Stat label="Annual electricity"  value={`${row.annualKwh.toLocaleString()} kWh`} />
-            <Stat label="Annual emissions"    value={`${row.mtCO2e.toFixed(2)} mtCO₂e`} />
+            {/* Rounded to significant figures by coverage. These were rendered
+                to the kilowatt-hour and to 10 kg, on a figure extrapolated from
+                four metered months — precision the method doesn't have. */}
+            <Stat label="Annual electricity"  value={`${formatModelledKwh(row.annualKwh, row.yearFraction)} kWh`} />
+            <Stat label="Annual emissions"    value={`${formatModelledMt(row.mtCO2e, row.yearFraction)} mtCO₂e`} />
             <Stat label="Share of campus"     value={`${row.sharePercent}%`} />
             <Stat label="Intensity"           value={`${row.kgPerSqft} kg/sqft/yr`} />
             <Stat label={`Rank in ${building.category}s by total`} value={peerCount > 0 ? `#${rankByMt} of ${peerCount}` : '—'} />
@@ -191,14 +205,18 @@ function DormSpotlight({ id, row, rows, occupants }) {
             #{rank} <span style={spotlightStyles.rankTotal}>of {total} dorms</span>
           </div>
           <div style={spotlightStyles.sub}>
-            {perResident.toLocaleString()} kWh per resident per year (annualized)
+            {formatModelledKwh(perResident, row.yearFraction)} kWh per resident per year (annualized)
           </div>
         </div>
       </div>
       <div style={spotlightStyles.footer}>
+        {/* Was: "keep doing whatever you're doing differently" — congratulating
+            a dorm for an unidentified behaviour, on a few metered months, using
+            a ranking Phase 390 showed can move with coverage. States the
+            standing instead, and what would make it mean more. */}
         {isTop3
-          ? '🎉 This dorm is in the top 3 most efficient — keep doing whatever you\'re doing differently.'
-          : `${dorms[0].name} leads at ${Math.round(dorms[0].perResident).toLocaleString()} kWh/resident — that's the bar.`}
+          ? `Third or better of ${total} dorms on current data. Worth knowing what's behind it — occupancy, radiator habits and building age all move this, and a full year of readings would show whether it holds.`
+          : `${dorms[0].name} leads at ${formatModelledKwh(dorms[0].perResident, row.yearFraction)} kWh/resident — that's the bar.`}
         {' '}
         <Link to="/dorm-leaderboard" style={spotlightStyles.link}>See full leaderboard →</Link>
       </div>

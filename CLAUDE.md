@@ -101,6 +101,18 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Show the precision the evidence supports (Phase 400)
+
+`utils/modelledPrecision.js`. `/buildings/:id` rendered **"22,213 kWh"** and `mtCO₂e.toFixed(2)` for figures extrapolated from **four** metered months divided by a seasonal share — every digit past the third an artefact of a model that itself moved 13.7% in Phase 390 and 5% again in Phase 392. False precision is not cosmetic: it is a silent claim about data quality to a reader with no way to check it.
+
+**Precision follows coverage**, using the `yearFraction` every row already carries: ≥90% of the year → 4 s.f., otherwise 3 s.f., nothing measured → 2. A fully-metered building earns its digits back. Applied to `BuildingDetail` (annual kWh, mtCO₂e, per-resident) and `CampusMap`'s detail panel; the headline hint now reads "estimated from 4 metered months (39% of a year)".
+
+**Deliberately NOT applied to measured readings.** A single month's metered kWh, and the live API window on `/buildings`, are measurements — `toFixed(3)` there is fine. This is only for extrapolations.
+
+**I got the threshold wrong first, and real data caught it.** My first cut dropped to 2 s.f. below half a year. Against actual buildings that rounded Miller 375,543 **up** to 380,000 — overstating by 4,457 while claiming to be more careful — and collapsed Kilton (139,527) and Fitch (138,546) onto the same displayed number. At 3 s.f. worst-case error is +473 and all 19 buildings stay distinct. My unit tests had *encoded* the 2-s.f. choice, so they passed throughout: they confirmed internal consistency, not that the choice was good. The real-data check is what found it.
+
+**What was left alone, on purpose.** A UI critic flagged the medals, `kua-champion-glow` and gradient hero numbers as game polish. `CLAUDE.md` documents those as commissioned design work (Phases 266–355), so they stay — that's the user's aesthetic, not mine to overrule on a critic's say-so. One line did change, because it over-claimed rather than over-styled: "🎉 This dorm is in the top 3 — keep doing whatever you're doing differently" congratulated a dorm for an unidentified behaviour on four months of data, using a ranking Phase 390 proved can move with coverage.
+
 ### A boarder is not on campus for 52 weeks (Phase 399)
 
 `personalFootprint.js` priced beef and dorm showers at `WEEKS_PER_YEAR = 52` — a full calendar year of campus meals and dorm hot water for students who go home for summer, winter and spring. `academicCalendar.js` now exports **`STUDENT_RESIDENCY_WEEKS = 34`**, a *third* quantity distinct from both day-counts above: residency includes weekends inside a term, which teaching weeks don't, and excludes the breaks, which the calendar year doesn't.
