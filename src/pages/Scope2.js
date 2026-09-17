@@ -14,6 +14,7 @@ import {
   FACTOR_RECONCILIATION,
 } from '../data/gridMix.js';
 import { weatherContextText } from '../data/degreeDays.js';
+import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 import { GridVintageChart } from '../components/GridVintageChart.js';
 
 // Helper for the action-math blocks below — keeps the educational figures in
@@ -24,6 +25,11 @@ import { GridVintageChart } from '../components/GridVintageChart.js';
 // 0.2344 from the per-fuel rows — two figures for one quantity, thirty lines of
 // DOM apart. Derived from the same composition now.
 const KG_PER_KWH = effectiveKgPerKwh();
+// Solar displaces generation at the MARGIN, not at the inventory average.
+// Kept separate and named so the two can never be confused again — the same
+// split scenarioModel.js documents ("passing one value for both understates
+// solar by ~2x").
+const AVERT_KG_PER_KWH = +avertAvoidedKgPerKwh().toFixed(4);
 const fmtKwh = (n) => Math.round(n).toLocaleString();
 const fmtMt  = (kg) => (kg / 1000).toFixed(1);
 
@@ -133,7 +139,7 @@ function Scope2() {
           },
           provenance: 'cited',
           note: `Recomputes automatically when new BMS data lands. kWh side: ${ledgerSourceText(s2.ledger)}. mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.`,
-          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — ${ledgerSourceText(s2.ledger)}. Annualized × ${GRID_MIX_TOTAL_KWH > 0 ? (COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2) : '—'} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~0.235 kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
+          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — ${ledgerSourceText(s2.ledger)}. Annualized × ${GRID_MIX_TOTAL_KWH > 0 ? (COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2) : '—'} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~${KG_PER_KWH} kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
           futureMethod: 'Drop the annualization multiplier once a full calendar year of BMS data is captured (~Jan 2027) — kWh figure flips from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[
@@ -145,22 +151,27 @@ function Scope2() {
         actions={[
           {
             action: 'Expand on-site solar PV',
-            impact: '−21 to −71 mtCO₂e/yr per 100 kW',
+            impact: '−44 to −85 mtCO₂e/yr per 100 kW',
             detail: 'Every kWh of self-consumed solar displaces a kWh of grid electricity at the ISO-NE 2024 emission factor. Best ROI on south-facing rooftops with low shading and existing 3-phase service.',
             data: [
               { input: 'NH solar capacity factor', value: '13 – 16% (annual avg)', source: 'NREL PVWatts for Plainfield NH' },
               { input: 'Hours per year', value: '8,760', source: 'definitional' },
-              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix; matches gridMix.js' },
+              { input: 'AVERT marginal avoided rate (New England)', value: `${AVERT_KG_PER_KWH} kg/kWh`, source: 'EPA AVERT — the rate at which added or displaced generation actually changes emissions. NOT the inventory average, which would understate solar by about half.' },
               { input: 'Self-consumption ratio (campus during day)', value: '70 – 100%', source: 'GHG Protocol Scope 2 — only behind-meter kWh reduce Scope 2' },
             ],
             math: [
               '# Per 100 kW of installed PV:',
               'annual_kwh = 100 kW × 8,760 hr × 0.145 (capacity factor) = 127,000 kWh',
-              'avoided_emissions = 127,000 × 0.235 = 29,800 kg ≈ 30 mtCO₂e/yr',
+              `avoided_emissions = 127,000 × ${AVERT_KG_PER_KWH} = ${Math.round(127000 * AVERT_KG_PER_KWH).toLocaleString()} kg ≈ ${Math.round((127000 * AVERT_KG_PER_KWH) / 1000)} mtCO₂e/yr`,
               '',
-              '# Range: low CF + 70% self-consumption → ~21 mt',
-              '# high CF + 100% self-consumption → ~41 mt per 100 kW',
-              '# 200 kW system: ~42 to 82 mtCO₂e/yr',
+              '# Priced at the MARGINAL rate, not the inventory average. Solar',
+              '# displaces whichever plant is running at the margin, and that',
+              '# plant is dirtier than the grid-wide average. Using the',
+              '# inventory factor here understates the benefit by about half —',
+              '# it answers "what do we report?" instead of "what changed?".',
+              '# Range: low CF + 70% self-consumption → ~44 mt',
+              '# high CF + 100% self-consumption → ~85 mt per 100 kW',
+              '# 200 kW system: ~88 to 171 mtCO₂e/yr',
             ],
           },
           {
@@ -171,7 +182,7 @@ function Scope2() {
               { input: 'Lighting share of commercial electricity', value: '17 – 25%', source: 'EIA Commercial Buildings Energy Consumption Survey (CBECS)' },
               { input: 'LED savings vs fluorescent', value: '60 – 80% kWh', source: 'DOE LED Lighting Facts; ENERGY STAR' },
               { input: 'Total campus electricity', value: KWH_TOTAL_LABEL, source: 'composedYtd × annualize, /scope-2' },
-              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
+              { input: 'ISO-NE inventory emission factor', value: `${KG_PER_KWH} kg/kWh`, source: 'Per-fuel output factors at ISO-NE 2024 mix — the inventory average, correct here because this lever cuts consumption the campus reports.' },
             ],
             math: (() => {
               const lightingKwh = COMPOSED_ANNUAL_KWH * 0.20;
@@ -181,9 +192,9 @@ function Scope2() {
                 `lighting_kwh = ${fmtKwh(COMPOSED_ANNUAL_KWH)} × 0.20 = ${fmtKwh(lightingKwh)} kWh`,
                 '',
                 '# Realistic phased retrofit: replace 50-100% of fixtures',
-                'savings = lighting_kwh × replacement% × LED_reduction × 0.235',
-                `       = ${fmtKwh(lightingKwh)} × 0.50 × 0.60 × 0.235 = ${fmtMt(halfRetrofit)} mtCO₂e (50% retrofit, 60% LED savings)`,
-                `       = ${fmtKwh(lightingKwh)} × 1.00 × 0.80 × 0.235 = ${fmtMt(fullRetrofit)} mtCO₂e (full retrofit, 80% savings)`,
+                `savings = lighting_kwh × replacement% × LED_reduction × ${KG_PER_KWH}`,
+                `       = ${fmtKwh(lightingKwh)} × 0.50 × 0.60 × ${KG_PER_KWH} = ${fmtMt(halfRetrofit)} mtCO₂e (50% retrofit, 60% LED savings)`,
+                `       = ${fmtKwh(lightingKwh)} × 1.00 × 0.80 × ${KG_PER_KWH} = ${fmtMt(fullRetrofit)} mtCO₂e (full retrofit, 80% savings)`,
                 '',
                 '# Conservative range accounting for partial coverage + uncertainty: 10 - 30 mtCO₂e/yr',
               ];
@@ -197,7 +208,7 @@ function Scope2() {
               { input: 'HVAC share of commercial electricity', value: '40 – 50%', source: 'EIA CBECS 2018' },
               { input: 'Reduction from BAS scheduling', value: '15 – 30%', source: 'ASHRAE Journal 2019; LBNL High-Performance Building Database' },
               { input: 'Total campus electricity', value: KWH_TOTAL_LABEL, source: 'composedYtd × annualize, /scope-2' },
-              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
+              { input: 'ISO-NE inventory emission factor', value: `${KG_PER_KWH} kg/kWh`, source: 'Per-fuel output factors at ISO-NE 2024 mix — the inventory average, correct here because this lever cuts consumption the campus reports.' },
             ],
             math: (() => {
               const hvacKwh = COMPOSED_ANNUAL_KWH * 0.45;
@@ -205,8 +216,8 @@ function Scope2() {
               const savingsHigh = hvacKwh * 0.30 * KG_PER_KWH;
               return [
                 `hvac_kwh = ${fmtKwh(COMPOSED_ANNUAL_KWH)} × 0.45 = ${fmtKwh(hvacKwh)} kWh`,
-                `savings_low  = ${fmtKwh(hvacKwh)} × 15% × 0.235 = ${fmtMt(savingsLow)} mtCO₂e`,
-                `savings_high = ${fmtKwh(hvacKwh)} × 30% × 0.235 = ${fmtMt(savingsHigh)} mtCO₂e`,
+                `savings_low  = ${fmtKwh(hvacKwh)} × 15% × ${KG_PER_KWH} = ${fmtMt(savingsLow)} mtCO₂e`,
+                `savings_high = ${fmtKwh(hvacKwh)} × 30% × ${KG_PER_KWH} = ${fmtMt(savingsHigh)} mtCO₂e`,
                 '',
                 '# Discounted for partial implementation: 10 - 25 mtCO₂e/yr',
               ];

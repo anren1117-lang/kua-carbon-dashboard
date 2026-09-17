@@ -124,6 +124,7 @@ const FACTOR_PROSE_FILES = [
   // and was NOT guarded until Phase 408 — it carried 0.235 while canonical
   // was 0.234.
   'pages/Methodology.js',
+  'pages/Scope2.js',
   'components/LearnAgent.js',
   'components/DailyTip.js',
   'components/ScopeExplainer.js',

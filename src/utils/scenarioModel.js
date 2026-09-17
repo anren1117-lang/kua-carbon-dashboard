@@ -65,7 +65,7 @@ function heatingMmbtuFromScope1(scope1Mt) {
  * @param {number} input.heatingElectrifyPct    0..100 (% of heating fuel converted to heat pumps)
  * @param {number} input.solarKw                 0..1000 (kW of installed PV)
  * @param {number} input.treePlantingAcres       0..100 (additional acres planted)
- * @param {number} input.gridKgPerKwh            grid emissions factor (default ISO-NE 0.235)
+ * @param {number} input.gridKgPerKwh            inventory grid factor for CONSUMED electricity (defaults to KG_PER_KWH from gridMix.js)
  */
 export function runScenario({
   scope1Mt,
