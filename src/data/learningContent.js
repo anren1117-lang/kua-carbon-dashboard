@@ -87,7 +87,7 @@ export const knowledgeArticles = [
     topic: 'energy',
     readingLevel: 'advanced',
     keywords: ['grid', 'electricity', 'iso-ne', 'new england'],
-    body: 'ISO-NE\'s 2024 mix is roughly 51% natural gas, 23% nuclear, 12% renewables, 6% hydro, 7% imports (mostly Quebec hydro), and ~1% oil/coal. Nuclear plus hydro plus renewables plus clean imports = ~48% zero-emission. The remaining gas-dominated half makes the system-effective rate about 235 g CO2/kWh on an output basis — cleaner than the US average (~370 g/kWh) but not yet decarbonized.',
+    body: 'ISO-NE\'s 2024 mix is roughly 51% natural gas, 23% nuclear, 12% renewables, 6% hydro, 7% imports (mostly Quebec hydro), and ~1% oil/coal. How much of that counts as "zero-emission" depends on a choice worth understanding: nuclear + hydro + renewables alone is 41% of generation, which is what the Scope 2 page reports, because imports are assigned a small emission factor rather than zero. Count the imports as clean — most of them are Quebec hydro — and you get ~48%. Neither number is wrong; they answer slightly different questions, and a good inventory says which one it used. The remaining gas-dominated half makes the system-effective rate about 234 g CO2/kWh on an output basis — cleaner than the US average (~370 g/kWh) but not yet decarbonized.',
     sourceDoc: 'ISO New England 2024 System Mix',
   },
   {

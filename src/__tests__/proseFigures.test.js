@@ -110,6 +110,15 @@ describe('teaching prose matches the canonical totals', () => {
 const EFFECTIVE_FACTOR = /effective[^.\n]{0,70}?(\d\.\d{3})\s*kg/gi;
 const CANONICAL_FACTOR = +KG_PER_KWH.toFixed(3);
 
+// The same claim written in GRAMS. The first version of this tripwire only
+// matched the kg form and so missed learningContent.js saying "about 235 g
+// CO2/kWh" — a unit-shaped blind spot in a guard against stale figures.
+//
+// Requiring "CO" after the g is what keeps this off the legitimate US-average
+// figure ("~370 g/kWh") that sits in the same sentence.
+const EFFECTIVE_FACTOR_GRAMS = /effective[^.\n]{0,70}?(\d{2,4})\s*g\s*CO/gi;
+const CANONICAL_GRAMS = Math.round(KG_PER_KWH * 1000);
+
 const FACTOR_PROSE_FILES = [
   'components/LearnAgent.js',
   'components/DailyTip.js',
@@ -131,6 +140,12 @@ function staleFactorsIn(relPath) {
         stale.push(`${relPath}:${i + 1} — says the effective factor is ${m[1]}, canonical is ${CANONICAL_FACTOR}`);
       }
     }
+    EFFECTIVE_FACTOR_GRAMS.lastIndex = 0;
+    while ((m = EFFECTIVE_FACTOR_GRAMS.exec(line)) !== null) {
+      if (parseInt(m[1], 10) !== CANONICAL_GRAMS) {
+        stale.push(`${relPath}:${i + 1} — says the effective factor is ${m[1]} g, canonical is ${CANONICAL_GRAMS} g`);
+      }
+    }
   });
   return stale;
 }
@@ -145,6 +160,28 @@ describe('prose states the current grid emission factor', () => {
     fs.writeFileSync(tmp, "const a = 'effective rate 0.999 kg/kWh';\n", 'utf8');
     try {
       expect(staleFactorsIn('__tests__/.factor-fixture.js')).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('catches the factor written in grams, the form that slipped through first time', () => {
+    const tmp = path.join(SRC, '__tests__/.factor-fixture-g.js');
+    fs.writeFileSync(tmp, "const a = 'system-effective rate about 999 g CO2/kWh';\n", 'utf8');
+    try {
+      expect(staleFactorsIn('__tests__/.factor-fixture-g.js')).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('does not flag the US-average figure sharing the sentence', () => {
+    // "~370 g/kWh" is a different grid, not a stale copy of ours. Requiring
+    // "CO" after the g is what separates them.
+    const tmp = path.join(SRC, '__tests__/.factor-fixture-us.js');
+    fs.writeFileSync(tmp, `const a = 'effective rate about ${CANONICAL_GRAMS} g CO2/kWh — cleaner than the US average (~370 g/kWh)';\n`, 'utf8');
+    try {
+      expect(staleFactorsIn('__tests__/.factor-fixture-us.js')).toEqual([]);
     } finally {
       fs.unlinkSync(tmp);
     }

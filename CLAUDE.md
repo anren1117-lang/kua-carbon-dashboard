@@ -101,6 +101,14 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The tripwire had a unit-shaped blind spot (Phase 398)
+
+Phase 392 added a grid-factor drift guard to `proseFigures.test.js`, context-matched on the word "effective". It missed the first thing it should have caught: `learningContent.js` taught the effective rate as **"about 235 g CO2/kWh"**, and the regex only matched a **kg** form (`\d\.\d{3}\s*kg`). A guard against stale figures that only recognises one unit is a guard with a hole in it. There is now a grams pattern too, with a fixture test proving it fires — and a second fixture proving it still ignores the legitimate US-average "~370 g/kWh" sitting in the same sentence (requiring `CO` after the `g` is what separates them).
+
+Corrected to **234 g**, which is `Math.round(KG_PER_KWH * 1000)` — checked rather than assumed, since 234.4 could plausibly have rounded either way.
+
+**The 48% / 41% split is now taught, not hidden.** The lesson said "nuclear plus hydro plus renewables plus clean imports = ~48% zero-emission" while the Scope 2 card says 41%. Both are defensible: the difference is whether the 7% of imports (mostly Québec hydro) counts as clean, and `zeroEmissionPercent()` excludes them because their emission factor is 0.0003, not 0. Rather than force one number, the lesson now explains the choice and names which one the dashboard reports — a student who learns *why* two honest definitions disagree has learned something real about inventory accounting. If a future change makes these agree by accident, the lesson text needs revisiting too.
+
 ### The scenario model asks two questions (Phase 397)
 
 `utils/scenarioModel.js` took a single `gridKgPerKwh` and used it for two opposite things: step 2 **adds** Scope 2 when heating electrifies (new load consumed → location-based average, correct) and step 3 **offsets** Scope 2 for new solar (generation displaced → marginal rate). Pricing displacement at the inventory average understated modelled solar by about half on `/scenarios`, a public planning surface whose presets go to 500 kW.
