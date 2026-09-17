@@ -36,6 +36,7 @@ import { buildings } from './buildings.js';
 import { fleetVehicles } from './transportation.js';
 import { TOTAL_STUDENTS } from './students.js';
 import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
+import { INSTRUCTIONAL_DAYS, STAFF_WORK_DAYS } from './academicCalendar.js';
 
 // ─── Climate + geography constants ────────────────────────────────
 
@@ -325,8 +326,8 @@ const _dayTravel = (() => {
   const A_modeFactor = 0.85 * KG_PER_MI.car_solo + 0.08 * KG_PER_MI.car_carpool + 0.07 * 0;
   const A = {
     label: 'Upper Valley ACS commute pattern',
-    mt: COHORTS.day.count * A_mi * 2 * 180 * A_modeFactor / 1000,
-    basis: `${COHORTS.day.count} day students × ${A_mi} mi avg one-way × 2 RT × 180 school days × ACS-weighted mode factor (${A_modeFactor.toFixed(3)} kg/mi blend: 85% solo + 8% carpool + 7% non-motor).`,
+    mt: COHORTS.day.count * A_mi * 2 * INSTRUCTIONAL_DAYS * A_modeFactor / 1000,
+    basis: `${COHORTS.day.count} day students × ${A_mi} mi avg one-way × 2 RT × ${INSTRUCTIONAL_DAYS} school days × ACS-weighted mode factor (${A_modeFactor.toFixed(3)} kg/mi blend: 85% solo + 8% carpool + 7% non-motor).`,
   };
   // Method B: EPA Smart Location Database — small-NH-school
   // benchmark.
@@ -549,15 +550,17 @@ const _commutingRange = (() => {
   // fleet 24 mpg × 180 days × ~52 staff.
   const A = {
     label: 'Upper Valley ACS + NH light-duty fleet',
-    mt: 52 * 12 * 2 * 180 * 0.351 / 1000,
-    basis: '52 staff × 12 mi avg one-way (Upper Valley ACS commute distribution) × 2 RT × 180 days × 0.351 kg/mi (EPA passenger vehicle, 25 mpg).',
+    // STAFF_WORK_DAYS, not INSTRUCTIONAL_DAYS: staff also work orientation,
+    // exam periods and professional days. Equal today, free to diverge.
+    mt: 52 * 12 * 2 * STAFF_WORK_DAYS * 0.351 / 1000,
+    basis: `52 staff × 12 mi avg one-way (Upper Valley ACS commute distribution) × 2 RT × ${STAFF_WORK_DAYS} days × 0.351 kg/mi (EPA passenger vehicle, 25 mpg).`,
   };
   // Method B: ICCT US light-duty effective fleet 2023 includes EVs.
   // Lower because EV penetration is starting to bend the avg.
   const B = {
     label: 'ICCT 2023 effective fleet (EV-adjusted)',
-    mt: 52 * 12 * 2 * 180 * 0.30 / 1000,
-    basis: '52 staff × 12 mi × 2 × 180 × 0.30 kg/mi (ICCT 2023 effective fleet factor, includes ~5-10% EV penetration in NH).',
+    mt: 52 * 12 * 2 * STAFF_WORK_DAYS * 0.30 / 1000,
+    basis: `52 staff × 12 mi × 2 × ${STAFF_WORK_DAYS} × 0.30 kg/mi (ICCT 2023 effective fleet factor, includes ~5-10% EV penetration in NH).`,
   };
   // Method C: high bound — longer commutes + more solo drive.
   const C = {

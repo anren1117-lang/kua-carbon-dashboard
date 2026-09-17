@@ -101,6 +101,16 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### One academic calendar, two day-counts (Phase 395)
+
+`src/data/academicCalendar.js`. Four places counted the school year and two disagreed: `personalFootprint.js` used **170** while `geographicEstimates.js` used **180** for the same day-student commute, and `scopeTotals.js` defaulted admin-entered rows to 5 × 36 (= 180). A student using `/personal-footprint` was shown "170 school days" while the institutional inventory assumed 180 — about 6% apart, on a figure the same person could see twice in one sitting.
+
+**Two constants, deliberately — do not merge them.** `INSTRUCTIONAL_DAYS` (students attend) and `STAFF_WORK_DAYS` (staff also work orientation, exam periods, professional days, duty weekends). Both are 180 today *only because both are assumed*; a measured staff figure will almost certainly be higher. Collapsing them into one `SCHOOL_DAYS` would repeat the Phase 392 error of unifying two values because they share a **unit** rather than a **question** — a test asserts both exports exist separately, so a future tidy-up fails loudly instead of silently re-creating the conflation.
+
+**Provenance is `estimated`, and stays that way until sourced.** KUA runs three trimesters and publishes a Major Dates Calendar per year; its instructional-day count is not in this repo, and deriving one from trimester boundaries would manufacture precision the figure doesn't have. 180 was chosen because three of the four call sites already assumed it, so aligning changes the fewest published numbers and moves the remaining one (the student calculator) *up* — the unflattering direction. A test blocks upgrading provenance to `cited` without adding a real source.
+
+**Known adjacent issue, recorded not fixed:** `personalFootprint.js` prices beef and showers at `WEEKS_PER_YEAR = 52` — a full calendar year for a boarding student who is away for summer, winter and spring breaks. Deciding what a "student-year" means for dining and hot water is a separate question from commuting and wants its own constant.
+
 ### Weather is measured now (Phase 393)
 
 `src/data/degreeDays.js` holds heating degree days for **KLEB (Lebanon Municipal Airport)**, ~13 miles from campus, base 65°F. Until this existed there was **no weather data anywhere in the tree** — seasonality was asserted by the multiplier table in `seasonalPatterns.js` and never measured, so a mild winter read as an efficiency win the school didn't earn. That matters more since Phase 390, because the per-building annualization divides by that same assumed shape.

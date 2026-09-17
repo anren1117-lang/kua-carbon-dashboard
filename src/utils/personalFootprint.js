@@ -16,11 +16,15 @@
 // can show "your beef-eating accounts for 1.2 mt of your 4.8 mt."
 
 import { KG_PER_KWH } from '../data/gridMix.js';
+import { INSTRUCTIONAL_DAYS } from '../data/academicCalendar.js';
 
 // Per-mile car emissions (mixed driving). EPA: 8.78 kg/gal gasoline,
 // ~22 mpg typical → ~0.399 kg/mi. Round to 0.40.
 const KG_PER_MILE_CAR = 0.40;
-const SCHOOL_DAYS_PER_YEAR = 170;
+// Was 170 here while the institutional inventory assumed 180 for the same
+// commute — about 6% apart, and both numbers visible to the same student.
+// One source now; see academicCalendar.js for why it is two constants, not one.
+const SCHOOL_DAYS_PER_YEAR = INSTRUCTIONAL_DAYS;
 
 // Per-flight ranges, derived from ICAO calculator + KUA's published
 // numbers. International boarders fly ~3-5 mtCO₂e/yr; domestic

@@ -13,6 +13,7 @@
 
 import { GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH } from './gridMix.js';
 import { avertAvoidedKgPerKwh, AVERT_SOURCE } from './gridMixHistory.js';
+import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT } from './academicCalendar.js';
 
 // ─── Scope 1 ──────────────────────────────────────────────────────
 // Heating fuel (heating oil + propane) + refrigerant leakage + fleet.
@@ -132,8 +133,10 @@ export function composeCommutingMt(rows) {
   for (const row of rows) {
     const factor = COMMUTE_FACTORS_KG_PER_KM[row.mode];
     const miles  = Number(row.one_way_miles);
-    const days   = Number(row.days_per_week ?? 5);
-    const weeks  = Number(row.weeks_per_year ?? 36);
+    // Defaults live in academicCalendar.js; 5 × 36 reconciles to the same
+    // INSTRUCTIONAL_DAYS the cohort estimates use, which is checked by a test.
+    const days   = Number(row.days_per_week ?? COMMUTE_DAYS_PER_WEEK_DEFAULT);
+    const weeks  = Number(row.weeks_per_year ?? COMMUTE_WEEKS_DEFAULT);
     if (factor === undefined) continue;
     if (!Number.isFinite(miles) || miles < 0) continue;
     if (!Number.isFinite(days)  || days  < 0) continue;
