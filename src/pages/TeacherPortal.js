@@ -50,7 +50,7 @@ const discussionPrompts = [
   },
   {
     kind: 'Lab discussion',
-    text: 'Have students compute the ISO-NE 2024 effective emission rate (≈0.235 kg/kWh) by weighting per-fuel output factors across the published 2024 mix. Compare to the US average ~0.37.',
+    text: 'Have students compute the ISO-NE 2024 effective emission rate (≈0.234 kg/kWh) by weighting per-fuel output factors across the published 2024 mix. Compare to the US average ~0.37.',
   },
   {
     kind: 'Project prompt',

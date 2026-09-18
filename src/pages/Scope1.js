@@ -3,6 +3,7 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { DegreeDayChart } from '../components/DegreeDayChart.js';
@@ -89,7 +90,7 @@ function Scope1() {
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
           provenance: headlineProvenance,
           note: headlineNote,
-          currentMethod: 'Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Range across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical / ENERGY STAR HDD-direct upper) gives 891–1,867 mt total — see /admin/methodology for the full breakdown.',
+          currentMethod: `Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Range across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical / ENERGY STAR HDD-direct upper) gives ${Math.round(SCOPE1_RANGE.low).toLocaleString()}–${Math.round(SCOPE1_RANGE.high).toLocaleString()} mt total — see /admin/methodology for the full breakdown.`,
           futureMethod: 'Heating fuel → annual delivery invoices per building entered via Admin Portal (fuel_bills table) × EPA factors → flips to MEASURED. Refrigerants → HVAC technician service-report mass balance × IPCC AR6 GWP100 → MEASURED. Fleet → KUA fuel-card records × EPA Mobile Combustion factors → MEASURED. Once all three integrate, this page reads measured end-to-end.',
         }}
         references={[
@@ -109,7 +110,7 @@ function Scope1() {
               { input: 'Heating oil heat content (HHV)', value: '138,500 BTU/gal', source: 'EIA Energy Calculator' },
               { input: 'Boiler thermal efficiency', value: '80%', source: 'ASHRAE 90.1 typical for in-service systems' },
               { input: 'Cold-climate heat pump COP', value: '2.0 – 3.0', source: 'NEEP Cold Climate Air-Source Heat Pump Specification' },
-              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix; matches gridMix.js' },
+              { input: 'ISO-NE inventory emission factor', value: `${KG_PER_KWH} kg/kWh`, source: 'Per-fuel output factors at ISO-NE 2024 mix; matches gridMix.js. Inventory rate — correct here because the heat pump ADDS consumption.' },
             ],
             math: [
               '# Worked example: 6,000 gal/yr dorm at COP 2.5',
@@ -118,9 +119,9 @@ function Scope1() {
               'heat_delivered_btu = 6,000 × 138,500 × 0.80 = 665M BTU',
               'heat_delivered_kwh = 665M / 3,412 BTU/kWh = 195,000 kWh',
               'electricity_needed = 195,000 / 2.5 (COP) = 78,000 kWh',
-              'new_emissions = 78,000 × 0.235 = 18,330 kg ≈ 18.3 mtCO₂e',
+              `new_emissions = 78,000 × ${KG_PER_KWH} = 18,252 kg ≈ 18.3 mtCO₂e`,
               '',
-              'savings = 61.0 − 18.3 = 42.7 mtCO₂e/yr',
+              'savings = 61.3 − 18.3 = 43.0 mtCO₂e/yr',
               '',
               '# Range: 4,000 gal at COP 3.0 → ~30 mt; 8,000 gal at COP 2.0 → ~51 mt',
             ],
@@ -180,13 +181,13 @@ function Scope1() {
               { input: 'Average van fuel economy', value: '18 mpg', source: 'EPA Fuel Economy data' },
               { input: 'Annual mileage per fleet van', value: '8,000 – 15,000 mi', source: 'School fleet operating norms' },
               { input: 'EV efficiency', value: '0.30 kWh/mi', source: 'EPA fueleconomy.gov electric vehicle data' },
-              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
+              { input: 'ISO-NE inventory emission factor', value: `${KG_PER_KWH} kg/kWh`, source: 'Per-fuel output factors at ISO-NE 2024 mix — inventory rate; an EV ADDS load.' },
             ],
             math: [
               '# Per van per year (12,000 mi):',
               'gasoline_emissions = 12,000 / 18 × 8.78 = 5,853 kg ≈ 5.9 mtCO₂e',
-              'ev_emissions      = 12,000 × 0.30 × 0.235 = 846 kg ≈ 0.85 mtCO₂e',
-              'savings_per_van   = 5.9 − 0.85 = 5.05 mtCO₂e/yr',
+              `ev_emissions      = 12,000 × 0.30 × ${KG_PER_KWH} = 842 kg ≈ 0.84 mtCO₂e`,
+              'savings_per_van   = 5.9 − 0.84 = 5.06 mtCO₂e/yr',
               '',
               '# Replacing 3-5 vans: 14 to 24 mtCO₂e/yr (rounded 10-22)',
             ],

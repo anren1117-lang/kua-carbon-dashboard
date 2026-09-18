@@ -5,6 +5,7 @@ import { AnimatedNumber } from '../components/AnimatedNumber.js';
 import { Icon } from '../components/Icon.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 import { monthlyReports, campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
@@ -28,7 +29,9 @@ function formatMonth(ym) {
   return `${MONTH_NAMES[m - 1]} ${y}`;
 }
 
-const ISO_NE_KG_PER_KWH = 0.235;
+// Phase 417: was a hardcoded 0.235 driving the digest's campus mt figures.
+// One kWh, one number — see gridMix.js.
+const ISO_NE_KG_PER_KWH = KG_PER_KWH;
 
 export default function MonthlyDigest() {
   const heroSpotRef = useSpotlight();

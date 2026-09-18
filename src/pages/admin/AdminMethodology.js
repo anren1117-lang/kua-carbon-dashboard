@@ -324,7 +324,7 @@ function AdminMethodology() {
           <tbody>
             <tr><td style={styles.td}>Heating oil</td><td style={styles.td}>10.21 kg CO₂/gal</td><td style={styles.td}>EPA GHG Hub</td></tr>
             <tr><td style={styles.td}>Propane</td><td style={styles.td}>5.72 kg CO₂/gal</td><td style={styles.td}>EPA GHG Hub</td></tr>
-            <tr><td style={styles.td}>Grid electricity (ISO-NE, effective)</td><td style={styles.td}>0.235 kg CO₂/kWh</td><td style={styles.td}>Per-fuel output factors × ISO-NE 2024 mix (gridMix.js)</td></tr>
+            <tr><td style={styles.td}>Grid electricity (ISO-NE, effective)</td><td style={styles.td}>0.234 kg CO₂/kWh</td><td style={styles.td}>Per-fuel output factors × ISO-NE 2024 mix (gridMix.js)</td></tr>
             <tr><td style={styles.td}>— Combined-cycle natural gas</td><td style={styles.td}>0.40 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
             <tr><td style={styles.td}>— Oil generation</td><td style={styles.td}>0.78 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
             <tr><td style={styles.td}>— Coal generation</td><td style={styles.td}>0.95 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>

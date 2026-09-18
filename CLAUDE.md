@@ -101,6 +101,22 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### Two pages were still computing with a stale grid literal (Phase 417)
+
+The Phase 416 residual check reported non-zero and the commit went ahead anyway. Running it properly turned up 21 `0.235` sites — and two of them were not prose.
+
+**The real bug.** `MonthCompare.js` and `MonthlyDigest.js` each declared their own `const ISO_NE_KG_PER_KWH = 0.235` and computed the campus mtCO₂e they display from it. Both already imported from `utils/buildingEmissions.js`, so the canonical factor was one line away. Those two pages had been reporting ~0.3% above every other surface since Phase 392 — the exact failure that phase existed to eliminate, surviving in the two places nobody thought to grep.
+
+**Worked math**, all consumption so the inventory rate was right and only the value stale: the Scope 1 heat pump (whose savings line said 61.0 when its own previous line said 61.3 — now 43.0), the EV van, the Scope 3 EV bus, and CarbonMath q1, where the stored `answer` field had to move with the prose (1,269 → 1,264) or correct work would have been marked wrong.
+
+**Stale ranges everywhere, and derived ones needed rebuilding rather than swapping.** Phase 416 fixed `estimate-action.js` and left the same literals in `chat.js`, `plan.js`, `AnnualReport`, `Executive`, `Scope1` and three `LearnAgent` lessons. Actual: **895–1,875** and **1,802–3,779**; the sinks range is **1,000–2,650** across four methods, not 2,100–2,650 across three.
+
+The composite bands in `chat.js` were stale twice over — they predated both the range corrections *and* Scope 2 moving 385 → 390, which is why the old gross band reverse-engineered to a 366–405 Scope 2 instead of the current 371–410. Rebuilt: gross **3,068–6,064**, net **418–5,064**, per-student net **1.2–14.9**. The net band widened mostly because Phase 411 dropped the sinks lower bound to 1,000 — an honest consequence, and one an uncertainty lesson should display rather than hide.
+
+Where a surface can import, ranges are now **interpolated** from `SCOPE1_RANGE` / `SCOPE3_RANGE` instead of retyped — hardcoding computed values is what produced this drift. Literals remain only in the serverless prompts, which cannot import.
+
+Two interpolations shipped without their imports and the suite caught both. The lasting change is procedural: **the residual sweep now gates the commit** instead of being printed after it — which is how the last four sites, including a fourth copy of the net band nobody had pointed at, got found before shipping rather than after.
+
 ### The AI prompts were the surface the sweeps kept missing (Phase 416)
 
 Three phases running, a value got fixed in `src/` and left standing in `api/`. Phase 409 corrected the grid figure on Scope 2 and never looked at the prompts; Phase 415 swept `api/` but for *citation strings*, not values. So `0.235` was still being handed to two AI system prompts as fact.

@@ -10,6 +10,7 @@ import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { reductionActionsByVisibility } from '../data/reductionActions.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
+import { SCOPE1_RANGE, SCOPE3_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { TOTAL_STAFF } from '../data/staff.js';
 import { rankActions } from '../utils/hotspots.js';
@@ -137,7 +138,7 @@ export default function Executive() {
           <ExecProvRow
             provenance={grossProvenance}
             label={`Gross emissions (${Math.round(GROSS_MT).toLocaleString()} mt)`}
-            today={`Scope 1 ${live.scope1Measured ? `(MEASURED from 5 admin tables, ${live.scope1Mt} mt)` : `(~${live.scope1Mt} mt central from bottom-up cross-check, range 891–1,867)`} + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization, ±5% measured band) + Scope 3 ${live.scope3Measured ? `(MEASURED from 8 admin tables, ${live.scope3Mt} mt)` : `(~${live.scope3Mt} mt central, range 1,726–3,720 across 3-4 methods × 8 components)`}. See /admin/methodology for the per-component method-by-method breakdown.`}
+            today={`Scope 1 ${live.scope1Measured ? `(MEASURED from 5 admin tables, ${live.scope1Mt} mt)` : `(~${live.scope1Mt} mt central from bottom-up cross-check, range ${Math.round(SCOPE1_RANGE.low).toLocaleString()}–${Math.round(SCOPE1_RANGE.high).toLocaleString()})`} + Scope 2 (cited from BMS-measured kWh × ISO-NE 2024 per-fuel output factors × ~2.5 seasonally-anchored annualization, ±5% measured band) + Scope 3 ${live.scope3Measured ? `(MEASURED from 8 admin tables, ${live.scope3Mt} mt)` : `(~${live.scope3Mt} mt central, range ${Math.round(SCOPE3_RANGE.low).toLocaleString()}–${Math.round(SCOPE3_RANGE.high).toLocaleString()} across 3-4 methods × 8 components)`}. See /admin/methodology for the per-component method-by-method breakdown.`}
             target="Scope 1 → KUA fuel-delivery invoices × EPA Stationary Combustion factors. Scope 3 → travel office records + business-office spend mapped to USEEIO sectors + hauler invoices for waste."
           />
           <ExecProvRow

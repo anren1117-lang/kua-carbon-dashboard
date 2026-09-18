@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon.js';
 
 // /carbon-math — interactive carbon-arithmetic practice for
 // classroom use. Each question has a real-world setup ("KUA uses
-// 5M kWh/yr at 0.235 kg/kWh — what's annual Scope 2 in mt?"),
+// 5M kWh/yr at 0.234 kg/kWh — what's annual Scope 2 in mt?"),
 // shows the answer, exposes the math.
 //
 // Designed to be embedded in a single class period: teacher
@@ -17,13 +17,13 @@ const QUESTIONS = [
   {
     id: 'q1',
     level: 'intro',
-    setup: 'KUA used about 5,400,000 kWh of grid electricity last year. ISO New England\'s emissions factor is 0.235 kg CO₂ per kWh. What is KUA\'s Scope 2 footprint in metric tons of CO₂?',
-    answer: 1269,
+    setup: 'KUA used about 5,400,000 kWh of grid electricity last year. ISO New England\'s emissions factor is 0.234 kg CO₂ per kWh. What is KUA\'s Scope 2 footprint in metric tons of CO₂?',
+    answer: 1264,
     unit: 'mtCO₂e',
     tolerance: 0.05, // ±5%
     work: [
-      '5,400,000 kWh × 0.235 kg/kWh = 1,269,000 kg CO₂',
-      '1,269,000 kg ÷ 1,000 = 1,269 mtCO₂e',
+      '5,400,000 kWh × 0.234 kg/kWh = 1,263,600 kg CO₂',
+      '1,263,600 kg ÷ 1,000 ≈ 1,264 mtCO₂e',
       'Why divide: 1,000 kg = 1 metric ton. We always report institutional footprints in metric tons.',
     ],
   },

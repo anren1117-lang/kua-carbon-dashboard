@@ -226,8 +226,8 @@ function Scope3() {
             math: [
               '# Per bus per year (8,000 mi at 7 mpg):',
               'diesel_emissions = 8,000 / 7 × 10.21 = 11,668 kg = 11.7 mtCO₂e',
-              'ev_emissions     = 8,000 × 2.0 × 0.235 = 3,760 kg = 3.8 mtCO₂e',
-              'savings_per_bus  = 11.7 − 3.8 = 7.9 mtCO₂e/yr',
+              'ev_emissions     = 8,000 × 2.0 × 0.234 = 3,744 kg = 3.7 mtCO₂e',
+              'savings_per_bus  = 11.7 − 3.7 = 8.0 mtCO₂e/yr',
               '',
               '# Replacing 1 bus: 7 mt; partial fleet replacement: 4-10 mt',
             ],
