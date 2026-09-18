@@ -590,6 +590,14 @@ export const SCOPE3_DINING_BOTTOM_UP_MT = Math.round(_diningRange.central);
 const _wasteRange = (() => {
   const peopleOnCampus = 420;
   const daysPerYr = 220;
+  // The 0.639 / 0.099 / 0.121 below are EPA Hub 2025 Table 9 in kg CO2e per
+  // kg of waste — the SAME figures as WASTE_FACTORS_MT_PER_TON in
+  // scopeTotals.js (0.58 / 0.09 / 0.11), which states them per SHORT TON.
+  // A short ton is 907.185 kg: 0.639 x 0.907185 = 0.5797 = 0.58. Two unit
+  // systems for one EPA table, in three files — pinned together by
+  // __tests__/factorTableConsistency.test.js so an update to one cannot
+  // leave the others behind.
+  //
   // Method A: low generation + high diversion (current EPA-recommended
   // school waste profile).
   const A_kg = peopleOnCampus * 0.4 * daysPerYr;

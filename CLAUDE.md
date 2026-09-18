@@ -1171,3 +1171,39 @@ accessibility improvement: sibling components already carry `aria-label`
 (`DegreeDayChart:60`, `CampusMonthlyTrend:50`).
 
 Suite 1,430 → 1,434; 97 → 98 files. Closes task #17 item 3.
+
+## Phase 435 — two factor tables, one EPA table, no link between them
+
+`emissionFactors.js` holds 35 rows with `unit` and `year`. `scopeTotals.js`
+holds the bare scalars the composers consume. **They agree** — all nine
+overlapping pairs within 1% — but nothing asserted it, and the units differ.
+
+I misread that as a contradiction. Waste reads `0.639 kg/kg` in one table and
+`0.58 mt/short-ton` in the other, and I wrote down that there was "a genuine
+disagreement feeding a published total". There isn't: a short ton is 907.185 kg,
+so `0.639 × 0.907185 = 0.5797 = 0.58`. **`emissionFactors.js:96` already
+documents the conversion** — "converted from metric tons CO2e/short ton to
+kg/kg (× 1.10231)" — four lines above the values I was reading. I read the
+numbers before the comment that explained them.
+
+That misreading is the argument for the fix. The same EPA Table 9 figures live
+in **three files in two unit systems** — `scopeTotals.js` per short ton,
+`emissionFactors.js` per kg, and `geographicEstimates.js:599/607/615` as bare
+inline literals with no comment and no link to either. Update one and the others
+go quiet.
+
+`factorTableConsistency.test.js` now pins all nine pairs (4 fuels, 2
+refrigerants, 3 waste streams) with the conversion stated per pair, a negative
+control proving a 20% divergence is caught, and an assertion that every
+`emissionFactors` row carries a vintage the composer scalars lack — which is
+task #17 item 6 in one line. Both data files now name the conversion where the
+literals sit.
+
+**Food is excluded and filed as #21**, because it is the one family that does
+*not* reconcile: `dining.js` says beef `9.95` per serving while `99.5 kg/kg ×
+150 g = 14.93`, and the ratios differ per protein, so there is no single implied
+portion size. `dining.js:16-18` records that the original portions were never
+written down. Picking one now to force agreement would manufacture precision,
+and re-deriving would move a ~235 mt line — a user decision, not a silent fix.
+
+No factor changes. Suite 1,450 → 1,461; 99 → 100 files.

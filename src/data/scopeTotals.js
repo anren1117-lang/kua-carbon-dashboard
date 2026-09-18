@@ -491,6 +491,10 @@ export const SCOPE3_COHORT_FACTORS_MT_PER_STUDENT = {
 // as pricing avoided electricity at the inventory grid rate — a
 // consequential number doing an inventory's job. Composting still beats
 // landfilling here (0.11 vs 0.58); it is a smaller emission, not a credit.
+// Stated per SHORT TON here; emissionFactors.js states the same EPA figures
+// per kg (0.639 / 0.099 / 0.121) and geographicEstimates.js uses that kg
+// form inline. 0.639 x 907.185 / 1000 = 0.5797 = 0.58 — one table, three
+// files, two unit systems. factorTableConsistency.test.js pins them.
 export const WASTE_FACTORS_MT_PER_TON = {
   'Landfill':   0.58,  // Mixed MSW, landfilled
   'Recycling':  0.09,  // Mixed Recyclables, recycled (was -0.10)
