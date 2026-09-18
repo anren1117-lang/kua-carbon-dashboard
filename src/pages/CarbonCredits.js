@@ -1,20 +1,26 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 
 // All ranges drawn from publicly available carbon-market data (Ecosystem
 // Marketplace, Trove Research, Verra registries, Climate Action Reserve)
 // as of 2024-2025. Voluntary market prices are notoriously volatile.
 
-const categories = [
+// categoriesFor(seq), not a module-scope `categories`: two of the six entries
+// price the forest's drawdown in DOLLARS, so they have to follow the live sink
+// figure like the rest of the page. At module scope a hook cannot reach them,
+// and wiring only the in-component uses would have left this page quoting two
+// live figures and two stale ones — worse than leaving it wholly static.
+const categoriesFor = (seq) => [
   {
     name: 'Forestry — Improved Forest Management (IFM)',
     relevance: 'highly relevant',
     relevanceColor: '#22c55e',
     desc: 'KUA\'s ~1,000-acre forest is the most directly applicable category. An IFM protocol pays a landowner for managing the forest in a way that increases carbon stock above a baseline (e.g., longer rotation, selective rather than clear-cut harvest). Verra (VCS) and Climate Action Reserve are the two main registries.',
     pricePerTon: '$8 – $40',
-    annualRevenuePotential: `$${Math.round(ANNUAL_SEQUESTRATION_MT * 8 / 1000).toLocaleString()},000 – $${Math.round(ANNUAL_SEQUESTRATION_MT * 40 / 1000).toLocaleString()},000`,
-    annualRevenueCalc: `~${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e/yr × $8–$40/ton`,
+    annualRevenuePotential: `$${Math.round(seq * 8 / 1000).toLocaleString()},000 – $${Math.round(seq * 40 / 1000).toLocaleString()},000`,
+    annualRevenueCalc: `~${seq.toLocaleString()} mtCO₂e/yr × $8–$40/ton`,
     caveat: 'Subject to additionality and permanence rules — the forest must be at risk of being managed differently without the credit revenue. School lands are sometimes hard to qualify because the forest would likely be conserved anyway.',
   },
   {
@@ -95,12 +101,20 @@ const styles = {
 };
 
 function CarbonCredits() {
+  // Same wiring as Sinks2.js:29-31. The hook's initial state is already
+  // Math.round(ANNUAL_SEQUESTRATION_MT), so first paint is unchanged; the page
+  // only moves once forest_stand_actuals has rows — at which point the revenue
+  // maths moves with every other surface instead of quoting last release.
+  const live = useMeasuredSinks();
+  const isMeasured = live.measured && !live.loading && !live.error;
+  const seq = isMeasured ? Math.round(live.totalMt) : Math.round(ANNUAL_SEQUESTRATION_MT);
+  const categories = categoriesFor(seq);
   return (
     <div>
       <h1 style={styles.title}>Carbon Credits & Monetization</h1>
       <p style={styles.subtitle}>
         How can sequestered carbon become revenue? KUA's ~1,000 acres of forest pulls roughly
-        {' '}{Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mtCO₂e out of the atmosphere each year. In carbon-market terms, that drawdown is
+        {' '}{seq.toLocaleString()} mtCO₂e out of the atmosphere each year. In carbon-market terms, that drawdown is
         a tradable commodity — but turning it into money has rules, costs, and trade-offs.
       </p>
 
@@ -175,7 +189,6 @@ function CarbonCredits() {
         <h2 style={styles.h2}>If KUA monetized its forest, what would the math look like?</h2>
         <div style={styles.revenueCard}>
           {(() => {
-            const seq = Math.round(ANNUAL_SEQUESTRATION_MT);
             const fmt$ = (n) => `$${Math.round(n / 1000).toLocaleString()}K`;
             return (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>

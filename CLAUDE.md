@@ -920,3 +920,44 @@ that documentation matched the pattern written to find the thing it documents).
 Proven against the **real historical sentences**, not just fixtures: both are
 caught; the denial, the audit comment and the computed ternary are all spared.
 Guard 25 → 31 tests; suite 1,408 → 1,414.
+
+## Phase 428 — the wiring guard was electricity-only, and said so nowhere
+
+`liveDataWiring.test.js` states its rule in general terms: *"a page or component
+that imports an ABSOLUTE static figure must also read a live hook."* It enforced
+that for **one scope**. `ABSOLUTE` listed the six Scope 2 constants and nothing
+else; `LIVE_HOOKS` omitted `useMeasuredScope1`, `useMeasuredScope3` and
+`useMeasuredSinks` — all three of which already existed and were already
+consumed by `Scope1.js`, `Scope3.js`, `Sinks.js`, `Sinks2.js` and the admin
+surfaces. So a page could render a stale Scope 1, Scope 3, gross or **sink**
+figure indefinitely and the guard would pass.
+
+Its own comment at `RATE_ONLY` says an exemption that has stopped being true is
+*"a quiet lie inside the guard against quiet lies."* A constant the guard was
+never taught to watch is the same lie by omission.
+
+Extending it to all four scopes exposed **exactly one offender out of 23
+surfaces**: `CarbonCredits.js`, which has no hook at all and prices the forest's
+drawdown in dollars — `$8 / $25 / $40` per ton, plus a revenue band and the page
+subtitle. If an admin enters real `forest_stand_actuals` rows, every other page
+moves and the revenue maths keeps quoting last release's number.
+
+Two of its four uses sat at **module scope**, inside the `categories` array, where
+a hook cannot reach them. Wiring only the in-component uses would have left the
+page showing two live figures and two stale ones — worse than leaving it wholly
+static. `categories` is now `categoriesFor(seq)`, with one call site.
+
+First paint is unchanged by construction: `useMeasuredSinks`'s initial state is
+already `Math.round(ANNUAL_SEQUESTRATION_MT)`, so the page renders 2,650 and
+$21K/$66K/$106K exactly as before until real rows exist.
+
+**Not taken: the `PROSE` exemption.** `CarbonCredits.js` is already in
+`proseFigures.test.js`'s roster, so exempting it would have passed every test —
+while leaving a money figure quoting a stale sink. That is satisfying the guard
+instead of fixing the defect.
+
+Guard 3 → 5 tests, including a control that writes a synthetic hookless file and
+asserts it **is** reported, so the rule cannot quietly match nothing. Dry run
+predicted 22 pass / 1 fail before the fix; reality after it is 23 / 0.
+
+With Phase 427 (`proseFigures`) this closes task #17 item 2.

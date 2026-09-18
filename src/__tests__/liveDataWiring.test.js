@@ -1,10 +1,18 @@
 // Everything moves together, or the build fails.
 //
-// The dashboard's electricity figures now come from admin-entered data through
-// hooks (useMeasuredScope2 / useMeasuredScopeTotals / useBmsExport /
-// useBuildingMonthlyHistory). The static exports in gridMix.js and
-// composedYtd.js remain as the FIRST-PAINT FALLBACK — `live.scope2Mt ||
-// SCOPE2_TOTAL_MT`.
+// The dashboard's figures come from admin-entered data through hooks. The
+// static exports in gridMix.js, composedYtd.js, scopeTotals.js and sinks.js
+// remain as the FIRST-PAINT FALLBACK — `live.scope2Mt || SCOPE2_TOTAL_MT`.
+//
+// Until Phase 428 this guard was ELECTRICITY-ONLY: ABSOLUTE listed the six
+// Scope 2 constants and nothing else, and LIVE_HOOKS omitted the Scope 1,
+// Scope 3 and sinks hooks even though all three existed and were already in
+// use. So the rule below was stated in general terms and enforced for one
+// scope. Extending it exposed exactly one offender out of 23 surfaces —
+// CarbonCredits.js, which priced the forest's drawdown at $8/$25/$40 a ton
+// with no hook at all. The comment at RATE_ONLY says an exemption that has
+// stopped being true is a quiet lie inside the guard against quiet lies; a
+// constant the guard was never taught to watch is the same lie by omission.
 //
 // The failure this guards against isn't a crash: a surface that reads only the
 // static constant keeps rendering last release's number while every other page
@@ -31,6 +39,11 @@ const ABSOLUTE = [
   'COMPOSED_ANNUALIZE_FACTOR',
   'COMPOSED_YTD_KWH',
   'SCOPE2_TOTAL_MT',
+  // Phase 428 — the other three scopes move on admin entry too.
+  'SCOPE1_TOTAL_MT',
+  'SCOPE3_TOTAL_MT',
+  'GROSS_MT',
+  'ANNUAL_SEQUESTRATION_MT',
 ];
 
 const LIVE_HOOKS = [
@@ -38,6 +51,11 @@ const LIVE_HOOKS = [
   'useMeasuredScopeTotals',
   'useBmsExport',
   'useBuildingMonthlyHistory',
+  // Phase 428 — all three already existed and were already consumed by
+  // Scope1.js, Scope3.js, Sinks.js, Sinks2.js and the admin surfaces.
+  'useMeasuredScope1',
+  'useMeasuredScope3',
+  'useMeasuredSinks',
 ];
 
 // Files that legitimately use statics only to derive a RATE (kg per kWh), or
@@ -89,8 +107,33 @@ function offenders() {
 }
 
 describe('live data wiring', () => {
-  it('no surface displays a static electricity figure without also reading a live hook', () => {
+  it('no surface displays a static figure without also reading a live hook', () => {
     expect(offenders()).toEqual([]);
+  });
+
+  it('the rule covers all four scopes, not just electricity', () => {
+    // The Phase 428 regression: ABSOLUTE held only the six Scope 2 constants,
+    // so a page could render a stale Scope 1 / Scope 3 / gross / sink figure
+    // forever and this guard would pass.
+    for (const name of ['SCOPE1_TOTAL_MT', 'SCOPE3_TOTAL_MT', 'GROSS_MT', 'ANNUAL_SEQUESTRATION_MT']) {
+      expect(ABSOLUTE).toContain(name);
+    }
+    for (const hook of ['useMeasuredScope1', 'useMeasuredScope3', 'useMeasuredSinks']) {
+      expect(LIVE_HOOKS).toContain(hook);
+    }
+  });
+
+  it('catches a surface that reads a static total with no hook', () => {
+    // Guard against a rule that matches nothing: a synthetic file importing an
+    // absolute figure and calling no hook must be reported.
+    const dir = path.join(SRC, 'components');
+    const tmp = path.join(dir, '.wiring-fixture.js');
+    fs.writeFileSync(tmp, "import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';\nexport const x = SCOPE1_TOTAL_MT;\n", 'utf8');
+    try {
+      expect(offenders().some((o) => o.includes('.wiring-fixture.js'))).toBe(true);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
   });
 
   it('the exemption lists stay small and real', () => {
