@@ -101,6 +101,20 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The test harnesses ran v6 routing against a v7 app (Phase 422)
+
+Triaging the warnings Phase 421 left behind found 20 of the remaining 28 were React Router future-flag notices — and the verdict inverted once I checked where they came from.
+
+**The app is not behind on this.** `index.js` already mounts `<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>`, and `App.test.js` matched it. Every *other* test rendered a bare `<MemoryRouter>`, so 16 call sites across 9 files exercised **v6 routing semantics against an app running v7**.
+
+That is more than noise. There are two splat routes (`index.js:318` and `:366`), and `v7_relativeSplatPath` governs exactly how those resolve — a relative-splat regression could have passed in CI and broken in production.
+
+Aligned through one shared constant in `__tests__/routerFuture.js` rather than pasting the literal into 16 places: the flags already live in `index.js`, and a value copied sixteen times is the drift this codebase keeps having to clean up. All 17 router mounts now carry them.
+
+The remaining 8 warnings are jsdom stubs for `window.scrollTo` and `navigation` — real browser APIs the app correctly calls (BackToTop, route-change scroll restoration). Left alone deliberately: suppressing them would risk masking a genuine navigation error later.
+
+One self-inflicted note worth recording, because it is now a pattern rather than an accident: my residual gate flagged the new helper's own comment, which quotes `<MemoryRouter>` in order to explain the fix. That is the **fourth** false positive of this kind today, and the first since Phase 420 wrote the lesson about exactly it. Documentation of a fix keeps matching the pattern that finds the defect, and each new gate needs that carve-out from the start rather than after it fires.
+
 ### The charts had two real defects the whole time (Phase 421)
 
 Two React warnings printed in every suite run all session and I read past them for twenty phases. Both were real.
