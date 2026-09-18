@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SCOPE2_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { SINKS_RANGE } from '../data/geographicEstimates.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 
 const SRC = path.resolve(new URL('../', import.meta.url).pathname);
@@ -40,6 +41,15 @@ const PROSE_FILES = [
   'utils/chatbotMatch.js',
   'pages/TeacherPortal.js',
   'pages/CarbonCredits.js',
+  // Added Phase 427. Sinks.js was NOT on this list, which is how it spent many
+  // phases telling readers the forest pulled more carbon out of the air than
+  // the entire campus emits — it does not (2,650 high against 4,375 gross).
+  // NetEstimate renders the homepage hero and captioned the net range "low end
+  // is net-negative" while netLow was +418. The FACTOR half of this file
+  // already guards NetEstimate and ScopeExplainer; the HEADLINE half did not.
+  'pages/Sinks.js',
+  'components/NetEstimate.js',
+  'components/ScopeRangeChart.js',
 ];
 
 const GROSS = Math.round(GROSS_MT);
@@ -60,6 +70,48 @@ const CLAIMS = [
   // drops that one false positive and keeps every real claim in range
   // ("Scope 2 ~390", "Scope 2 (~390"). Phase 418.
   { label: 'Scope 2', expected: SCOPE2, re: /Scope 2(?![^.\n]{0,20}?\b(?:by|cuts?|reduces?|saves?|lower(?:s|ed)?)\b)[^.\n]{0,20}?~(\d{3})\b/gi },
+];
+
+// ─── Claims with NO numeral in them ──────────────────────────────────────
+//
+// Every CLAIMS pattern above captures a FIGURE, so none of them can see a
+// sentence that makes a claim without stating one. That blind spot let through
+// the exact regression this file exists to catch, twice:
+//
+//   Sinks.js        "the forest pulls more carbon out of the air than the
+//                    entire campus emits"            (removed Phase 426)
+//   NetEstimate.js  "low end is net-negative"        (removed Phase 427)
+//
+// Neither contains a number, so both sailed past a guard whose own header
+// cites the FAQ's seventeen net-negative phases as the reason it was written.
+// These test the ASSERTION against the arithmetic instead of parsing a figure.
+const SINKS_HIGH = Math.round(SINKS_RANGE.high);
+
+// A sentence DENYING the claim is the fix, not the defect: "KUA is NOT
+// net-negative" (CarbonMath.js:76, Faq.js:55, Sinks.js since Phase 426).
+const NEGATED = /\b(not|isn't|never|no longer)\b/i;
+// A caption COMPUTED from the canonical figure cannot go stale, so the literal
+// string inside that conditional is not an assertion about KUA.
+const COMPUTED = /netLow\s*<\s*0|SINKS_RANGE\.high\s*>|\bGROSS_MT\b/;
+// Documentation of a fix quotes the defect in order to explain it. Excluding
+// the QUOTING CONSTRUCTION (not an incidental token) keeps the guard honest —
+// this is the fifth time in this project that an audit comment matched the
+// pattern written to find the thing it documents.
+const QUOTING = /contradicted|caption|which implied|earlier version|used to say|removed Phase|until Phase/i;
+
+const ASSERTIONS = [
+  {
+    label: 'net-negative',
+    re: /\bnet[- ]negative\b|\bcarbon[- ]negative\b/i,
+    holds: () => SINKS_HIGH > GROSS,
+    why: () => `no published sink figure (max ${SINKS_HIGH.toLocaleString()}) exceeds gross (${GROSS.toLocaleString()})`,
+  },
+  {
+    label: 'sink exceeds gross emissions',
+    re: /(forest|sink|sequestration)[^.\n]{0,70}?\b(more|greater|larger|exceeds?|outweighs?|beats?)\b[^.\n]{0,50}?\b(campus|gross|emits|emissions)\b/i,
+    holds: () => SINKS_HIGH > GROSS,
+    why: () => `the top of the sink spread (${SINKS_HIGH.toLocaleString()}) is below gross (${GROSS.toLocaleString()})`,
+  },
 ];
 
 // Lessons also pose invented schools ("A school spends $50,000 to buy offsets
@@ -83,6 +135,13 @@ function staleClaimsIn(relPath) {
         }
       }
     }
+    for (const a of ASSERTIONS) {
+      if (!a.re.test(line)) continue;
+      if (NEGATED.test(line) || COMPUTED.test(line) || QUOTING.test(line)) continue;
+      if (!a.holds()) {
+        stale.push(`${relPath}:${i + 1} — asserts "${a.label}", but ${a.why()}`);
+      }
+    }
   });
   return stale;
 }
@@ -97,6 +156,39 @@ describe('teaching prose matches the canonical totals', () => {
     fs.writeFileSync(tmp, `const a = 'Gross: ~${(GROSS - 5).toLocaleString()} mtCO₂e/yr';\n`, 'utf8');
     try {
       expect(staleClaimsIn('__tests__/.prose-fixture.js')).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('catches a no-numeral assertion, the class that slipped through twice', () => {
+    const tmp = path.join(SRC, '__tests__/.prose-assert.js');
+    fs.writeFileSync(tmp, "const a = 'On the optimistic end the forest pulls more carbon out of the air than the entire campus emits';\n", 'utf8');
+    try {
+      expect(staleClaimsIn('__tests__/.prose-assert.js')).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('catches a bare net-negative claim', () => {
+    const tmp = path.join(SRC, '__tests__/.prose-assert2.js');
+    fs.writeFileSync(tmp, "const a = 'which means KUA is net-negative today';\n", 'utf8');
+    try {
+      expect(staleClaimsIn('__tests__/.prose-assert2.js')).toHaveLength(1);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('spares a denial, a computed caption, and a comment documenting the fix', () => {
+    const tmp = path.join(SRC, '__tests__/.prose-assert3.js');
+    fs.writeFileSync(tmp,
+      "const a = 'the net figure is about 1,725 mtCO2e/yr, so KUA is NOT net-negative';\n" +
+      "const b = summary.netLow < 0 ? 'low end is net-negative' : 'even the low end stays positive';\n" +
+      "// pairing that contradicted the \"low end is net-negative\" caption below the headline\n", 'utf8');
+    try {
+      expect(staleClaimsIn('__tests__/.prose-assert3.js')).toEqual([]);
     } finally {
       fs.unlinkSync(tmp);
     }

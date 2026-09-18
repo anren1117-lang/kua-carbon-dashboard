@@ -876,3 +876,47 @@ the false sentence occurs **twice** in `Sinks.js` and my anchor matched both.
 All-or-nothing did its job: had the script written file-by-file, the two data
 files would have been edited while `Sinks.js` — the entire point of the phase —
 stayed as it was.
+
+## Phase 427 — the homepage hero captioned a range it contradicted
+
+`NetEstimate.js:296` rendered, directly under the headline number:
+
+    range 418 – 5,064 · low end is net-negative
+
+`summary.netLow` is **+418**. `LearnAgent` quotes "418–5,064" in three separate
+places. The arithmetic, the component and the teaching copy all agreed; only
+the caption disagreed — on the most-seen component in the app.
+
+The comment at `:107` even *names* it: an earlier anti-correlated pairing
+"contradicted the 'low end is net-negative' caption below the headline". The
+pairing was fixed and the range moved to +418. **The sentence asserting the old
+conclusion stayed.** Identical to Phase 426's sinks page: correct the number,
+leave the claim.
+
+The caption is now **derived** from `netLow` rather than written down, so it
+follows the arithmetic — including if the sink decision (task #16) ever moves
+`netLow` below zero.
+
+### The guard could never have caught either one
+
+`proseFigures.test.js` exists *because* the FAQ spent seventeen phases claiming
+net-negative (its own header says so). It missed both regressions anyway, for
+two independent reasons:
+
+1. **`PROSE_FILES` didn't include the files.** `Sinks.js`, `NetEstimate.js` and
+   `ScopeRangeChart.js` were absent. The *factor* half of the same file already
+   guards `NetEstimate` and `ScopeExplainer` — the *headline* half did not.
+2. **Every `CLAIMS` pattern captures a numeral.** "the forest pulls more carbon
+   out of the air than the entire campus emits" and "low end is net-negative"
+   contain no number at all, so no numeric-capture regex could ever see them.
+
+Phase 427 adds an `ASSERTIONS` claim type that tests the assertion against the
+arithmetic (`SINKS_HIGH > GROSS`), with three exclusions and a control for
+each: `NEGATED` (a denial is the fix — "KUA is NOT net-negative"), `COMPUTED`
+(a caption derived from the figure cannot go stale), and `QUOTING` (audit
+comments quote the defect to explain it — the **fifth** time in this project
+that documentation matched the pattern written to find the thing it documents).
+
+Proven against the **real historical sentences**, not just fixtures: both are
+caught; the denial, the audit comment and the computed ternary are all spared.
+Guard 25 → 31 tests; suite 1,408 → 1,414.

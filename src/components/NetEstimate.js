@@ -106,6 +106,11 @@ const studentCount = TOTAL_STUDENTS;
 // Earlier code paired grossLow with sinksRow.high and grossHigh with sinksRow.low — an anti-correlated
 // pairing that produced a NARROWER interior range and contradicted the "low end is net-negative" caption
 // below the headline. Independent treatment is honest about the actual uncertainty span.
+//
+// That fix moved netLow to +418 but left the caption asserting the opposite for
+// several phases, on the homepage hero. The caption is now DERIVED from netLow
+// rather than written down, so it follows the arithmetic — including if the
+// sink decision (task #16) ever moves netLow below zero.
 const netLowSum  = grossLowSum  + sinksRow.low;
 const netHighSum = grossHighSum + sinksRow.high;
 
@@ -293,7 +298,7 @@ export function NetEstimate() {
             <span style={styles.heroUnit}>mtCO₂e / yr</span>
           </div>
           <div style={styles.heroRange}>
-            range {fmtRange(summary.netLow, summary.netHigh)} · low end is net-negative
+            range {fmtRange(summary.netLow, summary.netHigh)} · {summary.netLow < 0 ? 'low end is net-negative' : 'even the low end stays positive'}
           </div>
         </div>
 
