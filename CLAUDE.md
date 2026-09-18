@@ -829,3 +829,50 @@ audit its assumptions.
 Derived claims moved with it: "half a typical student's footprint" → **a third**
 (4.3 ÷ 12.87 gross-per-student, which also avoids resting new prose on the
 contested 2,650 sink), and "600×" → **800×**.
+
+## Phase 426 — the sinks page said the forest beat the whole campus. It does not.
+
+`Sinks.js` told readers, in both the measured and placeholder branches: *"On the
+optimistic end of the range, the forest pulls more carbon out of the air than
+the entire campus emits."*
+
+That is false under every figure this repo publishes. `SINKS_RANGE.high` is
+**2,650** against `GROSS_MT` **4,375**; even the most generous reading — the
+page's own top per-acre rate, 4.2 × 1,000 acres = 4,200 — still falls short.
+The top of the spread offsets about **61%** of gross. The page now says that.
+
+**The project had already litigated this exact error.** `proseFigures.test.js:31`
+records that the FAQ spent seventeen phases telling readers KUA was
+net-negative; `Faq.js:54` now corrects it explicitly ("It is not."), and
+`CarbonMath.js:76` states "KUA is NOT net-negative". The one page devoted to
+sinks still carried the claim. A guard was written, the prose was fixed in two
+places, and the regression survived in the third.
+
+Also fixed:
+
+- **The per-acre band was wrong.** Page said 2.1–4.2; the actual per-stand rates
+  in `sinks.js` run **1.9–4.2**.
+- **The method count was wrong, in the direction that flatters.** `SINKS_RANGE`
+  is built from **four** methods; the page and `geographicEstimates.js:744`'s
+  own section header both said three, and the omitted one was EPA GHG
+  Equivalencies — which the module itself calls "the only genuinely independent
+  number in this set", and which is the *lowest* at 1,000.
+- **`SINKS_RECONCILIATION`** now exists, mirroring `FACTOR_RECONCILIATION` in
+  `gridMix.js`: adopted 2,650 / central 1,730 / range 1,000–2,650 / 4 methods /
+  gap **+53.2%**. Scope 2 renders its eGRID gap on screen (`Scope2.js:85-90`);
+  sinks can now do the same. This closes task #17 item 7 for sinks.
+- **`CarbonMath` q8 taught the wrong uncertainty.** It set sinks at ±300 when
+  the published spread is 1,000–2,650. Using the half-range (±825), σ_net moves
+  361 → **849** — and the lesson improves, because the sink uncertainty now
+  visibly swamps the ±200 on gross, which is the true state of the inventory.
+- `Faq.js`, `CarbonCredits.js` and `TeacherPortal.js` stated 2,650 flatly; each
+  now points at the spread.
+
+**The 2,650 figure itself is untouched** — that is task #16 and the user's call.
+This phase publishes the gap rather than resolving it.
+
+*Process note:* the first staged write was rejected with NOTHING WRITTEN because
+the false sentence occurs **twice** in `Sinks.js` and my anchor matched both.
+All-or-nothing did its job: had the script written file-by-file, the two data
+files would have been edited while `Sinks.js` — the entire point of the phase —
+stayed as it was.

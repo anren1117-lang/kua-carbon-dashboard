@@ -741,7 +741,7 @@ export const SCOPE1_COMPONENT_RANGES = [
   { component: 'Refrigerants',   ...SCOPE1_REFRIGERANTS_RANGE },
 ];
 
-// ─── SINKS — 3 method cross-check ────────────────────────────────
+// ─── SINKS — 4 method cross-check ────────────────────────────────
 // On-campus forest sequestration. KUA's ~1,000 acres of mostly
 // mixed maple/beech/birch hardwood, with some softwood and
 // open-grown trees. Three published methodologies bracket the range.
@@ -796,6 +796,28 @@ const _sinksRange = (() => {
 })();
 export const SINKS_RANGE = _sinksRange;
 export const SINKS_BOTTOM_UP_MT = Math.round(_sinksRange.central);
+/**
+ * The adopted sink figure against the spread it sits in. Mirrors
+ * FACTOR_RECONCILIATION in gridMix.js: publish the gap rather than leave a
+ * reader to rediscover it, so a page can render it the way Scope2.js renders
+ * the eGRID gap.
+ *
+ * The dashboard adopts the per-stand inventory (2,650) — the TOP of a
+ * four-method spread whose central is 1,730. That method is labelled "not
+ * independent" above; EPA GHG Equivalencies (1,000) is the only genuinely
+ * independent number in the set. Whether to adopt the central instead is an
+ * open decision, so this states the gap without resolving it.
+ */
+export const SINKS_RECONCILIATION = {
+  adoptedMt: Math.round(ANNUAL_SEQUESTRATION_MT),
+  centralMt: Math.round(_sinksRange.central),
+  lowMt: Math.round(_sinksRange.low),
+  highMt: Math.round(_sinksRange.high),
+  methodCount: _sinksRange.methods.length,
+  gapPct: +(((ANNUAL_SEQUESTRATION_MT - _sinksRange.central) / _sinksRange.central) * 100).toFixed(1),
+  note: 'Adopted figure is the per-stand inventory, the top of the four-method spread; the central is 1,730. A real forest inventory is what would settle it.',
+};
+
 export const SINKS_COMPONENT_RANGES = [
   { component: 'Forest sequestration', ...SINKS_RANGE },
 ];

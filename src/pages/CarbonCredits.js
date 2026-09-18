@@ -226,7 +226,7 @@ function CarbonCredits() {
         <div style={styles.tradeOff}>
           <div style={styles.tradeOffTitle}>You can't have both</div>
           <p style={styles.tradeOffText}>
-            If KUA sells the ~2,650 mtCO₂e/year of forest sequestration as carbon credits, those credits are claimed by the
+            If KUA sells the ~2,650 mtCO₂e/year of forest sequestration (the top of a published 1,000–2,650 spread) as carbon credits, those credits are claimed by the
             buyer. KUA can no longer subtract them from its own gross emissions — the dashboard's
             net balance would jump from ~1,725 mtCO₂e/yr up to ~4,375 mtCO₂e/yr because the
             sequestration line goes to zero from the school's accounting perspective.

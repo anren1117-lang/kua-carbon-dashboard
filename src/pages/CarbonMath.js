@@ -104,16 +104,16 @@ const QUESTIONS = [
   {
     id: 'q8',
     level: 'ap',
-    setup: 'KUA\'s gross emissions are reported as 4,375 ± 200 mtCO₂e (one standard deviation). Sinks sequester 2,650 ± 300 mtCO₂e. What is the standard deviation of the net (gross − sinks), assuming independent errors?',
-    answer: 361,
+    setup: 'KUA\'s gross emissions are reported as 4,375 ± 200 mtCO₂e (one standard deviation). Sinks are adopted at 2,650 mtCO₂e, but the four published methods span 1,000–2,650 — treat the half-range, ±825, as one standard deviation. What is the standard deviation of the net (gross − sinks), assuming independent errors?',
+    answer: 849,
     unit: 'mtCO₂e',
     tolerance: 0.05,
     work: [
       'For independent errors, variances add: σ_net² = σ_gross² + σ_sinks²',
       'σ_gross² = 200² = 40,000',
-      'σ_sinks² = 300² = 90,000',
-      'σ_net² = 130,000 → σ_net = √130,000 ≈ 361 mtCO₂e',
-      'Why this matters: the NET number has a wider uncertainty band than EITHER input. Net here is 4,375 − 2,650 = 1,725, so reporting "net 1,725 ± 361 mt" is honest; reporting "net 1,725 mt" flat is not. The ± values above are illustrative — the real component ranges are wider still.',
+      'σ_sinks² = 825² = 680,625',
+      'σ_net² = 720,625 → σ_net = √720,625 ≈ 849 mtCO₂e',
+      'Why this matters: the NET number has a wider uncertainty band than EITHER input — and here the SINK uncertainty swamps everything else. ±825 against ±200 means the forest estimate alone decides the answer, which is exactly why a real forest inventory is the highest-value measurement KUA could make. Net is 4,375 − 2,650 = 1,725, so "net 1,725 ± 849 mt" is honest; "net 1,725 mt" flat is not. This question used ±300 for sinks until Phase 426, which understated a published spread that actually runs 1,000–2,650.',
     ],
   },
 ];

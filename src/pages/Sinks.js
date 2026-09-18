@@ -2,16 +2,25 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
-import { SINKS_RANGE } from '../data/geographicEstimates.js';
+import { SINKS_RANGE, SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
+import { GROSS_MT } from '../data/scopeTotals.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 
 // Use the multi-method range from geographicEstimates.js (Birdsey 1992
-// US-forest avg / USDA NH FIA Morin 2020 / Nowak 2013 stand-specific)
-// instead of the legacy ±25% placeholder band, so the public sink page
-// matches the methodology page's published-method-spread reasoning.
+// US-forest avg / USDA NH FIA Morin 2020 / KUA per-stand inventory / EPA GHG
+// Equivalencies) instead of the legacy ±25% placeholder band, so the public
+// sink page matches the methodology page's published-method-spread reasoning.
+// FOUR methods, not three: EPA GHG Equivalencies was added in Phase 411 and
+// is the only genuinely independent number in the set, so omitting it from
+// the count understated the evidence base on the page that leans on it most.
 const SEQ_TOTAL  = Math.round(ANNUAL_SEQUESTRATION_MT);
 const SEQ_PER_ST = +(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS).toFixed(1);
+// Share of gross that even the TOP of the spread offsets. Computed, not
+// asserted: this page claimed for many phases that the optimistic end beat
+// the whole campus, which no published figure supports (2,650 high, and even
+// 4.2 mt/acre x 1,000 acres = 4,200, against gross 4,375).
+const SINK_OFFSET_PCT = Math.round((SINKS_RANGE.high / GROSS_MT) * 100);
 const SEQ_LOW    = Math.round(SINKS_RANGE.low);
 const SEQ_HIGH   = Math.round(SINKS_RANGE.high);
 
@@ -47,8 +56,8 @@ function Sinks() {
   const headlineAcres = isMeasured ? live.acres : TOTAL_FOREST_ACRES;
   const headlineProvenance = isMeasured ? 'measured' : 'estimated';
   const headlineNote = isMeasured
-    ? `Composed live from ${live.standCount} forest_stand_actuals row${live.standCount === 1 ? '' : 's'} × per-acre sequestration rates. Roughly ${headlineAcres.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`
-    : `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 2.1–4.2 mtCO₂e per acre per year. On the optimistic end of the range, the forest pulls more carbon out of the air than the entire campus emits.`;
+    ? `Composed live from ${live.standCount} forest_stand_actuals row${live.standCount === 1 ? '' : 's'} × per-acre sequestration rates. Roughly ${headlineAcres.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 1.9–4.2 mtCO₂e per acre per year. Even at the top of the published spread the forest offsets about ${SINK_OFFSET_PCT}% of gross emissions, not all of them — KUA is not net-negative.`
+    : `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 1.9–4.2 mtCO₂e per acre per year. Even at the top of the published spread the forest offsets about ${SINK_OFFSET_PCT}% of gross emissions, not all of them — KUA is not net-negative.`;
 
   return (
     <div>
@@ -94,7 +103,7 @@ function Sinks() {
       <ScopePageInfo
         color="#22c55e"
         estimate={{
-          totalPrefix: '−', total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across 3 methods (Birdsey 1992 / USDA NH FIA / Nowak 2013 stand-specific)`, perStudent: -headlinePerStudent,
+          totalPrefix: '−', total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across ${SINKS_RECONCILIATION.methodCount} methods (Birdsey 1992 / USDA NH FIA / KUA per-stand / EPA GHG Equivalencies). The adopted figure is the per-stand result, ${SINKS_RECONCILIATION.gapPct}% above the four-method central of ${SINKS_RECONCILIATION.centralMt.toLocaleString()}`, perStudent: -headlinePerStudent,
           thirdMetric: { label: 'Forested area', value: `${isMeasured ? '' : '~'}${headlineAcres.toLocaleString()}`, note: 'acres of campus forest' },
           provenance: headlineProvenance,
           note: headlineNote,
