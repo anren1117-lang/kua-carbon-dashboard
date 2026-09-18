@@ -101,6 +101,23 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The corrections had not reached the prompts or the pages (Phase 415)
+
+Fourteen phases moved a lot of numbers. `proseFigures.test.js` guards gross/net/Scope 2 across seven prose files and never looks at `api/` — so the question was simply: does anything still quote a figure this audit changed?
+
+**The worst was an AI system prompt.** `api/chat.js` told the model "beef ~60 kgCO₂e/kg vs chicken ~6". Phase 405 corrected those to 99.5 and 9.9, so the chatbot would have stated superseded numbers to students with full confidence while every page around it disagreed. A stale prompt is worse than a stale page: the page is visibly a number, the prompt sounds like knowledge.
+
+**Phase 405 had also missed its own file.** `dining.js` rescaled `factorPerServing` 6.0 → 9.95 but left `menuScenarios` on the old basis (38 / 56 / 138), so the file disagreed with itself — and those figures had propagated into the planning AI's estimate anchors (`estimate-action.js` 55 and 30 mt, `plan.js` `r_beef_cut20` 56, `plan-item-alternatives.js` "50-60 mt"). Rescaled to 63 / 93 / 229, 91, 50, 93, "85-100". Rescaling is right here precisely *because* the per-serving factor already moved: the physical reduction is unchanged, the carbon it avoids is not. Non-beef figures were left alone — the menu-label item, local produce, the FAO LEAP citation.
+
+**Then the first sweep turned out to be under-scoped.** It covered `api/` only, and the same staleness was sitting in `src/pages/` — with wrong *values*, not just wrong version labels:
+
+- `Waste.js` still told readers that "negative emissions for recycling/compost reflect avoided emissions", describing behaviour **Phase 407 deleted**. Every Category 5 factor is positive now.
+- `Scope3.js` published the WARM landfill factor as **+520 kg/ton** and compost as **+40**; the corrected figures are **580** and **110**.
+- `Scope3.js` also still carried the **pre-Phase-414 cohort split** (~100 day / ~190 US boarders).
+- `AnnualReport.js` — the most board-facing page in the repo — carried 0.235 against a canonical 0.234, plus "WARM v15" and "EEIO v2.0". It was not in the prose tripwire; it is now.
+
+The lesson: a correction is not finished when the constant changes. It is finished when everything *derived* from it changes too — and derived figures hide in prompt text, in estimate anchors, in UI hint strings, and in worked examples that read like prose. A sweep scoped to one directory will find one directory's worth of them.
+
 ### The denominators, checked at last (Phase 414)
 
 Two phases were spent making per-student comparisons honest without once checking the **divisor**. `TOTAL_STUDENTS` and the forested acreage sit under every per-student figure on the dashboard and under the whole sink calculation, both credited to "Wikipedia + KUA 'By the Numbers'" — so both were read at source.

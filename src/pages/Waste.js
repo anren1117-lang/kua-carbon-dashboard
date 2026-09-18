@@ -66,7 +66,7 @@ export default function Waste() {
 
       <ModuleSection
         title="By stream"
-        hint="Negative emissions for recycling/compost reflect avoided emissions vs landfill or virgin production (EPA WARM v15)."
+        hint="Every disposal route is a POSITIVE emission here. EPA's Scope 3 Category 5 factors exclude avoided emissions, so recycling and composting are smaller emissions than landfilling rather than credits — composting 0.11 vs landfill 0.58 mtCO₂e per short ton (EPA GHG Emission Factors Hub 2025, Table 9)."
       >
         <div style={styles.streamGrid}>
           {Object.entries(byStream)

@@ -281,7 +281,7 @@ export default function AnnualReport() {
 
       <Section title="Methodology notes">
         <ul style={styles.notes}>
-          <li><strong>Source factors.</strong> Electricity uses ISO-NE 2024 generation mix with per-fuel output emission factors (~0.235 kg CO₂/kWh effective system rate, in eGRID NEWE 2022 published range). Heating fuel uses EPA Greenhouse Gas Emission Factors Hub. Food uses Poore & Nemecek (2018). Waste uses EPA WARM v15. Procurement uses US EPA EEIO v2.0 spend-based.</li>
+          <li><strong>Source factors.</strong> Electricity uses ISO-NE 2024 generation mix with per-fuel output emission factors (~0.234 kg CO₂/kWh effective system rate, in eGRID NEWE published range). Heating fuel uses EPA Greenhouse Gas Emission Factors Hub. Food uses Poore & Nemecek (2018) full-supply-chain per-kg figures via Our World in Data. Waste uses EPA GHG Emission Factors Hub 2025 Table 9 (Scope 3 Cat 5), which excludes avoided emissions. Procurement uses EPA Supply Chain GHG Emission Factors v1.3 (kg CO₂e per 2022 USD, purchaser price).</li>
           <li><strong>Forest sequestration</strong> uses stand-specific accumulation rates from Birdsey (1992) for closed-canopy and Nowak (2013) for open-grown trees.</li>
           <li><strong>This report is preliminary.</strong> Until the data ingestion pipeline is fully populated, Scope 1 and Scope 3 are bottom-up cross-check estimates: Scope 1 ~1,350 mt central (range 891–1,867), Scope 3 ~2,635 mt central (range 1,726–3,720), sinks ~2,650 mt central (range 2,100–2,650). Full per-component method-by-method breakdown at <em>/admin/methodology</em>.</li>
           <li><strong>Live data sources active.</strong> {' '}

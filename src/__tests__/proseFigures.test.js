@@ -125,6 +125,9 @@ const FACTOR_PROSE_FILES = [
   // was 0.234.
   'pages/Methodology.js',
   'pages/Scope2.js',
+  // Board-facing annual report — carried 0.235 against a canonical 0.234
+  // until Phase 415 and was never guarded.
+  'pages/AnnualReport.js',
   'components/LearnAgent.js',
   'components/DailyTip.js',
   'components/ScopeExplainer.js',

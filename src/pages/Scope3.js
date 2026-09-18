@@ -105,7 +105,7 @@ function Scope3() {
           thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
           provenance: headlineProvenance,
           note: headlineNote,
-          currentMethod: `Bottom-up multi-method estimate. Student travel uses Yale-style cohort method × KUA-specific fingerprint (~100 day commuters Upper Valley local, ~190 US boarders Northeast-skewed, ~50 international East-Asia heavy) cross-checked against Andover/Exeter peer benchmarks and source-country distance splits. Goods: EEIO spend-based across $2.5-4M procurement scenarios × EPA EEIO v2.0. Waste: 420 people × per-day generation × diversion-split scenarios × EPA WARM v15.1. Commuting: 52 staff × Upper Valley ACS distribution × ICCT effective fleet. Dining: actual boarding/day meal mix (~217K student meals + 50K faculty/staff) × 0.70-1.10 kg CO2e/meal. Upstream fuel: 12-22% uplift on bottom-up Scope 1. Range across 3-4 methods per component gives ${SCOPE3_RANGE.low.toLocaleString()}–${SCOPE3_RANGE.high.toLocaleString()} mt total — see /admin/methodology.`,
+          currentMethod: `Bottom-up multi-method estimate. Student travel uses Yale-style cohort method × KUA-specific fingerprint (~82 day commuters Upper Valley local, ~208 US boarders Northeast-skewed, ~50 international East-Asia heavy) cross-checked against Andover/Exeter peer benchmarks and source-country distance splits. Goods: EEIO spend-based across $2.5-4M procurement scenarios × EPA Supply Chain GHG Emission Factors v1.3. Waste: 420 people × per-day generation × diversion-split scenarios × EPA Hub 2025 Table 9 (Scope 3 Cat 5). Commuting: 52 staff × Upper Valley ACS distribution × ICCT effective fleet. Dining: actual boarding/day meal mix (~217K student meals + 50K faculty/staff) × 0.70-1.10 kg CO2e/meal. Upstream fuel: 12-22% uplift on bottom-up Scope 1. Range across 3-4 methods per component gives ${SCOPE3_RANGE.low.toLocaleString()}–${SCOPE3_RANGE.high.toLocaleString()} mt total — see /admin/methodology.`,
           futureMethod: 'Each subcategory ships independently and flips estimated → cited as inputs become real. Travel: KUA travel office departure logs + study abroad ledger + athletics bus routes. Dining (Cat 1 portion): Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream). Procurement: Business Office annual spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fleet fuel-economy. The methodologies are already standard; only KUA-specific inputs are pending.',
         }}
         references={[
@@ -200,8 +200,8 @@ function Scope3() {
             data: [
               { input: 'School food waste generation', value: '~80 – 150 lb/student/yr', source: 'Food Recovery Network surveys' },
               { input: 'Student count', value: '~600', source: 'KUA enrollment' },
-              { input: 'WARM landfill factor', value: '+520 kg CO₂e/ton', source: 'EPA WARM v15 — mixed MSW' },
-              { input: 'WARM compost factor', value: '+40 kg CO₂e/ton', source: 'EPA WARM v15 — food waste composted' },
+              { input: 'WARM landfill factor', value: '+580 kg CO₂e/ton', source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Mixed MSW landfilled (0.58 mt/short ton)' },
+              { input: 'WARM compost factor', value: '+110 kg CO₂e/ton', source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Food waste composted (0.11 mt/short ton)' },
             ],
             math: [
               'food_waste_tons = 340 students × 100 lb/yr / 2,000 lb/ton = 17 tons',

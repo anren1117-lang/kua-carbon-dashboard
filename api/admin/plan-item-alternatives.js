@@ -42,7 +42,7 @@ Your job: propose 2-3 alternative plan items that could REPLACE the one the admi
 1. Staying in the same category (scope1/scope2/scope3/sinks/engagement) — admin is replacing a Scope X item; alternatives must also target Scope X. Don't switch categories.
 2. Hitting roughly the same mt + $ band, OR — if the admin's reason says "too expensive" or "too aggressive" — propose smaller/cheaper alternatives; if they say "too small" / "too soft" propose bigger ones.
 3. Not duplicating items already in the plan (the otherItems list).
-4. Drawing from the same benchmark library the plan endpoint uses: heat-pump conversion (600-900 mt / $3-5M), single-building boiler upgrade (30-60 mt / $200-400K), 60 kW solar (6-8 mt / $150-200K), LED retrofit (6-10 mt / $80-120K), HVAC auto-shutoff (9-15 mt / $10-30K), dorm setpoint -2°F (15-22 mt / free), 20% beef cut (50-60 mt / free), compost expansion (4-6 mt / $15-30K), commute incentive (25-35 mt / $40-80K), international travel offset (100-200 mt / $15-30/mt), behavioral campaigns (5-20 mt / minimal cost), measurement instrumentation ($10-30K, enables future).
+4. Drawing from the same benchmark library the plan endpoint uses: heat-pump conversion (600-900 mt / $3-5M), single-building boiler upgrade (30-60 mt / $200-400K), 60 kW solar (6-8 mt / $150-200K), LED retrofit (6-10 mt / $80-120K), HVAC auto-shutoff (9-15 mt / $10-30K), dorm setpoint -2°F (15-22 mt / free), 20% beef cut (85-100 mt / free), compost expansion (4-6 mt / $15-30K), commute incentive (25-35 mt / $40-80K), international travel offset (100-200 mt / $15-30/mt), behavioral campaigns (5-20 mt / minimal cost), measurement instrumentation ($10-30K, enables future).
 
 Output STRICT JSON only — no prose before or after — matching this shape:
 {

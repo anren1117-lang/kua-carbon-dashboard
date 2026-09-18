@@ -934,7 +934,7 @@ export default function AdminPlanAgent() {
               today={live.scope3Measured
                 ? 'Live across 8 admin tables: cohort counts (day / US / international), trip-level (study_abroad + faculty_travel), waste, purchased_goods (Cat 1), commuting (Cat 7).'
                 : 'Hand-set order-of-magnitude figure for student travel + dining + waste + procurement + commuting + upstream fuel. No measured inventory of any of these categories exists yet.'}
-              target="Student travel: KUA travel office departure logs + ICAO calculator. Dining: Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream) × EPA WARM v15.1. Procurement: Business Office spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fuel-economy. Each subcategory ships independently → cited."
+              target="Student travel: KUA travel office departure logs + ICAO calculator. Dining: Sodexo/SAGE invoices × USEEIO food-sector factors + Project Drawdown overlay. Waste: hauler invoices (tons by stream) × EPA Hub 2025 Table 9 (Scope 3 Cat 5). Procurement: Business Office spend mapped to USEEIO sectors. Commuting: HR zip-code survey × ICCT fuel-economy. Each subcategory ships independently → cited."
               sourcePath="src/hooks/useMeasuredScope3.js" />
             <CtxRow
               provenance={live.sinksMeasured ? 'measured' : 'estimated'}

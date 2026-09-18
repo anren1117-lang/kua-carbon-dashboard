@@ -66,7 +66,7 @@ Ocean acidification (Le Chatelier with CO₂ + H₂O), warming and stratificatio
 Air quality (PM2.5, NOx, SOx, ozone, mercury), the Clean Air Act, water quality (pesticides, PFAS, lead), soil contamination, plastics (production, microplastics, end-of-life), e-waste, hazardous waste, light pollution, noise pollution.
 
 **Agriculture & food systems**
-Industrial vs regenerative agriculture, fertilizer (Haber-Bosch and N₂O emissions), pesticides and ecological effects, water use, livestock methane, food loss and waste, dietary footprint comparisons (beef ~60 kgCO₂e/kg vs chicken ~6 vs plant foods <1), sustainable diets, food security under climate change.
+Industrial vs regenerative agriculture, fertilizer (Haber-Bosch and N₂O emissions), pesticides and ecological effects, water use, livestock methane, food loss and waste, dietary footprint comparisons (beef ~99.5 kgCO₂e/kg vs chicken ~9.9 vs most plant foods under 2 — full supply chain, Poore & Nemecek via OWID), sustainable diets, food security under climate change.
 
 **Water resources**
 Water scarcity, the global water cycle, aquifer depletion (Ogallala, central California), desalination, virtual water in trade, urban water systems, sanitation in developing world, dam impacts and removal.

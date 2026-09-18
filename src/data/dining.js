@@ -135,10 +135,15 @@ export const foodWasteLogs = (() => {
  * @property {number} estimatedAnnualReductionMt
  */
 
+// Reduction totals rescaled in Phase 415 by the beef-factor correction
+// (x1.658). Phase 405 moved factorPerServing from 6.0 to 9.95 but left these
+// hardcoded, so this file disagreed with itself for ten phases. The
+// local-produce scenario is unchanged — it does not derive from the beef
+// factor.
 /** @type {MenuScenario[]} */
 export const menuScenarios = [
-  { id: 'ms_meatlessmonday',   name: 'Meatless Mondays',           description: 'Replace all beef on Mondays with vegetarian/vegan options.',          beefReductionPct: 14, vegetarianIncreasePct: 14, estimatedAnnualReductionMt: 38 },
-  { id: 'ms_beef20',           name: 'Cut beef 20%',                description: 'Reduce beef portions and frequency by 20% across the week.',         beefReductionPct: 20, vegetarianIncreasePct: 12, estimatedAnnualReductionMt: 56 },
-  { id: 'ms_beef50',           name: 'Beef → chicken 50% swap',     description: 'Swap half of beef entrées for chicken; preserve protein servings.',  beefReductionPct: 50, vegetarianIncreasePct:  0, estimatedAnnualReductionMt: 138 },
+  { id: 'ms_meatlessmonday',   name: 'Meatless Mondays',           description: 'Replace all beef on Mondays with vegetarian/vegan options.',          beefReductionPct: 14, vegetarianIncreasePct: 14, estimatedAnnualReductionMt: 63 },
+  { id: 'ms_beef20',           name: 'Cut beef 20%',                description: 'Reduce beef portions and frequency by 20% across the week.',         beefReductionPct: 20, vegetarianIncreasePct: 12, estimatedAnnualReductionMt: 93 },
+  { id: 'ms_beef50',           name: 'Beef → chicken 50% swap',     description: 'Swap half of beef entrées for chicken; preserve protein servings.',  beefReductionPct: 50, vegetarianIncreasePct:  0, estimatedAnnualReductionMt: 229 },
   { id: 'ms_localproduce',     name: '50% local produce sourcing',  description: 'Shift produce procurement to within-100-mile vendors.',              beefReductionPct:  0, vegetarianIncreasePct:  0, estimatedAnnualReductionMt: 12 },
 ];

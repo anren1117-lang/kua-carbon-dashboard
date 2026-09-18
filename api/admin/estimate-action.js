@@ -10,7 +10,7 @@
 //     estimatedCostUsd: number,         // rough $ estimate (0 = behavioral)
 //     confidence: 'low' | 'medium' | 'high',
 //     methodology: string,              // 1-2 sentences naming the basis
-//     dataSource: string,               // citation type (e.g. "EPA WARM v15.1")
+//     dataSource: string,               // citation type (e.g. "EPA GHG Emission Factors Hub 2025 Table 9")
 //     provenance: 'estimated' | 'cited',
 //     similarKnownActions?: string[]    // 1-3 RULE_LIBRARY ids the model anchored on
 //   }
@@ -119,15 +119,15 @@ function ruleEstimate({ title, description }) {
   if (has('solar') && has('rooftop', 'phase'))
     return { mt: 7, cost: 175_000, confidence: 'high', methodology: 'NREL PVWatts (NH latitude) for ~60 kW rooftop array × ISO-NE grid offset.', dataSource: 'NREL PVWatts', provenance: 'cited' };
   if (has('beef') && has('20', 'cut', 'reduce'))
-    return { mt: 55, cost: 0, confidence: 'high', methodology: 'Project Drawdown plant-rich diets + Poore & Nemecek 2018 beef factor × KUA dining throughput.', dataSource: 'Project Drawdown plant-rich diets + Poore & Nemecek 2018', provenance: 'cited' };
+    return { mt: 91, cost: 0, confidence: 'high', methodology: 'Project Drawdown plant-rich diets + Poore & Nemecek 2018 beef factor (rescaled Phase 415 for the corrected 99.5 kgCO2e/kg beef factor) × KUA dining throughput.', dataSource: 'Project Drawdown plant-rich diets + Poore & Nemecek 2018', provenance: 'cited' };
   if (has('beef'))
-    return { mt: 30, cost: 0, confidence: 'medium', methodology: 'Modest beef reduction at dining hall, smaller swap fraction.', dataSource: 'Poore & Nemecek 2018', provenance: 'estimated' };
+    return { mt: 50, cost: 0, confidence: 'medium', methodology: 'Modest beef reduction at dining hall, smaller swap fraction.', dataSource: 'Poore & Nemecek 2018', provenance: 'estimated' };
   if (has('hvac') && has('schedule', 'auto-shut'))
     return { mt: 12, cost: 15_000, confidence: 'medium', methodology: 'ASHRAE 90.1 unoccupied-schedule savings × Whittemore-class load profile.', dataSource: 'ASHRAE 90.1 + KUA submeter (Eclypse BMS)', provenance: 'estimated' };
   if (has('thermostat', 'setpoint') && has('lower', 'reduce'))
     return { mt: 18, cost: 0, confidence: 'medium', methodology: 'EIA RECS 1°F = ~3% heating demand × KUA dorm fuel load.', dataSource: 'EIA RECS heating demand', provenance: 'estimated' };
   if (has('compost'))
-    return { mt: 4, cost: 25_000, confidence: 'medium', methodology: 'EPA WARM landfill methane avoided × tonnage diverted.', dataSource: 'EPA WARM v15.1', provenance: 'cited' };
+    return { mt: 4, cost: 25_000, confidence: 'medium', methodology: 'EPA WARM landfill methane avoided × tonnage diverted.', dataSource: 'EPA GHG Emission Factors Hub 2025, Table 9 (Scope 3 Cat 5)', provenance: 'cited' };
   if (has('rec', 'renewable energy credit'))
     return { mt: 390, cost: 115_000, confidence: 'high', methodology: 'NEPOOL GIS REC × full annualized scope-2 kWh (covers 100% of grid Scope 2).', dataSource: 'NEPOOL GIS REC market price × KUA annualized scope-2 kWh', provenance: 'cited' };
   if (has('flight', 'travel') && has('international', 'student'))
