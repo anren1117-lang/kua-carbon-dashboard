@@ -689,6 +689,24 @@ When adding a measured-data path, mirror the existing test shape: empty/null fal
 
 `src/utils/`, `src/storage/`, every adapter in `src/adapters/meter/`, every `/api/*` handler, and every routed page are under test. The thinnest remaining surface is `src/components/` (interactive child components reached only by user action — page smoke tests mount the top-level but don't click through to children).
 
+## Build-size warning: checked, no action needed
+
+Vite prints *"Some chunks are larger than 600 kB after minification"* on every build. Investigated in full so nobody re-opens it: **the initial payload is fine and the warning is about lazy chunks.**
+
+`dist/index.html` loads exactly three JS files up front — `index` (~236K), `react-vendor` (~164K), `supabase-vendor` (~196K), so roughly 600K raw / ~180K gzipped for first paint. Every large chunk is already code-split behind `lazy(() => import(...))`:
+
+| chunk | raw | when it loads |
+|---|---|---|
+| `apes-*` | 736K | only on that AP unit's route |
+| `apush-*` | 512K | only on that AP unit's route |
+| `pdf-*` | 508K | only when a PDF export is invoked |
+| `apbio-*` | 488K | only on that AP unit's route |
+| `pptxgen-*` | 368K | only when a deck export is invoked |
+
+A classroom Chromebook opening the dashboard never fetches any of these. When a student does open an AP unit, ~274 kB gzipped for a full course of teaching content is a reasonable trade — and the audience constraint (classroom Chromebooks) is about the *initial* load, which is already small.
+
+Splitting further would add real complexity and regression risk to improve a number that is not costing the audience anything. Left alone deliberately; the warning is Vite reporting per-chunk size, not a performance defect.
+
 ## Conventions
 
 - Styling is done with inline `style={{...}}` objects and a small `App.css`. There is no CSS framework, no component library, and no shared style module — matching the existing inline-style patterns is fine.
