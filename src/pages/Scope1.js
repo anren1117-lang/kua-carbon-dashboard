@@ -4,6 +4,7 @@ import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
 import { KG_PER_KWH, KUA_USAGE_YEAR } from '../data/gridMix.js';
+import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { DegreeDayChart } from '../components/DegreeDayChart.js';
@@ -88,6 +89,7 @@ function Scope1() {
           totalRange: `${SCOPE1_RANGE.low.toLocaleString()} – ${SCOPE1_RANGE.high.toLocaleString()} mt across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical NH-CZ6 stock / ENERGY STAR HDD-direct upper bound)`,
           perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
+          period: REPORTING_PERIOD.label,
           provenance: headlineProvenance,
           note: headlineNote,
           currentMethod: `Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Range across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical / ENERGY STAR HDD-direct upper) gives ${Math.round(SCOPE1_RANGE.low).toLocaleString()}–${Math.round(SCOPE1_RANGE.high).toLocaleString()} mt total — see /admin/methodology for the full breakdown.`,

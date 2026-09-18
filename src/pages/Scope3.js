@@ -3,6 +3,7 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
+import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { SCOPE3_RANGE, SCOPE3_INTL_TRAVEL } from '../data/geographicEstimates.js';
 
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -111,6 +112,7 @@ function Scope3() {
           totalRange: `${SCOPE3_RANGE.low.toLocaleString()} – ${SCOPE3_RANGE.high.toLocaleString()} mt across 3-4 methods per component (Yale cohort / Andover-Exeter peer / national long-tail / source-country split — see /admin/methodology for full breakdown)`,
           perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Purchased goods', note: 'goods ~1,315 mt ≈ 50% of S3; travel ~760 mt ≈ 29%' },
+          period: REPORTING_PERIOD.label,
           provenance: headlineProvenance,
           note: headlineNote,
           currentMethod: `Bottom-up multi-method estimate. Student travel uses Yale-style cohort method × KUA-specific fingerprint (~82 day commuters Upper Valley local, ~208 US boarders Northeast-skewed, ~50 international East-Asia heavy) cross-checked against Andover/Exeter peer benchmarks and source-country distance splits. Goods: EEIO spend-based across $2.5-4M procurement scenarios × EPA Supply Chain GHG Emission Factors v1.3. Waste: 420 people × per-day generation × diversion-split scenarios × EPA Hub 2025 Table 9 (Scope 3 Cat 5). Commuting: 52 staff × Upper Valley ACS distribution × ICCT effective fleet. Dining: actual boarding/day meal mix (~217K student meals + 50K faculty/staff) × 0.70-1.10 kg CO2e/meal. Upstream fuel: 12-22% uplift on bottom-up Scope 1. Range across 3-4 methods per component gives ${SCOPE3_RANGE.low.toLocaleString()}–${SCOPE3_RANGE.high.toLocaleString()} mt total — see /admin/methodology.`,

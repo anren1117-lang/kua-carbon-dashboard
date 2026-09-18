@@ -14,6 +14,7 @@ import {
   FACTOR_RECONCILIATION,
 } from '../data/gridMix.js';
 import { weatherContextText } from '../data/degreeDays.js';
+import { PERIOD_RECONCILIATION } from '../data/academicCalendar.js';
 import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 import { GridVintageChart } from '../components/GridVintageChart.js';
 
@@ -86,6 +87,19 @@ function Scope2() {
           <span style={styles.label}>Against EPA's published rate</span>
           <span style={styles.value}>
             {FACTOR_RECONCILIATION.publishedKgPerKwh} kg CO₂e/kWh published — this page runs {FACTOR_RECONCILIATION.gapPct}% below it, so Scope 2 here is a conservative-low estimate
+          </span>
+        </div>
+        {/* The period mismatch is stated HERE and nowhere else — this is where
+            the two windows collide, and repeating it on four pages would be
+            four copies of one fact. Scope 1/3/Sinks each state their own
+            period via ScopePageInfo instead. Phase 429 exported
+            PERIOD_RECONCILIATION and claimed it "published" this; nothing
+            imported it, so it was tree-shaken out and published nothing. */}
+        <div style={styles.row}>
+          <span style={styles.label}>Reporting period</span>
+          <span style={styles.value}>
+            {PERIOD_RECONCILIATION.scope2}
+            {!PERIOD_RECONCILIATION.aligned && <> — Scope 1 and 3 cover the {PERIOD_RECONCILIATION.scope1And3} instead, so the inventory spans two different twelve-month windows</>}
           </span>
         </div>
         {/* The annualization above scales part of a year to a whole one using an

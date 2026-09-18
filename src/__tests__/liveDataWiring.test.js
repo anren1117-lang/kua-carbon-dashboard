@@ -145,6 +145,38 @@ describe('live data wiring', () => {
     }
   });
 
+  it('a reconciliation object that no page imports publishes NOTHING', () => {
+    // Phase 429 exported PERIOD_RECONCILIATION and its commit said it
+    // "publishes" the Scope 2 / Scope 1-3 period mismatch. Nothing imported
+    // it, so Rollup tree-shook it out and it reached no reader — the same
+    // complaint as "lives in comments only", restated with an export keyword.
+    //
+    // Asserting aligned === false would have passed the whole time. The claim
+    // is REACHABILITY, so that is what this asserts: some page must import it.
+    const pageImports = (name) => {
+      for (const dir of ['components', 'pages']) {
+        for (const file of walk(path.join(SRC, dir))) {
+          const text = fs.readFileSync(file, 'utf8');
+          const imports = text.split('\n').filter((l) => l.startsWith('import ')).join('\n');
+          if (new RegExp(`\\b${name}\\b`).test(imports)) return path.relative(SRC, file);
+        }
+      }
+      return null;
+    };
+    expect(pageImports('PERIOD_RECONCILIATION')).toBeTruthy();
+    expect(pageImports('SINKS_RECONCILIATION')).toBeTruthy();
+    expect(pageImports('FACTOR_RECONCILIATION')).toBeTruthy();
+  });
+
+  it('every scope page states which twelve months it covers', () => {
+    // Scope 1, 2, 3 and Sinks each had ZERO mentions of a reporting period
+    // before Phase 431. A total without its period is not a reportable figure.
+    for (const rel of ['pages/Scope1.js', 'pages/Scope3.js', 'pages/Sinks.js']) {
+      expect(fs.readFileSync(path.join(SRC, rel), 'utf8')).toMatch(/period:\s*REPORTING_PERIOD\.label/);
+    }
+    expect(fs.readFileSync(path.join(SRC, 'pages/Scope2.js'), 'utf8')).toMatch(/Reporting period/);
+  });
+
   it('prose files are covered by the drift tripwire instead', () => {
     // The trade is explicit: no hook, but proseFigures.test.js fails if their
     // sentences stop matching the canonical totals.

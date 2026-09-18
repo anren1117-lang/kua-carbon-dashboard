@@ -3,6 +3,7 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SINKS_RANGE, SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
+import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { GROSS_MT } from '../data/scopeTotals.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
@@ -105,6 +106,7 @@ function Sinks() {
         estimate={{
           totalPrefix: '−', total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across ${SINKS_RECONCILIATION.methodCount} methods (Birdsey 1992 / USDA NH FIA / KUA per-stand / EPA GHG Equivalencies). The adopted figure is the per-stand result, ${SINKS_RECONCILIATION.gapPct}% above the four-method central of ${SINKS_RECONCILIATION.centralMt.toLocaleString()}`, perStudent: -headlinePerStudent,
           thirdMetric: { label: 'Forested area', value: `${isMeasured ? '' : '~'}${headlineAcres.toLocaleString()}`, note: 'acres of campus forest' },
+          period: REPORTING_PERIOD.label,
           provenance: headlineProvenance,
           note: headlineNote,
         }}

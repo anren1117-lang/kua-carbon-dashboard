@@ -1045,3 +1045,46 @@ page and is tree-shaken out of the bundle entirely — the exact complaint in
 task #17 item 7 ("lives in comments only, so no page can render it"), restated
 with an `export` keyword in front of it. Filed as #19; the claim is withdrawn
 here rather than left standing.
+
+## Phase 431 — no scope page said what twelve months it covered
+
+Verified before writing anything: `Scope1.js`, `Scope2.js`, `Scope3.js` and
+`Sinks.js` each returned **zero** matches for "reporting period | period
+covered | school year | 2025-2026 | as of". The dashboard published totals
+without telling a reader which year they describe — a GHG Protocol reporting
+requirement, and the reason the Scope 2 / Scope 1-3 period mismatch was
+invisible.
+
+`ScopePageInfo` gains an optional `estimate.period` line; Scope 1, Scope 3 and
+Sinks pass `REPORTING_PERIOD.label`. (`thirdMetric` was already occupied on all
+three — "Dominant source", "Forested area" — hence a new field rather than
+reusing it. Optional, so any page passing nothing renders exactly as before.)
+
+Scope 2 states its own window **and** the mismatch, in the labelled-row block
+that already carries `FACTOR_RECONCILIATION`'s gap. **Once, and only there** —
+that is where the two windows collide, and repeating it on four pages would be
+four copies of one fact, the defect this session has spent most of its phases
+deleting.
+
+### The fix Phase 429 claimed and did not make
+
+`PERIOD_RECONCILIATION` was exported and imported by nothing, so Rollup
+tree-shook it out and it published nothing. Phase 430 withdrew the claim; this
+makes it true. Confirmed against the build: `calendar 2026, YTD to
+2026-09-14`, `2025-2026 school year` and `two different twelve-month windows`
+now appear in **1 chunk each** — they appeared in **0** before.
+
+**The test asserts REACHABILITY, not contents.** `expect(PERIOD_RECONCILIATION
+.aligned).toBe(false)` passed the entire time the object shipped nowhere. The
+claim being made is that a reader can see it, so the test walks page source and
+requires that some page *imports* it — the same shape `liveDataWiring` already
+uses for its `PROSE` cross-check. It covers `SINKS_RECONCILIATION` and
+`FACTOR_RECONCILIATION` too, so the next reconciliation object cannot repeat it.
+
+A second test requires all four scope pages to state a period, so the gap
+cannot silently reopen. Suite 1,424 → 1,426.
+
+*Worth keeping:* Rollup does **property-level** tree-shaking on object literals
+whose members are statically accessed. `SINKS_RECONCILIATION.note` is read by
+nothing and never ships, while its `.methodCount` / `.gapPct` / `.centralMt` do.
+A `note:` field nothing renders is a comment wearing a property name.

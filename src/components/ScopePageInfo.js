@@ -24,6 +24,7 @@ const styles = {
   methodRow: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 },
   methodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 8 },
   provHeadPill: { marginLeft: 10 },
+  period: { fontSize: 13, color: '#94a3b8', marginTop: -4, marginBottom: 10 },
   refList: { paddingLeft: 22, fontSize: 16, color: '#cbd5e1', lineHeight: 1.9, margin: 0 },
   refTitle: { color: '#e5e7eb', fontWeight: 700 },
   refSource: { color: '#94a3b8' },
@@ -108,6 +109,13 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
             : estimate.documented && <span style={styles.documented}>Documented</span>
           }
         </h2>
+        {/* WHAT TWELVE MONTHS DO THESE NUMBERS COVER? Until Phase 431 no scope
+            page answered that — Scope 1, 2, 3 and Sinks each had zero mentions
+            of a reporting period. Stating the window is a GHG Protocol
+            reporting requirement, and its absence is what made the Scope 2 /
+            Scope 1-3 period mismatch invisible. Optional, so a page that
+            passes nothing renders exactly as before. */}
+        {estimate.period && <div style={styles.period}>Reporting period: {estimate.period}</div>}
         <div style={styles.estimateRow}>
           <div style={styles.estimateCell}>
             <div style={styles.estimateLabel}>Annual total</div>
