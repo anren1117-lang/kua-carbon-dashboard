@@ -15,6 +15,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 
 import AdminAIIngestion  from '../pages/admin/AdminAIIngestion.js';
 import AdminAIAccuracy   from '../pages/admin/AdminAIAccuracy.js';
@@ -60,7 +61,7 @@ const pages = [
 // part of this sweep.
 function mountAt(Component, path) {
   return render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter future={ROUTER_FUTURE} initialEntries={[path]}>
       <Routes>
         <Route path={`${path}/*`} element={<Component />} />
         <Route path={path} element={<Component />} />

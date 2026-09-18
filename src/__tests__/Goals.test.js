@@ -9,6 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 
 const { setNextResponses, makeQueryHarness } = vi.hoisted(() => {
   let responses = {};
@@ -47,7 +48,7 @@ afterEach(() => {
 });
 
 function wrap(ui) {
-  return render(<MemoryRouter>{ui}</MemoryRouter>);
+  return render(<MemoryRouter future={ROUTER_FUTURE}>{ui}</MemoryRouter>);
 }
 
 describe('Goals page (provenance pills, Phase 52)', () => {

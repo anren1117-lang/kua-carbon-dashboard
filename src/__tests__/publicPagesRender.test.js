@@ -17,6 +17,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 
 import Actions             from '../pages/Actions.js';
 import AnnualReport        from '../pages/AnnualReport.js';
@@ -67,13 +68,13 @@ import TrendBuilder        from '../pages/TrendBuilder.js';
 import Waste               from '../pages/Waste.js';
 
 // Plain page → mount in a bare router.
-const plain = (Component, name) => [name, () => render(<MemoryRouter><Component /></MemoryRouter>)];
+const plain = (Component, name) => [name, () => render(<MemoryRouter future={ROUTER_FUTURE}><Component /></MemoryRouter>)];
 
 // Parameterized page → wrap in Routes so useParams() resolves.
 const param = (Component, name, path, sample) => [
   name,
   () => render(
-    <MemoryRouter initialEntries={[sample]}>
+    <MemoryRouter future={ROUTER_FUTURE} initialEntries={[sample]}>
       <Routes><Route path={path} element={<Component />} /></Routes>
     </MemoryRouter>,
   ),

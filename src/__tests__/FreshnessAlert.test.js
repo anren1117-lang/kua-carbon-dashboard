@@ -15,12 +15,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 import { FreshnessAlert } from '../pages/admin/AdminHome.js';
 
 beforeEach(() => { cleanup(); });
 
 function wrap(ui) {
-  return render(<MemoryRouter>{ui}</MemoryRouter>);
+  return render(<MemoryRouter future={ROUTER_FUTURE}>{ui}</MemoryRouter>);
 }
 
 describe('FreshnessAlert (AdminHome banner)', () => {

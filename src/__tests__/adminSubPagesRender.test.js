@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 
 // scope1
 import HeatingOil   from '../pages/admin/scope1/HeatingOil.js';
@@ -68,7 +69,7 @@ describe('admin sub-route pages — render smoke tests', () => {
   for (const [name, Component] of pages) {
     it(`${name} mounts without throwing and renders content`, () => {
       let result;
-      expect(() => { result = render(<MemoryRouter><Component /></MemoryRouter>); }).not.toThrow();
+      expect(() => { result = render(<MemoryRouter future={ROUTER_FUTURE}><Component /></MemoryRouter>); }).not.toThrow();
       expect(result.container.textContent.length).toBeGreaterThan(0);
     });
   }

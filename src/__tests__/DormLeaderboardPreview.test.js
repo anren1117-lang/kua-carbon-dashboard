@@ -11,6 +11,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 import { DormLeaderboardPreview } from '../components/DormLeaderboardPreview.js';
 
 afterEach(() => { cleanup(); });
@@ -18,7 +19,7 @@ afterEach(() => { cleanup(); });
 describe('DormLeaderboardPreview', () => {
   it('renders at least one dorm row with kWh/resident annotation', () => {
     const { container } = render(
-      <MemoryRouter><DormLeaderboardPreview /></MemoryRouter>,
+      <MemoryRouter future={ROUTER_FUTURE}><DormLeaderboardPreview /></MemoryRouter>,
     );
     // Should include a medal emoji from the top-3 podium.
     const hasMedal = /🥇|🥈|🥉/.test(container.textContent);
@@ -29,7 +30,7 @@ describe('DormLeaderboardPreview', () => {
 
   it('includes a link to the full /dorm-leaderboard page', () => {
     const { container } = render(
-      <MemoryRouter><DormLeaderboardPreview /></MemoryRouter>,
+      <MemoryRouter future={ROUTER_FUTURE}><DormLeaderboardPreview /></MemoryRouter>,
     );
     const cta = container.querySelector('a[href="/dorm-leaderboard"]');
     expect(cta).toBeTruthy();
@@ -38,7 +39,7 @@ describe('DormLeaderboardPreview', () => {
 
   it('individual dorm names link to their /buildings/:id detail', () => {
     const { container } = render(
-      <MemoryRouter><DormLeaderboardPreview /></MemoryRouter>,
+      <MemoryRouter future={ROUTER_FUTURE}><DormLeaderboardPreview /></MemoryRouter>,
     );
     // At least one dorm name should be a link to /buildings/...
     const buildingLinks = container.querySelectorAll('a[href^="/buildings/"]');

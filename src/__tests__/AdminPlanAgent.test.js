@@ -14,17 +14,18 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 import AdminPlanAgent from '../pages/admin/AdminPlanAgent.js';
 
 beforeEach(() => { cleanup(); localStorage.clear(); });
 
 describe('AdminPlanAgent — render smoke test', () => {
   it('mounts without throwing a temporal-dead-zone ReferenceError', () => {
-    expect(() => render(<MemoryRouter><AdminPlanAgent /></MemoryRouter>)).not.toThrow();
+    expect(() => render(<MemoryRouter future={ROUTER_FUTURE}><AdminPlanAgent /></MemoryRouter>)).not.toThrow();
   });
 
   it('renders actual page content, not an empty tree', () => {
-    const { container } = render(<MemoryRouter><AdminPlanAgent /></MemoryRouter>);
+    const { container } = render(<MemoryRouter future={ROUTER_FUTURE}><AdminPlanAgent /></MemoryRouter>);
     expect(container.textContent.length).toBeGreaterThan(0);
     // The institutional-context step is the entry point of the page.
     expect(screen.getAllByText(/context/i).length).toBeGreaterThan(0);

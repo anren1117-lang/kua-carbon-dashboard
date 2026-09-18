@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 import { ErrorBoundary } from '../components/ErrorBoundary.js';
 
 // Tiny component that throws on demand. Used to feed the boundary a
@@ -33,7 +34,7 @@ beforeEach(() => {
 describe('ErrorBoundary', () => {
   it('renders children unchanged when nothing throws', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={ROUTER_FUTURE}>
         <ErrorBoundary>
           <NotBoom />
         </ErrorBoundary>
@@ -45,7 +46,7 @@ describe('ErrorBoundary', () => {
 
   it('catches a thrown render error and shows the fallback', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={ROUTER_FUTURE}>
         <ErrorBoundary>
           <Boom message="test-crash-marker" />
         </ErrorBoundary>
@@ -62,7 +63,7 @@ describe('ErrorBoundary', () => {
 
   it('error message surfaces inside the technical-details panel', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={ROUTER_FUTURE}>
         <ErrorBoundary>
           <Boom message="UNIQUE_MESSAGE_FOR_TEST" />
         </ErrorBoundary>

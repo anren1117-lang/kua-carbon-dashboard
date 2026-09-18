@@ -10,6 +10,7 @@ import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import React from 'react';
 import { render, fireEvent, cleanup, act } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
 import Layout from '../components/Layout.js';
 
 function setWidth(px) {
@@ -19,7 +20,7 @@ function setWidth(px) {
 
 function mount() {
   return render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter future={ROUTER_FUTURE} initialEntries={['/']}>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<div>OVERVIEW BODY</div>} />
