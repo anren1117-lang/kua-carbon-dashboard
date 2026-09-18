@@ -39,7 +39,21 @@ export function GridVintageChart({ kwh, highlightVintage }) {
   const values = rows.map((r) => r.mtCO2e);
   const lo = Math.min(...values) * 0.94;
   const hi = Math.max(...values) * 1.02;
-  const yFor = (v) => PAD_TOP + innerH - ((v - lo) / (hi - lo)) * innerH;
+
+  // When every vintage rounds to the same figure the domain collapses and
+  // (v - lo) / (hi - lo) is 0/0 — NaN into the y and height attributes, so
+  // the bars silently do not render. Reachable in practice: below ~100 kWh
+  // every vintage rounds to 0.0 mtCO2e. Phase 421.
+  //
+  // A chart whose whole point is the spread between vintages has nothing to
+  // say when there is no spread, so it declines to draw rather than showing
+  // a flat row of bars that implies a real comparison. Sparkline solves the
+  // same problem with an explicit equal-values branch; TimeSeriesChart floors
+  // its domain at min+1. This is the third variant of one hazard.
+  const span = hi - lo;
+  if (!Number.isFinite(span) || span <= 0) return null;
+
+  const yFor = (v) => PAD_TOP + innerH - ((v - lo) / span) * innerH;
 
   const reporting = highlightVintage ?? FACTOR_RECONCILIATION.vintage;
 

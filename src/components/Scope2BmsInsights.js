@@ -644,7 +644,7 @@ function Year1Chart({ year1Months, totalKwh }) {
                 />
               )}
               {/* Top kWh label */}
-              <text x={xLeft + barW / 2} y={yTop - 4} fill="#94a3b8" fontSize="10" textAnchor="middle" fontVariantNumeric="tabular-nums">
+              <text x={xLeft + barW / 2} y={yTop - 4} fill="#94a3b8" fontSize="10" textAnchor="middle" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {Math.round(m.kwh / 1000)}k
               </text>
               {/* X-axis label */}
@@ -689,13 +689,13 @@ function Year1Chart({ year1Months, totalKwh }) {
               <text x={tx + 10} y={ty + 32} fill={m.provenance === 'measured' ? '#86efac' : m.provenance === 'mixed' ? '#fbbf24' : '#94a3b8'} fontSize="10" fontWeight={700} letterSpacing="0.5">
                 {m.provenance === 'measured' ? '● MEASURED' : m.provenance === 'mixed' ? `~ ${Math.round((m.fracMeasured || 0) * 100)}% MEASURED` : '○ PROJECTED'}
               </text>
-              <text x={tx + 10} y={ty + 48} fill="#cbd5e1" fontSize="11" fontVariantNumeric="tabular-nums">
+              <text x={tx + 10} y={ty + 48} fill="#cbd5e1" fontSize="11" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {Math.round(m.kwh).toLocaleString()} kWh
               </text>
-              <text x={tx + 10} y={ty + 62} fill="#cbd5e1" fontSize="11" fontVariantNumeric="tabular-nums">
+              <text x={tx + 10} y={ty + 62} fill="#cbd5e1" fontSize="11" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {(m.kwh * KG_PER_KWH / 1000).toFixed(1)} mtCO₂e
               </text>
-              <text x={tx + 10} y={ty + 80} fill="#fbbf24" fontSize="10" fontVariantNumeric="tabular-nums">
+              <text x={tx + 10} y={ty + 80} fill="#fbbf24" fontSize="10" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 cum: {Math.round(cumVal).toLocaleString()} kWh
               </text>
             </g>

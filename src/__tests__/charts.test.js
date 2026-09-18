@@ -92,7 +92,32 @@ describe('GridVintageChart', () => {
   });
 
   it('never prints NaN when the electricity total is small', () => {
+    // This asserted on textContent only, which showed "0" and passed while
+    // the SVG y/height ATTRIBUTES were NaN and the bars rendered nowhere.
+    // Checking the wrong surface is not a guard. Phase 421.
     const { container } = render(<GridVintageChart kwh={1} />);
     expect(container.textContent).not.toMatch(/NaN|undefined|Infinity/);
+    for (const el of container.querySelectorAll('*')) {
+      for (const attr of el.attributes) {
+        expect(attr.value, `${el.tagName}.${attr.name}`).not.toMatch(/NaN|Infinity/);
+      }
+    }
+  });
+
+  it('declines to draw when every vintage rounds to the same figure', () => {
+    // No spread means no comparison to make; a flat row of bars would imply
+    // one. Below ~100 kWh all five vintages round to 0.0 mtCO2e.
+    const { container } = render(<GridVintageChart kwh={1} />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('still renders bars, with finite geometry, at a realistic total', () => {
+    const { container } = render(<GridVintageChart kwh={1_663_697} />);
+    const rects = [...container.querySelectorAll('rect')];
+    expect(rects.length).toBeGreaterThan(0);
+    for (const r of rects) {
+      expect(Number.isFinite(parseFloat(r.getAttribute('y')))).toBe(true);
+      expect(Number.isFinite(parseFloat(r.getAttribute('height')))).toBe(true);
+    }
   });
 });

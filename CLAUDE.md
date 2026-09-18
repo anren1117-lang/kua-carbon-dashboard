@@ -101,6 +101,20 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The charts had two real defects the whole time (Phase 421)
+
+Two React warnings printed in every suite run all session and I read past them for twenty phases. Both were real.
+
+**NaN into the SVG geometry — in a chart I wrote.** `GridVintageChart` builds a truncated axis (`lo = min × 0.94`, `hi = max × 1.02`) and divides by `hi - lo`. Below roughly 100 kWh every vintage rounds to 0.0 mtCO₂e, so `lo` and `hi` are both 0, the division is `0/0`, and `y` and `height` become NaN — the labels draw and **the bars do not render at all**.
+
+**And the test written to catch exactly that passed anyway.** `never prints NaN when the electricity total is small` asserted on `container.textContent`, which reads "0" and is clean, while the *attributes* were NaN. Checking the wrong surface is not a guard. It now walks every attribute of every element, and two further tests pin the empty-domain behaviour and assert finite geometry at a realistic total.
+
+The chart now declines to draw when there is no spread, rather than showing a flat row of bars that implies a comparison it cannot make. Worth noting the class check came back reassuring: `TimeSeriesChart` already floors its domain at `min + 1`, and `Sparkline` carries an explicit equal-values branch with a comment describing this same hazard. `GridVintageChart` was the only unguarded span in the repo — an isolated bug, not a systemic one, and the two safe components supplied the idiom.
+
+**`fontVariantNumeric` on SVG `<text>`, five sites.** React does not map the camelCase prop to `font-variant-numeric` on SVG elements, so it leaked to the DOM as an unrecognised attribute *and* the tabular-nums alignment never applied — the warning and the missing styling were the same bug. Moved to `style={{ fontVariantNumeric }}`, the form the repo already uses in its style objects.
+
+The lesson worth keeping: a warning that appears on every run stops being information. These sat in the output of every single suite run for twenty phases while I chased figures through prose.
+
 ### My own audit comment had a stale derived figure (Phase 420)
 
 Recomputing the three open decisions from the constants — rather than from memory — caught an arithmetic error in my own work. The Phase 404 audit comment said repricing purchased goods to 0.222 would cut the line "from ~1,315 mt to **~666 mt** and drop GROSS emissions **~15%**". Computed properly: 1,315 × (0.222/0.40) = **730 mt**, gross 4,375 → **3,790**, a **13.4%** reduction.

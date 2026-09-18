@@ -149,7 +149,7 @@ export function Sparkline({
         return (
           <g pointerEvents="none">
             <rect x={tipX} y={tipY} width={tipW} height={tipH} rx={2} fill="#0b1220" stroke="#1f2937" />
-            <text x={tipX + tipW / 2} y={tipY + tipH / 2 + 0.5} fill="#e5e7eb" fontSize="9" textAnchor="middle" dominantBaseline="middle" fontVariantNumeric="tabular-nums">
+            <text x={tipX + tipW / 2} y={tipY + tipH / 2 + 0.5} fill="#e5e7eb" fontSize="9" textAnchor="middle" dominantBaseline="middle" style={{ fontVariantNumeric: 'tabular-nums' }}>
               {text}
             </text>
           </g>
