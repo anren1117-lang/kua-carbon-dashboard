@@ -1207,3 +1207,39 @@ written down. Picking one now to force agreement would manufacture precision,
 and re-deriving would move a ~235 mt line — a user decision, not a silent fix.
 
 No factor changes. Suite 1,450 → 1,461; 99 → 100 files.
+
+## Phase 436 — the ingestion prompt described tables that do not exist
+
+`api/admin/ai-ingestion.js` tells the model the column shape of every Supabase
+table it may write to. Nothing checked that against the tables, and it had
+drifted:
+
+- **`purchased_goods` was wholly broken.** The prompt claimed
+  `invoice_date? / vendor? / category?` — **none of which are columns** — and
+  never mentioned `fiscal_year` or `purchasing_category`, both `NOT NULL`. Every
+  AI-extracted purchased-goods row failed to insert.
+- **`scope1_refrigerants`** said `system_id?`; the column is `equipment_id`.
+- **`waste` and `study_abroad`** omitted `school_year`, which the admin forms
+  write and which Phase 429's reporting-period boundary reads.
+- **Nine tables on the allow-list had no shape at all** — `fuel_bills`,
+  `day_students`, `us_boarding_students`, `international_students`, `commuting`,
+  `renewables_geothermal`, `renewables_wind`, `forest_stand_actuals` — while
+  Rule 10 tells the model "NEVER write to a table not in the list above". An
+  allow-list entry with no shape is an invitation to guess.
+
+It matters because `AdminAIIngestion.js:498-523` auto-writes every
+high-confidence row straight to Supabase. A schema rejection appears as one red
+chip among many in a bulk drop, not as a failure anyone is likely to notice.
+
+`ingestionPromptSchema.test.js` now parses the prompt and the migrations and
+compares them — every claimed field must be a real column, and every `NOT NULL`
+column without a default must appear in the prompt. 20 tests.
+
+*Process, fourth time today:* my first write broke the file. I put literal
+backticks in an explanatory sentence **inside the `SYSTEM_PROMPT` template
+literal**, which closed it at line 80 and reopened it at the second backtick, so
+esbuild reported the error at line **116** — the real closing `` `; `` — and the
+backtick count stayed **even**, which is why a balance check saw nothing.
+`apiRoutes.test.js` then failed to transform merely for importing the file, and
+the suite read 1,372 with a whole file missing rather than a test regressing.
+Recorded in memory. Suite 1,461 → 1,481; 100 → 101 files.

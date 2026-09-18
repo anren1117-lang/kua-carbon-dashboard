@@ -59,15 +59,29 @@ KUA's canonical Supabase tables (extract into these — never invent new tables)
 - Renewables: renewables_solar, renewables_geothermal, renewables_wind
 
 Per-table field shapes (use these exact field names — case-sensitive):
+- fuel_bills:         { date: 'YYYY-MM-DD', fuel_type: 'Heating Oil'|'Propane'|'Diesel'|'Gasoline', gallons: number, cost?: number, notes?: string }
 - scope1_heating_oil: { delivery_date: 'YYYY-MM-DD', gallons: number, cost_usd?: number, vendor?: string, building_or_tank?: string, invoice_number?: string, data_quality?: 'measured'|'estimated'|'modeled' }
 - scope1_propane:     { delivery_date: 'YYYY-MM-DD', gallons: number, cost_usd?: number, vendor?: string, building_or_tank?: string, invoice_number?: string, data_quality?: 'measured'|'estimated'|'modeled' }
-- scope1_fleet:       { period_start: 'YYYY-MM-DD', period_end: 'YYYY-MM-DD', vehicle_id?: string, fuel_type: 'Gasoline'|'Diesel'|'Propane'|'CNG', gallons: number, miles?: number }
-- scope1_refrigerants:{ service_date: 'YYYY-MM-DD', system_id?: string, refrigerant_type: 'R-410A'|'R-134a'|'R-22'|'R-404A'|'R-407C'|'R-32'|'R-1234yf'|'other', recharge_lb: number, reclaim_lb: number }
+- scope1_fleet:       { period_start: 'YYYY-MM-DD', period_end: 'YYYY-MM-DD', vehicle_id?: string, fuel_type: 'gasoline'|'diesel'|'other', gallons?: number, miles?: number }
+- scope1_refrigerants:{ service_date: 'YYYY-MM-DD', equipment_id?: string, refrigerant_type: 'R-410A'|'R-134a'|'R-22'|'R-404A'|'R-407C'|'R-32'|'R-1234yf'|'other', recharge_lb: number, reclaim_lb: number, service_company?: string, service_report_number?: string }
 - renewables_solar:   { period_start: 'YYYY-MM-DD', period_end: 'YYYY-MM-DD', inverter_id?: string, gross_kwh: number, self_consumed_kwh?: number, exported_kwh?: number }
-- waste:              { date: 'YYYY-MM-DD', waste_type: 'Landfill'|'Recycling'|'Composting'|'Hazardous'|'E-Waste', amount: number, unit: 'tons'|'lbs'|'kg' }
-- purchased_goods:    { invoice_date?: 'YYYY-MM-DD', vendor?: string, category?: string, spend_usd: number, eeio_factor_override?: number }
+- renewables_geothermal: { period_start: 'YYYY-MM-DD', period_end: 'YYYY-MM-DD', system_id?: string, kwh_input: number, cop?: number, avoided_fuel_type?: string }
+- renewables_wind:    { status: string, as_of_date: 'YYYY-MM-DD', last_operational_date?: 'YYYY-MM-DD', rated_kw?: number, hub_height_m?: number, historical_kwh?: number }
+- waste:              { date: 'YYYY-MM-DD', waste_type: 'Landfill'|'Recycling'|'Composting'|'Hazardous'|'E-Waste', amount: number, unit: 'tons'|'lbs'|'kg', school_year: 'YYYY-YYYY', notes?: string }
+- purchased_goods:    { fiscal_year: 'YYYY-YYYY', purchasing_category: string, spend_usd: number, eeio_factor_override?: number, data_quality?: 'measured'|'estimated'|'modeled' }
+- commuting:          { school_year: 'YYYY-YYYY', one_way_miles: number, mode: 'car_solo'|'carpool'|'transit'|'bike'|'walk'|'ev', employee_role?: 'faculty'|'staff'|'student'|'other', home_zip?: string, days_per_week?: number, weeks_per_year?: number, survey_date?: 'YYYY-MM-DD' }
 - faculty_travel:     { departure_date: 'YYYY-MM-DD', return_date?: 'YYYY-MM-DD', destination_city?: string, destination_country?: string, trip_purpose?: string }
-- study_abroad:       { departure_date: 'YYYY-MM-DD', return_date?: 'YYYY-MM-DD', destination_city?: string, destination_country?: string }
+- study_abroad:       { departure_date: 'YYYY-MM-DD', return_date?: 'YYYY-MM-DD', destination_city?: string, destination_country?: string, school_year: 'YYYY-YYYY' }
+- day_students:            { zip_code: string, graduation_year: 'YYYY', school_year: 'YYYY-YYYY' }
+- us_boarding_students:    { zip_code: string, state?: string, graduation_year: 'YYYY', school_year: 'YYYY-YYYY' }
+- international_students:  { country: string, graduation_year: 'YYYY', school_year: 'YYYY-YYYY' }
+- forest_stand_actuals: { name: string, acres: number, mtco2e_acre_yr: number, stand_id?: string, type?: 'mixed_hardwood'|'softwood'|'transitional'|'open_grown', age_class?: 'young'|'intermediate'|'mature', dominant_species?: string, surveyed_at?: 'YYYY-MM-DD', surveyed_by?: string, school_year?: 'YYYY-YYYY' }
+
+Fields written WITHOUT a trailing question mark are NOT NULL in Postgres —
+omitting one makes the whole insert fail, and the admin sees only a red error
+chip on that row while the rest of the batch succeeds. Do not invent field
+names either: a column that does not exist rejects the row just as hard as a
+missing required one.
 
 Output STRICT JSON only — no prose before or after — matching this shape:
 {
