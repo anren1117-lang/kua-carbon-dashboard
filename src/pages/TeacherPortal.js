@@ -225,7 +225,7 @@ function buildScopeBars(live) {
     { label: 'Scope 1 — direct (heating, fleet)', value: Math.round(live?.scope1Mt ?? SCOPE1_TOTAL_MT), color: '#ef4444' },
     { label: 'Scope 2 — electricity', value: Math.round(live?.scope2Mt ?? SCOPE2_TOTAL_MT), color: '#f59e0b' },
     { label: 'Scope 3 — indirect (goods, travel)', value: Math.round(live?.scope3Mt ?? SCOPE3_TOTAL_MT), color: '#8b5cf6' },
-    { label: 'Forest sequestration', value: -Math.round(ANNUAL_SEQUESTRATION_MT), color: '#22c55e' },
+    { label: 'Forest sequestration', value: -Math.round(live?.sinkMt ?? ANNUAL_SEQUESTRATION_MT), color: '#22c55e' },
   ];
 }
 
@@ -233,7 +233,7 @@ function PortalScopeChart() {
   const live = useMeasuredScopeTotals();
   const scopeBars = buildScopeBars(live);
   const gross = Math.round(live.grossMt || GROSS_MT);
-  const sink = Math.round(ANNUAL_SEQUESTRATION_MT);
+  const sink = Math.round(live.sinkMt || ANNUAL_SEQUESTRATION_MT);
   const net = gross - sink;
   // Scale bars to the largest magnitude so proportions read true.
   const maxMag = Math.max(...scopeBars.map((b) => Math.abs(b.value)), 1);
@@ -243,9 +243,15 @@ function PortalScopeChart() {
     summary: 'Gross annual greenhouse-gas emissions split into Scope 1 (direct), Scope 2 (purchased electricity), and Scope 3 (indirect), against the CO₂ the campus forest pulls back out. Net = gross minus sequestration.',
     unit: 'mtCO₂e (metric tonnes CO₂-equivalent) per year',
     series: [
-      { label: 'Scope 1 (direct)', value: Math.round(SCOPE1_TOTAL_MT) },
-      { label: 'Scope 2 (electricity)', value: Math.round(SCOPE2_TOTAL_MT) },
-      { label: 'Scope 3 (indirect)', value: Math.round(SCOPE3_TOTAL_MT) },
+      // Read from the SAME bars the class is looking at. These three were
+      // raw statics while sink/gross/net just below came from the live hook,
+      // so once admin rows landed the projector showed live bars while the AI
+      // caption described last release's scopes against this release's totals
+      // — contradictory inside one object, and invisible to a file-level
+      // guard because this file plainly does use a hook.
+      { label: 'Scope 1 (direct)', value: Math.round(live?.scope1Mt ?? SCOPE1_TOTAL_MT) },
+      { label: 'Scope 2 (electricity)', value: Math.round(live?.scope2Mt ?? SCOPE2_TOTAL_MT) },
+      { label: 'Scope 3 (indirect)', value: Math.round(live?.scope3Mt ?? SCOPE3_TOTAL_MT) },
       { label: 'Forest sequestration (removed)', value: -sink },
       { label: 'Gross total', value: gross },
       { label: 'Net total', value: net },

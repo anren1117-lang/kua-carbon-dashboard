@@ -1012,3 +1012,36 @@ This is a **no-op on today's published numbers** — both totals are placeholder
 prevents once real rows land. Suite 1,416 → 1,424.
 
 Closes task #17 item 1.
+
+## Phase 430 — the AI chart caption described last release's numbers
+
+`TeacherPortal.js` renders a scope-breakdown chart for a class and puts an
+"Explain this chart with AI" button under it. The bars were live
+(`buildScopeBars(live)` → `live?.scope1Mt ?? SCOPE1_TOTAL_MT`). The object
+handed to that button was not: `chartData.series` passed raw
+`SCOPE1_TOTAL_MT` / `SCOPE2_TOTAL_MT` / `SCOPE3_TOTAL_MT` while mixing in
+`sink`, `gross` and `net` from the live path in the same array.
+
+So once admin rows land, a teacher projects live bars while the AI caption —
+generated from `/api/explain-chart` — describes last release's Scope 1/2/3
+against this release's gross and net. Contradictory *inside one object*, and
+invisible to `liveDataWiring` because that check is file-level (`text.includes`)
+and this file plainly does use a hook. Exactly the hole task #17 item 2 records.
+
+The forest bar and `sink` also read raw `ANNUAL_SEQUESTRATION_MT` though
+`useMeasuredScopeTotals` exposes `sinkMt` — the same gap Phase 428 fixed on
+`CarbonCredits`. Both now read the hook.
+
+**Checked and NOT changed: `AISummary.js`.** Task #17 predicted the same defect
+there. It is correct: `:120-125` falls back per-field off the hook
+(`live.scope1Mt || PRELIM.scope1`), and `PRELIM` is never rendered except as
+that fallback. A predicted defect is still a hypothesis.
+
+### Correction to Phase 429's record
+
+That phase's commit says `PERIOD_RECONCILIATION` "publishes" the Scope 2 period
+mismatch. **It does not.** Nothing outside the test imports it, so it reaches no
+page and is tree-shaken out of the bundle entirely — the exact complaint in
+task #17 item 7 ("lives in comments only, so no page can render it"), restated
+with an `export` keyword in front of it. Filed as #19; the claim is withdrawn
+here rather than left standing.
