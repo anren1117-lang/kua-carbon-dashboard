@@ -25,6 +25,7 @@ const styles = {
   methodLabel: { color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.7, marginRight: 8 },
   provHeadPill: { marginLeft: 10 },
   period: { fontSize: 13, color: '#94a3b8', marginTop: -4, marginBottom: 10 },
+  dataIssue: { fontSize: 13, color: '#fbbf24', background: '#3a2a0d', border: '1px solid #92400e', borderRadius: 6, padding: '8px 12px', marginBottom: 12, lineHeight: 1.5 },
   refList: { paddingLeft: 22, fontSize: 16, color: '#cbd5e1', lineHeight: 1.9, margin: 0 },
   refTitle: { color: '#e5e7eb', fontWeight: 700 },
   refSource: { color: '#94a3b8' },
@@ -116,6 +117,12 @@ export function ScopePageInfo({ color, estimate, references, actions }) {
             Scope 1-3 period mismatch invisible. Optional, so a page that
             passes nothing renders exactly as before. */}
         {estimate.period && <div style={styles.period}>Reporting period: {estimate.period}</div>}
+        {/* A FAILED FETCH AND AN EMPTY TABLE ARE DIFFERENT FACTS. Every page
+            below read live.error only to negate isMeasured, so a Supabase
+            failure fell back to the bottom-up placeholder and said nothing —
+            indistinguishable from "no data entered yet". Wording follows the
+            existing precedent at Teacher.js:386. */}
+        {estimate.dataIssue && <div style={styles.dataIssue} role="status">{estimate.dataIssue}</div>}
         <div style={styles.estimateRow}>
           <div style={styles.estimateCell}>
             <div style={styles.estimateLabel}>Annual total</div>

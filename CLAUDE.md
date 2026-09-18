@@ -1088,3 +1088,44 @@ cannot silently reopen. Suite 1,424 → 1,426.
 whose members are statically accessed. `SINKS_RECONCILIATION.note` is read by
 nothing and never ships, while its `.methodCount` / `.gapPct` / `.centralMt` do.
 A `note:` field nothing renders is a comment wearing a property name.
+
+## Phase 432 — a failed fetch and an empty table looked identical
+
+`Scope1.js:37`, `Scope3.js:57`, `Sinks.js:54`, `Sinks2.js:29` and
+`CarbonCredits.js:109` all read `live.error` for exactly one purpose:
+
+```js
+const isMeasured = live.measured && !live.loading && !live.error;
+```
+
+So when Supabase failed, the page fell back to the bottom-up placeholder and
+said **nothing** — visually identical to "no data has been entered yet". Those
+are different facts about the world, and the reader could not tell them apart.
+
+`ScopePageInfo` gains an optional `estimate.dataIssue` line (amber, `role="status"`,
+beside the Phase 431 period line). Scope 1, Scope 3 and Sinks pass it when
+`live.error` is set. Wording follows the existing in-repo precedent at
+`Teacher.js:386` — *"Live rollup unavailable (…). Sample data shown below."* —
+rather than a newly invented phrasing.
+
+### Task #17 item 4's premise was wrong, and I checked before repeating it
+
+That item says Scope 1/3 fall short of Scope 2, which "surfaces stuck meters and
+excluded feeds". **`useMeasuredScope2().error` is read by none of its thirteen
+consumers**, and no Scope 2 surface carries degraded-state copy. Scope 2 has the
+same gap. The honest statement is that *no* live surface in the app reported a
+fetch failure — not that two scopes lagged a third.
+
+### The test renders the notice, it does not merely compute it
+
+It drives the real error path (`setNextResponses({ fuel_bills: { data: null,
+error: { message: 'rls denied' } } })`) and asserts the text **appears in the
+DOM**. A source-level guard would pass against a page that builds the string and
+never displays it — which is precisely how `PERIOD_RECONCILIATION` shipped
+nowhere for two phases while its assertion stayed green.
+
+A fourth test is the negative control: with merely-empty tables the page must say
+**nothing**, because warning about a non-failure would be its own kind of lie.
+
+Suite 1,426 → 1,430; 96 → 97 files. `Sinks2.js`, `CarbonCredits.js` and the
+thirteen Scope 2 consumers still swallow the error — filed, not forgotten.

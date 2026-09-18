@@ -52,6 +52,7 @@ function Sinks() {
   // inventory otherwise.
   const live = useMeasuredSinks();
   const isMeasured = live.measured && !live.loading && !live.error;
+  const dataIssue = live.error ? `Live data unavailable (${live.error}). Showing the per-stand inventory below.` : null;
   const headlineTotal = isMeasured ? live.totalMt : SEQ_TOTAL;
   const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(1);
   const headlineAcres = isMeasured ? live.acres : TOTAL_FOREST_ACRES;
@@ -107,6 +108,7 @@ function Sinks() {
           totalPrefix: '−', total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`, totalRange: `${SEQ_LOW.toLocaleString()} – ${SEQ_HIGH.toLocaleString()} pulled out across ${SINKS_RECONCILIATION.methodCount} methods (Birdsey 1992 / USDA NH FIA / KUA per-stand / EPA GHG Equivalencies). The adopted figure is the per-stand result, ${SINKS_RECONCILIATION.gapPct}% above the four-method central of ${SINKS_RECONCILIATION.centralMt.toLocaleString()}`, perStudent: -headlinePerStudent,
           thirdMetric: { label: 'Forested area', value: `${isMeasured ? '' : '~'}${headlineAcres.toLocaleString()}`, note: 'acres of campus forest' },
           period: REPORTING_PERIOD.label,
+          dataIssue,
           provenance: headlineProvenance,
           note: headlineNote,
         }}

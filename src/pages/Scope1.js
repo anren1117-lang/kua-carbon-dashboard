@@ -35,6 +35,7 @@ function Scope1() {
   // total + flips the provenance pill from 'estimated' → 'measured'.
   const live = useMeasuredScope1();
   const isMeasured = live.measured && !live.loading && !live.error;
+  const dataIssue = live.error ? `Live data unavailable (${live.error}). Showing the bottom-up estimate below.` : null;
   const headlineTotal = isMeasured ? live.totalMt : SCOPE1_TOTAL_MT;
   const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(2);
   const headlineProvenance = isMeasured ? 'measured' : 'estimated';
@@ -90,6 +91,7 @@ function Scope1() {
           perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
           period: REPORTING_PERIOD.label,
+          dataIssue,
           provenance: headlineProvenance,
           note: headlineNote,
           currentMethod: `Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Range across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical / ENERGY STAR HDD-direct upper) gives ${Math.round(SCOPE1_RANGE.low).toLocaleString()}–${Math.round(SCOPE1_RANGE.high).toLocaleString()} mt total — see /admin/methodology for the full breakdown.`,
