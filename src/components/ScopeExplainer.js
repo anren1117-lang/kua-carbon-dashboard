@@ -71,7 +71,7 @@ const SCOPES = [
     formula: 'Σ over sub-categories — each row carries its own factor',
     factorSource: 'EPA Supply Chain GHG Emission Factors v1.3; EPA Hub 2025 Table 9 (Scope 3 Cat 5); DEFRA 2024 air-travel (economy, incl. non-CO₂); EPA Hub upstream factors',
     peerRange: '1.5 – 4.5 mtCO₂e/student',
-    peerComparison: 'KUA is at the HIGH end because of the large international student cohort — long-haul flights are by far the most carbon-intensive travel mode (~3 mtCO₂e per round trip to Asia).',
+    peerComparison: 'KUA is at the HIGH end because of the large international student cohort — long-haul flights are by far the most carbon-intensive travel mode (~4 mtCO₂e per round trip to Asia).',
   },
   {
     key: 'sinks', color: '#22c55e', label: 'Sinks', title: 'On-Campus Sequestration',

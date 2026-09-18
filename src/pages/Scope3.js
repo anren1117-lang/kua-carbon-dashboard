@@ -3,9 +3,16 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
-import { SCOPE3_RANGE } from '../data/geographicEstimates.js';
+import { SCOPE3_RANGE, SCOPE3_INTL_TRAVEL } from '../data/geographicEstimates.js';
+
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
+
+// One fewer round trip per international student. Derived from the published
+// four-method range rather than a distance assumption private to this page:
+// the cohort flies ~1.6 RTs/yr, so dropping one saves 1/1.6 of the total.
+const INTL_ONE_FEWER_RT_MT = Math.round(SCOPE3_INTL_TRAVEL.central / 1.6);
+const INTL_PER_RT_MT = +(SCOPE3_INTL_TRAVEL.central / 50 / 1.6).toFixed(1);
 
 const SCOPE3_PER_STUDENT = +(SCOPE3_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
@@ -51,8 +58,8 @@ function Scope3() {
   const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(2);
   const headlineProvenance = isMeasured ? 'measured' : 'estimated';
   const headlineNote = isMeasured
-    ? `${live.note} Likely the largest scope at KUA. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.`
-    : 'Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel dwarfed every other category. International student round trips to Asia (~3 mtCO₂e each) are the highest per-student line item.';
+    ? `${live.note} Likely the largest scope at KUA. International student round trips to Asia (~${INTL_PER_RT_MT} mtCO₂e each) are the highest per-student line item.`
+    : `Likely the largest scope at KUA, in line with Kool (2025) at Royal Roads University where student air travel dwarfed every other category. International student round trips to Asia (~${INTL_PER_RT_MT} mtCO₂e each) are the highest per-student line item.`;
 
   return (
     <div>
@@ -120,20 +127,20 @@ function Scope3() {
         actions={[
           {
             action: 'One fewer round-trip flight per international student',
-            impact: '−146 mtCO₂e/yr',
-            detail: 'If all ~50 international students replace one home trip per year with an extended on-campus stay (e.g., during shoulder break), the saving is 50 students × 1 round trip × ~2.9 mtCO₂e per round trip. The single highest-leverage individual choice in the entire dashboard.',
+            impact: `−${INTL_ONE_FEWER_RT_MT} mtCO₂e/yr`,
+            detail: `If all ~50 international students replace one home trip per year with an extended on-campus stay (e.g., during shoulder break), the saving is 50 students × 1 round trip × ~${INTL_PER_RT_MT} mtCO₂e per round trip. The single highest-leverage individual choice in the entire dashboard.`,
             data: [
-              { input: 'Average distance international student → BOS', value: '~7,500 km one-way', source: 'Geographic average for major Asian/EU origins' },
+              { input: 'Per-round-trip central', value: `~${INTL_PER_RT_MT} mtCO₂e`, source: 'Central of the four published methods in geographicEstimates.js (ICAO+DEFRA weighted 4.00, explicit source-country split 3.63, Yale benchmark 3.13, two-RT-plus-summer 4.06)' },
               { input: 'DEFRA long-haul economy factor', value: '0.20011 kg CO₂e/passenger-km', source: 'DEFRA 2024, long-haul economy, incl. indirect non-CO₂ effects' },
               { input: 'International cohort size', value: '~50 students', source: 'KUA enrollment estimate' },
             ],
             math: [
-              'per_round_trip = 7,500 km × 2 × 0.20011 = 3,002 kg ≈ 3.0 mtCO₂e per student',
-              'cohort_savings  = 50 students × 2.93 = 146 mtCO₂e/yr',
+              `per_round_trip = central of 4 methods = ${INTL_PER_RT_MT} mtCO₂e (range 3.13–4.06)`,
+              `cohort_savings  = ${SCOPE3_INTL_TRAVEL.central.toFixed(0)} mt total ÷ 1.6 RTs/yr = ${INTL_ONE_FEWER_RT_MT} mtCO₂e/yr`,
               '',
-              '# Range depends on actual cohort size and distances:',
-              '# 40 students × 2.5 mt = 100 mt',
-              '# 70 students × 3.5 mt = 245 mt',
+              '# Range across the four published methods:',
+              `# low  (Yale benchmark)      = ${Math.round(SCOPE3_INTL_TRAVEL.low / 1.6)} mt`,
+              `# high (two-RT-plus-summer)  = ${Math.round(SCOPE3_INTL_TRAVEL.high / 1.6)} mt`,
             ],
           },
           {

@@ -289,7 +289,7 @@ const paths = [
         question: 'Which of these saves the most carbon over one year?',
         options: [
           { text: 'Always turning off your dorm light when you leave', correct: false, explanation: 'Helpful but small — about **5 kg CO₂/year** saved. Worth doing as a habit; not enough to be your top priority.' },
-          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about **3,000 kg CO₂** — about **600× as much as a year of conscientious light-switching**. If you can only pick one thing, the flight is where the leverage is. The math is just the difference in scale: aviation per-passenger-km factor (the set that includes the indirect effects of non-CO₂ emissions) × thousands of km.' },
+          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip to East Asia is about **4,000 kg CO₂** — about **800× as much as a year of conscientious light-switching**. If you can only pick one thing, the flight is where the leverage is. The math is just the difference in scale: aviation per-passenger-km factor (the set that includes the indirect effects of non-CO₂ emissions) × thousands of km.' },
           { text: 'Recycling every plastic bottle for a year', correct: false, explanation: 'Recycling matters but is small in carbon terms — maybe **30 kg CO₂/year** for a typical student. It saves resources and reduces virgin-material production, but the climate impact is modest compared to travel or diet.' },
           { text: 'Switching from beef to chicken for one weekly meal all year', correct: false, explanation: 'Significant but smaller than a flight reduction — about **484 kg CO₂/year** saved (36 weeks × 0.15 kg beef × 89.6 kg/kg difference). Around 16× the recycling impact, but still roughly 6× LESS than skipping a single flight.' },
         ],
@@ -307,13 +307,13 @@ const paths = [
       {
         type: 'concept',
         heading: 'Your three biggest personal levers',
-        body: '**1. Travel.** Long-haul flights are by far the biggest single thing most students do. A round-trip from Boston to Tokyo emits about **3 metric tons** of CO₂e per passenger — that\'s roughly **half a typical KUA student\'s entire annual school-related footprint**, in one weekend of travel. Practical actions: **combine trips** when possible (one trip with two stops vs two separate trips), **take trains** for shorter distances (~70% lower CO₂ per mile than flying short-haul), and **carpool** with classmates over breaks.\n\n**2. Food.** Eating less beef is the single biggest dietary change you can make for the climate. Beef has roughly **10× the carbon footprint of chicken** and **50–100× that of plant foods** — because cattle digestion produces methane (a strong greenhouse gas), and cattle take far more land and feed than other meats. **You don\'t have to go fully vegetarian** to make a difference. Even **one or two fewer beef meals per week** saves hundreds of kg of CO₂e per year.\n\n**3. Energy at home and dorm.** Small per item, but adds up. **Setting your radiator one notch lower** in winter saves real fuel. **Showering shorter** saves both water and the energy used to heat it. **Turning off electronics when not in use** rather than leaving on standby. **Choosing reusable over disposable** avoids the upstream emissions baked into single-use products. None of these alone are huge, but **a portfolio of habits** shifts the dorm-level baseline.',
+        body: '**1. Travel.** Long-haul flights are by far the biggest single thing most students do. A round-trip from Boston to Tokyo emits about **4.3 metric tons** of CO₂e per passenger — that\'s roughly **a third of a typical KUA student\'s entire annual school-related footprint** (gross ~12.9 mt/student), in one weekend of travel. Practical actions: **combine trips** when possible (one trip with two stops vs two separate trips), **take trains** for shorter distances (~70% lower CO₂ per mile than flying short-haul), and **carpool** with classmates over breaks.\n\n**2. Food.** Eating less beef is the single biggest dietary change you can make for the climate. Beef has roughly **10× the carbon footprint of chicken** and **50–100× that of plant foods** — because cattle digestion produces methane (a strong greenhouse gas), and cattle take far more land and feed than other meats. **You don\'t have to go fully vegetarian** to make a difference. Even **one or two fewer beef meals per week** saves hundreds of kg of CO₂e per year.\n\n**3. Energy at home and dorm.** Small per item, but adds up. **Setting your radiator one notch lower** in winter saves real fuel. **Showering shorter** saves both water and the energy used to heat it. **Turning off electronics when not in use** rather than leaving on standby. **Choosing reusable over disposable** avoids the upstream emissions baked into single-use products. None of these alone are huge, but **a portfolio of habits** shifts the dorm-level baseline.',
       },
       {
         type: 'quiz',
         question: 'A student who organizes a successful campaign to retrofit ONE dorm from oil heat to a heat pump has helped reduce KUA\'s annual emissions by roughly:',
         options: [
-          { text: '~3 mtCO₂e', correct: false, explanation: 'That\'s about a single international flight saved — meaningful at the individual scale, but a heat-pump retrofit is bigger because heating is a major Scope 1 source for the entire building, not just one person.' },
+          { text: '~3 mtCO₂e', correct: false, explanation: 'That\'s below a single international round trip (~4 mt) — meaningful at the individual scale, but a heat-pump retrofit is bigger because heating is a major Scope 1 source for the entire building, not just one person.' },
           { text: '~43 mtCO₂e', correct: true, explanation: 'Right. A single 6,000-gal/year oil boiler replaced with a cold-climate heat pump (COP 2.5) on the New England grid saves about **43 mtCO₂e/year** — and that savings continues every year for the lifetime of the heat pump (~15-20 years). One organized student campaign can lock in **hundreds of mtCO₂e** of avoided emissions over the equipment\'s lifetime.' },
           { text: '~500 mtCO₂e', correct: false, explanation: 'A bit too high — that\'s closer to the campus-wide impact of converting MULTIPLE buildings. ~500 mt is roughly what KUA would save by retrofitting most of its largest buildings to heat pumps over time.' },
           { text: '~0.5 mtCO₂e', correct: false, explanation: 'Way too low — that\'s closer to a small individual habit change. Retrofits to building HVAC systems affect entire structures and produce institution-scale savings.' },
@@ -750,19 +750,19 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: international student travel',
-        scenario: 'KUA has ~50 international students. Each takes one round-trip flight per year to East Asia. DEFRA factor: 0.20011 kg CO₂e/passenger-km (the economy factor set that includes the indirect effects of non-CO₂ emissions). One-way: ~7,500 km.',
+        scenario: 'KUA has ~50 international students. Each takes one round-trip flight per year to East Asia. DEFRA factor: 0.20011 kg CO₂e/passenger-km (the economy factor set that includes the indirect effects of non-CO₂ emissions). One-way: ~9,060 km, the cohort-weighted average across East Asia, Europe and Latin America.',
         given: [
           { label: 'Students', value: '50' },
           { label: 'Round trips', value: '1 each' },
-          { label: 'One-way distance', value: '7,500 km' },
+          { label: 'One-way distance', value: '~9,060 km (cohort-weighted avg)' },
           { label: 'DEFRA factor', value: '0.20011 kg CO₂e / passenger-km' },
         ],
         question: 'Annual total:',
         options: [
-          { text: '~75 mtCO₂e', correct: false, explanation: 'Forgot to multiply by 2 (round trip)?' },
-          { text: '~150 mtCO₂e', correct: true, explanation: 'Right. 50 × 7,500 × 2 × 0.20011 / 1,000 = 150.1 mtCO₂e/yr.' },
+          { text: '~91 mtCO₂e', correct: false, explanation: 'Forgot to multiply by 2 (round trip)?' },
+          { text: '~181 mtCO₂e', correct: true, explanation: 'Right. 50 × 9,060 × 2 × 0.20011 / 1,000 = 181.3 mtCO₂e/yr.' },
           { text: '~580 mtCO₂e', correct: false, explanation: 'Too high. Recheck — you may have used the wrong unit conversion.' },
-          { text: '~15 mtCO₂e', correct: false, explanation: 'Off by 10× — possibly an extra division by 1,000 somewhere in the chain.' },
+          { text: '~18 mtCO₂e', correct: false, explanation: 'Off by 10× — possibly an extra division by 1,000 somewhere in the chain.' },
         ],
       },
       {
@@ -1271,7 +1271,7 @@ const paths = [
         question: 'Which has the biggest annual impact on KUA\'s carbon footprint?',
         options: [
           { text: 'Student turning off dorm lights', correct: false, explanation: 'Tiny — about 0.005 mtCO₂e per LED bulb saved per year.' },
-          { text: 'One fewer round-trip flight per international student', correct: true, explanation: 'Right. 50 × 1 × 2.93 = 146 mtCO₂e/yr saved across the international cohort. The single highest-leverage individual lever in the entire dashboard.' },
+          { text: 'One fewer round-trip flight per international student', correct: true, explanation: 'Right. 50 × 1 × 3.7 = 185 mtCO₂e/yr saved across the international cohort. The single highest-leverage individual lever in the entire dashboard.' },
           { text: 'Composting in dining hall', correct: false, explanation: 'Real but smaller — ~10–24 mt/yr at full diversion. Captures fugitive methane that would otherwise leak from landfilled food.' },
           { text: 'Buying offsets equal to KUA\'s gross emissions', correct: false, explanation: 'Offsets equal gross would account for ~4,375 mt on paper, but the offset quality varies and KUA\'s emissions don\'t actually fall. Reduction wins over offsetting per dollar of effort.' },
         ],
@@ -1283,14 +1283,14 @@ const paths = [
         given: [
           { label: '(a) Heat pump', value: '~43 mt savings' },
           { label: '(b) LED retrofit', value: '12% × 2.3M kWh × 0.234 kg/kWh (inventory rate)' },
-          { label: '(c) 30 students × 1 fewer trip', value: '× ~2.93 mtCO₂e per trip' },
+          { label: '(c) 30 students × 1 fewer trip', value: '× ~3.7 mtCO₂e per trip' },
         ],
         question: 'Order biggest to smallest:',
         options: [
-          { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 2.93 ≈ 88 mt. (b) = 0.12 × 2,300,000 × 0.234 / 1,000 ≈ 65 mt. (a) = 43 mt. Notice how much work the electricity factor is doing here: swap the inventory rate for the marginal rate and (b) jumps to ~135 mt, which reorders the whole list. Which factor you pick decides the answer, so say which question you are asking before you rank anything.' },
+          { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 3.7 ≈ 111 mt. (b) = 0.12 × 2,300,000 × 0.234 / 1,000 ≈ 65 mt. (a) = 43 mt. Notice how much work the electricity factor is doing here: swap the inventory rate for the marginal rate and (b) jumps to ~135 mt, which reorders the whole list. Which factor you pick decides the answer, so say which question you are asking before you rank anything.' },
           { text: '(a) > (b) > (c)', correct: false, explanation: 'Heat pump is real but smallest at this scale. The flight reduction across 30 students dominates.' },
-          { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × 2.93 mt per round trip ≈ 88 mt, larger than the LED retrofit.' },
-          { text: '(b) > (c) > (a)', correct: false, explanation: 'Wrong on the basis this question gave you — at the stated inventory rate (c) = 87.9 mt beats LED at 64.7 mt. It would be RIGHT on a marginal factor (~0.49 kg/kWh), where the LED retrofit reaches ~135 mt. Not a careless answer, just one to a different question.' },
+          { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × 3.7 mt per round trip ≈ 111 mt, larger than the LED retrofit.' },
+          { text: '(b) > (c) > (a)', correct: false, explanation: 'Wrong on the basis this question gave you — at the stated inventory rate (c) = 111 mt beats LED at 64.7 mt. It would be RIGHT on a marginal factor (~0.49 kg/kWh), where the LED retrofit reaches ~135 mt. Not a careless answer, just one to a different question.' },
         ],
       },
       {
@@ -1314,7 +1314,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'The biggest individual lever: travel',
-        body: 'A long-haul economy round-trip from East Asia produces ~3 mtCO₂e per passenger. If 50 international students replace one trip with extended on-campus stay, that\'s 146 mtCO₂e/yr — about 9% of KUA\'s entire net balance.',
+        body: 'A long-haul economy round-trip from East Asia produces ~3.7 mtCO₂e per passenger on the cohort-weighted central. If 50 international students replace one trip with an extended on-campus stay, that\'s ~185 mtCO₂e/yr — about 11% of KUA\'s entire net balance.',
       },
       {
         type: 'concept',

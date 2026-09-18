@@ -36,7 +36,7 @@ describe('estimatePersonalFootprint — components', () => {
       thermostatHabit: 'turn_down_when_out',
     });
     const flights = r.components.find((c) => c.label.includes('Flights'));
-    expect(flights.mt).toBeCloseTo(2 * 2.5, 1); // 2 × 2.5 mt international
+    expect(flights.mt).toBeCloseTo(2 * 3.7, 1); // 2 × 3.7 mt international (central of 4 methods)
   });
 
   it('thermostat is zeroed for day students (no campus heating control)', () => {

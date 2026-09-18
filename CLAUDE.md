@@ -770,3 +770,62 @@ already rejects and no factor exists for.
 
 The residual gate never looked at `api/` until now, so no sweep this run had
 ever read that prompt. It covers `src/` and `api/` from here.
+
+## Phase 424 — the AI prompt layer was never swept, and it quoted the errors
+
+Phase 423 fixed the superseded DEFRA framing in eight places and missed nine
+more that spell it `RF`. It also never looked at `api/` at all: that directory
+had no residual gate until 423 and had never had a figure audit.
+
+- **The abbreviation hid the same defect.** `scopeTotals.js:629` ended a live
+  method string `× DEFRA long-haul × RF`; `geographicEstimates.js` carried it
+  six more times, including inside a `citations` array rendered at
+  `AdminMethodology.js:116`. One line (`:829`) carried it **twice** — in the
+  citations array and again in the `basis` template. I fixed the array; the
+  gate caught the second on the same line.
+- **Left alone deliberately:** `coach with RF n/a` meant RF is *not applicable*
+  to a surface mode — correct, now phrased plainly. The nine IPCC AR6
+  radiative-forcing passages in the APES units are real physics; the gate
+  carries negative controls proving it never flags them, never flags
+  `RFC-4180`, and never flags `4.3 mt/RT` by substring.
+- **The estimate prompt quoted the discredited teaching set as its source.**
+  `estimate-action.js:60` told the model "beef 60 kg/kg vs chicken 6 kg/kg" —
+  the exact set `emissionFactors.js:70` names as the old circulated figures
+  that understated meat by 40–170%. Canonical is 99.5 / 9.9. The 200–250 mt/yr
+  band followed from it; the delta moves 54 → 89.6 kg/kg (×1.659), matching the
+  ×1.658 rescale `dining.js:139` already recorded. Now 330–415.
+- **Two prompts disagreed with each other.** Against `reductionActions.js`, the
+  canonical ledger: six of eight benchmarks agree; a 20% beef cut is
+  canonically 56 mt/yr and *neither* prompt's band contained it (40–50, 50–60).
+
+## Phase 425 — one international round trip, five different numbers
+
+`Scope3.js`'s headline action block held **five** mutually inconsistent
+per-round-trip figures in eighteen lines — `~2.9`, `3.0`, `2.93`, `2.5`, `3.5`
+— all derived from a 7,500 km distance assumption private to that page.
+
+The module that exists to answer this question publishes four methods:
+
+| method | total | implied mt/RT |
+|---|---|---|
+| ICAO + DEFRA weighted by source country | 320 | 4.00 |
+| Explicit source-country split | 290 | 3.63 |
+| Yale international per-student benchmark | 250 | 3.13 |
+| Two-RT-plus-summer scenario | 325 | 4.06 |
+
+The published `2.93` sat **below every one of them**. The fix derives from
+`SCOPE3_INTL_TRAVEL` (already exported, already imported by this page for
+`SCOPE3_RANGE`): the cohort flies ~1.6 RTs/yr, so dropping one saves
+central ÷ 1.6 = **185 mt**, range 156–203. That preserves the deliberate
+four-method spread instead of collapsing it to a false point estimate.
+
+The same figure had leaked into four more surfaces: `ScopeExplainer.js` (public,
+rendered from `App.js:44`), the tutor's stack-rank question and its distractors,
+a named-route claim ("Boston to Tokyo ≈ 3 metric tons" against a sourced 4.3),
+and `personalFootprint.js`'s `MT_PER_INTL_FLIGHT = 2.5` — the student-facing
+calculator, below all four methods, on a page whose premise is that students
+audit its assumptions.
+
+Derived claims moved with it: "half a typical student's footprint" → **a third**
+(4.3 ÷ 12.87 gross-per-student, which also avoids resting new prose on the
+contested 2,650 sink), and "600×" → **800×**.

@@ -34,12 +34,14 @@ const KG_PER_MILE_CAR = 0.2986;
 // One source now; see academicCalendar.js for why it is two constants, not one.
 const SCHOOL_DAYS_PER_YEAR = INSTRUCTIONAL_DAYS;
 
-// Per-flight ranges, derived from ICAO calculator + KUA's published
-// numbers. International boarders fly ~3-5 mtCO₂e/yr; domestic
-// boarders ~1-2 mt; day students 0. Use a rough per-round-trip
-// average of 0.6 mt domestic, 2.5 mt international.
+// Per-round-trip averages. The international figure was 2.5, which sat BELOW
+// all four published methods in geographicEstimates.js (4.00 ICAO+DEFRA
+// weighted / 3.63 explicit source-country split / 3.13 Yale benchmark / 4.06
+// two-RT-plus-summer). 3.7 is the central of that range, so the calculator a
+// student audits now agrees with the inventory the school publishes.
+// At ~1.6 RTs/yr that implies ~6 mtCO₂e/yr for an international boarder.
 const MT_PER_DOMESTIC_FLIGHT = 0.6;
-const MT_PER_INTL_FLIGHT     = 2.5;
+const MT_PER_INTL_FLIGHT     = 3.7;
 
 // Beef per kg: 99.5 kg CO₂e (Poore & Nemecek via OWID, beef herd, full
 // supply chain). A "beef serving" is ~150 g — call it ~15 kg CO₂e per
