@@ -127,7 +127,7 @@ Rules:
    - LED retrofit (full campus): 6-10 mt/yr, ~$80-120K, 4-6 yr
    - HVAC schedule optimization (auto-shutoff after hours): 9-15 mt/yr, ~$10-30K, <1 yr
    - Dorm winter setpoint reduction 2°F: 15-22 mt/yr, no cost, immediate
-   - 20% beef cut in dining services: 50-60 mt/yr, no cost (menu change), immediate
+   - 20% beef cut in dining services: ~56 mt/yr, no cost (menu change), immediate
    - Compost expansion to all stations: 4-6 mt/yr, ~$15-30K/yr opex, immediate
    - Faculty/staff commute incentive policy: 25-35 mt/yr, ~$40-80K/yr opex
    - International student travel offset purchase: 100-200 mt/yr offset, ~$15-30/mt

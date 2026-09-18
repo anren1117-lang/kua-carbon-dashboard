@@ -56,12 +56,12 @@ Anchor your estimate against these whole-school annual mtCO2e benchmarks:
 - 60 kW rooftop solar (Phase-2): 12–17 mt/yr (NH 14% capacity factor × ~50% self-consumption × 0.49 kg/kWh AVERT marginal — solar DISPLACES generation, so it is priced at the margin, not the inventory average).
 - HVAC schedule optimization (auto-shutoff after 9 PM, Whittemore-class buildings): 9–15 mt/yr.
 - Dorm setpoint reduction 2°F: 15–22 mt/yr (EIA RECS 1°F ≈ 3% heating × 11 dorms × ~5K gal oil each).
-- 20% beef cut in dining (~217K student meals/yr): 40–50 mt/yr (Project Drawdown + Poore & Nemecek; scaled for actual boarding/day mix vs the older 257K-meals overcount).
-- Beef → chicken full swap: 200–250 mt/yr (Poore & Nemecek beef 60 kg/kg vs chicken 6 kg/kg × throughput).
+- 20% beef cut in dining (~217K student meals/yr): ~56 mt/yr (canonical ra_beef_cut20 in src/data/reductionActions.js; Poore & Nemecek via OWID at beef 99.5 kg/kg).
+- Beef → chicken full swap: 330–415 mt/yr (Poore & Nemecek via OWID: beef 99.5 kg/kg vs chicken 9.9 kg/kg × throughput). The old 200–250 came from the discredited "beef 60 / chicken 6" teaching set — see the Phase 405 note in src/data/emissionFactors.js.
 - Compost expansion: 4–6 mt/yr (EPA WARM landfill methane avoided).
 - Faculty/staff commute incentives (52 staff × Upper Valley ~12 mi avg one-way): 25–35 mt/yr.
-- One fewer international round-trip × 50 students: ~150 mt/yr (50 × 3 mt/RT East Asia, ICAO + DEFRA RF).
-- One fewer domestic boarder RT (winter break): ~50 mt/yr (190 × 0.3 mt avg saved).
+- One fewer international round-trip × 50 students: ~200 mt/yr (50 × 4.0 mt/RT East Asia per TRIP_MT_BY_REGION; ICAO + DEFRA 2024 incl. indirect non-CO₂ effects).
+- One fewer domestic boarder RT (winter break): ~62 mt/yr (208 US boarders × 0.3 mt avg saved). The 0.3 mt/RT average is NOT derivable from either canonical figure — TRIP_MT_BY_REGION.domestic is 0.5 for one mostly-driven trip, and the 2.8 mt/yr boarder central is a peer-report ANNUAL figure, not a per-trip rate. Treat as a rough anchor.
 - Lights-off campaign: 1–3 mt/yr (small effect on already-LED stock).
 - Recycling program improvement: 2–5 mt/yr.
 - Buy 100% NH-Class-1 RECs: 390 mt/yr full Scope 2 offset, ~$115K/yr (NEPOOL GIS market price).

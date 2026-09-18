@@ -26,7 +26,8 @@
 //   • ASHRAE 90.1-2019 climate zone 6 commercial energy intensity
 //   • NOAA NCEI 1991-2020 normals — Lebanon NH HDD ~7,400
 //   • IPCC AR6 GWP100s for refrigerants
-//   • ICAO Carbon Emissions Calculator + DEFRA 2024 RF multiplier
+//   • ICAO Carbon Emissions Calculator + DEFRA 2024, the air factor set
+//     that already includes the indirect effects of non-CO₂ emissions
 //   • Yale-style student-travel methodology (residential boarding)
 //   • Birdsey 1992 (USDA WO-59) US-forest sequestration averages
 //   • Nowak 2013 urban-tree sequestration (open-grown component)
@@ -355,7 +356,7 @@ const KG_PER_MI = {
                                  // because A/B/C below cross-check three fleet
                                  // bases on purpose (Phase 406).
   car_carpool:  0.351 / 2.5,     // 2.5-person avg carpool effective
-  bus_long:     0.072,           // DEFRA 2024 coach with RF n/a
+  bus_long:     0.072,           // DEFRA 2024 coach; aviation non-CO₂ effects n/a for surface modes
   rail:         0.045,           // DEFRA 2024 national rail
   air_short:    0.294,           // DEFRA 2024 short-haul economy, incl. non-CO2
   air_long:     0.322,           // DEFRA 2024 long-haul economy, incl. non-CO2
@@ -411,7 +412,7 @@ const _usBoarderTravel = (() => {
   const A = {
     label: 'Yale-style cohort method',
     mt: COHORTS.usBoarder.count * A_rtPerYr * A_oneWayMi * 2 * A_modeFactor / 1000,
-    basis: `${COHORTS.usBoarder.count} US boarders × ${A_rtPerYr} RTs/yr × ${A_oneWayMi} mi avg one-way × 2 (RT) × mode-weighted factor (70% drive + 30% short-haul fly with RF).`,
+    basis: `${COHORTS.usBoarder.count} US boarders × ${A_rtPerYr} RTs/yr × ${A_oneWayMi} mi avg one-way × 2 (RT) × mode-weighted factor (70% drive + 30% short-haul fly, incl. indirect non-CO₂ effects).`,
   };
   // Method B: Phillips Academy Andover-style per-student benchmark.
   // Andover sustainability report ~2.6-3.0 mt/student-traveler for
@@ -481,11 +482,11 @@ const _intlTravel = (() => {
     basis: `${COHORTS.international.count} international × 5.0 mt/student/yr (Yale Office of Sustainability published figure for residential international cohort).`,
   };
   // Method D: high-bound — 2 RTs/yr + summer (some students fly home
-  // for summer too) + RF on the high end.
+  // for summer too) + the non-CO₂-inclusive factor set on the high end.
   const D = {
     label: 'Two-RT-plus-summer scenario',
     mt: COHORTS.international.count * 6.5,
-    basis: `${COHORTS.international.count} international × 6.5 mt/student/yr (assumes 2 RTs/yr including summer departure for full cohort, with RF on the high end).`,
+    basis: `${COHORTS.international.count} international × 6.5 mt/student/yr (assumes 2 RTs/yr including summer departure for full cohort, using the non-CO₂-inclusive factor set on the high end).`,
   };
   const all = [A, B, C, D];
   const central = all.reduce((s, x) => s + x.mt, 0) / all.length;
@@ -825,8 +826,8 @@ export const BOTTOM_UP_BREAKDOWN = [
   {
     scope: 'Scope 3', component: 'Student travel',
     mt: SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT,
-    basis: `Multi-method cohort estimate. Day students (${COHORTS.day.count}): ${Math.round(SCOPE3_DAY_TRAVEL.low)}–${Math.round(SCOPE3_DAY_TRAVEL.high)} mt range across 3 methods (ACS commute, EPA SLD benchmark, carpool/EV scenario). US boarders (${COHORTS.usBoarder.count}): ${Math.round(SCOPE3_US_BOARDER_TRAVEL.low)}–${Math.round(SCOPE3_US_BOARDER_TRAVEL.high)} mt (Yale cohort, Andover/Exeter peer benchmark, national long-tail bound). International (${COHORTS.international.count}): ${Math.round(SCOPE3_INTL_TRAVEL.low)}–${Math.round(SCOPE3_INTL_TRAVEL.high)} mt (ICAO + DEFRA RF, source-country split, Yale published, two-RT-plus-summer).`,
-    citations: ['ICAO Carbon Calculator', 'DEFRA 2024 with RF', 'EPA Mobile Combustion', 'Yale Office of Sustainability', 'Phillips Academy Andover sustainability report', 'Phillips Exeter sustainability report'],
+    basis: `Multi-method cohort estimate. Day students (${COHORTS.day.count}): ${Math.round(SCOPE3_DAY_TRAVEL.low)}–${Math.round(SCOPE3_DAY_TRAVEL.high)} mt range across 3 methods (ACS commute, EPA SLD benchmark, carpool/EV scenario). US boarders (${COHORTS.usBoarder.count}): ${Math.round(SCOPE3_US_BOARDER_TRAVEL.low)}–${Math.round(SCOPE3_US_BOARDER_TRAVEL.high)} mt (Yale cohort, Andover/Exeter peer benchmark, national long-tail bound). International (${COHORTS.international.count}): ${Math.round(SCOPE3_INTL_TRAVEL.low)}–${Math.round(SCOPE3_INTL_TRAVEL.high)} mt (ICAO + DEFRA 2024 incl. indirect non-CO₂ effects, source-country split, Yale published, two-RT-plus-summer).`,
+    citations: ['ICAO Carbon Calculator', 'DEFRA 2024 (incl. indirect non-CO₂ effects)', 'EPA Mobile Combustion', 'Yale Office of Sustainability', 'Phillips Academy Andover sustainability report', 'Phillips Exeter sustainability report'],
   },
   {
     scope: 'Scope 3', component: 'Dining (food procurement)',

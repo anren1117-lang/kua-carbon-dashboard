@@ -1289,7 +1289,7 @@ const paths = [
         options: [
           { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 2.93 ≈ 88 mt. (b) = 0.12 × 2,300,000 × 0.234 / 1,000 ≈ 65 mt. (a) = 43 mt. Notice how much work the electricity factor is doing here: swap the inventory rate for the marginal rate and (b) jumps to ~135 mt, which reorders the whole list. Which factor you pick decides the answer, so say which question you are asking before you rank anything.' },
           { text: '(a) > (b) > (c)', correct: false, explanation: 'Heat pump is real but smallest at this scale. The flight reduction across 30 students dominates.' },
-          { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × ~3 mt per round trip ≈ 88 mt, larger than the LED retrofit.' },
+          { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × 2.93 mt per round trip ≈ 88 mt, larger than the LED retrofit.' },
           { text: '(b) > (c) > (a)', correct: false, explanation: 'Wrong on the basis this question gave you — at the stated inventory rate (c) = 87.9 mt beats LED at 64.7 mt. It would be RIGHT on a marginal factor (~0.49 kg/kWh), where the LED retrofit reaches ~135 mt. Not a careless answer, just one to a different question.' },
         ],
       },
