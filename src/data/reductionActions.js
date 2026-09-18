@@ -458,7 +458,7 @@ export const reductionActions = [
     owner: 'IT Director + Procurement',
     timeline: 'Next purchase cycle',
     status: 'proposed',
-    dataSource: 'EPA EEIO v2.0; KUA IT procurement records',
+    dataSource: 'EPA Supply Chain GHG Emission Factors v1.3; KUA IT procurement records',
     nextAction: 'Update IT purchasing guideline doc; brief department heads.',
     visibility: 'admin',
   },

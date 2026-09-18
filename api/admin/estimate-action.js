@@ -42,18 +42,18 @@ KUA fingerprint (use this — DO NOT generalize):
 - 340 students, ~228 boarders + ~100 day, in Plainfield/Meriden NH (climate zone 6A, ~7,500 HDD).
 - 19 buildings, ~290,300 sqft total. 11 dorms ~105K sqft, 3 academic ~78K, 3 athletic ~98K, 2 other ~10K.
 - Heating: ~111K gal #2 heating oil + ~19K gal propane per year (bottom-up: sqft × NH-CZ6 intensity 45-75 kBtu/sqft/yr × 90% oil / 10% propane mix).
-- Electricity: ~1.66M kWh/yr Year-1 projection on the ISO-NE grid (effective rate 0.235 kg/kWh from per-fuel × 2024 mix).
+- Electricity: ~1.66M kWh/yr Year-1 projection on the ISO-NE grid (effective inventory rate 0.234 kg/kWh from per-fuel × 2024 mix). For AVOIDED/displaced generation use the marginal rate ~0.49 kg/kWh (EPA AVERT), not this one.
 - Fleet: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans (16 mpg) + 1 truck (14 mpg). ~54 mt/yr current.
-- 1,000 acres of campus forest sequestering ~2,650 mt/yr (Birdsey 1992 + Nowak 2013).
-- Student travel cohorts: ~100 day students (local Upper Valley), ~190 US boarders (mostly Northeast + scattered nationwide), ~50 international (East Asia heavy; Europe + South America secondary).
-- Scope totals — Scope 1: ~1,350 mt central (range 891–1,867 across 3 methods). Scope 2: ~390 mt measured ±5%. Scope 3: ~2,635 mt central (range 1,726–3,720 across 3-4 methods × 8 components: purchased goods ~1,315 dominates, student travel ~760 next, then dining ~235, upstream fuel ~230, commuting ~90, waste ~5). Heating oil dominates Scope 1; purchased goods + student travel dominate Scope 3.
+- ~1,000 acres of campus forest sequestering ~2,650 mt/yr. That figure sits at the TOP of the published spread (EPA GHG Equivalencies 1,000 mt / USDA NH FIA 1,170 / Birdsey 1992 2,100 / KUA per-stand 2,650) and the forested acreage is our own working figure, not a published one.
+- Student travel cohorts: ~82 day students (local Upper Valley), ~208 US boarders (mostly Northeast + scattered nationwide), ~50 international (East Asia heavy; Europe + South America secondary). KUA publishes 76% boarding; the international count is an assumption.
+- Scope totals — Scope 1: ~1,350 mt central (range 895–1,875 across 3 methods). Scope 2: ~390 mt measured ±5%. Scope 3: ~2,635 mt central (range 1,802–3,779 across 3-4 methods × 8 components: purchased goods ~1,315 dominates, student travel ~760 next, then dining ~235, upstream fuel ~230, commuting ~90, waste ~5). Heating oil dominates Scope 1; purchased goods + student travel dominate Scope 3.
 
 Anchor your estimate against these whole-school annual mtCO2e benchmarks:
 - Heat-pump retrofit, single dorm (Densmore-class): 30–55 mt/yr (4-8K gal oil × 10.21 kg/gal × 70% displacement after Scope 2 add-back).
 - Heating-oil to heat-pump, full campus: 600–900 mt/yr (~70% of bottom-up Scope 1 heating ≈ 1,234 mt).
 - Building envelope upgrade (insulation + air sealing) per building: 8–20 mt/yr (15-25% heating reduction × per-building gal).
 - LED retrofit (remaining T8s campus-wide): 6–10 mt/yr (most KUA fixtures already LED; this targets the residual fluorescent inventory).
-- 60 kW rooftop solar (Phase-2): 6–8 mt/yr (NH 14% capacity factor × ~50% self-consumption × 0.235 kg/kWh).
+- 60 kW rooftop solar (Phase-2): 12–17 mt/yr (NH 14% capacity factor × ~50% self-consumption × 0.49 kg/kWh AVERT marginal — solar DISPLACES generation, so it is priced at the margin, not the inventory average).
 - HVAC schedule optimization (auto-shutoff after 9 PM, Whittemore-class buildings): 9–15 mt/yr.
 - Dorm setpoint reduction 2°F: 15–22 mt/yr (EIA RECS 1°F ≈ 3% heating × 11 dorms × ~5K gal oil each).
 - 20% beef cut in dining (~217K student meals/yr): 40–50 mt/yr (Project Drawdown + Poore & Nemecek; scaled for actual boarding/day mix vs the older 257K-meals overcount).

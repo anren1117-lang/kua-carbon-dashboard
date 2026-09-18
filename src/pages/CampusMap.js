@@ -409,7 +409,7 @@ export default function CampusMap() {
               {mode === 'monthly'
                 ? `Reading is for ${formatMonthLabel(selectedMonth)} alone. The annualized equivalent divides it by that month's share of a normal year (about ${(selected.yearFraction * 100).toFixed(1)}%) rather than by a flat twelfth, so a winter month and a summer month scale differently and the colour scale stays comparable across views.`
                 : `Measured over ${selected.monthsCovered} month${selected.monthsCovered === 1 ? '' : 's'} of BMS data — about ${(selected.yearFraction * 100).toFixed(0)}% of a year once each month is weighted for season — then scaled to a full year.`}
-              {' '}Emissions = kWh × 0.235 kg/kWh (ISO-NE 2024 effective).
+              {' '}Emissions = kWh × 0.234 kg/kWh (ISO-NE 2024 inventory rate).
             </div>
             <a href={`/buildings/${selected.id}`} style={styles.detailLink}>
               Open {selected.name} detail →

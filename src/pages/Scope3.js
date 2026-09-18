@@ -221,7 +221,7 @@ function Scope3() {
               { input: 'School bus fuel economy', value: '6 – 8 mpg', source: 'EPA SmartWay' },
               { input: 'Athletic team annual mileage', value: '~5,000 – 12,000 mi/yr per bus', source: 'School transportation estimates' },
               { input: 'Electric bus efficiency', value: '~2.0 kWh/mi', source: 'NREL electric school bus data' },
-              { input: 'ISO-NE effective emission factor', value: '0.235 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix' },
+              { input: 'ISO-NE inventory emission factor', value: '0.234 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix — the inventory average' },
             ],
             math: [
               '# Per bus per year (8,000 mi at 7 mpg):',

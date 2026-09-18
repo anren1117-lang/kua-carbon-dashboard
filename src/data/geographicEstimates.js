@@ -634,13 +634,13 @@ const _goodsRange = (() => {
   const A = {
     label: 'Spend-based (low procurement assumption)',
     mt: 2_500_000 * 0.30 / 1000,
-    basis: '$2.5M non-energy procurement × 0.30 kg CO2e/$ EPA EEIO v2.0 (paper + IT + cleaning weighted; lower-bound for KUA size).',
+    basis: '$2.5M non-energy procurement × 0.30 kg CO2e/$ EPA Supply Chain GHG Emission Factors v1.3 (paper + IT + cleaning weighted; lower-bound for KUA size).',
   };
   // Method B: spend-based mid.
   const B = {
     label: 'Spend-based (KUA-typical)',
     mt: 3_000_000 * 0.40 / 1000,
-    basis: '$3M non-energy procurement × 0.40 kg CO2e/$ EPA EEIO v2.0 weighted avg.',
+    basis: '$3M non-energy procurement × 0.40 kg CO2e/$ EPA Supply Chain GHG Emission Factors v1.3 weighted avg.',
   };
   // Method C: spend-based high (more apparel + IT-heavy years).
   const C = {
@@ -850,7 +850,7 @@ export const BOTTOM_UP_BREAKDOWN = [
     scope: 'Scope 3', component: 'Purchased goods (Cat 1)',
     mt: SCOPE3_GOODS_BOTTOM_UP_MT,
     basis: SCOPE3_GOODS_DETAIL.basis,
-    citations: ['EPA EEIO v2.0'],
+    citations: ['EPA Supply Chain GHG Emission Factors v1.3'],
   },
   {
     scope: 'Scope 3', component: 'Upstream fuel (Cat 3)',

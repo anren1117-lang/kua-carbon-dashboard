@@ -3,7 +3,7 @@
 // history and returns one row per building with annual kWh, mtCO₂e,
 // per-sqft intensity, and a calibrated "share of campus" percent.
 //
-// kWh → mtCO₂e via the ISO-NE 2024 effective factor (~0.235 kg/kWh,
+// kWh → mtCO₂e via the ISO-NE 2024 effective factor (~0.234 kg/kWh,
 // the same number /scope-2 + /executive both cite).
 //
 // ANNUALIZATION IS SEASONAL (Phase 390). A building's measured months are

@@ -101,6 +101,18 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The AI prompts were the surface the sweeps kept missing (Phase 416)
+
+Three phases running, a value got fixed in `src/` and left standing in `api/`. Phase 409 corrected the grid figure on Scope 2 and never looked at the prompts; Phase 415 swept `api/` but for *citation strings*, not values. So `0.235` was still being handed to two AI system prompts as fact.
+
+Corrected here: `api/chat.js` and `api/admin/estimate-action.js` both stated the effective grid rate as 0.235 against a canonical 0.234, and the solar benchmark in the estimate prompt priced displaced generation at the **inventory** rate — the Phase 409/410 error, surviving in the one place that reasons from it. That benchmark moves from 6–8 mt to **12–17 mt** at the AVERT marginal rate, and the prompt now says explicitly which rate answers which question.
+
+**The estimate prompt was stale in five ways at once**, which is what makes prompts dangerous: they read as prose, so a sweep for constants slides straight over them. It carried the pre-Phase-414 cohort split (~100 day / ~190 boarders), credited the sink to "Birdsey 1992 + Nowak 2013" after Phase 411 rebuilt that cross-check, and quoted Scope 1 and Scope 3 ranges that Phase 414's cohort correction had already moved — 891–1,867 and 1,726–3,720, against actual 895–1,875 and 1,802–3,779.
+
+The canonical `SCOPE3_PLACEHOLDER_BREAKDOWN` was also still describing "100 day commuters + 190 US boarders" in its own method string, two phases after the counts changed. And five remaining `EEIO v2.0` citations moved to Supply Chain v1.3 — the two inside Phase 404's audit comments were left alone deliberately, because they quote the old name to explain what changed.
+
+The generalisation worth keeping: **a number that lives inside a sentence is still a number.** Prompt text, estimate anchors, UI hints and worked examples are all places a stale figure hides from a search for the constant — and in a prompt it does not merely display wrong, it gets reasoned from.
+
 ### The corrections had not reached the prompts or the pages (Phase 415)
 
 Fourteen phases moved a lot of numbers. `proseFigures.test.js` guards gross/net/Scope 2 across seven prose files and never looks at `api/` — so the question was simply: does anything still quote a figure this audit changed?

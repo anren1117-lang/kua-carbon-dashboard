@@ -122,7 +122,7 @@ const KG_PER_LB = 0.45359237;
 
 // Default EEIO factor (kg CO2e per USD) when a purchased_goods row
 // doesn't carry an explicit `eeio_factor_override`. Anchored on EPA
-// EEIO v2.0 KUA-typical weighted average across paper / IT / cleaning
+// EPA Supply Chain v1.3 KUA-typical weighted average across paper / IT / cleaning
 // / apparel sectors — same value SCOPE3_GOODS_RANGE.central is built
 // around.
 // AUDIT (Phase 404): the citation above named "EEIO v2.0", which is a
@@ -421,8 +421,8 @@ export const SCOPE1_TOTAL_MT = composeScope1().totalMt;
 // commuting + upstream fuel.
 const SCOPE3_PLACEHOLDER_MT = 2635;
 const SCOPE3_PLACEHOLDER_BREAKDOWN = [
-  { source: 'Purchased goods (non-dining)',              mt: 1315, provenance: 'estimated', method: 'EPA EEIO v2.0 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors.' },
-  { source: 'Student travel (international + boarder)', mt:  760, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 100 day commuters local Upper Valley + 190 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA factors with radiative forcing. Travel office records not yet integrated.' },
+  { source: 'Purchased goods (non-dining)',              mt: 1315, provenance: 'estimated', method: 'EPA Supply Chain GHG Emission Factors v1.3 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors.' },
+  { source: 'Student travel (international + boarder)', mt:  760, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 82 day commuters local Upper Valley + 208 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA factors with radiative forcing. Travel office records not yet integrated.' },
   { source: 'Dining (food production)',                  mt:  235, provenance: 'estimated', method: 'Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated.' },
   { source: 'Upstream fuel',                             mt:  230, provenance: 'estimated', method: '~17% upstream uplift on bottom-up Scope 1 (refinery + transport for heating oil + propane + fleet fuels).' },
   { source: 'Commuting',                                 mt:   90, provenance: 'estimated', method: '52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated.' },

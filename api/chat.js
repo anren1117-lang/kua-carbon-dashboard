@@ -89,7 +89,7 @@ Campus profile: ~340 students (boarding + day), ~1,000 acres total, much in mixe
 
 Preliminary annual estimate (Fermi-level until measured data lands):
 - Scope 1 (heating + refrigerants + fleet): ~1,350 mt central (range 891–1,867 mt across 3 methods × 3 components: heating ~1,290 / fleet ~54 / refrigerants ~7).
-- Scope 2 (electricity, MEASURED via BMS): ~390 mtCO₂e/yr from ~1.66M kWh annualized × ISO-NE 2024 per-fuel output factors (effective ~0.235 kg/kWh), ±5% measured band.
+- Scope 2 (electricity, MEASURED via BMS): ~390 mtCO₂e/yr from ~1.66M kWh annualized × ISO-NE 2024 per-fuel output factors (effective ~0.234 kg/kWh), ±5% measured band.
 - Scope 3 (student travel + supply chain + waste): ~2,635 mt central (range 1,726–3,720 mt across 3-4 methods × 8 components). Components: purchased goods ~1,315 (EEIO Cat 1, $3M × 0.40 kg/$), student travel ~760 (day 90-140 / US boarders 260-530 / international 220-325), dining ~235, upstream fuel ~230, faculty commute ~90, waste ~5.
 - Sinks (campus forest): ~2,650 mtCO₂e drawdown, range 2,100–2,650 across 3 methods (Birdsey 1992 / USDA NH FIA / Nowak 2013 stand-specific).
 - Gross: ~4,375 / Net: ~1,725 mtCO₂e/yr / Per student: ~5.0. Composite range: gross 2,983–5,992, net 333–3,892, per-student net 1.0–11.4 mt across all method combinations.
