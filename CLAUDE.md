@@ -1129,3 +1129,45 @@ A fourth test is the negative control: with merely-empty tables the page must sa
 
 Suite 1,426 → 1,430; 96 → 97 files. `Sinks2.js`, `CarbonCredits.js` and the
 thirteen Scope 2 consumers still swallow the error — filed, not forgotten.
+
+## Phase 433 — the composers built a breakdown no page ever showed
+
+`composeScope1FromBills` has always returned three rows — heating 1,290, fleet
+54, refrigerants 7 — and `composeScope3FromRecords` six: goods 1,315, travel
+760, dining 235, upstream 230, commuting 90, waste 5. Each carries its own
+`mt`, `provenance` and `method`. **`Scope1.js` read `breakdown` zero times**,
+and `Scope3.js` rendered only its cohort table. A reader could see a scope
+total and never its parts — including that purchased goods is roughly half of
+Scope 3 and the largest single line in the whole inventory.
+
+New shared `ScopeBreakdownPanel` renders it on both pages: component, mtCO₂e,
+share, per-row provenance pill, and the `method` string beneath each label.
+
+**Ungated, and that distinction was checked rather than assumed.** Scope 3's
+cohort panel is gated behind `isMeasured` and that is *correct* —
+`composeScope3()` returns `cohortDetail: undefined` on the placeholder path, so
+rendering it ungated would print an empty shell. `breakdown` is present on
+**both** paths (verified at runtime), and per-row provenance is precisely what
+makes it worth showing before any live rows exist: the difference between "we
+measured 1,290" and "we estimated 1,290".
+
+Shares are computed from the rows, not the page headline, so the column sums to
+100% and cannot drift from the figures beside it. A test asserts `50%` for
+goods, cross-checking the share column against the mt column.
+
+### My own test was the thing that broke
+
+The first run failed twice with *"Found multiple elements"* — `/Fleet vehicles/i`
+also matching Scope 1's `'Fleet Vehicles'` category card, and `/Purchased goods/i`
+matching Scope 3's `thirdMetric` **plus a subtitle I had just written that
+restated a component name listed directly below it**.
+
+The fix was a real `role="region"` + `aria-label` handle on the panel and
+`within(panel)` queries — **not** `getAllByText`, which would have stayed green
+while the panel rendered nothing and only the category card matched. That is
+the "test passes against the defect it guards" failure, and it is the third time
+this session it has been the tempting shortcut. The landmark is also a genuine
+accessibility improvement: sibling components already carry `aria-label`
+(`DegreeDayChart:60`, `CampusMonthlyTrend:50`).
+
+Suite 1,430 → 1,434; 97 → 98 files. Closes task #17 item 3.

@@ -8,6 +8,7 @@ import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { DegreeDayChart } from '../components/DegreeDayChart.js';
+import { ScopeBreakdownPanel } from '../components/ScopeBreakdownPanel.js';
 
 const SCOPE1_PER_STUDENT = +(SCOPE1_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
@@ -197,6 +198,13 @@ function Scope1() {
             ],
           },
         ]}
+      />
+
+      <ScopeBreakdownPanel
+        breakdown={live.breakdown}
+        color="#ef4444"
+        title="Where Scope 1 comes from"
+        subtitle="Heating fuel, fleet and refrigerants each flip from estimated to measured independently as their admin tables fill in — the provenance column is per component, not per scope."
       />
 
       <DegreeDayChart year={KUA_USAGE_YEAR} />

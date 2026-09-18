@@ -8,6 +8,7 @@ import { SCOPE3_RANGE, SCOPE3_INTL_TRAVEL } from '../data/geographicEstimates.js
 
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
+import { ScopeBreakdownPanel } from '../components/ScopeBreakdownPanel.js';
 
 // One fewer round trip per international student. Derived from the published
 // four-method range rather than a distance assumption private to this page:
@@ -245,6 +246,13 @@ function Scope3() {
             ],
           },
         ]}
+      />
+
+      <ScopeBreakdownPanel
+        breakdown={live.breakdown}
+        color="#8b5cf6"
+        title="Where Scope 3 comes from"
+        subtitle="Six components, each with its own provenance. The largest single line in the whole inventory is here — roughly half of Scope 3 — and appeared as no number anywhere on this page before now."
       />
 
       {isMeasured && Array.isArray(live.cohortDetail) && (
