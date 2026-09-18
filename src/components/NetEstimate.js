@@ -64,7 +64,7 @@ const rows = [
     low: Math.round(SCOPE3_STUDENT_TRAVEL_RANGE.low),
     high: Math.round(SCOPE3_STUDENT_TRAVEL_RANGE.high),
     provenance: 'cited',
-    currentMethod: 'Hand-set assumptions × ICAO calculator: ~50 international students × ~3 mtCO₂e per round trip + ~150 US boarders × 3–4 trips/yr × ~1 mt each + small allocation for study abroad and athletic teams. Methodology is sound; the trip-count assumptions are guesses.',
+    currentMethod: 'Hand-set assumptions × ICAO calculator: ~50 international students × ~4.0 mtCO₂e per round trip + ~208 US boarders × 3–4 trips/yr × ~2.8 mt/yr each + small allocation for study abroad and athletic teams. Methodology is sound; the trip-count assumptions are guesses.',
     futureMethod:  'Replace assumed trip counts with actual travel records from the KUA travel office (international student departure counts, Athletic Office bus routes and team travel, OPE study-abroad ledger). ICAO calculator stays; row flips estimated → cited.',
   },
   {

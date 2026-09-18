@@ -389,7 +389,7 @@ export function composeScope1FromBills(bills, opts = {}) {
       mt: Math.round(fleetMt),
       provenance: fleetMeasured ? 'measured' : 'estimated',
       method: fleetMeasured
-        ? `${fleetRows.length} scope1_fleet_records row${fleetRows.length === 1 ? '' : 's'} × EPA Mobile Combustion factors (gasoline 8.89 / diesel 10.21 / propane 5.72 / CNG 5.85 kg CO₂e per gal).`
+        ? `${fleetRows.length} scope1_fleet_records row${fleetRows.length === 1 ? '' : 's'} × EPA Mobile Combustion factors (gasoline 8.78 / diesel 10.21 / propane 5.72 / CNG 5.85 kg CO₂e per gal).`
         : 'Bottom-up registry placeholder (fuel-card records not yet integrated).',
     },
     {
@@ -428,7 +428,7 @@ export const SCOPE1_TOTAL_MT = composeScope1().totalMt;
 const SCOPE3_PLACEHOLDER_MT = 2635;
 const SCOPE3_PLACEHOLDER_BREAKDOWN = [
   { source: 'Purchased goods (non-dining)',              mt: 1315, provenance: 'estimated', method: 'EPA Supply Chain GHG Emission Factors v1.3 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors.' },
-  { source: 'Student travel (international + boarder)', mt:  760, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 82 day commuters local Upper Valley + 208 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA factors with radiative forcing. Travel office records not yet integrated.' },
+  { source: 'Student travel (international + boarder)', mt:  760, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 82 day commuters local Upper Valley + 208 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA 2024 factors including the indirect effects of non-CO₂ emissions. Travel office records not yet integrated.' },
   { source: 'Dining (food production)',                  mt:  235, provenance: 'estimated', method: 'Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated.' },
   { source: 'Upstream fuel',                             mt:  230, provenance: 'estimated', method: '~17% upstream uplift on bottom-up Scope 1 (refinery + transport for heating oil + propane + fleet fuels).' },
   { source: 'Commuting',                                 mt:   90, provenance: 'estimated', method: '52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated.' },
@@ -698,7 +698,7 @@ export function composeScope3FromRecords(records = {}) {
       mt: Math.round(intlMt),
       perStudentMt: SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.international,
       provenance: intl.length > 0 ? 'measured' : 'estimated',
-      method: 'Yale Office of Sustainability published per-FTE figure for residential international cohort × DEFRA long-haul with radiative forcing.',
+      method: 'Yale Office of Sustainability published per-FTE figure for residential international cohort × DEFRA 2024 long-haul economy, including the indirect effects of non-CO₂ emissions.',
     },
     {
       cohort: 'trips',
@@ -707,7 +707,7 @@ export function composeScope3FromRecords(records = {}) {
       mt: Math.round(tripMt),
       perStudentMt: null,
       provenance: (sa.length + fac.length) > 0 ? 'measured' : 'estimated',
-      method: 'Per-trip mtCO₂e by destination region (domestic 0.5 / Europe 2.4 / Asia 3.0 / other 2.5) — DEFRA long-haul × great-circle distances from BOS.',
+      method: 'Per-trip mtCO₂e by destination region (domestic 0.5 / Europe 3.2 / Asia 4.0 / other 3.3) — DEFRA 2024 long-haul economy × great-circle distances from BOS.',
     },
   ];
 

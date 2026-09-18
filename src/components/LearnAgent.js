@@ -289,7 +289,7 @@ const paths = [
         question: 'Which of these saves the most carbon over one year?',
         options: [
           { text: 'Always turning off your dorm light when you leave', correct: false, explanation: 'Helpful but small — about **5 kg CO₂/year** saved. Worth doing as a habit; not enough to be your top priority.' },
-          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about **3,000 kg CO₂** — about **600× as much as a year of conscientious light-switching**. If you can only pick one thing, the flight is where the leverage is. The math is just the difference in scale: aviation per-passenger-km factor (with radiative forcing) × thousands of km.' },
+          { text: 'One fewer round-trip international flight', correct: true, explanation: 'Right. A single long-haul round-trip is about **3,000 kg CO₂** — about **600× as much as a year of conscientious light-switching**. If you can only pick one thing, the flight is where the leverage is. The math is just the difference in scale: aviation per-passenger-km factor (the set that includes the indirect effects of non-CO₂ emissions) × thousands of km.' },
           { text: 'Recycling every plastic bottle for a year', correct: false, explanation: 'Recycling matters but is small in carbon terms — maybe **30 kg CO₂/year** for a typical student. It saves resources and reduces virgin-material production, but the climate impact is modest compared to travel or diet.' },
           { text: 'Switching from beef to chicken for one weekly meal all year', correct: false, explanation: 'Significant but smaller than a flight reduction — about **484 kg CO₂/year** saved (36 weeks × 0.15 kg beef × 89.6 kg/kg difference). Around 16× the recycling impact, but still roughly 6× LESS than skipping a single flight.' },
         ],
@@ -750,19 +750,19 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: international student travel',
-        scenario: 'KUA has ~50 international students. Each takes one round-trip flight per year to East Asia. DEFRA factor: 0.195 kg CO₂e/passenger-km (with radiative forcing). One-way: ~7,500 km.',
+        scenario: 'KUA has ~50 international students. Each takes one round-trip flight per year to East Asia. DEFRA factor: 0.20011 kg CO₂e/passenger-km (the economy factor set that includes the indirect effects of non-CO₂ emissions). One-way: ~7,500 km.',
         given: [
           { label: 'Students', value: '50' },
           { label: 'Round trips', value: '1 each' },
           { label: 'One-way distance', value: '7,500 km' },
-          { label: 'DEFRA factor', value: '0.195 kg CO₂e / passenger-km' },
+          { label: 'DEFRA factor', value: '0.20011 kg CO₂e / passenger-km' },
         ],
         question: 'Annual total:',
         options: [
-          { text: '~73 mtCO₂e', correct: false, explanation: 'Forgot to multiply by 2 (round trip)?' },
-          { text: '~146 mtCO₂e', correct: true, explanation: 'Right. 50 × 7,500 × 2 × 0.195 / 1,000 = 146.25 mtCO₂e/yr.' },
+          { text: '~75 mtCO₂e', correct: false, explanation: 'Forgot to multiply by 2 (round trip)?' },
+          { text: '~150 mtCO₂e', correct: true, explanation: 'Right. 50 × 7,500 × 2 × 0.20011 / 1,000 = 150.1 mtCO₂e/yr.' },
           { text: '~580 mtCO₂e', correct: false, explanation: 'Too high. Recheck — you may have used the wrong unit conversion.' },
-          { text: '~14.6 mtCO₂e', correct: false, explanation: 'Off by 10× — possibly an extra division by 1,000 somewhere in the chain.' },
+          { text: '~15 mtCO₂e', correct: false, explanation: 'Off by 10× — possibly an extra division by 1,000 somewhere in the chain.' },
         ],
       },
       {

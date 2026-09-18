@@ -32,7 +32,7 @@ function StudentUSBoarding() {
         Domestic boarders captured by home ZIP and state. Term-break round-trips drive emissions;
         mode (drive vs fly) is inferred from distance.
       </p>
-      <div style={s.factor}>Factor source: EPA (ground) + DEFRA (air with radiative forcing)</div>
+      <div style={s.factor}>Factor source: EPA (ground) + DEFRA (air, incl. indirect non-CO₂ effects)</div>
 
       <EducationalCard
         title="Term-break travel is a major Scope 3 source"
@@ -56,7 +56,7 @@ function StudentUSBoarding() {
           {
             heading: 'Why we record by ZIP',
             body: 'Home ZIP gives us distance to BOS/MHT, which combined with mode (drive vs fly, inferred above/below the threshold) lets us compute term-break round-trip emissions per student. Each student is one row; school-year total is the sum.',
-            citation: 'EPA Emission Factors Hub (ground); DEFRA 2024 conversion factors with radiative forcing multiplier (air).',
+            citation: 'EPA Emission Factors Hub (ground); DEFRA 2024 conversion factors, air factor set including indirect non-CO₂ effects.',
           },
         ]}
       />

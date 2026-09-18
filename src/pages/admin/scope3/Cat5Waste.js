@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
+import { WASTE_FACTORS_MT_PER_TON } from '../../../data/scopeTotals.js';
 
 const wasteTypes = ['Landfill', 'Recycling', 'Composting', 'Hazardous', 'E-Waste'];
-const units = ['tons', 'lbs', 'cubic yards'];
-const wasteFactors = { Landfill: 0.52, Recycling: -0.10, Composting: 0.04, Hazardous: 0.50, 'E-Waste': 0.30 };
+// 'cubic yards' was offered here but wasteTons() in scopeTotals.js converts only
+// tons/lbs/kg and returns 0 for anything else — so a row entered in cubic yards
+// recorded zero emissions silently. Converting it needs a density that varies
+// ~0.15-0.25 short tons/yd3 by material; inventing one would be worse than
+// dropping the option. Existing rows in that unit still read 0 — see task #17.
+const units = ['tons', 'lbs'];
 const empty = { date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: '2025-2026' };
 
 function Cat5Waste() {
@@ -45,10 +50,11 @@ function Cat5Waste() {
       <div style={s.cat}>Scope 3 · Category 5</div>
       <h1 style={s.title}>Waste Generated in Operations</h1>
       <p style={s.subtitle}>
-        Landfill, recycling, composting, hazardous, and e-waste streams. EPA WARM model factors
-        capture both direct emissions and avoided virgin-material production.
+        Landfill, recycling, composting, hazardous, and e-waste streams. Factors are EPA GHG
+        Emission Factors Hub 2025 Table 9 (Scope 3 Category 5), which EXCLUDE avoided emissions —
+        recycling and composting are smaller emissions here, not credits.
       </p>
-      <div style={s.factor}>Factors (kg CO₂e/ton): {Object.entries(wasteFactors).map(([k, v]) => `${k} ${v}`).join(' · ')}</div>
+      <div style={s.factor}>Factors (mtCO₂e per short ton): {Object.entries(WASTE_FACTORS_MT_PER_TON).map(([k, v]) => `${k} ${v}`).join(' · ')}</div>
 
       {msg && <div style={{ ...s.msg, ...(msg.ok ? s.msgOk : s.msgErr) }}>{msg.text}</div>}
 

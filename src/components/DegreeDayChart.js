@@ -1,5 +1,5 @@
 import React from 'react';
-import { monthlyComparison, compareToNormal, STATION } from '../data/degreeDays.js';
+import { monthlyComparison, compareToNormal, STATION, HDD_ACTUAL } from '../data/degreeDays.js';
 
 // Heating degree days, measured against the 1991-2020 normal.
 //
@@ -18,7 +18,15 @@ import { monthlyComparison, compareToNormal, STATION } from '../data/degreeDays.
 
 const MONTH_LABELS = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export function DegreeDayChart({ year }) {
+// Newest year we actually hold actuals for. Derived from HDD_ACTUAL rather
+// than kept as a second constant, so a 2027 row needs no edit here.
+const LATEST_HDD_YEAR = Math.max(...Object.keys(HDD_ACTUAL).map(Number));
+
+// year defaults to that. Phase 423: Scope1.js mounted this with no prop, so
+// monthlyComparison(undefined) returned [] and the component rendered NOTHING
+// for twenty phases — the page's only chart, invisible, while every test
+// passed because they all pass year explicitly.
+export function DegreeDayChart({ year = LATEST_HDD_YEAR }) {
   const rows = monthlyComparison(year);
   if (!rows || rows.length === 0) return null;
   const summary = compareToNormal(year);

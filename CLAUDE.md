@@ -718,3 +718,55 @@ Splitting further would add real complexity and regression risk to improve a num
 - Map of campus is available in four modes on `/campus-map`: Schematic (by-category zones), Geographic (lat/lng on a blank canvas), Photo (energy dots overlaid on the official KUA bird's-eye-view illustration at `/kua-campus-map.png`), Satellite (real Esri World Imagery via pigeon-maps with markers at each building's cited lat/lng). Building positions live in `src/data/buildingPositions.js` — they came off the official KUA campus map (provenance: cited, not GPS-surveyed).
 - Emission factors live in `src/data/scopeTotals.js` (Scope 1/3 + sinks + renewables) and `src/data/gridMix.js` (Scope 2). Admin forms in `src/pages/admin/*` read these via `useFactor` / `useTable` from `_shared.js`.
 - API handlers use `createRateLimit` + `getClientKey` from `src/utils/rateLimit.js` — token-bucket per IP. Mirror existing handlers when adding new ones.
+
+## Phase 423 — three-critic review: Scope 1 and 3 held to the Scope 2 standard
+
+Ran the data/UI/code critics over Scope 1 and Scope 3 with Scope 2 as the
+benchmark. Findings were re-verified against the code before any edit.
+
+- **Scope 1 had no chart.** `<DegreeDayChart />` was mounted with no `year`
+  prop, so `monthlyComparison(undefined)` returned `[]` and the component
+  returned `null`. It rendered nothing from Phase 403 to 423 while I reported
+  it as shipped. Every test passed because they all pass `year` explicitly.
+  Fixed at the call site *and* given a default derived from `HDD_ACTUAL`'s
+  keys, so a missing prop can never silently blank it again.
+- **Scope 3 named the wrong dominant source** — "Travel, ~70% of S3" against
+  its own data layer's goods 1,315 mt (49.9%) vs travel 760 mt (28.8%).
+- **Recycling was still taught as a credit** (WARM v15 −0.10/+0.04). Phase 407
+  removed this from the data layer; the public page kept it because the sweep
+  grepped the kg spelling and the page used mt per short ton.
+- **Worked examples contradicted their own inputs**: compost listed 580/110
+  and computed with 520/40, stating a savings neither pair yields.
+- **Derived figures hand-typed at a rounded factor** (18,252 vs 18,287) are
+  now computed template literals, the same way Scope 2 avoids drift.
+
+Residual-gate note: the gate blocked this commit twice and was right to. Its
+two hits were both quoting context (an audit comment, and `~600 mi` as a trip
+distance rather than an enrollment) — but chasing them surfaced a real
+residual the gate had *missed*: my own edit changed the short-haul factor in
+the input row and left the worked example multiplying by the old `0.395`.
+Patterns must cover every spelling of a factor, including the per-mile form.
+
+### Phase 423 addendum — one vocabulary, four copies
+
+Chasing a single bad dropdown option exposed that waste data has **four**
+ingestion paths, each carrying its own private copy of the accepted
+vocabulary, three of them disagreeing with `wasteTons()` — the one function
+that consumes it:
+
+| path | unit list | waste types |
+|---|---|---|
+| `Cat5Waste.js` form | tons, lbs, **cubic yards** | canonical five |
+| `CsvImportPanel.js` | tons, lbs, **cubic yards** | canonical five |
+| `api/admin/ai-ingestion.js` | tons, lbs, **cy** | **Compost, C&D**, no E-Waste |
+| `wasteTons()` (the consumer) | tons, lbs, **kg** | — |
+
+A row entered in cubic yards passed validation, was written to Supabase, then
+hit `factor === undefined || !tons` at `scopeTotals.js:594` and landed in
+`wasteSkipped`. Not corrupted, not NaN — just excluded, after the admin was
+told it was accepted. The AI ingestion prompt was the worst of the four: it
+instructed the model to emit `'Compost'` and `'C&D'`, values the CSV path
+already rejects and no factor exists for.
+
+The residual gate never looked at `api/` until now, so no sweep this run had
+ever read that prompt. It covers `src/` and `api/` from here.

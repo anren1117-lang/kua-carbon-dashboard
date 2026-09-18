@@ -64,7 +64,7 @@ Per-table field shapes (use these exact field names — case-sensitive):
 - scope1_fleet:       { period_start: 'YYYY-MM-DD', period_end: 'YYYY-MM-DD', vehicle_id?: string, fuel_type: 'Gasoline'|'Diesel'|'Propane'|'CNG', gallons: number, miles?: number }
 - scope1_refrigerants:{ service_date: 'YYYY-MM-DD', system_id?: string, refrigerant_type: 'R-410A'|'R-134a'|'R-22'|'R-404A'|'R-407C'|'R-32'|'R-1234yf'|'other', recharge_lb: number, reclaim_lb: number }
 - renewables_solar:   { period_start: 'YYYY-MM-DD', period_end: 'YYYY-MM-DD', inverter_id?: string, gross_kwh: number, self_consumed_kwh?: number, exported_kwh?: number }
-- waste:              { date: 'YYYY-MM-DD', waste_type: 'Landfill'|'Recycling'|'Compost'|'C&D'|'Hazardous', amount: number, unit: 'tons'|'lbs'|'cy' }
+- waste:              { date: 'YYYY-MM-DD', waste_type: 'Landfill'|'Recycling'|'Composting'|'Hazardous'|'E-Waste', amount: number, unit: 'tons'|'lbs'|'kg' }
 - purchased_goods:    { invoice_date?: 'YYYY-MM-DD', vendor?: string, category?: string, spend_usd: number, eeio_factor_override?: number }
 - faculty_travel:     { departure_date: 'YYYY-MM-DD', return_date?: 'YYYY-MM-DD', destination_city?: string, destination_country?: string, trip_purpose?: string }
 - study_abroad:       { departure_date: 'YYYY-MM-DD', return_date?: 'YYYY-MM-DD', destination_city?: string, destination_country?: string }

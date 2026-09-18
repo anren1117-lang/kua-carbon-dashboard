@@ -33,7 +33,8 @@ function Cat6BusinessTravel() {
       <p style={s.subtitle}>
         Faculty and staff travel on KUA business — flights, trains, hotel stays, and personal
         vehicle mileage. Mode and distance are inferred from origin/destination, then converted
-        with EPA factors for ground travel and DEFRA factors for air (with radiative forcing).
+        with EPA factors for ground travel and DEFRA factors for air (the set that includes
+        the indirect effects of non-CO₂ emissions).
       </p>
       <div style={s.factor}>Factor sources: EPA Emission Factors Hub · DEFRA conversion factors</div>
 

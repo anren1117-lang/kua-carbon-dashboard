@@ -33,7 +33,7 @@ function StudyAbroad() {
         program; ground travel within the destination country is currently excluded as a
         materiality simplification.
       </p>
-      <div style={s.factor}>Factor source: DEFRA international air with radiative forcing</div>
+      <div style={s.factor}>Factor source: DEFRA international air, incl. indirect non-CO₂ effects</div>
 
       <EducationalCard
         title="Tracking the carbon of an educational trip"
@@ -56,7 +56,7 @@ function StudyAbroad() {
           {
             heading: 'What we currently exclude',
             body: 'Ground travel within the destination country, hotel stays, and food are not yet captured by this category — only the round-trip flight per participant. The flight is typically 70–85% of total program emissions, so the simplification is a known materiality choice we will document publicly on the methodology page.',
-            citation: 'DEFRA 2024 international air factors with radiative forcing multiplier.',
+            citation: 'DEFRA 2024 international air factors, the set including indirect non-CO₂ effects.',
           },
         ]}
       />

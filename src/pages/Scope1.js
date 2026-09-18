@@ -3,7 +3,7 @@ import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
-import { KG_PER_KWH } from '../data/gridMix.js';
+import { KG_PER_KWH, KUA_USAGE_YEAR } from '../data/gridMix.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { DegreeDayChart } from '../components/DegreeDayChart.js';
@@ -68,7 +68,7 @@ function Scope1() {
             heading: 'The chemistry',
             body: 'Heating fuel is a hydrocarbon mix. In a boiler, it reacts with oxygen:',
             formula: 'CₓHᵧ + (x + y/4) O₂ → x CO₂ + (y/2) H₂O + heat',
-            citation: 'EPA GHG Emission Factors Hub (2024), Stationary Combustion table; IPCC AR6 for refrigerant GWP100 values.',
+            citation: 'EPA GHG Emission Factors Hub (2025), Stationary Combustion table; IPCC AR6 for refrigerant GWP100 values.',
           },
           {
             heading: 'Where reduction happens',
@@ -119,7 +119,7 @@ function Scope1() {
               'heat_delivered_btu = 6,000 × 138,500 × 0.80 = 665M BTU',
               'heat_delivered_kwh = 665M / 3,412 BTU/kWh = 195,000 kWh',
               'electricity_needed = 195,000 / 2.5 (COP) = 78,000 kWh',
-              `new_emissions = 78,000 × ${KG_PER_KWH} = 18,252 kg ≈ 18.3 mtCO₂e`,
+              `new_emissions = 78,000 × ${KG_PER_KWH} = ${Math.round(78000 * KG_PER_KWH).toLocaleString()} kg ≈ ${(78000 * KG_PER_KWH / 1000).toFixed(1)} mtCO₂e`,
               '',
               'savings = 61.3 − 18.3 = 43.0 mtCO₂e/yr',
               '',
@@ -142,7 +142,7 @@ function Scope1() {
           },
           {
             action: 'Thermostat setback at night and breaks',
-            impact: '−8 to −67 mtCO₂e/yr campus-wide',
+            impact: '−79 mtCO₂e/yr at full adoption (−8 to −67 realistic)',
             detail: 'Lowering setpoint 2°F overnight, weekends, and during breaks. EPA-published rule of thumb: ~7% reduction per 1°F × 8 hours.',
             data: [
               { input: 'Heating reduction per 1°F × 8 hrs setback', value: '~7%', source: 'EPA ENERGY STAR Programmable Thermostat guidance' },
@@ -175,7 +175,7 @@ function Scope1() {
           {
             action: 'Electric or hybrid replacements for fleet vehicles',
             impact: '−10 to −22 mtCO₂e/yr',
-            detail: 'EV vans on the New England grid emit roughly 75% less per mile than gasoline. Best ROI on the highest-mileage vehicles.',
+            detail: 'EV vans on the New England grid emit roughly 86% less per mile than gasoline (5.9 → 0.84 mtCO₂e per van-year). Best ROI on the highest-mileage vehicles.',
             data: [
               { input: 'Gasoline emission factor', value: '8.78 kg CO₂/gal', source: 'EPA GHG Hub Mobile Combustion 2024' },
               { input: 'Average van fuel economy', value: '18 mpg', source: 'EPA Fuel Economy data' },
@@ -186,16 +186,16 @@ function Scope1() {
             math: [
               '# Per van per year (12,000 mi):',
               'gasoline_emissions = 12,000 / 18 × 8.78 = 5,853 kg ≈ 5.9 mtCO₂e',
-              `ev_emissions      = 12,000 × 0.30 × ${KG_PER_KWH} = 842 kg ≈ 0.84 mtCO₂e`,
+              `ev_emissions      = 12,000 × 0.30 × ${KG_PER_KWH} = ${Math.round(12000 * 0.30 * KG_PER_KWH)} kg ≈ ${(12000 * 0.30 * KG_PER_KWH / 1000).toFixed(2)} mtCO₂e`,
               'savings_per_van   = 5.9 − 0.84 = 5.06 mtCO₂e/yr',
               '',
-              '# Replacing 3-5 vans: 14 to 24 mtCO₂e/yr (rounded 10-22)',
+              '# Replacing 3-5 vans: 15 to 25 mtCO₂e/yr',
             ],
           },
         ]}
       />
 
-      <DegreeDayChart />
+      <DegreeDayChart year={KUA_USAGE_YEAR} />
 
       <div style={styles.list}>
         {categories.map((c) => (

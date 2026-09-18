@@ -2,6 +2,7 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 import { SCOPE3_RANGE } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope3 } from '../hooks/useMeasuredScope3.js';
@@ -12,7 +13,7 @@ const categories = [
   { num: 1, name: 'Purchased Goods & Services', desc: 'Embodied emissions of food, paper, supplies, equipment, materials.', factor: 'EPA Supply Chain GHG Emission Factors (EEIO, spend-based)', status: 'Planned' },
   { num: 3, name: 'Fuel & Energy-Related (Upstream)', desc: 'Well-to-pump emissions for heating oil, propane, and grid electricity.', factor: 'EPA upstream factors (~15–20% of combustion)', status: 'Planned' },
   { num: 5, name: 'Waste Generated in Operations', desc: 'Landfill, recycling, composting; includes avoided virgin material and fugitive landfill methane.', factor: 'EPA WARM model', status: 'In dashboard (waste table)' },
-  { num: 6, name: 'Business Travel', desc: 'Faculty/staff flights, trains, hotels, mileage on KUA business.', factor: 'EPA Hub (ground); DEFRA (air, with radiative forcing)', status: 'In dashboard (faculty_travel)' },
+  { num: 6, name: 'Business Travel', desc: 'Faculty/staff flights, trains, hotels, mileage on KUA business.', factor: 'EPA Hub (ground); DEFRA (air, incl. indirect non-CO₂ effects)', status: 'In dashboard (faculty_travel)' },
   { num: 7, name: 'Employee Commuting', desc: 'Daily travel of non-resident faculty and staff to campus.', factor: 'EPA per-passenger-mile by mode', status: 'Planned' },
   { num: '+', name: 'Student Travel', desc: 'Term-break, international, and athletic team travel — likely the single largest Scope 3 source.', factor: 'Per-passenger-mile by mode (Yale-style addition)', status: 'In dashboard (day/us/intl/study_abroad)' },
 ];
@@ -102,7 +103,7 @@ function Scope3() {
           total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`,
           totalRange: `${SCOPE3_RANGE.low.toLocaleString()} – ${SCOPE3_RANGE.high.toLocaleString()} mt across 3-4 methods per component (Yale cohort / Andover-Exeter peer / national long-tail / source-country split — see /admin/methodology for full breakdown)`,
           perStudent: headlinePerStudent,
-          thirdMetric: { label: 'Dominant source', value: 'Travel', note: 'student travel ~70% of S3' },
+          thirdMetric: { label: 'Dominant source', value: 'Purchased goods', note: 'goods ~1,315 mt ≈ 50% of S3; travel ~760 mt ≈ 29%' },
           provenance: headlineProvenance,
           note: headlineNote,
           currentMethod: `Bottom-up multi-method estimate. Student travel uses Yale-style cohort method × KUA-specific fingerprint (~82 day commuters Upper Valley local, ~208 US boarders Northeast-skewed, ~50 international East-Asia heavy) cross-checked against Andover/Exeter peer benchmarks and source-country distance splits. Goods: EEIO spend-based across $2.5-4M procurement scenarios × EPA Supply Chain GHG Emission Factors v1.3. Waste: 420 people × per-day generation × diversion-split scenarios × EPA Hub 2025 Table 9 (Scope 3 Cat 5). Commuting: 52 staff × Upper Valley ACS distribution × ICCT effective fleet. Dining: actual boarding/day meal mix (~217K student meals + 50K faculty/staff) × 0.70-1.10 kg CO2e/meal. Upstream fuel: 12-22% uplift on bottom-up Scope 1. Range across 3-4 methods per component gives ${SCOPE3_RANGE.low.toLocaleString()}–${SCOPE3_RANGE.high.toLocaleString()} mt total — see /admin/methodology.`,
@@ -110,9 +111,9 @@ function Scope3() {
         }}
         references={[
           { title: 'Kool, B. (2025)', source: 'Sustainability Accounting at Royal Roads University', use: 'Student air travel scale at residential institutions' },
-          { title: 'EPA Supply Chain GHG Emission Factors v1.2', use: 'Spend-based EEIO factors for purchased goods (Cat 1)' },
-          { title: 'EPA Waste Reduction Model (WARM) v15', use: 'Net factors for landfill (+0.52), recycling (−0.10), composting (+0.04) kg CO₂e per ton' },
-          { title: 'DEFRA 2024 Conversion Factors for Company Reporting', use: 'Air travel per-passenger-km with 1.9× radiative forcing multiplier' },
+          { title: 'EPA Supply Chain GHG Emission Factors v1.3', use: 'Spend-based factors for purchased goods (Cat 1) — kg CO₂e per 2022 USD at purchaser prices, AR5' },
+          { title: 'EPA GHG Emission Factors Hub 2025, Table 9 (Scope 3 Cat 5)', use: 'Landfill 0.58, recycling 0.09, composting 0.11 mtCO₂e per short ton. Avoided emissions are EXCLUDED, so recycling and composting are smaller emissions rather than credits — the negative figures shown here previously answered the wrong question for an inventory.' },
+          { title: 'DEFRA 2024 Conversion Factors for Company Reporting', use: 'Air travel per passenger-km, economy, using the factor set that INCLUDES the indirect effects of non-CO₂ emissions (not a multiplier applied on top)' },
           { title: 'Greenhouse Gas Protocol Scope 3 Standard', source: 'WRI/WBCSD 2011', use: 'Defines all 15 Scope 3 categories; Cat 9 and Cat 12 explicitly excluded for schools' },
           { title: 'Yale Office of Sustainability', use: 'Student-travel category methodology adapted for KUA boarding-school context' },
         ]}
@@ -123,11 +124,11 @@ function Scope3() {
             detail: 'If all ~50 international students replace one home trip per year with an extended on-campus stay (e.g., during shoulder break), the saving is 50 students × 1 round trip × ~2.9 mtCO₂e per round trip. The single highest-leverage individual choice in the entire dashboard.',
             data: [
               { input: 'Average distance international student → BOS', value: '~7,500 km one-way', source: 'Geographic average for major Asian/EU origins' },
-              { input: 'DEFRA long-haul economy factor', value: '0.195 kg CO₂e/passenger-km', source: 'DEFRA Conversion Factors 2024 (with 1.9× radiative forcing multiplier)' },
+              { input: 'DEFRA long-haul economy factor', value: '0.20011 kg CO₂e/passenger-km', source: 'DEFRA 2024, long-haul economy, incl. indirect non-CO₂ effects' },
               { input: 'International cohort size', value: '~50 students', source: 'KUA enrollment estimate' },
             ],
             math: [
-              'per_round_trip = 7,500 km × 2 × 0.195 = 2,925 kg ≈ 2.93 mtCO₂e per student',
+              'per_round_trip = 7,500 km × 2 × 0.20011 = 3,002 kg ≈ 3.0 mtCO₂e per student',
               'cohort_savings  = 50 students × 2.93 = 146 mtCO₂e/yr',
               '',
               '# Range depends on actual cohort size and distances:',
@@ -146,7 +147,7 @@ function Scope3() {
               { input: 'Round trips per year per US boarder', value: '3 – 4 (Thanksgiving, winter, spring, summer)', source: 'Boarding-school break calendar' },
             ],
             math: [
-              '# Assume 50 of 150 US boarders within ground-driving distance (<500 mi)',
+              '# Assume 50 of 208 US boarders within ground-driving distance (<500 mi)',
               '# Average drive distance one-way: 350 mi',
               '',
               'baseline = 50 students × 4 trips × 2 (round) × 350 mi × 0.2986 = 41,804 kg = 41.8 mtCO₂e',
@@ -158,19 +159,19 @@ function Scope3() {
           },
           {
             action: 'Train/bus over plane for sub-1,000-mile travel',
-            impact: '−25 to −55 mtCO₂e/yr',
-            detail: 'Faculty business travel within the Northeast corridor. Trains emit ~70% less per passenger-mile than short-haul flights including radiative forcing.',
+            impact: '−11 to −18 mtCO₂e/yr',
+            detail: 'Faculty business travel within the Northeast corridor. Trains emit ~78% less per passenger-mile than short-haul flights — comparing DEFRA factor sets that both include the indirect effects of non-CO₂ emissions.',
             data: [
-              { input: 'Short-haul air factor', value: '0.246 kg CO₂e/passenger-km (~0.395/mi)', source: 'DEFRA 2024 short-haul economy with RF' },
+              { input: 'Short-haul air factor', value: '0.18287 kg CO₂e/passenger-km (~0.294/mi)', source: 'DEFRA 2024 short-haul economy, incl. indirect non-CO₂ effects' },
               { input: 'US passenger rail factor', value: '0.041 kg CO₂e/passenger-km (~0.066/mi)', source: 'DEFRA 2024 rail; Amtrak Sustainability Report' },
               { input: 'Faculty annual NE-corridor trips', value: '~80 round trips at ~600 mi avg', source: 'KUA business travel estimate' },
             ],
             math: [
-              'flying  = 80 trips × 2 × 600 mi × 0.395 = 37,920 kg = 37.9 mtCO₂e',
+              'flying  = 80 trips × 2 × 600 mi × 0.294 = 28,253 kg = 28.3 mtCO₂e',
               'train   = 80 trips × 2 × 600 mi × 0.066 =  6,336 kg =  6.3 mtCO₂e',
-              'savings = 31.6 mtCO₂e/yr (full mode shift)',
+              'savings = 28.3 − 6.3 = 22.0 mtCO₂e/yr (full mode shift)',
               '',
-              '# Realistic 80% mode shift: 25 mt; with bus also: up to 55 mt',
+              '# Realistic 50–80% mode shift: 11 to 18 mtCO₂e/yr',
             ],
           },
           {
@@ -179,7 +180,7 @@ function Scope3() {
             detail: 'Regional supply chains have lower transportation emissions. EPA Supply Chain factors are roughly 15–30% lower for local food sourcing.',
             data: [
               { input: 'Annual food spend (school dining)', value: '~$1.5M (estimate)', source: 'Boarding school operations norms' },
-              { input: 'EEIO factor — national supply', value: '0.55 kg CO₂e/USD', source: 'EPA Supply Chain GHG Emission Factors v1.2' },
+              { input: 'EEIO factor — national supply', value: '0.55 kg CO₂e/USD', source: 'EPA Supply Chain GHG Emission Factors v1.3' },
               { input: 'EEIO factor — regional supply', value: '~0.40 kg CO₂e/USD', source: 'EPA Supply Chain (regional categories)' },
               { input: 'Practical local procurement share', value: '15 – 40%', source: 'Real Food Challenge case studies' },
             ],
@@ -196,18 +197,18 @@ function Scope3() {
           {
             action: 'Compost diversion from landfill',
             impact: '−10 to −24 mtCO₂e/yr',
-            detail: 'Each ton of food waste diverted from landfill (+0.52 kg CO₂e/ton net) to composting (+0.04 kg CO₂e/ton) saves ~0.48 mtCO₂e/ton. Captures fugitive methane that would otherwise leak.',
+            detail: 'Each ton of food waste diverted from landfill (0.58 mtCO₂e/ton) to composting (0.11 mtCO₂e/ton) saves ~0.47 mtCO₂e/ton. Composting still emits — a smaller emission, not a credit — but it avoids the fugitive methane landfilled food produces.',
             data: [
               { input: 'School food waste generation', value: '~80 – 150 lb/student/yr', source: 'Food Recovery Network surveys' },
-              { input: 'Student count', value: '~600', source: 'KUA enrollment' },
+              { input: 'Student count', value: '340', source: 'KUA published enrollment' },
               { input: 'WARM landfill factor', value: '+580 kg CO₂e/ton', source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Mixed MSW landfilled (0.58 mt/short ton)' },
               { input: 'WARM compost factor', value: '+110 kg CO₂e/ton', source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Food waste composted (0.11 mt/short ton)' },
             ],
             math: [
               'food_waste_tons = 340 students × 100 lb/yr / 2,000 lb/ton = 17 tons',
-              'baseline_emissions = 17 × 520 = 8,840 kg = 8.84 mtCO₂e',
-              'compost_emissions  = 17 × 40 = 680 kg = 0.68 mtCO₂e',
-              'savings = 14.4 mtCO₂e/yr at 100% diversion',
+              'baseline_emissions = 17 tons × 580 kg/ton = 9,860 kg = 9.86 mtCO₂e',
+              'compost_emissions  = 17 tons × 110 kg/ton = 1,870 kg = 1.87 mtCO₂e',
+              'savings = 9.86 − 1.87 = 7.99 mtCO₂e/yr at 100% diversion',
               '',
               '# Range with realistic diversion rates (50-100%) and waste levels: 10-24',
             ],
@@ -221,12 +222,12 @@ function Scope3() {
               { input: 'School bus fuel economy', value: '6 – 8 mpg', source: 'EPA SmartWay' },
               { input: 'Athletic team annual mileage', value: '~5,000 – 12,000 mi/yr per bus', source: 'School transportation estimates' },
               { input: 'Electric bus efficiency', value: '~2.0 kWh/mi', source: 'NREL electric school bus data' },
-              { input: 'ISO-NE inventory emission factor', value: '0.234 kg/kWh', source: 'Per-fuel output factors at ISO-NE 2024 mix — the inventory average' },
+              { input: 'ISO-NE inventory emission factor', value: `${KG_PER_KWH} kg/kWh`, source: 'Per-fuel output factors at ISO-NE 2024 mix — the inventory average' },
             ],
             math: [
               '# Per bus per year (8,000 mi at 7 mpg):',
               'diesel_emissions = 8,000 / 7 × 10.21 = 11,668 kg = 11.7 mtCO₂e',
-              'ev_emissions     = 8,000 × 2.0 × 0.234 = 3,744 kg = 3.7 mtCO₂e',
+              `ev_emissions     = 8,000 × 2.0 × ${KG_PER_KWH} = ${Math.round(8000 * 2.0 * KG_PER_KWH).toLocaleString()} kg = ${(8000 * 2.0 * KG_PER_KWH / 1000).toFixed(1)} mtCO₂e`,
               'savings_per_bus  = 11.7 − 3.7 = 8.0 mtCO₂e/yr',
               '',
               '# Replacing 1 bus: 7 mt; partial fleet replacement: 4-10 mt',

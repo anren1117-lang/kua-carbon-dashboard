@@ -80,7 +80,7 @@ function Renewables() {
           {
             heading: 'Why the broken wind turbine is still on the dashboard',
             body: 'Hiding offline equipment misrepresents both reality (we have a turbine — it\'s just down) and history (whoever decides whether to restore it needs the historical baseline). The turbine is documented with status, last operational date, and any historical generation we have records of, with zero current output. The same data model accepts live readings the day it\'s restored.',
-            citation: 'GHG Protocol Scope 2 Guidance; IPCC AR6 on radiative forcing for net-metering accounting.',
+            citation: 'GHG Protocol Corporate Standard — the completeness and transparency reporting principles.',
           },
         ]}
       />
