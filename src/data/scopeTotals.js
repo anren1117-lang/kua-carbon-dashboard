@@ -13,7 +13,7 @@
 
 import { GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH } from './gridMix.js';
 import { avertAvoidedKgPerKwh, AVERT_SOURCE } from './gridMixHistory.js';
-import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT } from './academicCalendar.js';
+import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT, REPORTING_PERIOD } from './academicCalendar.js';
 
 // ─── Scope 1 ──────────────────────────────────────────────────────
 // Heating fuel (heating oil + propane) + refrigerant leakage + fleet.
@@ -334,9 +334,21 @@ export function composeRefrigerantMt(rows) {
  * @returns {{ totalMt: number, breakdown: object[], provenance: string, note: string }}
  */
 export function composeScope1FromBills(bills, opts = {}) {
-  const billsArr = Array.isArray(bills) ? bills : [];
-  const fleetRows = Array.isArray(opts.fleetRecords) ? opts.fleetRecords : [];
-  const refrigRows = Array.isArray(opts.refrigerantLogs) ? opts.refrigerantLogs : [];
+  const allBills  = Array.isArray(bills) ? bills : [];
+  const allFleet  = Array.isArray(opts.fleetRecords) ? opts.fleetRecords : [];
+  const allRefrig = Array.isArray(opts.refrigerantLogs) ? opts.refrigerantLogs : [];
+
+  // ─── Reporting-period boundary (Phase 429) ──────────────────────
+  // Partitioned once here rather than threaded through composeFleetMt /
+  // composeRefrigerantMt, so the counting lives in one place and those
+  // helpers stay unchanged. Undated rows are kept — see periodStatusOf().
+  const billsArr   = withinPeriod(allBills, opts.period);
+  const fleetRows  = withinPeriod(allFleet, opts.period);
+  const refrigRows = withinPeriod(allRefrig, opts.period);
+  const outOfPeriodRows =
+    (allBills.length - billsArr.length) +
+    (allFleet.length - fleetRows.length) +
+    (allRefrig.length - refrigRows.length);
 
   // Heating: same logic as before. Skip rows with unknown fuel_type
   // or invalid gallons rather than silently bucketing.
@@ -416,7 +428,8 @@ export function composeScope1FromBills(bills, opts = {}) {
     totalMt: Math.round(totalMt),
     breakdown,
     provenance: 'measured',
-    note: `Composed live: ${measuredParts.join(' + ')}.${remainingPlaceholderParts.length > 0 ? ` Still bottom-up: ${remainingPlaceholderParts.join(' + ')}.` : ''}`,
+    note: `Composed live: ${measuredParts.join(' + ')}.${remainingPlaceholderParts.length > 0 ? ` Still bottom-up: ${remainingPlaceholderParts.join(' + ')}.` : ''}${outOfPeriodRows > 0 ? ` ${outOfPeriodRows} row${outOfPeriodRows === 1 ? '' : 's'} excluded — outside ${REPORTING_PERIOD.label}.` : ''}`,
+    outOfPeriodRows,
   };
 }
 
@@ -486,6 +499,48 @@ export const WASTE_FACTORS_MT_PER_TON = {
   'E-Waste':    0.02,  // Mixed Electronics, recycled (was 0.30)
 };
 
+/**
+ * Which reporting period a row falls in: 'in', 'out', or 'undated'.
+ *
+ * UNDATED IS NOT OUT, and that distinction is the whole design. Every row in
+ * the composer tests carries no date (`{ fuel_type: 'Heating Oil', gallons:
+ * 50000 }`), and so does every Supabase row entered before the hooks began
+ * selecting the date columns. Treating those as out-of-period would break
+ * ~20 tests AND silently zero real data — so they are counted IN and
+ * reported separately, exactly as wasteSkipped already reports rows whose
+ * unit or waste_type cannot be priced.
+ *
+ * Year labels are checked before dates because waste rows carry both, and
+ * the label is what the admin form actually sets.
+ */
+const PERIOD_YEAR_FIELDS = ['school_year', 'fiscal_year'];
+const PERIOD_DATE_FIELDS = ['date', 'delivery_date', 'service_date', 'departure_date', 'period_start'];
+
+export function periodStatusOf(row, period = REPORTING_PERIOD) {
+  if (!row || typeof row !== 'object') return 'undated';
+  for (const f of PERIOD_YEAR_FIELDS) {
+    const v = row[f];
+    if (typeof v === 'string' && v.trim()) {
+      return v.trim() === period.schoolYear ? 'in' : 'out';
+    }
+  }
+  for (const f of PERIOD_DATE_FIELDS) {
+    const v = row[f];
+    // ISO yyyy-mm-dd compares correctly as a string; no Date parsing, no
+    // timezone to get wrong.
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) {
+      const d = v.slice(0, 10);
+      return d >= period.startIso && d <= period.endIso ? 'in' : 'out';
+    }
+  }
+  return 'undated';
+}
+
+/** Rows to count: everything except those provably outside the period. */
+export function withinPeriod(rows, period = REPORTING_PERIOD) {
+  return (Array.isArray(rows) ? rows : []).filter((r) => periodStatusOf(r, period) !== 'out');
+}
+
 // Convert a row's amount + unit field to short tons (the unit
 // WASTE_FACTORS_MT_PER_TON expects). Returns 0 for unrecognized units.
 function wasteTons(row) {
@@ -553,14 +608,33 @@ function regionFor(country) {
  * }} records
  */
 export function composeScope3FromRecords(records = {}) {
-  const day      = Array.isArray(records.dayStudents)           ? records.dayStudents           : [];
-  const usBoard  = Array.isArray(records.usBoardingStudents)    ? records.usBoardingStudents    : [];
-  const intl     = Array.isArray(records.internationalStudents) ? records.internationalStudents : [];
-  const sa       = Array.isArray(records.studyAbroad)           ? records.studyAbroad           : [];
-  const fac      = Array.isArray(records.facultyTravel)         ? records.facultyTravel         : [];
-  const waste    = Array.isArray(records.wasteRecords)          ? records.wasteRecords          : [];
-  const goods    = Array.isArray(records.purchasedGoods)        ? records.purchasedGoods        : [];
-  const commute  = Array.isArray(records.commuting)             ? records.commuting             : [];
+  const arr = (v) => (Array.isArray(v) ? v : []);
+  const allDay     = arr(records.dayStudents);
+  const allUsBoard = arr(records.usBoardingStudents);
+  const allIntl    = arr(records.internationalStudents);
+  const allSa      = arr(records.studyAbroad);
+  const allFac     = arr(records.facultyTravel);
+  const allWaste   = arr(records.wasteRecords);
+  const allGoods   = arr(records.purchasedGoods);
+  const allCommute = arr(records.commuting);
+
+  // ─── Reporting-period boundary (Phase 429) ──────────────────────
+  // Same partition-once approach as composeScope1FromBills. Undated rows
+  // count IN; only rows provably outside the period are dropped, and the
+  // count is reported so an admin can see it rather than wonder.
+  const day     = withinPeriod(allDay, records.period);
+  const usBoard = withinPeriod(allUsBoard, records.period);
+  const intl    = withinPeriod(allIntl, records.period);
+  const sa      = withinPeriod(allSa, records.period);
+  const fac     = withinPeriod(allFac, records.period);
+  const waste   = withinPeriod(allWaste, records.period);
+  const goods   = withinPeriod(allGoods, records.period);
+  const commute = withinPeriod(allCommute, records.period);
+  const outOfPeriodRows =
+    (allDay.length - day.length) + (allUsBoard.length - usBoard.length) +
+    (allIntl.length - intl.length) + (allSa.length - sa.length) +
+    (allFac.length - fac.length) + (allWaste.length - waste.length) +
+    (allGoods.length - goods.length) + (allCommute.length - commute.length);
 
   // If literally nothing is in any table, fall back to the placeholder
   // wholesale — the dashboard is honest about having no measured data.
@@ -718,9 +792,11 @@ export function composeScope3FromRecords(records = {}) {
     // mixed provenance read breakdown[i].provenance directly.
     provenance: measuredRowCount > 0 ? 'measured' : 'estimated',
     cohortDetail,
-    note: measuredRowCount > 0
+    note: (measuredRowCount > 0
       ? `${measuredRowCount} Scope 3 component${measuredRowCount === 1 ? '' : 's'} composed from Supabase records. Dining + upstream fuel still bottom-up.`
-      : 'No Scope 3 records yet — bottom-up placeholder.',
+      : 'No Scope 3 records yet — bottom-up placeholder.')
+      + (outOfPeriodRows > 0 ? ` ${outOfPeriodRows} row${outOfPeriodRows === 1 ? '' : 's'} excluded — outside ${REPORTING_PERIOD.label}.` : ''),
+    outOfPeriodRows,
   };
 }
 

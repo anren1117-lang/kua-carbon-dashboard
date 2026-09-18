@@ -54,26 +54,32 @@ export function useMeasuredScope1() {
         //   - scope1_fleet        (initial schema, /admin/scope-1/fleet)       → fleet
         //   - scope1_refrigerants (initial schema, /admin/scope-1/refrigerants) → refrigerants
         //
+        // Phase 429: each select now also fetches the column the reporting
+        // period is matched on — fuel_bills.date (proven by validateFuelRow),
+        // delivery_date / service_date / period_start (migration
+        // 20260429220000). Without these the period boundary in
+        // composeScope1FromBills can never fire: every row reads 'undated'.
+        //
         // The per-fuel tables (heating_oil / propane) don't store a
         // fuel_type column — we tag each row before passing to
         // composeScope1FromBills so the factor lookup works. fuel_bills
         // already has fuel_type so passes through unchanged.
         const [bills, oil, propane, fleet, refrig] = await cachedFetch('scope1', () => Promise.all([
-          supabase.from('fuel_bills').select('fuel_type, gallons'),
-          supabase.from('scope1_heating_oil').select('gallons').then(
+          supabase.from('fuel_bills').select('fuel_type, gallons, date'),
+          supabase.from('scope1_heating_oil').select('gallons, delivery_date').then(
             (r) => r,
             () => ({ data: [], error: null })
           ),
-          supabase.from('scope1_propane').select('gallons').then(
+          supabase.from('scope1_propane').select('gallons, delivery_date').then(
             (r) => r,
             () => ({ data: [], error: null })
           ),
-          supabase.from('scope1_fleet').select('fuel_type, gallons').then(
+          supabase.from('scope1_fleet').select('fuel_type, gallons, period_start, period_end').then(
             (r) => r,
             // Tolerate "table does not exist" — falls back to placeholder.
             () => ({ data: [], error: null })
           ),
-          supabase.from('scope1_refrigerants').select('refrigerant_type, recharge_lb, reclaim_lb').then(
+          supabase.from('scope1_refrigerants').select('refrigerant_type, recharge_lb, reclaim_lb, service_date').then(
             (r) => r,
             () => ({ data: [], error: null })
           ),

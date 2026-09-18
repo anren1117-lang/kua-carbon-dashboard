@@ -89,3 +89,48 @@ export const CALENDAR_PROVENANCE = {
  * constant; not folded in here.
  */
 export const STUDENT_WEEKS_ON_CAMPUS_UNRESOLVED = true;
+
+/**
+ * The reporting period the inventory covers.
+ *
+ * TWO REPRESENTATIONS, because the tables disagree about how to say "when".
+ * Eight store a DATE — fuel_bills.date, scope1_heating_oil.delivery_date,
+ * scope1_propane.delivery_date, scope1_refrigerants.service_date,
+ * scope1_fleet.period_start/end, waste.date, study_abroad.departure_date,
+ * faculty_travel.departure_date. Five store a YEAR LABEL — day_students,
+ * us_boarding_students, international_students and commuting via school_year,
+ * purchased_goods via fiscal_year. A row is matched on whichever it carries.
+ *
+ * The school year is the default because it is what KUA's own admin forms
+ * write: all five student/commuting forms default to '2025-2026'.
+ *
+ * This is a BOUNDARY, not a duration — deliberately separate from
+ * INSTRUCTIONAL_DAYS and STUDENT_RESIDENCY_WEEKS above, for the same reason
+ * this module keeps two day-counts instead of one.
+ */
+export const REPORTING_PERIOD = {
+  schoolYear: '2025-2026',
+  startIso:   '2025-07-01',
+  endIso:     '2026-06-30',
+  label:      '2025-2026 school year',
+  provenance: 'estimated',
+  note: 'Bounds Scope 1 and Scope 3 live rows. Rows with no date at all are counted IN and reported separately — excluding them would silently zero every row entered before the date columns were fetched.',
+};
+
+/**
+ * Scope 2 does NOT share that window, and this publishes the gap rather than
+ * hiding it — the same posture as FACTOR_RECONCILIATION and
+ * SINKS_RECONCILIATION.
+ *
+ * composedYtd.js composes calendar 2026 (Jan 1 -> COMPOSED_YTD_AS_OF
+ * 2026-09-14, 257 days) and annualizes it. Scope 1 and Scope 3 are entered
+ * against the school year. Summing the two adds up two different twelve-month
+ * windows, which the GHG Protocol's consistency principle would flag.
+ * Restating either one moves published figures, so it is a decision, not a fix.
+ */
+export const PERIOD_RECONCILIATION = {
+  scope1And3: '2025-2026 school year (2025-07-01 to 2026-06-30)',
+  scope2:     'calendar 2026, YTD to 2026-09-14 (257 days), seasonally annualized',
+  aligned:    false,
+  note: 'Scope 2 comes from monthly BMS captures keyed to the calendar year; Scope 1 and 3 from admin forms keyed to the school year. Until one is restated the inventory spans two different windows.',
+};

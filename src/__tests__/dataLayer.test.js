@@ -1324,3 +1324,101 @@ describe('renewables composers (composeSolarFromRecords / Geothermal / Wind)', (
     expect(r.latest.historicalKwh).toBeNull(); // not present on the latest row
   });
 });
+
+// ─── Reporting-period boundary (Phase 429) ──────────────────────────────
+//
+// The defect: no composer bounded its rows by date, and neither hook even
+// fetched a date column. Two heating seasons of fuel_bills, or one student
+// enrolled two years, would double the figure and label it 'measured'.
+//
+// The constraint that shapes the whole design: every composer test above
+// passes UNDATED rows. Excluding those would break ~20 tests and silently
+// zero every Supabase row entered before the date columns were selected — so
+// undated counts IN and is reported, never dropped.
+describe('reporting-period boundary', () => {
+  const P = { schoolYear: '2025-2026', startIso: '2025-07-01', endIso: '2026-06-30' };
+
+  it('classifies a row by year label, date, or neither', async () => {
+    const { periodStatusOf } = await import('../data/scopeTotals.js');
+    expect(periodStatusOf({ fuel_type: 'Heating Oil', gallons: 100 }, P)).toBe('undated');
+    expect(periodStatusOf({ school_year: '2025-2026' }, P)).toBe('in');
+    expect(periodStatusOf({ school_year: '2024-2025' }, P)).toBe('out');
+    expect(periodStatusOf({ fiscal_year: '2025-2026' }, P)).toBe('in');
+    expect(periodStatusOf({ date: '2026-01-15' }, P)).toBe('in');
+    expect(periodStatusOf({ date: '2026-09-01' }, P)).toBe('out');
+    expect(periodStatusOf({ delivery_date: '2025-11-02' }, P)).toBe('in');
+    expect(periodStatusOf({ service_date: '2024-03-03' }, P)).toBe('out');
+    expect(periodStatusOf({ departure_date: '2026-06-30' }, P)).toBe('in');   // inclusive
+    expect(periodStatusOf({ period_start: '2025-07-01' }, P)).toBe('in');     // inclusive
+  });
+
+  it('treats a malformed or missing date as undated, never as out', async () => {
+    const { periodStatusOf } = await import('../data/scopeTotals.js');
+    // Dropping these would delete real rows on a typo. They must be counted.
+    expect(periodStatusOf({ date: '09-01-2026' }, P)).toBe('undated');
+    expect(periodStatusOf({ date: '' }, P)).toBe('undated');
+    expect(periodStatusOf(null, P)).toBe('undated');
+    expect(periodStatusOf(undefined, P)).toBe('undated');
+    expect(periodStatusOf('not an object', P)).toBe('undated');
+  });
+
+  it('prefers the year label when a row carries both (waste rows do)', async () => {
+    const { periodStatusOf } = await import('../data/scopeTotals.js');
+    const row = { waste_type: 'Landfill', amount: 10, unit: 'tons', date: '2019-01-01', school_year: '2025-2026' };
+    expect(periodStatusOf(row, P)).toBe('in');
+  });
+
+  it('withinPeriod keeps in + undated and drops only provable out', async () => {
+    const { withinPeriod } = await import('../data/scopeTotals.js');
+    const rows = [{ gallons: 1 }, { school_year: '2025-2026' }, { school_year: '2019-2020' }, { date: '2026-02-02' }];
+    expect(withinPeriod(rows, P)).toHaveLength(3);
+    expect(withinPeriod(null, P)).toEqual([]);
+  });
+
+  it('EXCLUDES out-of-period Scope 1 rows and reports the count', async () => {
+    const { composeScope1FromBills, FUEL_FACTORS_KG_PER_GAL } = await import('../data/scopeTotals.js');
+    const r = composeScope1FromBills([
+      { fuel_type: 'Heating Oil', gallons: 1000, date: '2026-01-10' },  // in
+      { fuel_type: 'Heating Oil', gallons: 9999, date: '2019-01-10' },  // out
+    ], { period: P });
+    const heating = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
+    expect(heating.mt).toBe(Math.round((1000 * FUEL_FACTORS_KG_PER_GAL['Heating Oil']) / 1000));
+    expect(r.outOfPeriodRows).toBe(1);
+    expect(r.note).toMatch(/excluded/);
+  });
+
+  it('EXCLUDES out-of-period Scope 3 cohort rows and reports the count', async () => {
+    const { composeScope3FromRecords, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT } = await import('../data/scopeTotals.js');
+    const r = composeScope3FromRecords({
+      dayStudents: [
+        { school_year: '2025-2026' },
+        { school_year: '2025-2026' },
+        { school_year: '2019-2020' },
+      ],
+      period: P,
+    });
+    const travel = r.breakdown.find((b) => b.source.toLowerCase().includes('student travel'));
+    expect(travel.mt).toBe(Math.round(2 * SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.day));
+    expect(r.outOfPeriodRows).toBe(1);
+    expect(r.note).toMatch(/excluded/);
+  });
+
+  it('still counts undated rows — the regression the ~20 tests above depend on', async () => {
+    const { composeScope1FromBills, FUEL_FACTORS_KG_PER_GAL } = await import('../data/scopeTotals.js');
+    const r = composeScope1FromBills([{ fuel_type: 'Heating Oil', gallons: 1000 }], { period: P });
+    const heating = r.breakdown.find((b) => b.source.toLowerCase().includes('heating'));
+    expect(heating.mt).toBe(Math.round((1000 * FUEL_FACTORS_KG_PER_GAL['Heating Oil']) / 1000));
+    expect(r.outOfPeriodRows).toBe(0);
+  });
+
+  it('the default period is wired, and Scope 2 is published as NOT aligned', async () => {
+    const { REPORTING_PERIOD, PERIOD_RECONCILIATION } = await import('../data/academicCalendar.js');
+    expect(REPORTING_PERIOD.schoolYear).toBe('2025-2026');
+    expect(REPORTING_PERIOD.startIso < REPORTING_PERIOD.endIso).toBe(true);
+    // The mismatch is stated rather than silently resolved, like
+    // FACTOR_RECONCILIATION and SINKS_RECONCILIATION.
+    expect(PERIOD_RECONCILIATION.aligned).toBe(false);
+    expect(PERIOD_RECONCILIATION.scope2).toMatch(/calendar 2026/);
+  });
+});
+

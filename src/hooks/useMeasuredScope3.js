@@ -35,21 +35,28 @@ export function useMeasuredScope3() {
 
     async function load() {
       try {
+        // Phase 429: every select now fetches the column its reporting period
+        // is matched on. day_students.school_year and
+        // study_abroad.departure_date were already selected — day_students'
+        // was selected and never read, which is what the critic flagged.
+        // Column names verified twice each: migrations for purchased_goods
+        // (fiscal_year, NOT invoice_date) and commuting; useTable's order-by
+        // column plus the admin form insert payloads for the rest.
         const [day, us, intl, sa, fac, waste, goods, commute] = await cachedFetch('scope3', () => Promise.all([
           supabase.from('day_students').select('zip_code, school_year'),
-          supabase.from('us_boarding_students').select('zip_code, state'),
-          supabase.from('international_students').select('country'),
+          supabase.from('us_boarding_students').select('zip_code, state, school_year'),
+          supabase.from('international_students').select('country, school_year'),
           supabase.from('study_abroad').select('destination_country, destination_city, departure_date, return_date'),
-          supabase.from('faculty_travel').select('destination_country, destination_city, trip_purpose'),
-          supabase.from('waste').select('waste_type, amount, unit'),
+          supabase.from('faculty_travel').select('destination_country, destination_city, trip_purpose, departure_date'),
+          supabase.from('waste').select('waste_type, amount, unit, date, school_year'),
           // Cat 1 + Cat 7 admin pages write to these. Tolerate "table
           // doesn't exist" (migration not applied) by falling back
           // to empty data — composer keeps the placeholder rows.
-          supabase.from('purchased_goods').select('spend_usd, eeio_factor_override').then(
+          supabase.from('purchased_goods').select('spend_usd, eeio_factor_override, fiscal_year').then(
             (r) => r,
             () => ({ data: [], error: null })
           ),
-          supabase.from('commuting').select('mode, one_way_miles, days_per_week, weeks_per_year').then(
+          supabase.from('commuting').select('mode, one_way_miles, days_per_week, weeks_per_year, school_year').then(
             (r) => r,
             () => ({ data: [], error: null })
           ),

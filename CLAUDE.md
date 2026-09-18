@@ -961,3 +961,54 @@ asserts it **is** reported, so the rule cannot quietly match nothing. Dry run
 predicted 22 pass / 1 fail before the fix; reality after it is 23 / 0.
 
 With Phase 427 (`proseFigures`) this closes task #17 item 2.
+
+## Phase 429 — nothing bounded the inventory to a reporting period
+
+The three-critic review's highest-risk finding, and it was worse than first
+diagnosed. No composer filtered rows by date — and **neither hook even fetched
+a date column**. `useMeasuredScope1` selected `fuel_type, gallons`;
+`useMeasuredScope3` omitted `waste.date`, `faculty_travel.departure_date`,
+`purchased_goods.fiscal_year` and `school_year` for two of the three cohorts.
+`day_students.school_year` was selected and never read.
+
+So two heating seasons of `fuel_bills`, or one student enrolled across two
+years, would double the figure and label it **measured**. Scope 2 cannot do
+this: `composedYtd.js` keys by month against `COMPOSED_YTD_AS_OF` and
+`annualizeFactorForWindow()` returns **null, not 1**, for a window that doesn't
+overlap.
+
+**`REPORTING_PERIOD`** now lives in `academicCalendar.js` — a *boundary*, kept
+deliberately separate from that module's durations, for the same reason it
+keeps two day-counts instead of one. It carries both representations because
+the tables disagree about how to say "when": eight store a date, five store a
+year label. The school year is the default because it is what all five admin
+forms actually write (`'2025-2026'`).
+
+**`PERIOD_RECONCILIATION` publishes a mismatch rather than hiding it.** Scope 2
+composes calendar 2026 (to `2026-09-14`, 257 days); Scope 1 and 3 are entered
+against the school year. The inventory therefore spans two different
+twelve-month windows — a GHG Protocol consistency problem. Restating either
+moves published figures, so it is a decision, not a fix, and `aligned: false`
+is asserted by a test so it cannot drift into a silent claim of alignment.
+
+**Undated counts IN.** Every composer test passes dateless rows, and so does
+every Supabase row entered before these columns were selected. Excluding them
+would break ~20 tests *and* silently zero real data, so they are counted and
+reported — the `wasteSkipped` pattern that was already sitting in the code
+being edited. A malformed date reads `undated`, never `out`: a typo must not
+delete a row.
+
+Partitioning happens **once**, at the two top-level composers, so
+`composeFleetMt` / `composeRefrigerantMt` / `composePurchasedGoodsMt` /
+`composeCommutingMt` are untouched and the counting lives in one place.
+
+*Caught in my own edit before shipping:* `composeScope3FromRecords` computed
+`outOfPeriodRows` and never returned it — a dead variable and a silent
+exclusion, which is the exact failure this phase exists to prevent. Scope 1
+reported it; Scope 3 dropped it. Both report it now.
+
+This is a **no-op on today's published numbers** — both totals are placeholders
+(`provenance: 'estimated'`), so nothing moves. The value is entirely in what it
+prevents once real rows land. Suite 1,416 → 1,424.
+
+Closes task #17 item 1.
