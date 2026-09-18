@@ -88,14 +88,14 @@ function Scope1() {
         color="#ef4444"
         estimate={{
           total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`,
-          totalRange: `${SCOPE1_RANGE.low.toLocaleString()} – ${SCOPE1_RANGE.high.toLocaleString()} mt across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical NH-CZ6 stock / ENERGY STAR HDD-direct upper bound)`,
+          totalRange: `${SCOPE1_RANGE.low.toLocaleString()} – ${SCOPE1_RANGE.high.toLocaleString()} mt. All three components are PARAMETER SENSITIVITIES, not independent methods: one model per component run at three assumptions (heating at ASHRAE 90.1 / KUA-typical NH-CZ6 / ENERGY STAR HDD-direct intensities; fleet and refrigerants likewise). The spread shows how much the answer depends on those assumptions — it is not three sources agreeing.`,
           perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
           period: REPORTING_PERIOD.label,
           dataIssue,
           provenance: headlineProvenance,
           note: headlineNote,
-          currentMethod: `Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Range across 3 methods per component (ASHRAE 90.1 modern compliance / KUA-typical / ENERGY STAR HDD-direct upper) gives ${Math.round(SCOPE1_RANGE.low).toLocaleString()}–${Math.round(SCOPE1_RANGE.high).toLocaleString()} mt total — see /admin/methodology for the full breakdown.`,
+          currentMethod: `Bottom-up estimate from KUA actual building stock × NH-CZ6 heating intensity. Heating fuel ~111K gal oil + ~19K gal propane / yr from 290K sqft × intensity by category (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Fleet: 5 vehicles × actual annualMiles ÷ mpg × EPA Mobile Combustion (~54 mt). Refrigerants: 80 lb HVAC charge × 5–15%/yr leak × IPCC AR6 GWPs (~7 mt). Each component is one model run at three assumptions, not three independent methods — heating at ASHRAE 90.1 / KUA-typical / ENERGY STAR HDD-direct intensities, fleet and refrigerants likewise. That parameter sensitivity gives ${Math.round(SCOPE1_RANGE.low).toLocaleString()}–${Math.round(SCOPE1_RANGE.high).toLocaleString()} mt total — see /admin/methodology for the full breakdown.`,
           futureMethod: 'Heating fuel → annual delivery invoices per building entered via Admin Portal (fuel_bills table) × EPA factors → flips to MEASURED. Refrigerants → HVAC technician service-report mass balance × IPCC AR6 GWP100 → MEASURED. Fleet → KUA fuel-card records × EPA Mobile Combustion factors → MEASURED. Once all three integrate, this page reads measured end-to-end.',
         }}
         references={[

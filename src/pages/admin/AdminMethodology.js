@@ -180,7 +180,7 @@ function AdminMethodology() {
 
       <div style={styles.card}>
         <h2 style={styles.h2}>
-          Scope 1 estimate range — multiple methods per component <ProvenancePill provenance="cited" />
+          Scope 1 estimate range — parameter sensitivity per component <ProvenancePill provenance="cited" />
         </h2>
         <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
           Same multi-method treatment as Scope 3, applied to KUA's direct combustion + leakage
@@ -199,7 +199,7 @@ function AdminMethodology() {
           <div style={styles.compareCell}>
             <div style={styles.compareLabel}>Scope 1 — central</div>
             <div style={styles.compareValue}>{SCOPE1_RANGE.central.toLocaleString()} <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>mt</span></div>
-            <div style={styles.compareDelta}>Mean across methods</div>
+            <div style={styles.compareDelta}>Unweighted mean across parameter runs — not a consensus of methods</div>
           </div>
           <div style={styles.compareCell}>
             <div style={styles.compareLabel}>Scope 1 — high</div>
@@ -221,11 +221,15 @@ function AdminMethodology() {
 
       <div style={styles.card}>
         <h2 style={styles.h2}>
-          Scope 3 estimate range — multiple methods per component <ProvenancePill provenance="cited" />
+          Scope 3 estimate range — cross-checks and sensitivities <ProvenancePill provenance="cited" />
         </h2>
         <p style={{ marginTop: 8, marginBottom: 14, color: '#94a3b8', fontSize: 13, lineHeight: 1.6 }}>
           A single number for Scope 3 hides the fact that the answer depends heavily on which
-          methodology you anchor on. For each component below we run 3-4 independent methods
+          methodology you anchor on. Each component below is tagged: a CROSS-CHECK derives the
+          figure two independent ways, so agreement is evidence; a SENSITIVITY runs one model at
+          several parameter values, so agreement between the runs corroborates nothing. Five of
+          the eight are sensitivities, so the spread below is mostly a measure of assumption
+          dependence rather than of independent methods agreeing
           (e.g. Yale-style cohort method vs Andover/Exeter peer benchmark vs national long-tail
           scenario for US boarders) and report the spread. The whole-Scope-3 range
           ({SCOPE3_RANGE.low.toLocaleString()}–{SCOPE3_RANGE.high.toLocaleString()} mtCO₂e/yr,
@@ -344,7 +348,27 @@ function Scope3RangeRow({ row }) {
   return (
     <div style={s3Styles.row}>
       <div style={s3Styles.head}>
-        <div style={s3Styles.title}>{row.component}</div>
+        <div style={s3Styles.title}>
+          {row.component}
+          {/* A cross-check derives the figure two independent ways, so
+              agreement is evidence. A sensitivity runs one model at several
+              parameter values, so agreement between runs proves nothing.
+              Both are useful; only one is corroboration. */}
+          {row.independence && (
+            <span
+              title={row.independenceNote}
+              style={{
+                marginLeft: 10, fontSize: 10, padding: '2px 8px', borderRadius: 4,
+                fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6,
+                background: row.independence === 'cross-check' ? '#052e1a' : '#3a2a0d',
+                color: row.independence === 'cross-check' ? '#86efac' : '#fbbf24',
+                border: `1px solid ${row.independence === 'cross-check' ? '#14532d' : '#92400e'}`,
+              }}
+            >
+              {row.independence}
+            </span>
+          )}
+        </div>
         <div style={s3Styles.range}>
           <span style={s3Styles.lo}>{Math.round(row.low).toLocaleString()}</span>
           <span style={s3Styles.sep}> – </span>
@@ -359,7 +383,7 @@ function Scope3RangeRow({ row }) {
             ...s3Styles.barFill,
             width: span > 0 ? '100%' : '4px',
           }}
-          title={`Span ${Math.round(span).toLocaleString()} mt across ${row.methods.length} methods`}
+          title={`Span ${Math.round(span).toLocaleString()} mt across ${row.methods.length} ${row.independence === 'cross-check' ? 'methods' : 'parameter runs'}`}
         />
       </div>
       <div style={s3Styles.methodsList}>

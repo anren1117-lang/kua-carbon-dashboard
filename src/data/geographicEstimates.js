@@ -133,6 +133,27 @@ export const HEATING_KBTU_PER_SQFT = {
 // independently-derived single-point estimates. Central = mean of
 // methods (each method is one reasonable interpretation; mean is the
 // least-arbitrary aggregator without weighting).
+// ─── "method" vs "scenario": the distinction this file kept blurring ────
+//
+// A CROSS-CHECK derives the same quantity two independent ways — a built-up
+// calculation beside an externally published benchmark — so agreement between
+// them is evidence. A SENSITIVITY runs ONE model at several parameter values;
+// the spread shows how much the answer depends on an assumption, which is
+// useful, but agreement between the runs is not corroboration of anything.
+//
+// Both were labelled "N method cross-check" here. The starkest case: fleet B
+// and C are literally A x0.78 and A x1.20, so their mean returns A to within
+// 0.7% — a number averaged with two scalings of itself, presented as three
+// methods agreeing. Upstream fuel already called its entries "scenarios" in
+// its own header while the pages called them methods.
+//
+// SINKS_RANGE has labelled its non-independent entry honestly since Phase 411
+// ("the adopted figure — not independent"). This generalises that.
+export const INDEPENDENCE = {
+  CROSS_CHECK: 'cross-check',
+  SENSITIVITY: 'sensitivity',
+};
+
 function rangeFromMethods(methods) {
   const all = methods.filter((m) => Number.isFinite(m.mt));
   if (all.length === 0) return { methods: [], low: 0, central: 0, high: 0 };
@@ -144,7 +165,7 @@ function rangeFromMethods(methods) {
   };
 }
 
-// ─── SCOPE 1 heating from building stock — 3 method cross-check ──
+// ─── SCOPE 1 heating — 3-parameter sensitivity (one model) ──────
 
 const _heatingRange = (() => {
   // Sum demand from KUA's actual building stock at three different
@@ -198,6 +219,8 @@ const _heatingRange = (() => {
   return rangeFromMethods([A, B, C]);
 })();
 export const SCOPE1_HEATING_RANGE = _heatingRange;
+SCOPE1_HEATING_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE1_HEATING_RANGE.independenceNote = 'One buildHeatingMt() model run at three intensity assumptions (ASHRAE 90.1 / KUA-typical NH-CZ6 / ENERGY STAR HDD-direct), same 90-10 oil-propane mix. The spread is how much the answer depends on assumed intensity, not three sources agreeing.';
 export const SCOPE1_HEATING_BOTTOM_UP_MT = Math.round(_heatingRange.central);
 // Back-compat: existing callers expect SCOPE1_HEATING_DETAIL with
 // .oilGalYr / .propaneGalYr / .perBuilding fields. Use Method B
@@ -212,7 +235,7 @@ export const SCOPE1_HEATING_DETAIL = {
   assumption: '90% heating oil + 10% propane mix (KUA-typical method; see SCOPE1_HEATING_RANGE for full spread).',
 };
 
-// ─── SCOPE 1 fleet — 3 method cross-check ────────────────────────
+// ─── SCOPE 1 fleet — registry calc + 2 scenario bounds ──────────
 
 const _fleetRange = (() => {
   // Method A: computed exactly from data/transportation.js registry
@@ -252,13 +275,15 @@ const _fleetRange = (() => {
   return { ...r, perVehicle };
 })();
 export const SCOPE1_FLEET_RANGE = _fleetRange;
+SCOPE1_FLEET_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE1_FLEET_RANGE.independenceNote = 'Methods B and C are Method A multiplied by 0.78 and 1.20. Their mean returns A to within 0.7%, so the central is the registry calculation and the spread is a maintenance-state bound.';
 export const SCOPE1_FLEET_BOTTOM_UP_MT = Math.round(_fleetRange.central);
 export const SCOPE1_FLEET_DETAIL = {
   fleetMt: SCOPE1_FLEET_BOTTOM_UP_MT,
   perVehicle: _fleetRange.perVehicle,
 };
 
-// ─── SCOPE 1 refrigerants — 3 method cross-check ────────────────
+// ─── SCOPE 1 refrigerants — 3-parameter sensitivity (one calc) ──
 
 const _refrigerantsRange = (() => {
   // Method A: ASHRAE Standard 147 best-practice — 5%/yr leak rate.
@@ -281,6 +306,8 @@ const _refrigerantsRange = (() => {
   return rangeFromMethods([A, B, C]);
 })();
 export const SCOPE1_REFRIGERANTS_RANGE = _refrigerantsRange;
+SCOPE1_REFRIGERANTS_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE1_REFRIGERANTS_RANGE.independenceNote = 'One calc() at three (charge, leak-rate) pairs — 80lb/5%, 80lb/10%, 100lb/15%. Leak rate is the assumption under test; the GWPs and the 70-30 split are identical across all three.';
 export const SCOPE1_REFRIGERANTS_BOTTOM_UP_MT = Math.round(_refrigerantsRange.central);
 export const SCOPE1_REFRIGERANTS_DETAIL = {
   refrigerantsMt: SCOPE1_REFRIGERANTS_BOTTOM_UP_MT,
@@ -398,6 +425,8 @@ const _dayTravel = (() => {
   };
 })();
 export const SCOPE3_DAY_TRAVEL = _dayTravel;
+SCOPE3_DAY_TRAVEL.independence = INDEPENDENCE.CROSS_CHECK;
+SCOPE3_DAY_TRAVEL.independenceNote = "Method A builds up from ACS mode share and distance; Method B is EPA's independently published Smart Location Database benchmark (1.4 mt/student). Two derivations, one external. Method C is a carpool/EV scenario bound, not a third source.";
 
 // ─── US boarders: 3 method cross-check ──────────────────────────
 const _usBoarderTravel = (() => {
@@ -442,6 +471,8 @@ const _usBoarderTravel = (() => {
   };
 })();
 export const SCOPE3_US_BOARDER_TRAVEL = _usBoarderTravel;
+SCOPE3_US_BOARDER_TRAVEL.independence = INDEPENDENCE.CROSS_CHECK;
+SCOPE3_US_BOARDER_TRAVEL.independenceNote = 'Method A is a built-up Yale-style cohort calculation; Method B is the independently published Andover/Exeter peer figure (2.8 mt/student). Method C is a national-long-tail scenario bound, not a third source.';
 
 // ─── International boarders: 4 method cross-check ───────────────
 const _intlTravel = (() => {
@@ -498,6 +529,8 @@ const _intlTravel = (() => {
   };
 })();
 export const SCOPE3_INTL_TRAVEL = _intlTravel;
+SCOPE3_INTL_TRAVEL.independence = INDEPENDENCE.CROSS_CHECK;
+SCOPE3_INTL_TRAVEL.independenceNote = "Methods A and B are two derivations (weighted per-RT vs explicit source-country split) sharing the DEFRA factor family; Method C is Yale's independently published per-student figure. Method D is a two-RT-plus-summer scenario bound.";
 
 // ─── Composite student travel (sum of cohort ranges) ───────────
 export const SCOPE3_STUDENT_TRAVEL_RANGE = {
@@ -507,7 +540,7 @@ export const SCOPE3_STUDENT_TRAVEL_RANGE = {
 };
 export const SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT = Math.round(SCOPE3_STUDENT_TRAVEL_RANGE.central);
 
-// ─── Dining (food procurement) — 3 method cross-check ─────────
+// ─── Dining — 3-factor sensitivity (one meal count) ───────────
 const _diningRange = (() => {
   // Boarders eat school meals essentially all the time (3 meals × 7
   // days × 36 weeks = 756 meals/yr). Day students eat fewer school
@@ -549,9 +582,11 @@ const _diningRange = (() => {
   };
 })();
 export const SCOPE3_DINING_RANGE = _diningRange;
+SCOPE3_DINING_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE3_DINING_RANGE.independenceNote = 'The same meal count multiplied by three per-meal factors (0.70 / 0.85 / 1.10 kg CO2e). The menu mix is the assumption under test; the meal count is identical across all three.';
 export const SCOPE3_DINING_BOTTOM_UP_MT = Math.round(_diningRange.central);
 
-// ─── Waste — 3 method cross-check ───────────────────────────────
+// ─── Waste — 3-parameter sensitivity (one model) ────────────────
 const _wasteRange = (() => {
   const peopleOnCampus = 420;
   const daysPerYr = 220;
@@ -592,9 +627,11 @@ const _wasteRange = (() => {
   };
 })();
 export const SCOPE3_WASTE_RANGE = _wasteRange;
+SCOPE3_WASTE_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE3_WASTE_RANGE.independenceNote = 'One generation-and-diversion model at three parameter sets (0.4/0.5/0.7 kg per person-day against 50-30-20, 60-25-15, 75-20-5 splits). Same EPA Hub Table 9 factors throughout.';
 export const SCOPE3_WASTE_BOTTOM_UP_MT = Math.round(_wasteRange.central);
 
-// ─── Faculty/staff commute — 3 method cross-check ──────────────
+// ─── Faculty/staff commute — 3-factor sensitivity ──────────────
 const _commutingRange = (() => {
   // Method A: Upper Valley ACS — 12 mi avg one-way × NH light-duty
   // fleet 24 mpg × 180 days × ~52 staff.
@@ -627,9 +664,11 @@ const _commutingRange = (() => {
   };
 })();
 export const SCOPE3_COMMUTING_RANGE = _commutingRange;
+SCOPE3_COMMUTING_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE3_COMMUTING_RANGE.independenceNote = 'Identical activity data (52 staff, 12 mi, STAFF_WORK_DAYS) priced at three per-mile factors. A and B do draw on different published factors (0.351 NH light-duty vs 0.30 ICCT EV-adjusted), so it is a factor sensitivity rather than a methodological cross-check.';
 export const SCOPE3_COMMUTING_BOTTOM_UP_MT = Math.round(_commutingRange.central);
 
-// ─── Purchased goods (Cat 1) — 3 method cross-check ─────────────
+// ─── Purchased goods (Cat 1) — 3-parameter sensitivity ──────────
 const _goodsRange = (() => {
   // Method A: spend-based, lower assumption for non-energy ($2.5M).
   const A = {
@@ -658,6 +697,8 @@ const _goodsRange = (() => {
   };
 })();
 export const SCOPE3_GOODS_RANGE = _goodsRange;
+SCOPE3_GOODS_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE3_GOODS_RANGE.independenceNote = 'The same spend-based EEIO method at three (spend, factor) pairs. Neither the spend nor the factor is measured — see the 0.40-vs-0.222 reconciliation still open on this component.';
 export const SCOPE3_GOODS_BOTTOM_UP_MT = Math.round(_goodsRange.central);
 
 // ─── Upstream fuel (Cat 3) — 3 uplift scenarios ─────────────────
@@ -675,6 +716,8 @@ const _upstreamRange = (() => {
   };
 })();
 export const SCOPE3_UPSTREAM_FUEL_RANGE = _upstreamRange;
+SCOPE3_UPSTREAM_FUEL_RANGE.independence = INDEPENDENCE.SENSITIVITY;
+SCOPE3_UPSTREAM_FUEL_RANGE.independenceNote = "Scope 1 multiplied by 0.12 / 0.17 / 0.22. Entirely derived from another figure on this page, so it cannot corroborate anything — its own section header already said 'uplift scenarios'.";
 export const SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT = Math.round(_upstreamRange.central);
 
 // Components needed for the methodology page back-compat.
@@ -795,6 +838,8 @@ const _sinksRange = (() => {
   return rangeFromMethods([A, B, C, D]);
 })();
 export const SINKS_RANGE = _sinksRange;
+SINKS_RANGE.independence = INDEPENDENCE.CROSS_CHECK;
+SINKS_RANGE.independenceNote = "Three independently published rates (Birdsey 1992, USDA NH FIA, EPA GHG Equivalencies) plus KUA's own per-stand inventory, which is labelled not independent because it is the adopted figure.";
 export const SINKS_BOTTOM_UP_MT = Math.round(_sinksRange.central);
 /**
  * The adopted sink figure against the spread it sits in. Mirrors
