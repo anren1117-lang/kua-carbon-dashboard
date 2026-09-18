@@ -1026,6 +1026,23 @@ describe('canonical scope-totals invariants', () => {
     }
   });
 
+  it('the cohort split adds up to enrolment and matches the published boarding share', async () => {
+    // Phase 414. students.js and geographicEstimates.js each defined the
+    // student body independently — TOTAL_ENROLLMENT = 340 on one side, a
+    // COHORTS split summing to 340 on the other, with nothing tying them.
+    // Update enrolment alone and every cohort-based Scope 3 figure silently
+    // drifts from every per-student figure.
+    const { TOTAL_STUDENTS } = await import('../data/students.js');
+    const { COHORTS } = await import('../data/geographicEstimates.js');
+    const total = COHORTS.day.count + COHORTS.usBoarder.count + COHORTS.international.count;
+    expect(total).toBe(TOTAL_STUDENTS);
+    // KUA publishes "76 Percent of students board". Allow a point either way
+    // for rounding on a 340-student roster.
+    const boardingShare = (COHORTS.usBoarder.count + COHORTS.international.count) / total;
+    expect(boardingShare).toBeGreaterThan(0.75);
+    expect(boardingShare).toBeLessThan(0.77);
+  });
+
   it('the sinks cross-check methods are distinct numbers, not one restated', async () => {
     // Phase 411. Two of the three original methods produced the SAME total
     // (2,650): one was labelled "USDA NH FIA" but used the per-stand

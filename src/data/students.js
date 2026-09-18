@@ -24,10 +24,18 @@ function makeHash(seed) {
   return ('00000000' + ((h >>> 0).toString(16))).slice(-8);
 }
 
-// KUA enrollment ≈ 340 students per the school's "By the Numbers" page
-// (and Wikipedia infobox). Roughly 70% boarding / 30% day per public
-// admissions material; we approximate that mix here. Update the number
-// once a year as the actual roster comes in via SIS export.
+// KUA enrollment = 340. VERIFIED (Phase 414) against both sources this file
+// cites: the school's own about page ("340 Unique and kind students live and
+// learn at KUA") and the Wikipedia infobox ("approx. 340"). Third-party
+// aggregators list 345; the school's own figure wins.
+//
+// The boarding/day split was wrong. This said "roughly 70% boarding / 30%
+// day"; KUA publishes "76 Percent of students board". At 76/24 that is ~258
+// boarders and ~82 day students, not 240/100 — see COHORTS in
+// geographicEstimates.js, which the correction moved with it.
+//
+// Every per-student figure on the dashboard divides by this number, so update
+// it once a year as the actual roster arrives via SIS export.
 const TOTAL_ENROLLMENT = 340;
 
 /** @type {StudentProfile[]} */

@@ -80,7 +80,7 @@ const rows = [
     low: -Math.round(SINKS_RANGE.high),
     high: -Math.round(SINKS_RANGE.low),
     provenance: 'cited',
-    currentMethod: '7 named forest stands × per-acre sequestration rates inside IPCC LULUCF ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total 1,000-acre figure is cited (KUA disclosure + Wikipedia); the per-stand subdivision and acreages are placeholders, not from a forest inventory.',
+    currentMethod: '7 named forest stands × per-acre sequestration rates inside IPCC LULUCF ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). The 1,300-acre CAMPUS figure is cited (the KUA about page and the Wikipedia infobox both give 1,300), but the ~1,000 FORESTED acres is not published in either — Phase 414 checked. Both the forested total and the per-stand subdivision are placeholders, not a forest inventory.',
     futureMethod:  'Commission a USFS Forest Inventory & Analysis-style stand inventory for the actual KUA woodlot — species composition, age class, basal area, per-stand acreage. Per-acre rates stay (IPCC defaults are appropriate for this scale); inputs become real. Row flips estimated → cited.',
   },
 ];

@@ -101,6 +101,20 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The denominators, checked at last (Phase 414)
+
+Two phases were spent making per-student comparisons honest without once checking the **divisor**. `TOTAL_STUDENTS` and the forested acreage sit under every per-student figure on the dashboard and under the whole sink calculation, both credited to "Wikipedia + KUA 'By the Numbers'" — so both were read at source.
+
+**Enrolment 340 is correct.** KUA's own page says "340 Unique and kind students live and learn at KUA"; the Wikipedia infobox says "approx. 340". Third-party aggregators list 345, which would have shifted every per-student figure by 1.5% — a cited number does not get changed on aggregator evidence, and the school's own figure agrees with what was already there. **1,300-acre campus** is confirmed by both too.
+
+**The boarding/day split was wrong.** The code said "roughly 70% boarding / 30% day" and encoded 100 day / 190 US boarding. KUA publishes **"76 Percent of students board"** — so ~258 board and ~82 are day students. The day count was **22% too high**, and it drives the day-student travel estimate. Now 82 / 208 / 50.
+
+**The international count is an assumption and now says so.** KUA publishes "23 Countries represented" — countries, not students. There is no public international headcount, so 50 is a working estimate with US boarders as the remainder. It was previously indistinguishable from the sourced figures around it.
+
+**"~1,000 forested acres" is in neither cited source.** `NetEstimate` claimed the "Total 1,000-acre figure is cited (KUA disclosure + Wikipedia)". Both give 1,300 for the *campus*; neither publishes forested acreage. The 1,000 is our own working figure, and `TOTAL_FOREST_ACRES` summing the seven stands to exactly 1,000 is fitted to it rather than derived. Same class of error as the Middlebury and Valls-Val embellishments: a real source cited for a number it does not contain. `ScopeExplainer` also called it a "~1,000-acre campus" when the campus is 1,300.
+
+**And the student body was defined twice with nothing tying it together** — `TOTAL_ENROLLMENT` in `students.js`, a `COHORTS` split in `geographicEstimates.js`, agreeing at 340 by coincidence of maintenance. `COHORTS` is now exported and a test holds the three counts to enrolment and the boarding share to the published 76%. This is the failure `liveDataWiring.test.js` was written for, in a place it did not reach.
+
 ### The citations, checked against the papers (Phase 413)
 
 Phase 412 found a false claim about a named school. The same question applies to the academic citations, and one number was doing an enormous amount of work: **"Valls-Val & Bovea (2021) reviewed 35 university footprint studies" appears in nine places**, including the visible caveat on the peer chart. One unverified figure repeated nine times reads as established fact.

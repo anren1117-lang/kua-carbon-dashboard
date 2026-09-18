@@ -80,7 +80,7 @@ const SCOPES = [
     kuaPerStudent: -PER_STUDENT(ANNUAL_SEQUESTRATION_MT),
     kuaRange: `${Math.round(ANNUAL_SEQUESTRATION_MT * 0.75).toLocaleString()} – ${Math.round(ANNUAL_SEQUESTRATION_MT * 1.5).toLocaleString()} pulled out`,
     isSink: true,
-    definition: 'Carbon that the trees and soils on KUA\'s ~1,000-acre campus pull OUT of the atmosphere each year via photosynthesis. Subtracted from gross emissions to get the net balance. Most peer institutions don\'t even measure this — it\'s the gap Valls-Val & Bovea (2021) identified.',
+    definition: 'Carbon that the trees and soils on the forested part of KUA\'s 1,300-acre campus pull OUT of the atmosphere each year via photosynthesis. (The campus is 1,300 acres, of which roughly 1,000 are treated as forest — that 1,000 is our own working figure, not a published one.) Subtracted from gross emissions to get the net balance. Most peer institutions don\'t even measure this — it\'s the gap Valls-Val & Bovea (2021) identified.',
     calculation: [
       'For each tree we collect Diameter at Breast Height (DBH); biomass × 0.5 = stored carbon. We multiply C by 44/12 to get CO₂-equivalent.',
       'For closed-canopy forest: Birdsey (1992) ≈ 2.1 mtCO₂e/acre/year.',
