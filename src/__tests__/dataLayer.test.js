@@ -62,6 +62,24 @@ describe('data layer integrity', () => {
     });
   });
 
+  it('the two dorm registries stay reconciled, and the boarding gap stays visible', () => {
+    // Phase 419. buildings.js (dormPopulation) and dorms.js (population) are
+    // maintained by hand and agree only because someone typed them to agree.
+    // The existing checks above verify topology — every dorm maps to a
+    // building — but nothing compared the TOTALS, which is how this registry
+    // sat 30 students below the cohort model unnoticed.
+    const registrySum = dorms.reduce((t, d) => t + d.population, 0);
+    const buildingSum = buildings
+      .filter((b) => b.category === 'Dorm')
+      .reduce((t, b) => t + (b.dormPopulation || 0), 0);
+    expect(registrySum).toBe(buildingSum);
+
+    // KUA publishes 76% boarding; the cohort model encodes ~258. The registry
+    // holds 228. Pinned so that closing the gap is a deliberate edit with a
+    // roster behind it, rather than a silent drift in either direction.
+    expect(registrySum).toBe(228);
+  });
+
   it('every student profile points to a known dorm', () => {
     const ids = new Set(dorms.map((d) => d.id));
     students.forEach((s) => expect(ids.has(s.dormId)).toBe(true));

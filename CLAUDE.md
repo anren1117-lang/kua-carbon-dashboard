@@ -101,6 +101,18 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The dorm registry never agreed with the cohort model (Phase 419)
+
+Phase 414 corrected the boarding split to KUA's published 76%, moving boarding from 240 to ~258. It did not check the dorm data, and that turned out to matter: `dorms.js` sums to **228** and `buildings.js` `dormPopulation` sums to the same 228, against a cohort model of **258**. A 30-student gap.
+
+The file explained itself as "about **67%** of the 340-student enrollment per KUA's public boarding/day mix" — 67% being the old 70/30 assumption the school's own site contradicts. So the registry was derived from a mix that is not KUA's.
+
+**The headcounts were not changed, deliberately.** They divide into the kWh/student/day figure on `/buildings` and the `perResident` ranking on the dorm leaderboard. Inflating eleven houses to reach 258 would have moved a student-facing competitive ranking in order to tidy a disclosure problem — fixing the number where it is *stated* by corrupting it where it is *used*. Checked and confirmed first: `occupants` and `dormPopulation` agree on all 11 dorm buildings, so there is no live arithmetic error, only a false provenance claim.
+
+Two things recorded instead. The note now states the gap and what would settle it (the residential-life roster — either ~30 boarders live somewhere unmodelled, or the per-dorm numbers are low). And it names the second trap: the two files agree at 228 because they were **typed to agree**. `dorms.js` imports nothing. That is duplication, not corroboration — the same pattern as the Phase 390 ledger and the Phase 411 sink cross-check, where agreement between figures sharing an origin was read as confirmation.
+
+The existing tests checked topology only — every dorm maps to a building, every Dorm building is registered — and never compared totals, which is how 228 and 258 coexisted. A test now holds the two registries equal and pins the 228, so closing the gap becomes a deliberate edit with a roster behind it.
+
 ### The public FAQ said the school was net-negative (Phase 418)
 
 Sweeping for the old sinks range turned up something worse than a stale range: an **older inventory**, still live on public pages, that reverses the dashboard's central conclusion.
