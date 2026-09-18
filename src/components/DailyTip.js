@@ -61,7 +61,7 @@ const TIPS = [
   {
     icon: '🌳',
     title: 'The KUA forest does a LOT',
-    body: 'The ~1,000 acres of forest on campus sequester roughly 2,100 mtCO₂e/year — that\'s why KUA\'s net footprint is so much smaller than gross.',
+    body: 'The ~1,000 acres of forest on campus sequester roughly 2,650 mtCO₂e/year — which is why KUA\'s net footprint (~1,725 mt) is so much smaller than its gross (~4,375 mt).',
     link: '/sinks-os',
     linkText: 'See the math',
   },

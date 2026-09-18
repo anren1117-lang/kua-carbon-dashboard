@@ -101,6 +101,20 @@ Also note: eGRID was **biennial before 2018** (no 2017 or 2024 edition), so anyt
 
 Also fixed in 391: `Scope2LiveDashboard` displayed a hardcoded **0.096 kg CO₂/kWh** emission-factor card (wrong by 2.4× against the site's own arithmetic) and a hardcoded **48%** zero-emission share (the real figure is 41%), plus seven hand-typed mix percentages. All three now derive from the live composed mix via `effectiveKgPerKwh()`, `zeroEmissionPercent()` and a map over the rows.
 
+### The public FAQ said the school was net-negative (Phase 418)
+
+Sweeping for the old sinks range turned up something worse than a stale range: an **older inventory**, still live on public pages, that reverses the dashboard's central conclusion.
+
+`Faq.js` told readers "KUA's gross footprint is about **1,500** mtCO₂e/yr; the campus forest pulls back roughly **2,100** of those". That is 1,500 − 2,100 = **−600**: net-negative. The dashboard reports 4,375 gross, 2,650 sinks, **+1,725 net**. The FAQ is where a parent or a trustee starts, and it inverted the headline finding. `CarbonMath.js` said it outright too — "the forest sequestration is larger than gross emissions, which is why KUA can claim net-negative status" — and its AP problem worked from "gross 1,500 ± 200, sinks 2,100 ± 300", concluding "net negative 600 ± 361".
+
+All corrected to 4,375 / 2,650 / 1,725. The σ-propagation problem keeps its answer: √(200² + 300²) = 361 is independent of the inputs, so only the premise and conclusion moved — the statistics lesson is intact and now describes the school that actually exists. `DailyTip` and three `lessonLibrary` tasks carried 2,100 as the sink and now say 2,650.
+
+The FAQ's forest answer also asserted 1,000 forested acres as fact. Phase 414 established KUA publishes the 1,300-acre campus total and no forested acreage, so it now says the 1,000 is our own working figure and that 2,650 sits at the top of a 1,000–2,650 spread.
+
+**Why this survived seventeen phases:** `proseFigures.test.js` guards seven files, and `Faq.js`, `CarbonMath.js` and `DailyTip.js` were not among them. All three are now in `PROSE_FILES`. The tripwire exists precisely for headline figures stated in sentences, and the most public sentence in the repo was outside it.
+
+Worth noting what was checked and left alone: `NetEstimate.js`'s "low end is net-negative" is **correct** — the composite low end genuinely is — and `1,500` appears nowhere else, so this was a localised remnant rather than a second inventory running in parallel.
+
 ### Two pages were still computing with a stale grid literal (Phase 417)
 
 The Phase 416 residual check reported non-zero and the commit went ahead anyway. Running it properly turned up 21 `0.235` sites — and two of them were not prose.

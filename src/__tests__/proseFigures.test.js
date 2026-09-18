@@ -27,6 +27,12 @@ import { KG_PER_KWH } from '../data/gridMix.js';
 const SRC = path.resolve(new URL('../', import.meta.url).pathname);
 
 const PROSE_FILES = [
+  // Added Phase 418. These three were never guarded, which is how the public
+  // FAQ went seventeen phases telling readers KUA was net-negative (1,500
+  // gross against 2,100 of drawdown) while the dashboard reported +1,725.
+  'pages/Faq.js',
+  'pages/CarbonMath.js',
+  'components/DailyTip.js',
   'components/LearnAgent.js',
   'data/learningContent.js',
   'data/lessonLibrary.js',
@@ -48,7 +54,12 @@ const CLAIMS = [
   { label: 'gross', expected: GROSS, re: /gross(?:[^.\n]{0,40}?)(?:~|is |of )(\d{1,3}(?:,\d{3})+)\s*mtCO₂e/gi },
   { label: 'gross', expected: GROSS, re: /(\d{1,3}(?:,\d{3})+)\s*mtCO₂e\s*gross/gi },
   { label: 'net', expected: NET, re: /net(?:\s+(?:is|=|balance(?:\s+is)?|annual footprint as))?\s*~?(\d{1,3}(?:,\d{3})+)\s*mtCO₂e/gi },
-  { label: 'Scope 2', expected: SCOPE2, re: /Scope 2[^.\n]{0,20}?~(\d{3})\b/gi },
+  // "Scope 2 by ~152" is a REDUCTION, not a claim that Scope 2 is 152 — the
+  // original pattern could not tell a delta from a total and flagged
+  // DailyTip's solar tip. Excluding an intervening by/cuts/reduces/saves
+  // drops that one false positive and keeps every real claim in range
+  // ("Scope 2 ~390", "Scope 2 (~390"). Phase 418.
+  { label: 'Scope 2', expected: SCOPE2, re: /Scope 2(?![^.\n]{0,20}?\b(?:by|cuts?|reduces?|saves?|lower(?:s|ed)?)\b)[^.\n]{0,20}?~(\d{3})\b/gi },
 ];
 
 // Lessons also pose invented schools ("A school spends $50,000 to buy offsets

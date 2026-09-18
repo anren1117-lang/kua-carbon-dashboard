@@ -73,7 +73,7 @@ const QUESTIONS = [
     tolerance: 0.05,
     work: [
       '1,000 acres × 2.1 mt/acre/yr = 2,100 mtCO₂e/yr',
-      'Why this matters: KUA\'s forest sequestration is larger than gross emissions, which is why KUA can claim net-negative status.',
+      'Why this matters: at 2.1 mt/acre/yr the forest offsets a large share of KUA\'s ~4,375 mt gross — but not all of it. The net figure is about 1,725 mtCO₂e/yr, so KUA is NOT net-negative; the sink makes the number much smaller, not negative.',
     ],
   },
   {
@@ -104,7 +104,7 @@ const QUESTIONS = [
   {
     id: 'q8',
     level: 'ap',
-    setup: 'KUA\'s gross emissions are reported as 1,500 ± 200 mtCO₂e (one standard deviation). Sinks sequester 2,100 ± 300 mtCO₂e. What is the standard deviation of the net (gross − sinks), assuming independent errors?',
+    setup: 'KUA\'s gross emissions are reported as 4,375 ± 200 mtCO₂e (one standard deviation). Sinks sequester 2,650 ± 300 mtCO₂e. What is the standard deviation of the net (gross − sinks), assuming independent errors?',
     answer: 361,
     unit: 'mtCO₂e',
     tolerance: 0.05,
@@ -113,7 +113,7 @@ const QUESTIONS = [
       'σ_gross² = 200² = 40,000',
       'σ_sinks² = 300² = 90,000',
       'σ_net² = 130,000 → σ_net = √130,000 ≈ 361 mtCO₂e',
-      'Why this matters: the NET number has a wider uncertainty band than EITHER input. Reporting "net negative 600 ± 361 mt" is honest; reporting "net negative 600 mt" is not.',
+      'Why this matters: the NET number has a wider uncertainty band than EITHER input. Net here is 4,375 − 2,650 = 1,725, so reporting "net 1,725 ± 361 mt" is honest; reporting "net 1,725 mt" flat is not. The ± values above are illustrative — the real component ranges are wider still.',
     ],
   },
 ];

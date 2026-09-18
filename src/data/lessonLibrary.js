@@ -527,7 +527,7 @@ export const lessonLibrary = [
       'Fit r and K to two data points',
     ],
     dashboardPages: ['/sinks-os', '/methodology'],
-    studentTask: 'Assume KUA\'s forest currently stores C₀ = 200,000 mtCO₂e and sequesters 2,100 mtCO₂e/year, with maximum carrying capacity K = 400,000 mtCO₂e. (1) Write the logistic ODE. (2) Solve. (3) Estimate r. (4) Predict when sequestration drops below 1,000 mtCO₂e/year.',
+    studentTask: 'Assume KUA\'s forest currently stores C₀ = 200,000 mtCO₂e and sequesters 2,650 mtCO₂e/year, with maximum carrying capacity K = 400,000 mtCO₂e. (1) Write the logistic ODE. (2) Solve. (3) Estimate r. (4) Predict when sequestration drops below 1,000 mtCO₂e/year.',
   },
   {
     id: 'l_apcalc_bc_series',
@@ -554,14 +554,14 @@ export const lessonLibrary = [
     courses: ['AP Biology', 'Biology (H)'],
     gradeBand: '11–12',
     durationMin: 50,
-    summary: 'Scale up the photosynthesis equation (6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂) from a single leaf\'s gas-exchange rate to KUA\'s 1,000-acre forest. Compare your derived annual CO₂ uptake to the published 2,100 mtCO₂e on /sinks-os.',
+    summary: 'Scale up the photosynthesis equation (6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂) from a single leaf\'s gas-exchange rate to KUA\'s 1,000-acre forest. Compare your derived annual CO₂ uptake to the published 2,650 mtCO₂e on /sinks-os.',
     learningGoals: [
       'Stoichiometric calculation across the photosynthesis equation',
       'Scale from leaf-area gas exchange (mol/m²/s) to acreage',
       'Reconcile bottom-up estimates with published ecosystem-level numbers',
     ],
     dashboardPages: ['/sinks-os', '/methodology'],
-    studentTask: 'Assume net leaf-level CO₂ uptake of 8 µmol/m²/s during the 6-hour daily growing window for 180 days. Estimate per-acre annual uptake. Multiply by 1,000 acres. Compare to /sinks-os\' 2,100 mtCO₂e. If they disagree, hypothesize why.',
+    studentTask: 'Assume net leaf-level CO₂ uptake of 8 µmol/m²/s during the 6-hour daily growing window for 180 days. Estimate per-acre annual uptake. Multiply by 1,000 acres. Compare to /sinks-os\' 2,650 mtCO₂e. If they disagree, hypothesize why.',
     teacherPrep: 'Background reading: standard AP Bio photosynthesis unit. Pair with a real leaf-area-index estimate for NE hardwoods (~4–6).',
   },
   {

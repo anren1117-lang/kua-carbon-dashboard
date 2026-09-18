@@ -48,9 +48,10 @@ const FAQ = [
       <>
         It's the total amount of greenhouse gas (mostly CO₂) emitted by an activity, building,
         or organization in a year — expressed in metric tons of CO₂-equivalent (mtCO₂e). KUA's
-        gross footprint is about 1,500 mtCO₂e/yr; the campus forest pulls back roughly 2,100
-        of those, so the <strong>net</strong> figure shown on the homepage is the more honest
-        number. <Link to="/" style={linkStyle}>See the headline number →</Link>
+        gross footprint is about 4,375 mtCO₂e/yr; the campus forest pulls back roughly 2,650
+        of those, leaving a <strong>net</strong> of about 1,725 mtCO₂e/yr — the figure shown on
+        the homepage, and the more honest number. (An earlier version of this answer said 1,500
+        gross against 2,100 of drawdown, which implied KUA was net-negative. It is not.) <Link to="/" style={linkStyle}>See the headline number →</Link>
       </>
     ),
   },
@@ -117,8 +118,11 @@ const FAQ = [
     q: "What is the campus forest worth in carbon terms?",
     a: (
       <>
-        Roughly 1,000 acres of KUA's 1,300-acre campus is forested, sequestering an estimated
-        2,100 mtCO₂e/year via tree growth and soil carbon. This is what makes KUA's net
+        Roughly 1,000 acres of KUA's 1,300-acre campus is treated as forested, sequestering an
+        estimated 2,650 mtCO₂e/year via tree growth and soil carbon. Two caveats worth knowing:
+        the 1,000-acre figure is our own working number — KUA publishes the 1,300-acre campus
+        total but not a forested acreage — and 2,650 sits at the top of a published spread that
+        runs from 1,000 (EPA's average-US-forest rate) to 2,650. This is what makes KUA's net
         footprint substantially smaller than peer boarding schools that don't measure their
         forest. <Link to="/sinks-os" style={linkStyle}>See the sinks page →</Link>
       </>
