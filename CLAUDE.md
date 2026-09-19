@@ -1336,3 +1336,56 @@ shipping. The residual gate failed three times and **was wrong all three times**
 past-tense provenance comment. Each was a rule written in the same breath as the
 fix, encoding my assumptions; the code was read before any rule was relaxed.
 Suite 1,496 → 1,503; 102 → 103 files.
+
+## Phase 439: eight forms disagreed about what "this year" means
+
+`periodStatusOf` compares a row's `school_year` to `REPORTING_PERIOD.schoolYear`
+**exactly**. Eight admin forms write that field, and none of them imported it.
+Five froze the literal `'2025-2026'`; three seeded from `currentSchoolYear()`,
+the wall clock, which rolls over Aug 1.
+
+On 2026-09-19 the wall clock says **2026-2027** and the dashboard publishes
+**2025-2026**. Executed, not reasoned about:
+
+```
+  REPORTING_SCHOOL_YEAR -> 2025-2026   row saved today -> IN
+  schoolYearOn(today)   -> 2026-2027   row saved today -> OUT
+```
+
+So every row entered through Commuting or Purchased Goods was landing outside
+the published period and dropping out of the Scope 3 total, while the admin saw
+a successful save. `withinPeriod` is applied to `goods` and `commute`
+(`scopeTotals.js:673-674`) and the hooks do select those columns, so the path
+was live, not theoretical.
+
+Two corrections to my first reading of it, both toward *less* alarm:
+`outOfPeriodRows` already reports "N rows excluded — outside 2025-2026 school
+year", so it was never fully silent — what was missing is that the form's own
+default caused it. And `ForestStands` is harmless: the sinks composer never
+period-filters.
+
+`academicCalendar.js:104` already claimed the forms defaulted to the reporting
+period. They didn't. Now they do, via `REPORTING_SCHOOL_YEAR`, so the claim is
+structural rather than a coincidence that holds until July. `schoolYearOn(date)`
+keeps the wall-clock answer — it is a real question, just a different one, and
+Phase 440's divergence note is what will make it visible to an admin.
+
+**Scope held:** `AdminPlanAgent`'s `fiscalYear: '2026-2027'` is a planning
+horizon, where a future year is correct. `graduation_year: '2026'` never reaches
+`periodStatusOf`. Both left alone deliberately.
+
+*Process — the test I added was hollow, and running it red-first is the only
+reason I know.* Grepping the built chunks showed seven forms had dropped the
+literal and `Cat1PurchasedGoods` had not: `placeholder="e.g. 2025-2026"`. I
+wrote a detector for it that **passed against the unfixed file**, because it
+required the year to be the whole quoted string while the real one is embedded
+in `e.g. ...`. Confirmed against the pre-fix file from git history: broken
+detector `NO MATCH`, corrected detector matches that exact line. The test now
+carries a control asserting the detector can fail, since otherwise the sweep
+proves nothing. Suite 1,503 → 1,533; 103 → 104 files.
+
+*No positive deploy marker:* the constant resolves to the same string the forms
+hardcoded, so the rendered output is byte-identical by design. The observable
+change is negative — the literal is gone from all eight form chunks and now
+lives only in the entry bundle. `schoolYearOn` tree-shakes out entirely, having
+no shipped caller yet.

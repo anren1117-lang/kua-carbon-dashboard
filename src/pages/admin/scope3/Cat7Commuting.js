@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, currentSchoolYear } from '../_shared';
+import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, REPORTING_SCHOOL_YEAR } from '../_shared';
 
 const modes = [
   { value: 'car_solo', label: 'Car (solo)',     factorKey: 'epa_commute_car_solo_kg_co2e_per_pmi' },
@@ -11,7 +11,7 @@ const modes = [
 ];
 
 const empty = () => ({
-  school_year: currentSchoolYear(),
+  school_year: REPORTING_SCHOOL_YEAR,
   employee_role: 'faculty',
   home_zip: '',
   one_way_miles: '',

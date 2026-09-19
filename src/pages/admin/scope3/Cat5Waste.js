@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
 import { WASTE_FACTORS_MT_PER_TON } from '../../../data/scopeTotals.js';
+import { REPORTING_SCHOOL_YEAR } from '../../../data/academicCalendar.js';
 
 const wasteTypes = ['Landfill', 'Recycling', 'Composting', 'Hazardous', 'E-Waste'];
 // 'cubic yards' was offered here but wasteRowStatus() in scopeTotals.js converts
@@ -11,7 +12,7 @@ const wasteTypes = ['Landfill', 'Recycling', 'Composting', 'Hazardous', 'E-Waste
 // already stored in that unit still price at zero, but Phase 438 makes the
 // Scope 3 page name the UNIT as the cause instead of blaming waste_type.
 const units = ['tons', 'lbs'];
-const empty = { date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: '2025-2026' };
+const empty = { date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: REPORTING_SCHOOL_YEAR };
 
 function Cat5Waste() {
   const { rows, error, insert, remove } = useTable('waste', 'date');

@@ -101,8 +101,13 @@ export const STUDENT_WEEKS_ON_CAMPUS_UNRESOLVED = true;
  * us_boarding_students, international_students and commuting via school_year,
  * purchased_goods via fiscal_year. A row is matched on whichever it carries.
  *
- * The school year is the default because it is what KUA's own admin forms
- * write: all five student/commuting forms default to '2025-2026'.
+ * The school year is the default because it is the label KUA's own admin
+ * forms write. Until Phase 439 that sentence was aspirational: no form
+ * imported this module. Five froze the literal '2025-2026' and three seeded
+ * from the wall clock, which on 2026-09-19 says '2026-2027' — a value this
+ * same file's periodStatusOf() then classifies 'out'. They all read
+ * REPORTING_SCHOOL_YEAR now, so the claim is structural rather than a
+ * coincidence that holds until July.
  *
  * This is a BOUNDARY, not a duration — deliberately separate from
  * INSTRUCTIONAL_DAYS and STUDENT_RESIDENCY_WEEKS above, for the same reason
@@ -116,6 +121,29 @@ export const REPORTING_PERIOD = {
   provenance: 'estimated',
   note: 'Bounds Scope 1 and Scope 3 live rows. Rows with no date at all are counted IN and reported separately — excluding them would silently zero every row entered before the date columns were fetched.',
 };
+
+/** The period this dashboard PUBLISHES. Every admin form defaults to it. */
+export const REPORTING_SCHOOL_YEAR = REPORTING_PERIOD.schoolYear;
+
+/**
+ * Which school year a DATE falls in, on the boarding-school convention that
+ * the year rolls over Aug 1.
+ *
+ * This is the WALL CLOCK, not the reporting period, and the two are different
+ * questions with different answers: on 2026-09-19 this returns '2026-2027'
+ * while the dashboard publishes '2025-2026'. periodStatusOf() compares those
+ * strings exactly, so a row stamped from the clock is classified 'out' and
+ * never reaches a published total — the admin still sees a successful save.
+ *
+ * So: forms default to REPORTING_SCHOOL_YEAR. The clock year's remaining job
+ * is telling a human when the two have diverged.
+ */
+export function schoolYearOn(date = new Date()) {
+  const d = date instanceof Date ? date : new Date(date);
+  const y = d.getFullYear();
+  const sy = d.getMonth() >= 7 ? y : y - 1;
+  return `${sy}-${sy + 1}`;
+}
 
 /**
  * Scope 2 does NOT share that window, and this publishes the gap rather than

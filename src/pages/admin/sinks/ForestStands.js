@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTable, RecordsTable, formStyles as s, today, currentSchoolYear } from '../_shared';
+import { useTable, RecordsTable, formStyles as s, today, REPORTING_SCHOOL_YEAR } from '../_shared';
 import { toCsv, downloadCsv } from '../../../utils/csv.js';
 import CsvImportPanel, { validateForestStandRow } from '../../../components/CsvImportPanel.js';
 
@@ -40,7 +40,7 @@ const empty = () => ({
   surveyed_at: today(),
   surveyed_by: '',
   notes: '',
-  school_year: currentSchoolYear(),
+  school_year: REPORTING_SCHOOL_YEAR,
 });
 
 function ForestStands() {
@@ -110,7 +110,7 @@ function ForestStands() {
       surveyed_at: row.surveyed_at || today(),
       surveyed_by: row.surveyed_by || '',
       notes: row.notes || '',
-      school_year: row.school_year || currentSchoolYear(),
+      school_year: row.school_year || REPORTING_SCHOOL_YEAR,
     });
     setEditingId(row.id);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });

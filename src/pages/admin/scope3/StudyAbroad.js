@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
 import { EducationalCard } from '../../../components/EducationalCard';
+import { REPORTING_SCHOOL_YEAR } from '../../../data/academicCalendar.js';
 
-const empty = { destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: '2025-2026' };
+const empty = { destination_country: '', destination_city: '', departure_date: '', return_date: '', school_year: REPORTING_SCHOOL_YEAR };
 
 function StudyAbroad() {
   const { rows, error, insert, remove } = useTable('study_abroad', 'departure_date');

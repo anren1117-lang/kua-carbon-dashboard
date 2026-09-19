@@ -12,13 +12,16 @@ export const firstOfMonth = () => {
   return d.toISOString().slice(0, 10);
 };
 
-// School year helper, e.g. 'Apr 2026' -> '2025-2026' (boarding-school convention: rolls over Aug 1)
-export const currentSchoolYear = () => {
-  const d = new Date();
-  const y = d.getFullYear();
-  const sy = d.getMonth() >= 7 ? y : y - 1;
-  return `${sy}-${sy + 1}`;
-};
+// The period this dashboard publishes. Admin forms default their
+// school_year / fiscal_year to THIS, so a saved row lands inside the window
+// composeScope3FromRecords actually counts.
+export { REPORTING_SCHOOL_YEAR, schoolYearOn } from '../../data/academicCalendar.js';
+
+// The wall-clock school year (rolls over Aug 1) — a different question, and
+// on 2026-09-19 a different answer: '2026-2027' vs the published '2025-2026'.
+// It must never default a stored row; periodStatusOf() would class it 'out'.
+// Kept so a form can TELL an admin the two have diverged.
+export const currentSchoolYear = () => schoolYearOn(new Date());
 
 // LB → KG conversion for refrigerant fields.
 export const LB_TO_KG = 0.45359237;

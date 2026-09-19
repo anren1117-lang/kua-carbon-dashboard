@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, currentSchoolYear } from '../_shared';
+import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, REPORTING_SCHOOL_YEAR } from '../_shared';
 
 // Each option maps to an emission_factors row keyed for that category. Add new categories
 // by inserting a new factor in the migration and adding an option here.
@@ -14,9 +14,9 @@ const categories = [
   { value: 'generic',      label: 'Other / uncategorized',      factorKey: 'eeio_generic_kg_co2e_per_usd' },
 ];
 
-// Convert FY string like '2025-2026' for display. Uses school-year helper as fallback.
+// fiscal_year carries the same label as school_year: the period being published.
 const empty = () => ({
-  fiscal_year: currentSchoolYear(),
+  fiscal_year: REPORTING_SCHOOL_YEAR,
   purchasing_category: 'food',
   spend_usd: '',
   eeio_factor_override: '',
@@ -102,7 +102,7 @@ function Cat1PurchasedGoods() {
         <div style={s.formGrid}>
           <label style={s.field}>
             <span style={s.label}>Fiscal year</span>
-            <input type="text" value={form.fiscal_year} onChange={(e) => setForm({ ...form, fiscal_year: e.target.value })} style={s.input} required placeholder="e.g. 2025-2026" />
+            <input type="text" value={form.fiscal_year} onChange={(e) => setForm({ ...form, fiscal_year: e.target.value })} style={s.input} required placeholder={`e.g. ${REPORTING_SCHOOL_YEAR}`} />
           </label>
           <label style={s.field}>
             <span style={s.label}>Category</span>

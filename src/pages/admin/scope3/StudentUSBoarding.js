@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
 import { EducationalCard } from '../../../components/EducationalCard';
+import { REPORTING_SCHOOL_YEAR } from '../../../data/academicCalendar.js';
 
-const empty = { zip_code: '', state: '', graduation_year: '2026', school_year: '2025-2026' };
+const empty = { zip_code: '', state: '', graduation_year: '2026', school_year: REPORTING_SCHOOL_YEAR };
 
 function StudentUSBoarding() {
   const { rows, error, insert, remove } = useTable('us_boarding_students', 'created_at');
