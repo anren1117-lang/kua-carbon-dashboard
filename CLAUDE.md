@@ -1292,3 +1292,47 @@ though it were an equality comparison. Confirmed first that nothing in the tree
 compares a factor's `.source` to anything (every `.source ===` is meter/ledger
 provenance), then narrowed the pattern instead of editing correct code to
 satisfy a bad rule. Suite 1,481 → 1,496; 101 → 102 files.
+
+## Phase 438: a skipped waste row now says which field stopped it
+
+The Scope 3 waste row told a reader `(N skipped — unknown waste_type or invalid
+amount)`. For the row that prompted this, both named causes were false. A
+cubic-yard Landfill entry has a valid stream and a valid number; what it lacks
+is a unit the table can convert. The one true cause went unnamed.
+
+The file already knew. The doc block at `scopeTotals.js:514` claimed the message
+"reports rows whose **unit** or waste_type cannot be priced" — describing
+behaviour the rendered sentence never delivered.
+
+`wasteTons()` returned `0` for three unrelated outcomes: an unpriceable unit, an
+unusable amount, and **a legitimate zero**. The caller tested `!tons`, so it
+could not tell them apart — and since `!0` is true, a hauler invoice recording a
+genuine zero-ton month was counted as a failure. It is now `wasteRowStatus()`,
+returning `{ok, reason}`, with each cause counted and named separately:
+
+- `(1 skipped — unpriceable unit; only tons/lbs/kg convert)`
+- `(3 skipped — 1 unpriceable unit, 1 unrecognized waste_type, 1 invalid amount; ...)`
+- a genuine zero-ton month now says **nothing at all**, because nothing failed.
+
+**Scope held where the evidence pointed.** The Scope 1 sibling at `:396` looked
+like the same bug and is not: it tests `!Number.isFinite(gal) || gal < 0` with no
+`!gal`, so a zero-gallon bill is correctly counted, and its two named causes are
+the only two that exist — fuel has no unit dimension. It is the correct model;
+`!tons` was the outlier. Left alone rather than "fixed".
+
+Cubic yards still price at zero — converting them needs a density varying
+~0.15-0.25 short tons/yd3 by material, and inventing one would be worse than
+refusing the unit. `CsvImportPanel` and the `Cat5Waste` form already stopped
+accepting it; neither helps a row already in Supabase. What changed is that the
+page now names the unit instead of blaming the stream.
+
+*Process, and the honest version of it:* the test was written first and **run
+against unfixed code to watch it fail** — 4 red, 3 green, the 3 being cases that
+should pass pre-fix. Printing the rendered sentence then caught what no regex
+could: `(1 skipped — 1 in a unit this table cannot price (only tons/lbs/kg
+convert))` stated the count twice and nested parentheses. Rewritten before
+shipping. The residual gate failed three times and **was wrong all three times**
+— it matched a display citation, then its own new correct line, then a
+past-tense provenance comment. Each was a rule written in the same breath as the
+fix, encoding my assumptions; the code was read before any rule was relaxed.
+Suite 1,496 → 1,503; 102 → 103 files.

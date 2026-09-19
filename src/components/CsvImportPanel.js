@@ -190,8 +190,8 @@ export function validateWasteRow(raw, idx) {
     return { ok: false, message: `row ${idx + 2}: waste_type must be one of Landfill/Recycling/Composting/Hazardous/E-Waste (got "${waste_type}")` };
   }
   if (!numOk(amount)) return { ok: false, message: `row ${idx + 2}: amount must be a non-negative number (got "${amount}")` };
-  // Must match wasteTons() in scopeTotals.js, which converts tons/lbs/kg and
-  // returns 0 for anything else. 'cubic yards' passed validation here while
+  // Must match wasteRowStatus() in scopeTotals.js, which converts tons/lbs/kg
+  // and refuses anything else. 'cubic yards' passed validation here while
   // converting to zero downstream, so the row was accepted, stored, and then
   // counted as skipped. Converting it needs a density varying ~0.15-0.25 short
   // tons/yd3 by material; inventing one would be worse than refusing the unit.

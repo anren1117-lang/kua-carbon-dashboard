@@ -511,8 +511,11 @@ export const WASTE_FACTORS_MT_PER_TON = {
  * 50000 }`), and so does every Supabase row entered before the hooks began
  * selecting the date columns. Treating those as out-of-period would break
  * ~20 tests AND silently zero real data — so they are counted IN and
- * reported separately, exactly as wasteSkipped already reports rows whose
- * unit or waste_type cannot be priced.
+ * reported separately, exactly as the waste skip note reports rows whose
+ * unit, waste_type or amount cannot be priced — naming WHICH of the three,
+ * since a cubic-yard row and a typo'd stream are different problems with
+ * different fixes. Until Phase 438 this sentence described behaviour the
+ * rendered message did not actually deliver.
  *
  * Year labels are checked before dates because waste rows carry both, and
  * the label is what the admin form actually sets.
@@ -545,16 +548,51 @@ export function withinPeriod(rows, period = REPORTING_PERIOD) {
   return (Array.isArray(rows) ? rows : []).filter((r) => periodStatusOf(r, period) !== 'out');
 }
 
-// Convert a row's amount + unit field to short tons (the unit
-// WASTE_FACTORS_MT_PER_TON expects). Returns 0 for unrecognized units.
-function wasteTons(row) {
+// Price one waste row, or say which field stopped it.
+//
+// This was wasteTons(), which returned 0 for THREE unrelated outcomes: an
+// unpriceable unit, an unusable amount, and a legitimate zero. The caller's
+// `!tons` test could not tell them apart, so a cubic-yard Landfill row — valid
+// stream, valid number — reached the reader as "unknown waste_type or invalid
+// amount": two causes that were both false, while the one true cause went
+// unnamed. A genuine zero-ton month was counted as a failure for the same
+// reason, since !0 is true.
+//
+// Converting cubic yards needs a density varying ~0.15-0.25 short tons/yd3 by
+// material; inventing one would be worse than refusing the unit. So such a row
+// still prices at zero — but the page now says why, and says it accurately.
+const WASTE_UNITS_PRICEABLE = 'tons/lbs/kg';
+
+function wasteRowStatus(row) {
   const amt = Number(row.amount);
-  if (!Number.isFinite(amt) || amt < 0) return 0;
+  if (!Number.isFinite(amt) || amt < 0) return { ok: false, reason: 'amount' };
   const unit = String(row.unit || 'tons').toLowerCase();
-  if (unit === 'tons' || unit === 'ton')   return amt;
-  if (unit === 'pounds' || unit === 'lbs') return amt / 2000;
-  if (unit === 'kg')                       return amt / 907.185;
-  return 0;
+  let tons;
+  if (unit === 'tons' || unit === 'ton')        tons = amt;
+  else if (unit === 'pounds' || unit === 'lbs') tons = amt / 2000;
+  else if (unit === 'kg')                       tons = amt / 907.185;
+  else return { ok: false, reason: 'unit' };
+  if (WASTE_FACTORS_MT_PER_TON[row.waste_type] === undefined) return { ok: false, reason: 'type' };
+  return { ok: true, tons };
+}
+
+// Name every cause that actually occurred, and only those. Keeps the "N
+// skipped" count phrasing that dataLayer.test.js pins.
+//
+// Counts are prefixed only when there is more than one skipped row — a single
+// row read "1 skipped — 1 in a unit...", stating the count twice, and the
+// unit clause nested a parenthesis inside a parenthesis. This page is meant to
+// read like prose, so the qualifier hangs off a semicolon instead.
+function describeWasteSkips({ unit, type, amount }) {
+  const total = unit + type + amount;
+  if (!total) return '';
+  const n = (count, label) => (total === 1 ? label : `${count} ${label}`);
+  const parts = [];
+  if (unit)   parts.push(n(unit, 'unpriceable unit'));
+  if (type)   parts.push(n(type, 'unrecognized waste_type'));
+  if (amount) parts.push(n(amount, 'invalid amount'));
+  const qualifier = unit ? `; only ${WASTE_UNITS_PRICEABLE} convert` : '';
+  return ` (${total} skipped — ${parts.join(', ')}${qualifier})`;
 }
 
 // Per-trip mtCO2e estimate by destination region. Used for study_abroad
@@ -665,13 +703,13 @@ export function composeScope3FromRecords(records = {}) {
 
   // ─── Waste (EPA WARM net factors) ────────────────────────────────
   let wasteMt = 0;
-  let wasteSkipped = 0;
+  const wasteSkips = { unit: 0, type: 0, amount: 0 };
   for (const row of waste) {
-    const tons = wasteTons(row);
-    const factor = WASTE_FACTORS_MT_PER_TON[row.waste_type];
-    if (!tons || factor === undefined) { wasteSkipped++; continue; }
-    wasteMt += tons * factor;
+    const status = wasteRowStatus(row);
+    if (!status.ok) { wasteSkips[status.reason]++; continue; }
+    wasteMt += status.tons * WASTE_FACTORS_MT_PER_TON[row.waste_type];
   }
+  const wasteSkipNote = describeWasteSkips(wasteSkips);
   const wasteMeasured = waste.length > 0;
 
   // ─── Purchased goods (Cat 1): live from purchased_goods table ──
@@ -732,7 +770,7 @@ export function composeScope3FromRecords(records = {}) {
       mt: Math.round(wasteMt),
       provenance: wasteMeasured ? 'measured' : 'estimated',
       method: wasteMeasured
-        ? `${waste.length} waste row${waste.length === 1 ? '' : 's'} × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors${wasteSkipped > 0 ? ` (${wasteSkipped} skipped — unknown waste_type or invalid amount)` : ''}.`
+        ? `${waste.length} waste row${waste.length === 1 ? '' : 's'} × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors${wasteSkipNote}.`
         : (placeholderRow('waste')?.method || ''),
     },
   ];

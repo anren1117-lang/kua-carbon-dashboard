@@ -4,11 +4,12 @@ import { formStyles as s } from './formStyles';
 import { WASTE_FACTORS_MT_PER_TON } from '../../../data/scopeTotals.js';
 
 const wasteTypes = ['Landfill', 'Recycling', 'Composting', 'Hazardous', 'E-Waste'];
-// 'cubic yards' was offered here but wasteTons() in scopeTotals.js converts only
-// tons/lbs/kg and returns 0 for anything else — so a row entered in cubic yards
-// recorded zero emissions silently. Converting it needs a density that varies
-// ~0.15-0.25 short tons/yd3 by material; inventing one would be worse than
-// dropping the option. Existing rows in that unit still read 0 — see task #17.
+// 'cubic yards' was offered here but wasteRowStatus() in scopeTotals.js converts
+// only tons/lbs/kg — so a row entered in cubic yards recorded zero emissions
+// silently. Converting it needs a density that varies ~0.15-0.25 short tons/yd3
+// by material; inventing one would be worse than dropping the option. Rows
+// already stored in that unit still price at zero, but Phase 438 makes the
+// Scope 3 page name the UNIT as the cause instead of blaming waste_type.
 const units = ['tons', 'lbs'];
 const empty = { date: '', waste_type: 'Landfill', amount: '', unit: 'tons', notes: '', school_year: '2025-2026' };
 
