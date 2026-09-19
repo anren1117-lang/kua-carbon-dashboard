@@ -4,6 +4,8 @@ import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
+import { factorVintageFor, describeFactorVintage, SCOPE3_FACTOR_KEYS } from '../data/emissionFactors.js';
+import { KUA_USAGE_YEAR as FACTOR_USAGE_YEAR } from '../data/gridMix.js';
 import { SCOPE3_RANGE, SCOPE3_INTL_TRAVEL } from '../data/geographicEstimates.js';
 
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -115,6 +117,7 @@ function Scope3() {
           perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Purchased goods', note: 'goods ~1,315 mt ≈ 50% of S3; travel ~760 mt ≈ 29%' },
           period: REPORTING_PERIOD.label,
+          factorVintage: describeFactorVintage(factorVintageFor(SCOPE3_FACTOR_KEYS, FACTOR_USAGE_YEAR)),
           dataIssue,
           provenance: headlineProvenance,
           note: headlineNote,

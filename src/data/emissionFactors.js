@@ -40,8 +40,8 @@ export const emissionFactors = [
   { id: 'ef_diesel',      category: 'fuel', subcategory: 'diesel',          unit: 'gallon', kgco2e_per_unit: 10.21, source: 'EPA GHG Emission Factors Hub 2024', year: 2024 },
 
   // Refrigerants (selected)
-  { id: 'ef_r410a', category: 'refrigerant', subcategory: 'r410a', unit: 'kg', kgco2e_per_unit: 2256, source: 'IPCC AR6 GWP100', year: 2024 },
-  { id: 'ef_r134a', category: 'refrigerant', subcategory: 'r134a', unit: 'kg', kgco2e_per_unit: 1530, source: 'IPCC AR6 GWP100', year: 2024 },
+  { id: 'ef_r410a', category: 'refrigerant', subcategory: 'r410a', unit: 'kg', kgco2e_per_unit: 2256, source: 'IPCC AR6 WG1 Ch.7 GWP100 (blend: R-32 + R-125, 50/50 by mass)', year: 2021 },
+  { id: 'ef_r134a', category: 'refrigerant', subcategory: 'r134a', unit: 'kg', kgco2e_per_unit: 1530, source: 'IPCC AR6 WG1 Ch.7 GWP100 (pure compound; AR5 gave 1300 — do not mix vintages)', year: 2021 },
 
   // Travel
   // Corrected in Phase 404. These read 0.395 short / 0.193 long, on two
@@ -111,6 +111,112 @@ export const emissionFactors = [
   { id: 'ef_proc_it',        category: 'procurement', subcategory: 'it_equipment',   unit: 'USD', kgco2e_per_unit: 0.058, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 334111 Electronic Computer Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
   { id: 'ef_proc_cleaning',  category: 'procurement', subcategory: 'cleaning',       unit: 'USD', kgco2e_per_unit: 0.355, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 325611 Soap & Detergent Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
   { id: 'ef_proc_uniforms',  category: 'procurement', subcategory: 'apparel',        unit: 'USD', kgco2e_per_unit: 0.120, source: 'EPA Supply Chain GHG Emission Factors v1.3, NAICS 315 Apparel Mfg (kg CO2e/2022 USD, purchaser price)', year: 2022 },
+];
+
+// ─── What a factor's `year` actually means ──────────────────────────────
+//
+// Three different things share that column, and treating them alike produces a
+// misleading headline. Scope 2 can already say "eGRID2023 — 3 years older than
+// the 2026 electricity it prices" (VINTAGE_GAP, rendered on Scope2.js). Doing
+// the same for Scope 1 and 3 naively would announce that Scope 3 runs on
+// "8-year-old factors" because the food rows say 2018. That would be wrong:
+//
+//   annual-edition   EPA Hub 2024/2025, eGRID, DEFRA 2024, ISO-NE. A newer
+//                    edition exists or will. The gap to the usage year is REAL
+//                    staleness — you are pricing 2026 activity with another
+//                    year's data.
+//   dataset-version  EPA Supply Chain GHG Emission Factors v1.3 (year 2022).
+//                    The VERSION is current; 2022 is the USD basis year of the
+//                    spend data. "4 years stale" would be wrong twice over.
+//   publication      Poore & Nemecek 2018 via OWID; IPCC AR6 GWP100. One-off
+//                    works that remain the current best source. The year is
+//                    provenance, not decay — beef's per-kg footprint does not
+//                    decarbonise the way a grid does.
+//
+// Classified from the source string rather than hand-tagged on 35 rows, so the
+// kind cannot drift away from the citation it is derived from.
+//
+// The refrigerant rows read `year: 2024` until Phase 437 while citing IPCC AR6,
+// which was published in 2021 — a FOURTH meaning for this column ("verified
+// current as of"). Left alone, the Scope 1 page would have rendered "published
+// studies (2024)" and stated a false publication year. Corrected to 2021; the
+// GWP values themselves are untouched, so no emissions figure moves.
+const ANNUAL_EDITION = /(Hub|eGRID|DEFRA|ISO-NE|medium\/heavy duty|NYISO)/i;
+const DATASET_VERSION = /Supply Chain GHG Emission Factors v/i;
+const PUBLICATION = /(Poore\s*&\s*Nemecek|IPCC|OWID)/i;
+
+export function vintageKindOf(factor) {
+  const src = String(factor?.source || '');
+  if (PUBLICATION.test(src)) return 'publication';
+  if (DATASET_VERSION.test(src)) return 'dataset-version';
+  if (ANNUAL_EDITION.test(src)) return 'annual-edition';
+  return 'unclassified';
+}
+
+/**
+ * How out of date the factors pricing a scope are, for the kinds where that
+ * question is meaningful.
+ *
+ * Returns the worst ANNUAL-EDITION gap (the only kind that ages), plus the
+ * publication-year factors listed separately as provenance. A caller that
+ * blends the two is making the mistake this function exists to prevent.
+ */
+export function factorVintageFor(keys, usageYear) {
+  const rows = keys
+    .map(([category, subcategory]) => getFactorByKey(category, subcategory))
+    .filter(Boolean);
+  const editions = rows.filter((r) => vintageKindOf(r) === 'annual-edition' && Number.isFinite(r.year));
+  const studies = rows.filter((r) => vintageKindOf(r) === 'publication' && Number.isFinite(r.year));
+  const oldestEdition = editions.length
+    ? editions.reduce((o, r) => (r.year < o.year ? r : o), editions[0])
+    : null;
+  const versions = rows.filter((r) => vintageKindOf(r) === 'dataset-version');
+  return {
+    usageYear,
+    oldestEditionYear: oldestEdition ? oldestEdition.year : null,
+    yearsStale: oldestEdition ? usageYear - oldestEdition.year : null,
+    editionCount: editions.length,
+    studyYears: [...new Set(studies.map((r) => r.year))].sort(),
+    studyCount: studies.length,
+    // Counted separately rather than dropped: a scope priced entirely on
+    // versioned datasets has no edition gap, and reporting null with no
+    // explanation would read as "no vintage information".
+    versionCount: versions.length,
+    versionLabels: [...new Set(versions.map((r) => (String(r.source).match(/v\d+(?:\.\d+)*/) || ['version'])[0]))],
+  };
+}
+
+/**
+ * One sentence a page can render. Built here, not per page, so the wording
+ * cannot drift the way five copies of one figure did in Phase 425.
+ */
+export function describeFactorVintage(v) {
+  if (!v || v.oldestEditionYear === null) {
+    if (v && v.versionCount > 0) {
+      return `Priced on versioned datasets (${v.versionLabels.join(', ')}), which carry no annual edition to fall behind.`;
+    }
+    return null;
+  }
+  const head = v.yearsStale === 0
+    ? `Oldest annual factor edition is ${v.oldestEditionYear}, the same year as the activity it prices.`
+    : `Oldest annual factor edition is ${v.oldestEditionYear} — ${v.yearsStale} year${v.yearsStale === 1 ? '' : 's'} older than the ${v.usageYear} activity it prices.`;
+  const tail = v.studyCount > 0
+    ? ` ${v.studyCount} factor${v.studyCount === 1 ? '' : 's'} come from published studies (${v.studyYears.join(', ')}), where the year is provenance rather than an edition that has aged.`
+    : '';
+  return head + tail;
+}
+
+/** The factors that actually price each scope, for the vintage summary. */
+export const SCOPE1_FACTOR_KEYS = [
+  ['fuel', 'heating_oil_no2'], ['fuel', 'propane'],
+  ['fuel', 'gasoline'], ['fuel', 'diesel'],
+  ['refrigerant', 'r410a'], ['refrigerant', 'r134a'],
+];
+export const SCOPE3_FACTOR_KEYS = [
+  ['waste', 'landfill_mixed'], ['waste', 'recycling'], ['waste', 'compost_food'],
+  ['travel', 'passenger_car_avg'], ['travel', 'air_short_haul'], ['travel', 'air_long_haul'],
+  ['food', 'beef'], ['food', 'chicken'],
+  ['procurement', 'paper'], ['procurement', 'it_equipment'],
 ];
 
 const factorsById = Object.fromEntries(emissionFactors.map((f) => [f.id, f]));

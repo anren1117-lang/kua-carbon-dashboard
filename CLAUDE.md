@@ -1243,3 +1243,52 @@ backtick count stayed **even**, which is why a balance check saw nothing.
 `apiRoutes.test.js` then failed to transform merely for importing the file, and
 the suite read 1,372 with a whole file missing rather than a test regressing.
 Recorded in memory. Suite 1,461 → 1,481; 100 → 101 files.
+
+## Phase 437: three different things were sharing the `year` column
+
+Scope 2 has been able to say how stale its grid factor is since Phase 392 —
+"eGRID2023, 3 years older than the 2026 electricity it prices". Scope 1 and
+Scope 3 could not, though both price 2026 activity with 2024 factor editions.
+This closes item 6 of the three-critic list.
+
+The reason it was not a five-line change: **a naive version announces that
+Scope 3 runs on eight-year-old factors**, because its food rows say 2018. Three
+unrelated things share that column.
+
+- **`annual-edition`** — EPA Hub, eGRID, DEFRA. A newer edition exists or will,
+  so the gap is real staleness and worth reporting.
+- **`dataset-version`** — EPA Supply Chain v1.3, where 2022 is the *USD basis
+  year*. The version is current; there is no edition to fall behind.
+- **`publication`** — Poore & Nemecek 2018, IPCC AR6. Still the best available
+  source; the year is provenance, not decay.
+
+So `factorVintageFor` reports only the **annual-edition** gap as staleness and
+lists study years separately, as provenance. Scope 1 and Scope 3 both now read
+"Oldest annual factor edition is 2024 — 2 years older than the 2026 activity it
+prices", not "8 years old". The kind is classified from the source string rather
+than hand-tagged across 35 rows, so it cannot drift away from the citation it
+is derived from, and an unclassified row fails a test rather than being dropped
+from the summary in silence.
+
+**Building it surfaced a fourth meaning and a published error.** The two
+refrigerant rows read `year: 2024` while citing IPCC AR6 — published **2021**.
+That is "verified current as of", a fourth sense of the column, and left alone
+the Scope 1 page would have rendered "2 factors come from published studies
+(2024)" and stated a false publication year for AR6. Corrected to 2021, with
+the citation made specific (WG1 Ch.7; the R-410A blend and the AR5-vs-AR6 1300
+/ 1530 trap are now written down). **The GWP values are untouched — 2,256 and
+1,530 — so no emissions figure moves.** Nothing pinned the year: the only
+assertion on it was `toBeGreaterThan(2000)`.
+
+`factorVintage.test.js` asserts the **classification**, not merely that a year
+exists — `factorTableConsistency.test.js` already proved presence and would
+have passed whatever the years meant. It includes the controls that matter: that
+Scope 3 is *not* reported as 8 years stale, that a `dataset-version` factor is
+not counted as an aging edition, and that AR6 is dated by publication.
+
+*Process:* the residual gate failed on its first run, and the code was right —
+my pattern matched `citations: ['IPCC AR6 GWP100']`, a display citation, as
+though it were an equality comparison. Confirmed first that nothing in the tree
+compares a factor's `.source` to anything (every `.source ===` is meter/ledger
+provenance), then narrowed the pattern instead of editing correct code to
+satisfy a bad rule. Suite 1,481 → 1,496; 101 → 102 files.

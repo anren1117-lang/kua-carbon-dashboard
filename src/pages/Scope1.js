@@ -5,6 +5,8 @@ import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
 import { KG_PER_KWH, KUA_USAGE_YEAR } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
+import { factorVintageFor, describeFactorVintage, SCOPE1_FACTOR_KEYS } from '../data/emissionFactors.js';
+import { KUA_USAGE_YEAR as FACTOR_USAGE_YEAR } from '../data/gridMix.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { DegreeDayChart } from '../components/DegreeDayChart.js';
@@ -92,6 +94,7 @@ function Scope1() {
           perStudent: headlinePerStudent,
           thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
           period: REPORTING_PERIOD.label,
+          factorVintage: describeFactorVintage(factorVintageFor(SCOPE1_FACTOR_KEYS, FACTOR_USAGE_YEAR)),
           dataIssue,
           provenance: headlineProvenance,
           note: headlineNote,
