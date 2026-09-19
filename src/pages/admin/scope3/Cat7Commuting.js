@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, REPORTING_SCHOOL_YEAR } from '../_shared';
+import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, REPORTING_SCHOOL_YEAR, PeriodNote } from '../_shared';
 
 const modes = [
   { value: 'car_solo', label: 'Car (solo)',     factorKey: 'epa_commute_car_solo_kg_co2e_per_pmi' },
@@ -114,6 +114,7 @@ function Cat7Commuting() {
             <span style={s.label}>School year</span>
             <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} required />
           </label>
+          <div style={s.full}><PeriodNote /></div>
           <label style={s.field}>
             <span style={s.label}>Role</span>
             <select value={form.employee_role} onChange={(e) => setForm({ ...form, employee_role: e.target.value })} style={s.input}>

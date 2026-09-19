@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, REPORTING_SCHOOL_YEAR } from '../_shared';
+import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, REPORTING_SCHOOL_YEAR, PeriodNote } from '../_shared';
 
 // Each option maps to an emission_factors row keyed for that category. Add new categories
 // by inserting a new factor in the migration and adding an option here.
@@ -104,6 +104,7 @@ function Cat1PurchasedGoods() {
             <span style={s.label}>Fiscal year</span>
             <input type="text" value={form.fiscal_year} onChange={(e) => setForm({ ...form, fiscal_year: e.target.value })} style={s.input} required placeholder={`e.g. ${REPORTING_SCHOOL_YEAR}`} />
           </label>
+          <div style={s.full}><PeriodNote /></div>
           <label style={s.field}>
             <span style={s.label}>Category</span>
             <select value={form.purchasing_category} onChange={(e) => setForm({ ...form, purchasing_category: e.target.value })} style={s.input}>

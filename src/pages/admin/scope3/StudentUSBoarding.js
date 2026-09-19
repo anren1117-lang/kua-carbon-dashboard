@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
+import { PeriodNote } from './PeriodNote';
 import { EducationalCard } from '../../../components/EducationalCard';
 import { REPORTING_SCHOOL_YEAR } from '../../../data/academicCalendar.js';
 
@@ -83,6 +84,7 @@ function StudentUSBoarding() {
             <span style={s.label}>School year</span>
             <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} required />
           </label>
+          <div style={s.full}><PeriodNote /></div>
         </div>
         <button type="submit" style={s.submit}>Add</button>
       </form>

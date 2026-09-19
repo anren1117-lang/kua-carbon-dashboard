@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTable, RecordsTable, formStyles as s, today, REPORTING_SCHOOL_YEAR } from '../_shared';
+import { useTable, RecordsTable, formStyles as s, today, REPORTING_SCHOOL_YEAR, PeriodNote } from '../_shared';
 import { toCsv, downloadCsv } from '../../../utils/csv.js';
 import CsvImportPanel, { validateForestStandRow } from '../../../components/CsvImportPanel.js';
 
@@ -208,6 +208,7 @@ function ForestStands() {
           <Field label="School year">
             <input type="text" value={form.school_year} onChange={(e) => setForm({ ...form, school_year: e.target.value })} style={s.input} />
           </Field>
+          <div style={{ gridColumn: '1 / -1' }}><PeriodNote /></div>
         </div>
         <Field label="Notes">
           <textarea

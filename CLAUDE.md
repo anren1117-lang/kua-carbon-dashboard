@@ -1389,3 +1389,54 @@ hardcoded, so the rendered output is byte-identical by design. The observable
 change is negative — the literal is gone from all eight form chunks and now
 lives only in the entry bundle. `schoolYearOn` tree-shakes out entirely, having
 no shipped caller yet.
+
+## Phase 440: the note that says why the default is what it is — and the crash I shipped in 439
+
+**First, a bug I introduced one phase earlier.** Phase 439 wrote this into
+`_shared.js`:
+
+```js
+export { REPORTING_SCHOOL_YEAR, schoolYearOn } from '../../data/academicCalendar.js';
+export const currentSchoolYear = () => schoolYearOn(new Date());   // ReferenceError
+```
+
+`export { x } from 'y'` forwards x to this module's CONSUMERS but creates no
+local binding, so the arrow function referenced an undeclared identifier.
+Confirmed in an isolated three-file ESM reproduction: `ReferenceError:
+schoolYearOn is not defined`, and the import-then-export form works.
+
+It shipped green because **nothing called it**. The build succeeded, 1,533 tests
+passed, and Phase 439's own tests could not have caught it — they assert on
+SOURCE TEXT (which form references which identifier) and never invoke anything.
+A test that reads code rather than running it proves only that the code says
+what you think it says. `sharedAdminHelpers.test.js` now CALLS the helpers; it
+failed with the real ReferenceError before the fix.
+
+The latent crash's first caller would have been this phase's note.
+
+**The note.** `PeriodNote` renders beside every admin period field when the
+wall clock and the published period disagree:
+
+> It is now the **2026-2027** school year, but this inventory publishes
+> **2025-2026**. A row saved as 2026-2027 counts as outside the reporting
+> period and will not appear in any published total.
+
+Phase 439 stopped the forms *defaulting* to the clock year. This says out loud
+why the default is what it is, at the moment an admin might override it. It
+renders `null` when the two agree, so it costs nothing once the period rolls
+forward. Both years are props, so the tests do not change behaviour on 1 August.
+
+Wired into all eight forms — seven via `s.full`, ForestStands via its own
+`Field` wrapper — anchored on the field+closer PAIR, because `</label>` alone
+appears many times per file and a naive replace would have half-applied.
+
+*Verified beyond the suite:* a green suite could not tell me the note actually
+appears for an admin, since every PeriodNote test passes explicit props and the
+render smoke tests only assert non-empty content. So I mounted the real
+`StudentDay` form with LIVE defaults and read the sentence back, and confirmed
+the field itself defaults to 2025-2026. `adminSubPagesRender.test.js` already
+mounts all eight forms, so the wiring gained real regression cover for free —
+the same file that exists because a ReferenceError once hid in an unmounted
+admin page, which is exactly the bug this phase fixes.
+
+Suite 1,533 → 1,542; 104 → 106 files.
