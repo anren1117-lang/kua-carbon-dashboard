@@ -1,4 +1,6 @@
 import React from 'react';
+import { MethodBreakdown } from '../components/MethodBreakdown.js';
+import { BOTTOM_UP_TOTALS } from '../data/geographicEstimates.js';
 
 const sources = [
   { domain: 'Framework', source: 'GHG Protocol — Scope 1 / 2 / 3', use: 'Inventory boundaries and dual-reporting (location- vs market-based)' },
@@ -23,7 +25,7 @@ const principles = [
   'Emission factors are versioned in the database so historical numbers remain reproducible when factors are updated.',
   'AI-generated text is constrained at the prompt level to reference values present in the database, exposes a “show calculation” control, and is visually distinct from measured data.',
   'Scope 3 categories not applicable to a school (Cat 9, Cat 12) are explicitly excluded rather than silently dropped.',
-  'Where measured data is not yet integrated, headline numbers carry a multi-method range (3-4 published methodologies per component) so the spread of reasonable interpretations is visible — not just a single point. The full per-method breakdown lives at /admin/methodology.',
+  'Where measured data is not yet integrated, headline numbers carry a multi-method range (3-4 published methodologies per component) so the spread of reasonable interpretations is visible — not just a single point. The full per-method breakdown is published below.',
 ];
 
 const styles = {
@@ -76,6 +78,17 @@ function Methodology() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section style={styles.section}>
+        <h2 style={styles.h2}>Per-component method breakdown</h2>
+        <p style={{ ...styles.subtitle, marginTop: 0, marginBottom: 4 }}>
+          What each component of the footprint is built from — the figure, the arithmetic
+          behind it, and the published sources it rests on. Bottom-up gross across Scope 1 and
+          Scope 3 is {(BOTTOM_UP_TOTALS.scope1 + BOTTOM_UP_TOTALS.scope3).toLocaleString()} mtCO₂e/yr
+          before measured Scope 2 and sinks.
+        </p>
+        <MethodBreakdown />
       </section>
 
       <section style={styles.section}>

@@ -1440,3 +1440,49 @@ the same file that exists because a ReferenceError once hid in an unmounted
 admin page, which is exactly the bug this phase fixes.
 
 Suite 1,533 → 1,542; 104 → 106 files.
+
+## Phase 441: six public pages promised a breakdown behind a password
+
+`AdminLayout.js:347` returns a **password form** in place of its `<Outlet />`
+when there is no session, and `index.js:320` mounts every `/admin/*` route
+under it. Six public pages told readers to "see /admin/methodology for the full
+per-component breakdown" — so a school-board reader following that link got
+*"Enter the admin password to manage emissions data."*
+
+The content was never sensitive. `BOTTOM_UP_BREAKDOWN` is nine components with
+their basis arithmetic and citations; a sweep of the admin page for passwords,
+table names or internal workflow came back **empty**. It was misfiled, not
+private — and for a dashboard whose selling point is transparency to a school
+board, that is the wrong file.
+
+`MethodBreakdown` now renders those nine rows and is used by **both**
+`/methodology` and `/admin/methodology`, so the public page cannot drift from
+the admin one. The public page gained the section it was pointing elsewhere
+for, including the bottom-up gross (4,086 mtCO₂e/yr = 1,357 Scope 1 + 2,729
+Scope 3, before measured Scope 2 and sinks).
+
+**The sweep found more than the task recorded — eleven pages, not six.** The
+other eight references are a different defect: public pages that LINK INTO
+admin areas. `Executive.js:214` wraps every action row in a
+`<Link to="/admin/actions">`, so a board member clicking an action lands on a
+password prompt; `Actions.js:100` and `Unsubscribe.js:71` link to
+`/admin/actions` and `/admin/alerts`; `Buildings`, `Faq`, `Hotspots` and
+`TrendBuilder` mention `/admin/bms-export` in prose aimed at an admin. Real, but
+a different fix across eight more files — **recorded as its own task rather
+than folded in**, and the test was narrowed to `/admin/methodology` to match
+what this phase actually delivers. A test that asserts more than the phase
+delivers is one that has to be weakened later.
+
+*Process:* the test needed two repairs before it could be trusted. It first
+failed to COLLECT — under the `jsdom` pragma `import.meta.url` is an http: URL
+and `node:fs` rejects it with `ERR_INVALID_URL_SCHEME` (tests without the
+pragma can use the `new URL(...)` form, which is why `adminPeriodDefaults`
+works). Then, because the sweep is `it.each(publicPages)`, an empty directory
+read would have registered **zero tests** and read exactly like a clean sweep —
+so it now asserts the page list is non-empty and contains known files. Red
+first: 13 failed / 110 passed, the 110 being AP content pages that legitimately
+have no admin link.
+
+The extraction left residue the gate was extended to catch: one unused import
+and six orphaned style keys in the admin page, all removed (412 → 405 lines).
+Suite 1,542 → 1,665; 106 → 107 files.

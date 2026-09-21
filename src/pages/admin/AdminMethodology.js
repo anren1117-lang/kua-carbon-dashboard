@@ -1,7 +1,7 @@
 import React from 'react';
 import { ProvenancePill } from '../../components/ProvenancePill.js';
+import { MethodBreakdown } from '../../components/MethodBreakdown.js';
 import {
-  BOTTOM_UP_BREAKDOWN,
   BOTTOM_UP_TOTALS,
   KUA_HDD_BASE_65,
   HEATING_KBTU_PER_SQFT,
@@ -29,12 +29,6 @@ const styles = {
   th: { textAlign: 'left', padding: '8px 10px', fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, borderBottom: '1px solid #1f2937' },
   td: { padding: '8px 10px', fontSize: 14, borderBottom: '1px solid #1f2937', verticalAlign: 'top' },
 
-  bottomUpRow: { display: 'grid', gridTemplateColumns: 'minmax(180px, 220px) 100px 1fr', gap: 12, padding: '12px 0', borderBottom: '1px solid #1f2937', alignItems: 'flex-start' },
-  bottomUpLabel: { fontSize: 14, color: '#e5e7eb', fontWeight: 600 },
-  bottomUpScope: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 },
-  bottomUpMt: { fontSize: 16, color: '#86efac', fontWeight: 700, fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
-  bottomUpBasis: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 },
-  bottomUpCitations: { marginTop: 6, fontSize: 11, color: '#64748b' },
   totalsCard: { marginTop: 16, padding: 14, background: '#0a1f17', border: '1px solid #14532d', borderRadius: 8, fontSize: 13, color: '#86efac' },
   compareGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginTop: 12 },
   compareCell: { padding: 12, background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
@@ -103,21 +97,7 @@ function AdminMethodology() {
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
-          {BOTTOM_UP_BREAKDOWN.map((row) => (
-            <div key={`${row.scope}-${row.component}`} style={styles.bottomUpRow}>
-              <div>
-                <div style={styles.bottomUpLabel}>{row.component}</div>
-                <div style={styles.bottomUpScope}>{row.scope}</div>
-              </div>
-              <div style={styles.bottomUpMt}>{Math.round(row.mt).toLocaleString()} mt</div>
-              <div>
-                <div style={styles.bottomUpBasis}>{row.basis}</div>
-                <div style={styles.bottomUpCitations}>Sources: {row.citations.join(' · ')}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <MethodBreakdown />
 
         <div style={styles.totalsCard}>
           <strong>Bottom-up gross (Scope 1 + 3, before Scope 2 + sinks):</strong>{' '}
