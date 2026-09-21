@@ -13,6 +13,7 @@ import {
 } from '../data/geographicEstimates.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
+import { LiveDataNotice } from './LiveDataNotice.js';
 import { ledgerSourceText } from '../data/electricityLedger.js';
 import { carbonEquivalents } from '../utils/equivalents.js';
 import { AnimatedNumber } from './AnimatedNumber.js';
@@ -278,6 +279,7 @@ export function NetEstimate() {
 
   return (
     <div style={styles.wrap}>
+      <LiveDataNotice error={live.error} fallbackLabel="the published estimate" />
       <section ref={heroTiltRef} style={styles.card} className="kua-hero-card kua-tilt kua-spotlight">
         <AmbientParticles />
         <div style={{ position: 'relative', zIndex: 1 }}>

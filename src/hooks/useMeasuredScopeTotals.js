@@ -21,6 +21,7 @@ import { useMeasuredScope2 } from './useMeasuredScope2.js';
  *   grossMt: number,
  *   netMt: number,
  *   loading: boolean,
+ *   error: string|null,       // any child hook's failure, naming which scope
  *   measuredScopes: number,    // 1..4 — Scope 2 is always counted (BMS-measured kWh × cited factors); the other three flip as their tables fill in
  *   scope1Measured: boolean,
  *   scope3Measured: boolean,
@@ -55,6 +56,17 @@ export function useMeasuredScopeTotals() {
     grossMt,
     netMt,
     loading: s1.loading || s2.loading || s3.loading || sinks.loading,
+    // Each child hook exposes an error; this composer returned none of them,
+    // so all seventeen consumers — the homepage included — were structurally
+    // unable to tell a reader the numbers had fallen back to build-time
+    // constants. Labelled by scope: "live data unavailable" without saying
+    // WHICH source failed is barely more useful than silence.
+    error: [
+      s1.error    && `Scope 1: ${s1.error}`,
+      s2.error    && `Scope 2: ${s2.error}`,
+      s3.error    && `Scope 3: ${s3.error}`,
+      sinks.error && `Sinks: ${sinks.error}`,
+    ].filter(Boolean).join('; ') || null,
     scope2FromAdmin: s2.fromAdmin,
     measuredScopes,
     scope1Measured: s1.measured,

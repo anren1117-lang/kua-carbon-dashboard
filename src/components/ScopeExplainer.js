@@ -7,6 +7,7 @@ import { COMPOSED_ANNUAL_KWH } from '../data/composedYtd.js';
 import { ledgerSourceText } from '../data/electricityLedger.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
+import { LiveDataNotice } from './LiveDataNotice.js';
 
 // Per-student values pulled from the same centralized source the rest
 // of the dashboard uses, so this homepage explainer stays in sync.
@@ -210,6 +211,7 @@ export function ScopeExplainer() {
   }));
   return (
     <div style={styles.wrap}>
+      <LiveDataNotice error={live.error} fallbackLabel="the published per-scope totals" />
       <section style={styles.outer}>
         <h2 style={styles.outerTitle}>By scope</h2>
         <p style={styles.outerBlurb}>

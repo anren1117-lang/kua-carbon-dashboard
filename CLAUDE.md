@@ -1486,3 +1486,50 @@ have no admin link.
 The extraction left residue the gate was extended to catch: one unused import
 and six orphaned style keys in the admin page, all removed (412 → 405 lines).
 Suite 1,542 → 1,665; 106 → 107 files.
+
+## Phase 442: the composer dropped every error on the floor
+
+Phase 432 taught Scope 1 / Scope 3 / Sinks to say *"Live data unavailable"*
+instead of silently rendering the bottom-up placeholder. The homepage could not
+do the same, and the reason was one layer down.
+
+`useMeasuredScopeTotals` composes four hooks — scope1, scope2, scope3, sinks.
+Each exposes an `error`. The composer OR-ed their `loading` flags and returned
+**none** of their errors. So its **seventeen** consumers, including both
+homepage components, were *structurally unable* to report a failure: the
+information never reached them. Fixing the consumers alone was impossible.
+
+The visible consequence was in `ScopeExplainer.js:198` — `live.scope2Mt ||
+SCOPE2_TOTAL_MT`. A Supabase failure makes the live value falsy, so the page
+fell back to the build-time constant and rendered it exactly like live data. A
+failed fetch and an empty table are different facts, and the homepage was
+showing the first as if it were neither.
+
+The composer now aggregates, **labelled by scope** — "live data unavailable"
+without saying which source failed is barely better than silence:
+
+> Live data unavailable (Scope 1: permission denied for table fuel_bills;
+> Sinks: connection reset). Showing the published estimate instead.
+
+`LiveDataNotice` renders it (three pages were already building that sentence
+inline; this gives the wording one home) and returns `null` when there is no
+error, so an empty table stays quiet — a warning for "nobody has entered data
+yet" would be its own kind of lie, and that negative control is pinned.
+
+*Process:* two corrections, both caught by running rather than reasoning. The
+render tests first failed with *"Element type is invalid… got: undefined"* —
+these are **named** exports, so the test was failing for the wrong reason and
+proved nothing until fixed. Then my own staged-write assertion aborted the
+write: I asserted `s1.error` appears once, but `` s1.error && `Scope 1:
+${s1.error}` `` contains it **twice**. The code was right and the assertion was
+wrong — and nothing was written, which is the staging discipline working.
+
+Deploy markers had to be the `fallbackLabel` prop values, not the sentence:
+`Showing {fallbackLabel} instead.` is JSX interpolation, so the contiguous
+string never exists in the bundle. The same trap as Phase 438's
+"only tons/lbs/kg convert", and the same reason markers get measured in the
+local build first.
+
+Fifteen other consumers of the composer still ignore `error` — now possible to
+fix, since the data finally reaches them. Tracked in #20.
+Suite 1,665 → 1,672; 107 → 108 files.
