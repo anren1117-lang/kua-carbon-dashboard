@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
-import { diningMenuItems, diningVendors, ingredientPurchases, foodWasteLogs, menuScenarios } from '../data/dining.js';
+import { diningMenuItems, diningVendors, ingredientPurchases, foodWasteLogs, menuScenarios, PORTION_RECONCILIATION } from '../data/dining.js';
 import { getFactor } from '../data/emissionFactors.js';
 
 const CATEGORY_COLORS = {
@@ -82,6 +82,19 @@ export default function Dining() {
         { label: 'Avg per meal',        value: avgKgPerServing.toFixed(2),  unit: 'kg CO₂e', accent: '#fbbf24' },
         { label: 'Waste diversion',     value: wasteDiversion.toFixed(0),   unit: '%',       accent: '#86efac', note: 'Compost / (Compost + Landfill)' },
       ]} />
+
+      <div style={styles.portionNote} role="note">
+        <strong>One serving, two portion sizes.</strong> These figures price a beef serving at{' '}
+        {PORTION_RECONCILIATION.diningBeefKgPerServing} kg CO₂e, which implies a{' '}
+        {PORTION_RECONCILIATION.diningImpliedGrams} g portion — while the personal-footprint tool
+        states {PORTION_RECONCILIATION.footprintStatedGrams} g and prices the same serving at{' '}
+        {PORTION_RECONCILIATION.footprintBeefKgPerServing} kg, a {PORTION_RECONCILIATION.gapPct}% gap.
+        Beef is also the only meat here implying {PORTION_RECONCILIATION.diningImpliedGrams} g; pork,
+        chicken and fish all imply {PORTION_RECONCILIATION.otherMeatsImpliedGrams} g. Both trace to
+        the same Poore &amp; Nemecek per-kg figure, so the gap is portion size, not sourcing.
+        Reconciling it moves the published dining total, so it is held for a deliberate decision
+        rather than averaged away here.
+      </div>
 
       <ModuleSection
         title="Emissions by meal category"
@@ -217,6 +230,7 @@ function WasteCell({ label, value, color }) {
 }
 
 const styles = {
+  portionNote: { marginTop: 16, padding: '12px 16px', borderRadius: 8, border: '1px solid #92400e', background: '#3a2a0d', color: '#fcd34d', fontSize: 13, lineHeight: 1.6 },
   barList: { display: 'grid', gap: 8 },
   barRow: { display: 'grid', gridTemplateColumns: 'minmax(120px, 160px) 1fr minmax(120px, 160px)', gap: 12, alignItems: 'center', padding: '10px 12px', background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 },
   barLeft: { display: 'flex', alignItems: 'center', gap: 8 },

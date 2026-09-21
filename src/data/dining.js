@@ -26,6 +26,37 @@ const mealCategories = /** @type {const} */ ([
   { category: 'vegan',      proteinType: 'legumes',  factorPerServing: 0.33 },
 ]);
 
+/**
+ * TWO PORTION SIZES FOR ONE SERVING, published rather than quietly averaged.
+ *
+ * The per-serving factors above divide by their own per-kg factor to imply a
+ * portion: beef 100 g, pork/chicken/fish 200 g, eggs 100 g, legumes 330 g.
+ * `utils/personalFootprint.js` separately states that "a beef serving is
+ * ~150 g" and prices it at 15 kg CO2e. So the same repo values one beef
+ * serving at 9.95 and at 15 — a 51% gap on the same quantity, from the same
+ * Poore & Nemecek per-kg factor.
+ *
+ * Neither is obviously wrong. The dining figures were RESCALED in Phase 405
+ * "so whatever portion size was originally assumed is preserved rather than
+ * re-guessed" — meaning the 100 g was inherited, never chosen. The 150 g in
+ * the footprint tool was chosen deliberately and documented.
+ *
+ * Reconciling them moves a published total (dining ~243 mtCO2e), so it is a
+ * decision, not a fix — the same posture as FACTOR_RECONCILIATION and
+ * SINKS_RECONCILIATION. What is NOT acceptable is leaving a reader to meet
+ * both numbers on different pages with nothing saying they disagree.
+ */
+export const PORTION_RECONCILIATION = {
+  diningBeefKgPerServing: 9.95,
+  footprintBeefKgPerServing: 15,
+  diningImpliedGrams: 100,
+  footprintStatedGrams: 150,
+  otherMeatsImpliedGrams: 200,
+  gapPct: +(((15 - 9.95) / 9.95) * 100).toFixed(0),
+  aligned: false,
+  note: 'A beef serving is priced at 9.95 kg CO2e on the dining page (implying a 100 g portion) and 15 kg CO2e in the personal-footprint tool (a stated 150 g). Beef is also the only meat here implying a 100 g portion; pork, chicken and fish all imply 200 g. Both trace to the same Poore & Nemecek per-kg figure, so the gap is portion size, not sourcing. Reconciling it moves the published dining total, so it is held for a deliberate decision.',
+};
+
 /** @type {DiningMenuItem[]} */
 export const diningMenuItems = (() => {
   const out = [];

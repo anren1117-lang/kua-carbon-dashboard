@@ -1701,3 +1701,42 @@ mocking auth, and the direct `useMeasuredScope2` consumers, where the right
 treatment is per-surface rather than a page banner.
 
 Suite 1,815 → 1,821; 112 → 113 files.
+
+## Phase 448: one serving, two portion sizes — published rather than averaged away
+
+`dining.js` prices a beef serving at **9.95** kg CO₂e. `personalFootprint.js`
+prices the same serving at **15**, stating "a beef serving is ~150 g". Both
+divide the *same* Poore & Nemecek per-kg figure (99.5), so the 51% gap is
+entirely portion size: 100 g against 150 g.
+
+Dividing every dining factor by its own per-kg factor exposes more: beef
+implies **100 g** while pork, chicken and fish all imply **200 g**. Beef is the
+only meat served at half portion, and nothing documents that as deliberate —
+`dining.js:16` says the figures were rescaled in Phase 405 "so whatever portion
+size was originally assumed is preserved rather than re-guessed". The 100 g was
+inherited, never chosen. The 150 g was chosen and documented.
+
+**Reconciling them moves a published total (~243 mtCO₂e), so it is a decision,
+not a fix** — the same posture as `FACTOR_RECONCILIATION` and
+`SINKS_RECONCILIATION`. What is not acceptable is a reader meeting both numbers
+on different pages with nothing saying they disagree. `/dining` now says so, in
+the panel where the per-meal average is displayed.
+
+**The durable half of this phase is the guard.** Phase 419 caught
+`PERIOD_RECONCILIATION` reaching no page and said to "extend it to every
+sibling object at once, so the next one cannot repeat the mistake" — but it was
+implemented as **three hardcoded assertions**. So I added
+`PORTION_RECONCILIATION` deliberately *unrendered* first, and the rewritten
+guard caught it with no per-object maintenance:
+
+```
+PORTION_RECONCILIATION (declared in data/dining.js) reaches no page
+```
+
+It now discovers every `*_RECONCILIATION` export under `data/` and requires a
+page to import it, with a floor assertion so an empty sweep cannot pass
+vacuously. The gate additionally requires **four or more fields** to be
+rendered, because Rollup drops unread properties — rendering only `.note` would
+ship a note and silently discard every figure beside it.
+
+Suite unchanged at 1,821 (an existing test was rewritten, not added).

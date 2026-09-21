@@ -163,9 +163,24 @@ describe('live data wiring', () => {
       }
       return null;
     };
-    expect(pageImports('PERIOD_RECONCILIATION')).toBeTruthy();
-    expect(pageImports('SINKS_RECONCILIATION')).toBeTruthy();
-    expect(pageImports('FACTOR_RECONCILIATION')).toBeTruthy();
+    //
+    // Phase 448: DISCOVERED, not listed. This was three hardcoded assertions,
+    // so a fourth reconciliation object could still be exported, believed
+    // published, and tree-shaken away — the exact mistake, one object later.
+    // Now every *_RECONCILIATION export in data/ must be imported by a page.
+    const declared = [];
+    for (const file of walk(path.join(SRC, 'data'))) {
+      const text = fs.readFileSync(file, 'utf8');
+      for (const m of text.matchAll(/export const (\w*_RECONCILIATION)\b/g)) {
+        declared.push([m[1], path.relative(SRC, file)]);
+      }
+    }
+    // An empty sweep would make the loop below vacuously true.
+    expect(declared.length).toBeGreaterThanOrEqual(4);
+    const orphans = declared
+      .filter(([name]) => !pageImports(name))
+      .map(([name, file]) => `${name} (declared in ${file}) reaches no page`);
+    expect(orphans).toEqual([]);
   });
 
   it('every scope page states which twelve months it covers', () => {
