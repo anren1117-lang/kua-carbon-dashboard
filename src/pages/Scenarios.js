@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
@@ -102,6 +103,7 @@ export default function Scenarios() {
       title="Reduction scenarios — interactive what-if"
       subtitle="Move the sliders to model what would happen to KUA's net carbon balance under different reduction strategies. Every step exposes its math — no black-box answers."
     >
+      <LiveDataNotice error={live.error} fallbackLabel="the published baseline" />
       <ModuleSection title="Try a named strategy" hint="Each preset loads a commonly-discussed reduction strategy across all 4 sliders. Adjust after loading to see how the math shifts.">
         <div style={styles.presetGrid}>
           {PRESETS.map((p) => (

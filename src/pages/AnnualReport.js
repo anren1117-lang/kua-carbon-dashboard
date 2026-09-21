@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E, gridMix } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
 import { SOLAR_ANNUAL_KWH } from '../data/renewables.js';
@@ -55,6 +56,7 @@ export default function AnnualReport() {
 
   return (
     <div style={styles.page} className="annual-report">
+      <LiveDataNotice error={live.error} fallbackLabel="the published report figures" />
       <div style={styles.controls} className="no-print">
         <button type="button" style={styles.printBtn} onClick={() => window.print()}>
           🖨 Print or save as PDF

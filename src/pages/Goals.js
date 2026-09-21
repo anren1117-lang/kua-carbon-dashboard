@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { AnimatedNumber, useAnimatedNumber } from '../components/AnimatedNumber.js';
 import { AmbientParticles } from '../components/AmbientParticles.js';
 import { Sparkline } from '../components/Sparkline.js';
@@ -120,6 +121,7 @@ export default function Goals() {
         </button>
       }
     >
+      <LiveDataNotice error={live.error} fallbackLabel="the published trajectory" />
       <HeadlineHero
         target={reductionTargets.find((t) => t.id === 'tg_gross_2030') || reductionTargets[0]}
         actualByScope={ACTUAL_BY_SCOPE}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
 import { EnergyEquivalents } from '../components/EnergyEquivalents.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E } from '../data/gridMix.js';
@@ -114,6 +115,7 @@ export default function Executive() {
         </button>
       }
     >
+      <LiveDataNotice error={live.error} fallbackLabel="the published totals" />
       <MetricGrid metrics={[
         { label: 'Net annual emissions', value: Math.round(NET_MT).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: `${perStudent.toFixed(2)} per student` },
         { label: 'Gross emissions',      value: Math.round(GROSS_MT).toLocaleString(), unit: 'mtCO₂e', accent: '#ef4444' },

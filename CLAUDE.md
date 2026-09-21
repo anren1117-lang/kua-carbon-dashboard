@@ -1533,3 +1533,35 @@ local build first.
 Fifteen other consumers of the composer still ignore `error` — now possible to
 fix, since the data finally reaches them. Tracked in #20.
 Suite 1,665 → 1,672; 107 → 108 files.
+
+## Phase 443: the other five pages that read the composer
+
+Phase 442 gave `useMeasuredScopeTotals` an `error` and wired the two homepage
+components. Five more public pages read the same composer and still rendered
+build-time constants as though they were live: Executive, Goals, Actions,
+Scenarios, AnnualReport. Each now carries the notice.
+
+**One notice per page, not per chart — a deliberate call.** Six chart
+components (ScopeDonut, PeerComparison, ScopeRangeChart, NetBalanceWaterfall,
+MeasuredShareChart, AISummary) also read the composer. Giving each its own
+banner would show a reader four identical warnings on Executive alone. The page
+owns the notice; the gate now asserts the charts render none, so the decision
+can't erode later.
+
+TeacherPortal reads the composer too but sits behind a `PasswordGate`, so it
+renders nothing to assert against without auth. Left in #20 rather than faked.
+
+*Process — the failure mode my own notes name.* The first green attempt left
+five tests failing with **"Found multiple elements with the text: /Scope 1/"**,
+because these pages say "Scope 1" in their prose. The tempting fix is
+`getAllByText`, and it is the wrong branch: it goes green *and* passes against a
+notice that names no scope at all. Scoped the assertion to the notice element's
+own `textContent` instead. The first assertion had already passed, which is how
+I knew the notice itself was fine and only the query was ambiguous.
+
+Insertion points were located **programmatically** (find `return (`, then the
+first `    >` that closes the opening tag) rather than by pasting two very long
+JSX lines as anchors — the reconstruction risk that broke Phases 414 and 423.
+Each insertion asserts the following line is the one expected before writing.
+
+Suite 1,672 → 1,683; 108 → 109 files.
