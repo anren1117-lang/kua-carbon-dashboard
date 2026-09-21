@@ -1,6 +1,7 @@
 import React from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { ProvenancePill, ProvenanceLegend } from '../components/ProvenancePill.js';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import {
   forestStands,
   soilSamples,
@@ -58,6 +59,7 @@ export default function Sinks() {
       title="Carbon Sinks"
       subtitle="On-campus carbon drawdown — what KUA's roughly 1,000 acres of forest and the soil under it pull out of the air every year. Most peer schools don't measure their sinks at all; that gap is the single biggest reason KUA's net footprint reads near zero."
     >
+      <LiveDataNotice error={live.error} fallbackLabel="the stand-weighted placeholder inventory" />
       <MetricGrid metrics={[
         { label: 'Forest acres',        value: totalAcres.toLocaleString(), accent: '#22c55e' },
         { label: 'Annual sequestration', value: annualMt.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: isMeasured ? 'Live forest_stand_actuals' : 'Stand-weighted (placeholder)' },

@@ -2,6 +2,7 @@ import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 
 // All ranges drawn from publicly available carbon-market data (Ecosystem
 // Marketplace, Trove Research, Verra registries, Climate Action Reserve)
@@ -111,6 +112,7 @@ function CarbonCredits() {
   const categories = categoriesFor(seq);
   return (
     <div>
+      <LiveDataNotice error={live.error} fallbackLabel="the published sequestration figure" />
       <h1 style={styles.title}>Carbon Credits & Monetization</h1>
       <p style={styles.subtitle}>
         How can sequestered carbon become revenue? KUA's ~1,000 acres of forest pulls roughly

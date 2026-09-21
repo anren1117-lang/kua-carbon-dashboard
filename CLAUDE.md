@@ -1674,3 +1674,30 @@ blocked the commit over `Goals.js` — a file this phase never touched — readi
 excludes comments, the same filter its sibling link check already used.
 
 Suite 1,694 → 1,815; 111 → 112 files.
+
+## Phase 447: the last two public pages that swallowed a failed fetch
+
+`/sinks-os` and `/credits` both read `useMeasuredSinks` directly — not the
+composer Phase 442 fixed — and both did this:
+
+```js
+const isMeasured = live.measured && !live.loading && !live.error;
+```
+
+`.error` was consumed **only** to negate `isMeasured`. A Supabase failure fell
+through to the placeholder (`ANNUAL_SEQUESTRATION_MT`, `TOTAL_FOREST_ACRES`)
+and rendered it labelled *"Stand-weighted (placeholder)"* — honest that it is a
+placeholder, silent about **why**. An empty table and a failed fetch produced
+byte-identical pages. Phase 432's defect, on the two surfaces it never reached.
+
+Both now render `LiveDataNotice`. The notice **adds a fact without replacing
+the page** — a third assertion pins that the placeholder figures still render
+on failure, because a page that blanks out on a fetch error trades one bad
+outcome for another.
+
+This closes the public half of #20. What remains there is TeacherPortal, which
+sits behind a `PasswordGate` and renders nothing to assert against without
+mocking auth, and the direct `useMeasuredScope2` consumers, where the right
+treatment is per-surface rather than a page banner.
+
+Suite 1,815 → 1,821; 112 → 113 files.
