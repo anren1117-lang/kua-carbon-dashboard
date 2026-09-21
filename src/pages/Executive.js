@@ -210,11 +210,11 @@ export default function Executive() {
 
       <ModuleSection
         title="Top institutional levers"
-        hint="Policy + facility decisions ranked by impact × urgency × confidence. Full queue on the admin Actions page."
+        hint="Policy + facility decisions ranked by impact × urgency × confidence. The top three are shown in full here; the complete queue is maintained by staff in the admin portal."
       >
         <div style={styles.actionList}>
           {top3.map(({ action }, i) => (
-            <Link key={action.id} to="/admin/actions" style={styles.actionRow}>
+            <div key={action.id} style={styles.actionRow}>
               <div style={styles.actionRank}>#{i + 1}</div>
               <div style={{ flex: 1 }}>
                 <div style={styles.actionTitle}>{action.title}</div>
@@ -225,7 +225,7 @@ export default function Executive() {
               <Pill kind={action.urgency === 'high' ? 'bad' : action.urgency === 'medium' ? 'warn' : 'neutral'}>
                 {action.urgency}
               </Pill>
-            </Link>
+            </div>
           ))}
         </div>
         <div style={styles.actionFoot}>
@@ -357,7 +357,6 @@ export default function Executive() {
           { to: '/procurement',     label: 'Procurement' },
         ]} />
         <LinkGroup label="Reductions & drawdown" links={[
-          { to: '/admin/actions',   label: 'Actions (institutional)' },
           { to: '/goals',           label: 'Goals & Targets' },
           { to: '/renewables-os',   label: 'Renewables' },
           { to: '/sinks-os',        label: 'Sinks' },

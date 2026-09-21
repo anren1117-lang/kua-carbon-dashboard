@@ -1638,3 +1638,39 @@ are now deleted.
 
 Suite 1,687 → 1,694; 110 → 111 files. **This closes task #17** — every item
 from the three-critic review is now shipped.
+
+## Phase 446: public pages that linked into the login wall (#22)
+
+Phase 441's sweep found eleven public pages referencing `/admin/`. Six were the
+methodology CONTENT promise and moved into public. These are the other eight.
+
+**A public page may MENTION where an admin works. It must not offer a
+clickable LINK to a URL that renders a password form.** That line separates
+four real defects from prose that is merely informational:
+
+- `Executive.js` wrapped **every institutional action row** in
+  `<Link to="/admin/actions">`. The row already shows the title, reduction,
+  cost, owner and urgency — so the link promised *more* and delivered "Enter
+  the admin password". Now a plain `<div>`.
+- `Executive.js` listed "Actions (institutional)" → `/admin/actions` in the
+  footer nav **of a public page**. Removed.
+- `Actions.js` and `Unsubscribe.js` linked `/admin/actions` and
+  `/admin/alerts`. Both now say plainly that staff manage those, no link.
+- The hint promised "Full queue on the admin Actions page"; it now says the top
+  three are shown in full and the queue is maintained by staff.
+
+**Left alone on purpose:** `Buildings`, `Faq`, `Hotspots`, `TrendBuilder` and
+`AnnualReport:294` name an admin path in a sentence aimed at an admin —
+informational, not a promise a reader can click and have broken. The test
+carries a control asserting the detector tells those two cases apart.
+
+*Process — two of my own guards were wrong, and neither let anything through.*
+The staged write aborted on "unbalanced Link tags" because `count('<Link')`
+also counts **`<LinkGroup`**; Executive's eleven opens were five `<LinkGroup`
+plus six real `<Link>`. Fixed with a word boundary. Then the residual gate
+blocked the commit over `Goals.js` — a file this phase never touched — reading
+3 open against 2 close. Line 737 is a **comment** documenting the `<Link>` vs
+`<a>` convention: prose describing JSX is not JSX. The balance check now
+excludes comments, the same filter its sibling link check already used.
+
+Suite 1,694 → 1,815; 111 → 112 files.

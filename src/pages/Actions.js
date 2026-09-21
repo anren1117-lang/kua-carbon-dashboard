@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
@@ -98,7 +97,7 @@ export default function Actions() {
           to KUA's number if your dorm — or every student — joins you.
           {adminOnlyCount > 0 && (
             <>
-              {' '}School-side decisions (HVAC, dining menus, capital projects) live on the <Link to="/admin/actions" style={{ color: '#22d3ee' }}>admin Actions view</Link>.
+              {' '}School-side decisions (HVAC, dining menus, capital projects) are tracked by staff in the admin portal.
             </>
           )}
         </>

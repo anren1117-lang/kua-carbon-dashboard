@@ -68,7 +68,7 @@ export default function Unsubscribe() {
             <h1 style={styles.title}>You've been unsubscribed</h1>
             <p style={styles.subtitle}>
               <strong>{email}</strong> will no longer receive KUA Dashboard alert emails.
-              Changed your mind? An admin can add the address back at <Link to="/admin/alerts" style={styles.link}>/admin/alerts</Link>.
+              Changed your mind? Ask the sustainability office to add the address back — alerts are managed from the staff admin portal.
             </p>
           </>
         )}
