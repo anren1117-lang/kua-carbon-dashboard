@@ -1,4 +1,5 @@
 import React from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { Link } from 'react-router-dom';
 import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E, gridMix } from '../data/gridMix.js';
@@ -76,7 +77,7 @@ export default function AnnualReport() {
       <Section title="At a glance">
         <div style={styles.atGlance}>
           <Headline label="Net annual emissions" value={Math.round(NET).toLocaleString()} unit="mtCO₂e" tone="primary" />
-          <Headline label="Per student" value={(NET / TOTAL_STUDENTS).toFixed(2)} unit="mtCO₂e" tone="muted" />
+          <Headline label="Per student" value={perStudentMt(NET, TOTAL_STUDENTS)} unit="mtCO₂e" tone="muted" />
           <Headline label="Forest sequestration" value={Math.round(SINKS).toLocaleString()} unit="mtCO₂e/yr" tone="good" />
         </div>
         <p style={styles.dataAsOf} className="data-as-of">

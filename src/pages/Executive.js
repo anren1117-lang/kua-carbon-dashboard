@@ -1,4 +1,5 @@
 import React from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { LiveDataNotice } from '../components/LiveDataNotice.js';
@@ -117,7 +118,7 @@ export default function Executive() {
     >
       <LiveDataNotice error={live.error} fallbackLabel="the published totals" />
       <MetricGrid metrics={[
-        { label: 'Net annual emissions', value: Math.round(NET_MT).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: `${perStudent.toFixed(2)} per student` },
+        { label: 'Net annual emissions', value: Math.round(NET_MT).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: `${perStudentMt(NET_MT, TOTAL_STUDENTS)} per student` },
         { label: 'Gross emissions',      value: Math.round(GROSS_MT).toLocaleString(), unit: 'mtCO₂e', accent: '#ef4444' },
         { label: 'Forest sequestration', value: Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString(), unit: 'mtCO₂e/yr', accent: '#22c55e', note: `${TOTAL_FOREST_ACRES.toLocaleString()} acres` },
         { label: 'On-campus solar',      value: SOLAR_ANNUAL_KWH.toLocaleString(), unit: 'kWh/yr', accent: '#86efac', note: 'Whittemore array' },
@@ -329,7 +330,7 @@ export default function Executive() {
         <MetricGrid metrics={[
           { label: 'Students',         value: TOTAL_STUDENTS,         accent: '#22d3ee' },
           { label: 'Faculty + staff',  value: TOTAL_STAFF,            accent: '#fbbf24' },
-          { label: 'mtCO₂e / student', value: perStudent.toFixed(2),  accent: '#86efac', note: 'Net basis' },
+          { label: 'mtCO₂e / student', value: perStudentMt(NET_MT, TOTAL_STUDENTS),  accent: '#86efac', note: 'Net basis' },
           { label: 'kWh / student',    value: Math.round((s2.year1Kwh || GRID_MIX_TOTAL_KWH) / TOTAL_STUDENTS).toLocaleString(), accent: '#ef4444', note: 'Year 1 basis' },
         ]} />
       </ModuleSection>

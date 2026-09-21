@@ -1,4 +1,5 @@
 import React from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
@@ -18,7 +19,6 @@ import { ScopeBreakdownPanel } from '../components/ScopeBreakdownPanel.js';
 const INTL_ONE_FEWER_RT_MT = Math.round(SCOPE3_INTL_TRAVEL.central / 1.6);
 const INTL_PER_RT_MT = +(SCOPE3_INTL_TRAVEL.central / 50 / 1.6).toFixed(1);
 
-const SCOPE3_PER_STUDENT = +(SCOPE3_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
 const categories = [
   { num: 1, name: 'Purchased Goods & Services', desc: 'Embodied emissions of food, paper, supplies, equipment, materials.', factor: 'EPA Supply Chain GHG Emission Factors (EEIO, spend-based)', status: 'Planned' },
@@ -60,7 +60,7 @@ function Scope3() {
   const isMeasured = live.measured && !live.loading && !live.error;
   const dataIssue = live.error ? `Live data unavailable (${live.error}). Showing the bottom-up estimate below.` : null;
   const headlineTotal = isMeasured ? live.totalMt : SCOPE3_TOTAL_MT;
-  const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(2);
+  const headlinePerStudent = perStudentMt(headlineTotal, TOTAL_STUDENTS, isMeasured ? 'measured' : 'estimated');
   const headlineProvenance = isMeasured ? 'measured' : 'estimated';
   const headlineNote = isMeasured
     ? `${live.note} Likely the largest scope at KUA. International student round trips to Asia (~${INTL_PER_RT_MT} mtCO₂e each) are the highest per-student line item.`

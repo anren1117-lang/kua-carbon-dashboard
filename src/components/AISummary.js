@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { supabase } from '../supabaseClient';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
@@ -27,7 +28,7 @@ function compose(records, totals) {
   const P = totals || PRELIM;
   const gross = Math.round(P.scope1 + P.scope2 + P.scope3);
   const net = gross - P.sinks;
-  const perStudent = (net / P.students).toFixed(1);
+  const perStudent = perStudentMt(net, P.students);
   const recordCount = records.totalRecords ?? 0;
   const measuredScope = records.totalRecords > 0 ? Object.keys(records.tables).filter((t) => records.tables[t] > 0) : [];
 

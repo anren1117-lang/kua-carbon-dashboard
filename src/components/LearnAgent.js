@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -19,7 +20,7 @@ const KUA = (() => {
     gross:  gross.toLocaleString(),
     sinks:  sinks.toLocaleString(),
     net:    net.toLocaleString(),
-    perStudent: (net / TOTAL_STUDENTS).toFixed(1),
+    perStudent: perStudentMt(net, TOTAL_STUDENTS),
   };
 })();
 
@@ -812,7 +813,7 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA reports ~5.0 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
+        question: 'KUA reports ~5.1 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
         options: [
           { text: 'It would drop, because more students share the same fixed emissions', correct: true, explanation: 'Right. **Most KUA emissions are roughly fixed costs of operating the campus** — heating buildings, generating administrative emissions, maintaining facilities. Adding students adds some marginal emissions (more food, more travel) but proportionally less. Per-student would drop because the denominator grows faster than the numerator. This is why "per-student" can be a deceptive metric on its own — it rewards growth without necessarily reducing total impact.' },
           { text: 'It would stay exactly the same', correct: false, explanation: 'Per-student divides total by enrollment. Both numbers change with growth, but not proportionally. Per-student typically falls.' },

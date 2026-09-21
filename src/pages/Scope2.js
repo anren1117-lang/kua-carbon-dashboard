@@ -1,4 +1,5 @@
 import React from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
@@ -145,7 +146,7 @@ function Scope2() {
         estimate={{
           total: `~${Math.round(GRID_MIX_ANNUAL_MTCO2E).toLocaleString()}`,
           totalRange: `${SCOPE2_RANGE_LOW} – ${SCOPE2_RANGE_HIGH} (composed YTD ± 5%)`,
-          perStudent: +(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2),
+          perStudent: perStudentMt(GRID_MIX_ANNUAL_MTCO2E, TOTAL_STUDENTS, 'cited'),
           thirdMetric: {
             label: 'kWh annual',
             value: COMPOSED_ANNUAL_KWH >= 1e6 ? `${(COMPOSED_ANNUAL_KWH / 1e6).toFixed(2)}M` : COMPOSED_ANNUAL_KWH.toLocaleString(),

@@ -1605,3 +1605,36 @@ files — backtick *evenness* alone would not catch the Phase 436 class of
 breakage, since that count stayed even.
 
 Suite 1,683 → 1,687; 109 → 110 files.
+
+## Phase 445: precision follows provenance (#17 item 8, the last one)
+
+Phase 400 set the rule for extrapolated building figures — *precision follows
+coverage*. The per-student family never got it, and was doing two things wrong
+at once.
+
+**False precision.** Scope 1 per student printed **3.97**, claiming 0.01 mtCO₂e
+of resolution, while the same page publishes a range of 895–1,875 mt. Across
+340 students that range spans **2.88** — the display was 288× finer than the
+uncertainty printed one line below it. One decimal is still 28× finer than the
+spread, which is as far as this can honestly go.
+
+**Three answers to one question.** Net per student appeared as **5.07**
+(Executive, AnnualReport), **5.1** (AISummary, LearnAgent) and a hardcoded
+**~5.0** in a LearnAgent quiz a student is asked to reason from. Sinks was
+already at one decimal, so `ScopePageInfo` rendered the same row at two
+precisions depending on which scope you were looking at.
+
+`perStudentMt(total, students, provenance)` now answers it once: measured earns
+two decimals, estimated and cited earn one — a seasonally-extrapolated
+projection is not a measurement. The family now reads Scope 1 **4.0**, Scope 2
+**1.1**, Scope 3 **7.8**, net **5.1**, everywhere.
+
+**The investigation changed the target.** `SCOPE1_PER_STUDENT` and
+`SCOPE3_PER_STUDENT` looked like the sites to fix — they were the obvious
+`toFixed(2)` calls. Grep found each name exactly **once**: its own declaration.
+Both were dead, and "fixing" them would have moved nothing a reader sees while
+reporting a fix. The live path was `headlinePerStudent`. Both dead constants
+are now deleted.
+
+Suite 1,687 → 1,694; 110 → 111 files. **This closes task #17** — every item
+from the three-critic review is now shipped.

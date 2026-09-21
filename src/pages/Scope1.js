@@ -1,4 +1,5 @@
 import React from 'react';
+import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
 import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
@@ -12,7 +13,6 @@ import { useMeasuredScope1 } from '../hooks/useMeasuredScope1.js';
 import { DegreeDayChart } from '../components/DegreeDayChart.js';
 import { ScopeBreakdownPanel } from '../components/ScopeBreakdownPanel.js';
 
-const SCOPE1_PER_STUDENT = +(SCOPE1_TOTAL_MT / TOTAL_STUDENTS).toFixed(2);
 
 const categories = [
   { name: 'Heating Fuel', desc: 'Heating oil and propane delivered to campus boilers and water heaters.', factor: 'EPA GHG Emission Factors Hub 2025: 10.21 kg CO₂/gal heating oil, 5.72 kg CO₂/gal propane', status: 'In dashboard (fuel_bills table)' },
@@ -40,7 +40,7 @@ function Scope1() {
   const isMeasured = live.measured && !live.loading && !live.error;
   const dataIssue = live.error ? `Live data unavailable (${live.error}). Showing the bottom-up estimate below.` : null;
   const headlineTotal = isMeasured ? live.totalMt : SCOPE1_TOTAL_MT;
-  const headlinePerStudent = +(headlineTotal / TOTAL_STUDENTS).toFixed(2);
+  const headlinePerStudent = perStudentMt(headlineTotal, TOTAL_STUDENTS, isMeasured ? 'measured' : 'estimated');
   const headlineProvenance = isMeasured ? 'measured' : 'estimated';
   const headlineNote = isMeasured
     ? `Heating row composed live from fuel_bills (${live.note}). Fleet + refrigerants still bottom-up.`

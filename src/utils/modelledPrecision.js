@@ -94,3 +94,29 @@ export function coverageCaveat(yearFraction, monthsCovered) {
     ? `estimated from ${months} metered month${months === 1 ? '' : 's'} (${pct}% of a year)`
     : `estimated from ${pct}% of a year`;
 }
+
+// ─── Per-student precision ──────────────────────────────────────────────
+//
+// Phase 400 set the rule for extrapolated building figures: precision follows
+// COVERAGE. This is the same principle one level up — precision follows
+// PROVENANCE — for the per-student family, which was doing two things wrong.
+//
+// FALSE PRECISION. Scope 1 per student printed 3.97, claiming 0.01 mtCO2e of
+// resolution, while the same page publishes a range of 895-1,875 mt. Over 340
+// students that range spans 2.88 — 288x the displayed resolution. One decimal
+// is still 28x finer than the spread, which is as far as this should go.
+//
+// THREE ANSWERS TO ONE QUESTION. Net per student appeared as 5.07 (Executive,
+// AnnualReport), 5.1 (AISummary, LearnAgent) and a hardcoded ~5.0 in a quiz.
+// Sinks was already at one decimal, so ScopePageInfo rendered the same row at
+// two precisions depending on which scope you were looking at.
+//
+// A measured total earns two decimals. An estimated or cited one earns one:
+// a seasonally-extrapolated projection is not a measurement.
+export const PER_STUDENT_DP = { measured: 2, estimated: 1, cited: 1 };
+
+export function perStudentMt(totalMt, students, provenance = 'estimated') {
+  if (!Number.isFinite(totalMt) || !Number.isFinite(students) || students <= 0) return null;
+  const dp = PER_STUDENT_DP[provenance] ?? PER_STUDENT_DP.estimated;
+  return (totalMt / students).toFixed(dp);
+}
