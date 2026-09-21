@@ -123,7 +123,7 @@ Rules:
 2. expectedMtPerYear is WHOLE-SCHOOL annual mt CO2e (not kg, not per-student). Anchor to these benchmarks:
    - Heating-oil to heat-pump conversion (whole campus): 600-900 mt/yr, ~$3-5M, 12-15 yr payback
    - Single-building boiler upgrade (one dorm/academic): 30-60 mt/yr, ~$200-400K, 8-12 yr
-   - 60 kW Phase-2 solar (one rooftop): 6-8 mt/yr, ~$150-200K, 8-10 yr
+   - 60 kW Phase-2 solar (one rooftop): 12-17 mt/yr, ~$150-200K, 8-10 yr (priced at the AVERT MARGINAL rate ~0.49 kg/kWh, not the inventory average — solar displaces the plant running at the margin, which is dirtier than the grid-wide mean)
    - LED retrofit (full campus): 6-10 mt/yr, ~$80-120K, 4-6 yr
    - HVAC schedule optimization (auto-shutoff after hours): 9-15 mt/yr, ~$10-30K, <1 yr
    - Dorm winter setpoint reduction 2°F: 15-22 mt/yr, no cost, immediate

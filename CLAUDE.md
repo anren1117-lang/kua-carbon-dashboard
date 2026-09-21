@@ -1565,3 +1565,43 @@ JSX lines as anchors — the reconstruction risk that broke Phases 414 and 423.
 Each insertion asserts the following line is the one expected before writing.
 
 Suite 1,672 → 1,683; 108 → 109 files.
+
+## Phase 444: the solar benchmark two AI prompts never got the correction
+
+Three admin endpoints quote the same reduction-measure benchmark library —
+`plan.js`, `plan-item-alternatives.js` (its own words: *"the same benchmark
+library the plan endpoint uses"*) and `estimate-action.js`. Phases 409/410
+repriced rooftop solar from the inventory average to the **AVERT marginal**
+rate and updated `estimate-action.js` to **12–17 mt/yr**. The other two kept
+quoting **6–8** — the old inventory-rate number, almost exactly half.
+
+Every *other* benchmark in the library already agreed across all three:
+heat-pump 600-900, LED 6-10, HVAC 9-15, setpoint 15-22, beef ~56, compost 4-6,
+commute 25-35. Solar was the lone survivor, which is the exact shape of a
+correction applied to one file and not its siblings — the same failure as
+Phase 436's ingestion prompt, in the same directory.
+
+It matters because these prompts drive what an admin gets *recommended*. An
+AI planner reasoning from 6–8 mt would rank a rooftop array at half its real
+benefit against every competing measure in the list.
+
+**Checked before claiming.** The constant `GRID_FACTOR_KG_PER_KWH` in
+`scopeTotals.js:893` holds the AVERT marginal rate (0.4896), not the inventory
+average — a name that reads like the opposite of what it is. That looked like a
+second defect until I read the 27-line block above it, which explains precisely
+why it deliberately does not follow `KG_PER_KWH`, and found
+`dataLayer.test.js:1201-1202` already pinning that it must never equal the
+inventory rate. Well-guarded; left alone.
+
+`planBenchmarkAgreement.test.js` pins **agreement across the three files**
+rather than a literal, so the next reprice must move all three or fail — plus a
+guard that the extraction actually found a range in each file, since an empty
+extraction would make the agreement check vacuously true.
+
+*No client-bundle fingerprint:* `api/` is serverless and never bundled, so
+there is nothing to grep in production. Stated rather than papered over, same as
+Phases 428, 435 and 436. Verified instead with `node --check` on all three
+files — backtick *evenness* alone would not catch the Phase 436 class of
+breakage, since that count stayed even.
+
+Suite 1,683 → 1,687; 109 → 110 files.
