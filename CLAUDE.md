@@ -2245,3 +2245,34 @@ asserts that distractor still exists, so a later sweep cannot quietly delete
 a wrong answer that is there on purpose.
 
 Suite 1,906 → 1,911; 126 → 127 files.
+
+## Phase 463: one journey, five numbers
+
+The East Asia round trip appeared as **3,000 kg**, **4,000 kg**, **3 mt**,
+**3.7 mt** and **4.3 t** across one file.
+
+Two of those are legitimately different, and **say so**, which is the whole
+distinction:
+
+- **4.3 t** — Boston→Tokyo specifically. 10,800 km × 2 × 0.20011 = 4,322 kg ✓
+- **3.7 mt** — the cohort-weighted central. 9,060 km × 2 × 0.20011 = 3,626 kg ✓,
+  and what `personalFootprint`'s `MT_PER_INTL_FLIGHT` adopts.
+
+The other three carried **no basis at all**, so a student meeting several had
+no way to tell which was the figure and which was the route. They now use the
+cohort-weighted central and say which basis that is.
+
+**The ratios hanging off them were recomputed rather than left pointing at the
+old inputs** — the same discipline as Phase 462's stack-rank. "800× a year of
+conscientious light-switching" was built on 4,000 kg; at 3,700 it is ~750×.
+And "half a typical personal footprint … two trips = 50-60%" was internally
+inconsistent before anything changed (if one trip is half, two are all of it);
+it now compares against a canonical quantity — gross per student, 12.9 mt —
+where one trip is close to a third and two are well over half.
+
+*The gate asserts the two labelled figures SURVIVE*, not merely that the
+unlabelled ones are gone. A sweep that flattened every flight number to one
+value would have destroyed a correct route-specific figure, which is the
+opposite of the fix.
+
+Suite 1,911 → 1,915; 127 → 128 files.
