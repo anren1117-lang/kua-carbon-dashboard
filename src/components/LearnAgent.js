@@ -330,9 +330,9 @@ const paths = [
         question: 'Per kilogram of food, which has the LARGEST carbon footprint?',
         options: [
           { text: 'Beef', correct: true, explanation: 'Right. Beef ≈ **99.5 kg CO₂e per kg** — far higher than chicken (~9.9), rice (~4.5), or beans (~1.0). Cattle digestion produces methane (a 28× GWP gas), and cattle require enormous amounts of land and feed compared to other foods. Switching beef meals to chicken or plants is one of the most impactful single dietary changes.' },
-          { text: 'Chicken', correct: false, explanation: 'Chicken is ~6 kg CO₂e/kg — about 10× lower than beef. Significant compared to plants but much smaller than ruminant meat.' },
-          { text: 'Rice', correct: false, explanation: 'Rice is ~4 kg CO₂e/kg — moderately high among plant foods because flooded paddy fields produce methane. Still 15× lower than beef per kg.' },
-          { text: 'Potatoes', correct: false, explanation: 'Potatoes are about ~0.4 kg CO₂e/kg — among the lowest of any food. Roughly 150× less impact per kg than beef.' },
+          { text: 'Chicken', correct: false, explanation: 'Chicken is ~9.9 kg CO₂e/kg — about 10× lower than beef. Significant compared to plants but much smaller than ruminant meat.' },
+          { text: 'Rice', correct: false, explanation: 'Rice is ~4.5 kg CO₂e/kg — moderately high among plant foods because flooded paddy fields produce methane. Still 22× lower than beef per kg.' },
+          { text: 'Potatoes', correct: false, explanation: 'Potatoes are about ~0.4 kg CO₂e/kg — among the lowest of any food. Roughly 250× less impact per kg than beef.' },
         ],
       },
       {

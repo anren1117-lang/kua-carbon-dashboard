@@ -2127,3 +2127,27 @@ the third time this session a guard has blocked a partial fix. **Never judge a
 long line from truncated output.**
 
 Suite 1,883 → 1,890; 122 → 123 files.
+
+## Phase 459: one quiz question, two incompatible factor sets
+
+The question asks which food has the largest footprint per kg. Its **correct**
+answer used the canonical values — beef 99.5, chicken 9.9, rice 4.5, beans 1.0.
+All three **distractor** explanations ran on the set `emissionFactors.js`
+records retiring in Phase 405:
+
+| distractor said | canonical |
+| --- | --- |
+| "Chicken is ~6 kg CO₂e/kg" | **9.9** |
+| "Rice … 15× lower than beef" | 99.5 / 4.5 = **22×** |
+| "Potatoes … 150× less than beef" | 99.5 / 0.4 = **249×** |
+
+The two ratios are the tell: 15× and 150× hold only if beef is **60** — the
+discredited teaching figure. So a student who read all four explanations was
+taught that beef is both 99.5 and 60, inside a single question.
+
+The test asserts the ratios **against the factor table** rather than against
+literals, so a reprice moves the quiz with it instead of stranding it again.
+It also proves the implication rather than asserting it: 4.5 × 15 and 0.4 × 150
+both land within 10 of 60.
+
+Suite 1,890 → 1,894; 123 → 124 files.
