@@ -15,6 +15,7 @@
 // (Methodology page documents each one).
 
 import { KG_PER_KWH } from '../data/gridMix.js';
+import { HEATING_SHARE_OF_SCOPE1, HEATING_KG_PER_MMBTU } from '../data/scopeTotals.js';
 import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 
 // NH heat pump assumptions
@@ -43,16 +44,20 @@ const NH_SOLAR_KWH_PER_KW_YR = 1300;
 // Forest sequestration (Birdsey 1992, closed-canopy)
 const FOREST_SEQ_MT_PER_ACRE = 2.1;
 
-// Heating fuel total MMBtu — placeholder derived from the heating
-// portion of Scope 1 assuming average factor 80 kg/MMBtu (oil-ish).
-// When we hook up real fuel-delivery records this gets replaced
-// with a direct gallons-burned figure.
-function heatingMmbtuFromScope1(scope1Mt) {
-  // ~80% of Scope 1 is heating fuel at KUA (rest is refrigerants + fleet)
-  const heatingMt = scope1Mt * 0.8;
-  // ~80 kg/MMBtu (mix of #2 oil at 73 + propane at 64)
-  const heatingMmbtu = (heatingMt * 1000) / 80;
-  return heatingMmbtu;
+// MMBtu of heating fuel behind a given mt of heating emissions.
+//
+// Two constants here were hardcoded and both contradicted the data layer:
+// 0.8 for a heating share that is 0.955, and 80 kg/MMBtu for a 90/10
+// oil/propane blend that is 72.6 — a figure the old comment's own "oil at 73
+// + propane at 64" cannot reach. At 100% electrification that removed 1,080
+// mt where scopeTotals' heating row says 1,290.
+//
+// It also took scope1Mt and re-derived the heating share internally, while
+// the caller derived it a SECOND time for scope1Saved. Fixing one and not
+// the other would have left the lever half-corrected, so the split is gone:
+// the caller computes heatingMt once and passes it in.
+function heatingMmbtuFromHeatingMt(heatingMt) {
+  return (heatingMt * 1000) / HEATING_KG_PER_MMBTU;
 }
 
 /**
@@ -106,8 +111,8 @@ export function runScenario({
   }
 
   // 2. Heating electrification → shift heating fuel BTUs to heat-pump kWh
-  const heatingMmbtu  = heatingMmbtuFromScope1(scope1Mt);
-  const heatingMt     = scope1Mt * 0.8; // matches the helper above
+  const heatingMt     = scope1Mt * HEATING_SHARE_OF_SCOPE1;
+  const heatingMmbtu  = heatingMmbtuFromHeatingMt(heatingMt);
   const switchedMmbtu = heatingMmbtu * (heatingElectrifyPct / 100);
   const switchedKwhInput  = (switchedMmbtu * 1_000_000) / BTU_PER_KWH;
   const switchedKwhOutput = switchedKwhInput / HEAT_PUMP_COP; // COP advantage

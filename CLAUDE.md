@@ -1891,3 +1891,48 @@ and not a misreading of a fallback.
 signature, where before this phase that chunk contained none.
 
 Suite 1,844 → 1,851; 116 → 117 files.
+
+## Phase 453: the electrify-heating lever ran on two wrong constants
+
+`scenarioModel.js` hardcoded `scope1Mt * 0.8` ("~80% of Scope 1 is heating
+fuel") and `/ 80` ("~80 kg/MMBtu, mix of #2 oil at 73 + propane at 64").
+
+Against the repo's own numbers both are wrong, and the second is impossible:
+
+- Scope 1 rows are heating **1,290** + fleet 54 + refrigerants 7. That is
+  **95.5%** heating, not 80%. "The rest" is 61 mt, not 270.
+- 10.21 kg/gal ÷ 0.1385 MMBtu = **73.72** for oil; 5.72 ÷ 0.0915 = **62.51**
+  for propane. At the documented 90/10 split that is **72.60** kg/MMBtu. No
+  blend of 73 and 64 reaches 80 — the comment refuted its own constant.
+
+At 100% electrification the flagship lever removed **1,080 mt** where every
+other surface says heating fuel is 1,290. Both constants are now **derived**
+in `scopeTotals.js` from the same rows and per-gallon factors the rest of the
+app uses, so a reprice moves the scenario model with it.
+
+**It was a half-fix risk, and an assertion caught it.** `0.8` appeared
+**twice** — once inside the helper (driving the MMBtu → kWh side) and again at
+the call site as `const heatingMt = scope1Mt * 0.8; // matches the helper
+above`, which is the one that actually drives `scope1Saved`. Correcting only
+the helper would have changed the added Scope 2 and left the removed Scope 1
+at 0.8 — a lever wrong in a new way. The duplication is now gone: the caller
+computes `heatingMt` once and passes it in.
+
+*Process — a real mistake of mine, not just a wrong assertion.* I wrote
+`scopeTotals.js` to disk before staging `scenarioModel.js`, so when the
+assertion fired the tree was left half-applied. That is exactly what staging
+exists to prevent and I bypassed it. Recovered by inspecting both files before
+continuing, then redoing the model edit properly staged.
+
+The 1 mt residue is real and is in the data, not the lever: `SCOPE1_TOTAL_MT`
+publishes **1,350** while its own rows sum to **1,351**, so a share derived
+from the rows applied to the rounded total removes 1,289.0. The test states the
+proportional contract — the lever removes the heating share of whatever Scope 1
+currently is, so a live figure scales it — and records the rounding rather than
+hiding it behind a loose tolerance.
+
+*Verified by a NEGATIVE marker:* the constants inline to variables, so there is
+no new string. The old minified form `*.8*1e3/80` must be absent from the
+Scenarios chunk.
+
+Suite 1,851 → 1,858; 117 → 118 files.

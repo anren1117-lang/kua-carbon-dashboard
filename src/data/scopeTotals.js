@@ -901,6 +901,30 @@ export const FUEL_BTU_PER_GAL = {
   heating_oil: 138500,
   propane:      91500,
 };
+
+// ─── Heating-fuel shape of Scope 1, DERIVED ─────────────────────────────
+//
+// utils/scenarioModel.js hardcoded two constants that contradicted these
+// rows: "~80% of Scope 1 is heating fuel" (it is 95.5%) and "~80 kg/MMBtu
+// (mix of #2 oil at 73 + propane at 64)" — a figure no blend of 73 and 64
+// can produce. The electrify-heating lever therefore removed 1,080 mt where
+// the heating row says 1,290.
+//
+// Derived here from the same rows and factors every other surface uses, so a
+// reprice moves the scenario model with it instead of leaving it behind.
+export const SCOPE1_HEATING_MT = SCOPE1_PLACEHOLDER_BREAKDOWN
+  .filter((r) => /heating|oil|propane/i.test(r.source))
+  .reduce((sum, r) => sum + r.mt, 0);
+
+export const HEATING_SHARE_OF_SCOPE1 =
+  SCOPE1_HEATING_MT / SCOPE1_PLACEHOLDER_BREAKDOWN.reduce((sum, r) => sum + r.mt, 0);
+
+/** The documented KUA mix — see the heating row's own method string. */
+export const HEATING_OIL_FRACTION = 0.90;
+
+export const HEATING_KG_PER_MMBTU =
+  HEATING_OIL_FRACTION * (FUEL_FACTORS_KG_PER_GAL['Heating Oil'] / (FUEL_BTU_PER_GAL.heating_oil / 1e6))
+  + (1 - HEATING_OIL_FRACTION) * (FUEL_FACTORS_KG_PER_GAL.Propane / (FUEL_BTU_PER_GAL.propane / 1e6));
 const BTU_PER_KWH = 3412.14;
 
 /**
