@@ -2329,3 +2329,38 @@ is a **template literal**, so a real assertion read as not-prose and the count
 came up short. Fixed to accept both quote styles.
 
 Suite 1,919 → 1,922; 129 → 130 files.
+
+## Phase 466 — the thermostat saving is derived from DOE, not asserted
+
+`personalFootprint.js` priced a dorm thermostat habit from a rate with no
+source: a degree of setback saving about 3% of heating energy, a typical dorm
+habit about 7%. That 7% is not an internal assumption — it is rendered to the
+student, as "7% reduction vs baseline 3.8 mt per boarder".
+
+DOE publishes about 10% off annual heating for a 7–10 °F setback held eight
+hours a day: roughly 0.147% per degree-hour-per-day, or about 1.2% per °F. The
+retired rate was some 2.5× that. Phase 460 had already corrected the **lesson**
+content to the DOE rule, which left the dashboard teaching one number and
+computing another.
+
+Both habits are now computed from a single stated rate — `turn_down_when_out`
+2.5 °F over 12 h (4.4%, was 7%), `off_when_out` 6 °F over 12 h (10.6%, was 10%
+and already about right). The assumed out-of-room window is 12 hours, written
+down rather than buried in a coefficient, so changing the rate or the hours
+moves both habits together.
+
+**The residual gate found the claim still live on the homepage.** The tip of
+the day stated the retired 7% and its 0.27 mt consequence — the same habit, a
+third number, on the page most visitors actually see. `DailyTip` now imports
+the exported rate and computes its own line (3.5%, 0.13 mt), so the estimator
+and the tip cannot drift apart again; a test pins that it derives rather than
+states.
+
+*One of my two sweep patterns was wrong, as usual in the safe direction.*
+Matching any "3% of heating energy" flagged Phase 460's **corrected** sentence,
+which says a 2 °F setback saves on the order of 2–3%. The defect was the
+unsourced *per-degree* claim, so the pattern now anchors on that phrasing, with
+controls proving it catches all three real defects and ignores all three
+correct lines.
+
+Suite 1,922 → 1,928; 130 → 131 files.

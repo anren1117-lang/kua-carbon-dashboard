@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { heatingSetbackSaving, MT_PER_STUDENT_HEATING_BASELINE } from '../utils/personalFootprint.js';
 
 // Daily-rotating "tip of the day" card. Picks a tip based on day
 // of year so it changes every day without persistence. 30 tips =
@@ -8,6 +9,13 @@ import { Link } from 'react-router-dom';
 //
 // Pure presentational; no API call, no data fetch — fast enough
 // to render in the initial homepage paint.
+
+// The thermostat tip is DERIVED from the DOE setback rule that prices the
+// same habit in the personal-footprint estimator, so the two can never state
+// different savings for the same action. A boarder is out of the room about
+// 12 hours of a school day.
+const SETBACK_2DEGF = Math.abs(heatingSetbackSaving(2, 12));
+const SETBACK_2DEGF_MT = SETBACK_2DEGF * MT_PER_STUDENT_HEATING_BASELINE;
 
 const TIPS = [
   {
@@ -34,7 +42,7 @@ const TIPS = [
   {
     icon: '🌡',
     title: 'Turn the thermostat down when you leave',
-    body: 'A 2°F setback for the hours your dorm room is empty saves ~7% of heating energy. That\'s ~0.27 mt CO₂e per boarder per year.',
+    body: `A 2°F setback for the hours your dorm room is empty saves about ${(SETBACK_2DEGF * 100).toFixed(1)}% of heating energy — roughly ${SETBACK_2DEGF_MT.toFixed(2)} mt CO₂e per boarder per year.`,
   },
   {
     icon: '🚗',

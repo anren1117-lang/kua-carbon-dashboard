@@ -53,12 +53,41 @@ const KG_PER_BEEF_SERVING = 15;
 // and stated in the rows it drives. See academicCalendar.js for the bounds.
 const WEEKS_PER_YEAR = STUDENT_RESIDENCY_WEEKS;
 
-// Dorm thermostat impact: a degree of setback during winter saves
-// ~3% of heating energy. KUA heats ~340 students with ~1,290 mt of
-// heating-fuel scope-1 emissions/yr → ~3.8 mt/student. A typical
-// dorm setback (2-3°F when not in room) saves ~7%.
-const MT_PER_STUDENT_HEATING_BASELINE = 3.8;
-const THERMOSTAT_BONUS = { 'always_on': 0, 'turn_down_when_out': -0.07, 'off_when_out': -0.10 };
+// Dorm thermostat impact. KUA heats ~340 students with ~1,290 mt of
+// heating-fuel Scope 1 emissions/yr → ~3.8 mt/student.
+export const MT_PER_STUDENT_HEATING_BASELINE = 3.8;
+
+// The saving per habit is DERIVED, not typed in. This block used to assert a
+// per-degree rate roughly 2.5x the published one, with no source, and the
+// figure it produced is rendered to the student verbatim as a percentage.
+//
+// DOE publishes about a tenth off annual heating for a 7-10 degree setback
+// held eight hours a day. Taking the midpoint, that is
+// 0.10 / (8.5 degF x 8 h) per degree-hour-per-day. Phase 460 corrected the
+// lesson content to this same rule; this is the estimator behind the number a
+// student actually sees.
+const DOE_ANNUAL_SAVING = 0.10;   // for the setback below
+const DOE_SETBACK_DEGF  = 8.5;    // midpoint of the published 7-10 degF band
+const DOE_SETBACK_HOURS = 8;      // hours per day
+const PCT_PER_DEGF_HOUR = DOE_ANNUAL_SAVING / (DOE_SETBACK_DEGF * DOE_SETBACK_HOURS);
+
+/**
+ * Fractional heating saving for a setback of `degF` held `hoursPerDay`.
+ * Exported so any surface quoting a setback saving derives it from this one
+ * rate instead of retyping a percentage that can drift out of step.
+ */
+export const heatingSetbackSaving = (degF, hoursPerDay) =>
+  -(PCT_PER_DEGF_HOUR * degF * hoursPerDay);
+const setback = heatingSetbackSaving;
+
+// A boarder is out of their room roughly 12 hours of a school day (classes,
+// meals, practice, study hall) — a longer window than the 8-hour basis, which
+// is why these land above a flat eight-hour reading.
+const THERMOSTAT_BONUS = {
+  'always_on': 0,
+  'turn_down_when_out': setback(2.5, 12),  // ~4.4%, previously a flat 7%
+  'off_when_out':       setback(6.0, 12),  // ~10.6%, previously 10% — close
+};
 
 // Per-shower energy: ~2 kWh electric for a typical 8-min shower (hot water
 // heating dominates), priced at the campus grid factor. Imported rather than
