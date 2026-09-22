@@ -2054,3 +2054,43 @@ Suite 1,869 → 1,878; 120 → 121 files.
 
 Sources: ISO-NE via isonewswire — 2022 (643 in-region / 565 with imports) and
 2023 (633 / 571) analyses.
+
+## Phase 457: the sinks lesson told students the forest was worth nothing
+
+`LearnAgent` introduced the per-student figure as *"roughly **5–8 mtCO₂e per
+year** before forest credits"*, in the lesson that introduces sinks.
+
+5–8 is the **net** range. Canonical gross per student is 4,375/340 = **12.87**;
+net after subtracting 2,650 mt of sequestration is **5.07**. The same file says
+so twice elsewhere — `:311` writes "gross ~12.9 mt/student", and a quiz
+explanation reads *"You divided GROSS by students. Net subtracts sinks first."*
+
+Labelled "before forest credits", the sentence claims the campus forest changes
+nothing per head — inverting the whole point of the path it opens. Both
+sentences now give **13 gross → about 5 after the forest**, and name the gap:
+close to **8 mt per student, every year**, which is the forest doing the work.
+
+The unsupported rider went with it. "About half their home-life carbon" holds
+at neither figure: against this repo's own `usAdultAvgMt` of 16, net 5 is about
+a third and gross 12.9 is about four fifths.
+
+*Scope held:* a third sentence uses a 5–8 range for a student's **personal**
+footprint in a travel comparison — a different quantity, left alone and
+recorded in #23 rather than swept up.
+
+*Process — my own guards were wrong four times in this one phase, and the
+staged write refused every time.* The blanket `'5–8 mt' not in s` caught the
+personal-footprint line I was not fixing. `TOTAL_STUDENTS` came from
+`students.js`, not `academicCalendar.js`. An assertion demanded the literal
+"13 mt" from the Tokyo sentence that already said "~12.9" correctly. And one
+assertion matched `about 5 mt` against a sentence carrying markdown bold.
+
+The most useful of the four: **my quoting guard had a real bug**. I wrote
+`\},?`, making the closing brace REQUIRED, so any line ending `',` kept its
+closing quote and read as an unescaped apostrophe. It fired on an untouched
+line while the file parsed cleanly. It had passed in Phases 454 and 456 only
+because those lines happened to end `' },`. The brace is now optional — a guard
+that only works on half its inputs is worse than none, because its silence
+means nothing.
+
+Suite 1,878 → 1,883; 121 → 122 files.
