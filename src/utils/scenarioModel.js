@@ -70,6 +70,13 @@ function heatingMmbtuFromScope1(scope1Mt) {
 export function runScenario({
   scope1Mt,
   scope2Mt,
+  // Scope 3 is part of the footprint the forest offsets, so it belongs in the
+  // baseline even though no lever here touches it. Omitting it while still
+  // subtracting the FULL sink published KUA as 910 mt NET-NEGATIVE on
+  // /scenarios — 1,350 + 390 = 1,740 gross against a 2,650 sink — while every
+  // other surface published +1,725. Defaulting to 0 keeps old callers working,
+  // so scenarioBaselineNet.test.js pins that the page supplies it.
+  scope3Mt = 0,
   sinksMt,
   electricityReductionPct = 0,
   heatingElectrifyPct     = 0,
@@ -148,15 +155,17 @@ export function runScenario({
     });
   }
 
-  const baselineGross = scope1Mt + scope2Mt;
+  const baselineGross = scope1Mt + scope2Mt + scope3Mt;
   const baselineNet   = baselineGross - sinksMt;
-  const modifiedGross = scope1AfterElectrification + scope2AfterSolar;
+  // No lever on this page moves Scope 3, so it carries through unchanged.
+  const modifiedGross = scope1AfterElectrification + scope2AfterSolar + scope3Mt;
   const modifiedNet   = modifiedGross - sinksAfter;
 
   return {
     baseline: {
       scope1Mt: scope1Mt,
       scope2Mt: scope2Mt,
+      scope3Mt: scope3Mt,
       sinksMt:  sinksMt,
       grossMt:  baselineGross,
       netMt:    baselineNet,
@@ -164,6 +173,7 @@ export function runScenario({
     modified: {
       scope1Mt: scope1AfterElectrification,
       scope2Mt: scope2AfterSolar,
+      scope3Mt: scope3Mt,
       sinksMt:  sinksAfter,
       grossMt:  modifiedGross,
       netMt:    modifiedNet,

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { EducationalCard } from '../components/EducationalCard';
-import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT } from '../data/scopeTotals.js';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { runScenario } from '../utils/scenarioModel.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
@@ -59,16 +59,18 @@ export default function Scenarios() {
   const live = useMeasuredScopeTotals();
   const baseScope1Mt = live.scope1Mt || SCOPE1_TOTAL_MT;
   const baseScope2Mt = live.scope2Mt || SCOPE2_TOTAL_MT;
+  const baseScope3Mt = live.scope3Mt || SCOPE3_TOTAL_MT;
 
   const result = useMemo(() => runScenario({
     scope1Mt: baseScope1Mt,
     scope2Mt: baseScope2Mt,
+    scope3Mt: baseScope3Mt,
     sinksMt:  ANNUAL_SEQUESTRATION_MT,
     electricityReductionPct,
     heatingElectrifyPct,
     solarKw,
     treePlantingAcres,
-  }), [baseScope1Mt, baseScope2Mt, electricityReductionPct, heatingElectrifyPct, solarKw, treePlantingAcres]);
+  }), [baseScope1Mt, baseScope2Mt, baseScope3Mt, electricityReductionPct, heatingElectrifyPct, solarKw, treePlantingAcres]);
 
   const reset = () => {
     setElectricityReductionPct(0);
@@ -279,7 +281,7 @@ function ResultPanel({ result }) {
             vs baseline {baseline.netMt.toFixed(1)} mt
             {!isSame && (
               <> · <strong style={{ color: isReduction ? '#86efac' : '#fca5a5' }}>
-                {isReduction ? '−' : '+'}{Math.abs(deltaMt).toFixed(1)} mt ({deltaPct.toFixed(0)}%)
+                {isReduction ? '−' : '+'}{Math.abs(deltaMt).toFixed(1)} mt ({Math.abs(deltaPct).toFixed(0)}%)
               </strong></>
             )}
           </div>

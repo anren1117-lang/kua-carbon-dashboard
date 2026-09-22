@@ -1849,3 +1849,45 @@ cross-check working. The 26 reduction actions total 996 mtCO₂e — 22.8% of
 gross, with no single action above 25%.
 
 Suite 1,836 → 1,844; 115 → 116 files.
+
+## Phase 452: /scenarios published KUA as 910 mt carbon-NEGATIVE
+
+The worst defect found this session, and the only one that flattered the
+school.
+
+`/scenarios` fed `runScenario` Scope 1 (1,350) + Scope 2 (390) = **1,740**
+gross, then subtracted the **full** forest sink of 2,650. Net: **−910**. The
+page renders that under the subtitle *"KUA's net carbon balance"*, so on first
+paint — every slider at zero — a trustee read that the school is already 910
+tonnes carbon-negative.
+
+Scope 3 is 2,635 mt, **60% of gross**, and was simply absent from the sum while
+the sink that offsets all three scopes was applied in full. Every other surface
+publishes **+1,725** — Executive, AnnualReport, AISummary, LearnAgent — and
+`CarbonMath` states in words that KUA is *not* net-negative.
+
+`runScenario` now takes `scope3Mt` and carries it through unchanged, since no
+lever on the page touches Scope 3. Idle baseline is now gross 4,375 / net 1,725,
+identical to Executive.
+
+**The test pins an identity, not a literal:** with no levers pulled, the
+scenario baseline must equal the inventory the rest of the product publishes.
+A future reprice of any scope moves both sides together and the test still
+holds. It also pins the *old* shape — calling `runScenario` without `scope3Mt`
+still yields a negative net — so the failure mode stays visible rather than
+being quietly designed out.
+
+A sign bug fell out with it: `deltaPct` divides by the baseline, so against
+−910 a reduction rendered as **+9%**. With a positive baseline it is correctly
+negative, and since the UI already prints the sign separately the percent is
+now `Math.abs`-ed rather than rendering "−78.0 mt (-5%)".
+
+*Found by an audit subagent, verified by me before acting* — I executed both
+paths rather than trusting the report, which is how I confirmed −910 was real
+and not a misreading of a fallback.
+
+*No prose changed, so no text marker.* Verified structurally instead:
+`scope3Mt` survives minification in the Scenarios chunk's destructured
+signature, where before this phase that chunk contained none.
+
+Suite 1,844 → 1,851; 116 → 117 files.
