@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { PasswordGate } from '../components/PasswordGate.js';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { hashUserId } from '../utils/hash.js';
 import { ExplainChart } from '../components/ExplainChart.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
@@ -293,11 +294,17 @@ function PortalScopeChart() {
 }
 
 function PortalContents() {
+  // The portal shows the class the same figures the dashboard publishes, so a
+  // teacher needs to know when those have fallen back off live data — the
+  // notice belongs here, on the page, not on PortalScopeChart where the hook
+  // happened to already be called.
+  const live = useMeasuredScopeTotals();
   return (
     <ModulePage
       title="Teacher Portal"
       subtitle="Author AI-generated lessons from any source material, review the curated modules, and track class progress. Public student tools (chatbot, self-paced paths, dorm challenges) live in the regular nav — preview them there as a student would see them."
     >
+      <LiveDataNotice error={live.error} fallbackLabel="the published figures" />
       <Onboarding />
 
       {/* Primary action strip — surface the two highest-value teacher

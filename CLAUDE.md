@@ -1775,3 +1775,36 @@ This closes the public half of #20 entirely. TeacherPortal remains, behind a
 `PasswordGate` that renders nothing to assert against without mocking auth.
 
 Suite 1,821 → 1,831; 113 → 114 files.
+
+## Phase 450: TeacherPortal, behind the gate — #20 closed
+
+The last live-error swallower. TeacherPortal reads `useMeasuredScopeTotals` but
+sits behind a `PasswordGate`, so earlier phases deferred it rather than wire it
+blind. That was the right call: a test that cannot see the component would have
+been green for the wrong reason, which is worse than no test.
+
+It turns out to be a **legacy** gate — `storageKey="kua_teacher_unlocked"`, not
+the admin session path — so `PasswordGate:52` unlocks on a plain
+`localStorage` value. An honest mount is therefore possible, and the test
+opens with the control that makes the rest mean anything: **assert the gate
+really blocks without the unlock**. If it didn't, the auth mock would be
+decoration and every later assertion would be about a page that renders anyway.
+
+The notice went on `PortalContents` — the page-level component inside the gate
+— not on `PortalScopeChart`, which merely happened to be where the hook was
+already called. One notice per page, not per chart, and the gate asserts the
+notice sits inside `PortalContents`.
+
+*Process — my own assertion was wrong for the fourth time this session, and
+again nothing was written.* The staged write aborted on "expected 2 hook calls,
+got 3": line 221 is a **comment** that names `useMeasuredScopeTotals()` in
+prose. Same class as Phase 446's `<LinkGroup` and Goals.js's `<Link>` comment —
+counting a symbol across a whole file counts the places that merely *talk*
+about it. Counting code lines only is the fix, and it is now the third guard
+this session to need that same correction.
+
+**#20 is closed.** Twelve public surfaces plus the teacher portal now report a
+failed fetch instead of rendering build-time constants as live data, and every
+one pins the negative control that an empty table produces no warning.
+
+Suite 1,831 → 1,836; 114 → 115 files.
