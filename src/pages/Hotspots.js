@@ -1,4 +1,5 @@
 import React from 'react';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { ProvenancePill } from '../components/ProvenancePill.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
@@ -123,6 +124,7 @@ export default function Hotspots() {
       title="Carbon Hotspots"
       subtitle="Where emissions are concentrated, ordered by magnitude. Top of the list is where any reduction effort gets the most leverage per hour spent."
     >
+      <LiveDataNotice error={s2.error} fallbackLabel="the published hotspot ranking" />
       <MetricGrid metrics={[
         { label: 'Campus electricity', value: Math.round(totalKwh).toLocaleString(), unit: 'kWh/yr', accent: '#fbbf24', note: 'Year 1 from composedYtd' },
         { label: 'Equivalent emissions', value: totalMt.toFixed(1), unit: 'mtCO₂e', accent: '#ef4444' },

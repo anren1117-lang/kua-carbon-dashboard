@@ -1740,3 +1740,38 @@ rendered, because Rollup drops unread properties — rendering only `.note` woul
 ship a note and silently discard every figure beside it.
 
 Suite unchanged at 1,821 (an existing test was rewritten, not added).
+
+## Phase 449: the Scope 2 surfaces, and a test that was red for the wrong reason
+
+Six surfaces read `useMeasuredScope2` directly rather than through the composer
+Phase 442 fixed, and **not one referenced `.error` at all** — so a Supabase
+failure was invisible on every one of them, including `/scope-2`, the page
+whose entire subject is Scope 2.
+
+Only three needed wiring, and why the other three did not is worth recording:
+`PeerComparison` renders in `App.js`, where the homepage composer notice
+already reports `s2.error` as "Scope 2: …"; `Scope2BmsInsights` and
+`Scope2LiveDashboard` both render *inside* `Scope2.js`, so wiring the page
+covers both charts. One notice per page, not per chart — the rule since 443,
+and the gate asserts the charts still add none.
+
+*Process — the red I started from was worthless, and I nearly banked it.* My
+fixture failed the table `electricity_ledger`. The hook reads
+`scope2_meter_readings`. So the injected error never fired: the test failed
+7/10 against unfixed pages **and would have failed identically against fixed
+ones**. After correcting the fixture the suite went green — which proved
+nothing either, because I had never seen it fail for the right reason.
+
+So I stashed only the three page edits, kept the corrected test, and ran it
+again: 7 failed / 3 passed, the three being the empty-table controls. Then
+restored and confirmed 10/10. Watching a test fail is not a ritual — a red for
+the wrong reason is the same as no test at all, and the only way to tell them
+apart is to produce the red deliberately.
+
+The fixture now **imports `SCOPE2_TABLE` from the hook** instead of retyping
+it, so a table rename cannot quietly hollow the file out again.
+
+This closes the public half of #20 entirely. TeacherPortal remains, behind a
+`PasswordGate` that renders nothing to assert against without mocking auth.
+
+Suite 1,821 → 1,831; 113 → 114 files.

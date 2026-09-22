@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
@@ -131,6 +132,7 @@ export default function BuildingsPage() {
       title="Buildings"
       subtitle="Per-building electricity, intensities, and operational context. Sort by absolute use, by sqft intensity, or by per-occupant intensity to expose different kinds of inefficiency."
     >
+      <LiveDataNotice error={s2.error} fallbackLabel="the published per-building figures" />
       <MetricGrid metrics={[
         { label: 'Buildings monitored', value: rows.length, accent: '#22d3ee' },
         { label: 'Total electricity', value: Math.round(totalKwh).toLocaleString(), unit: 'kWh/yr', accent: '#fbbf24' },

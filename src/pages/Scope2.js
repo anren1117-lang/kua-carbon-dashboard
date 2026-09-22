@@ -1,4 +1,5 @@
 import React from 'react';
+import { LiveDataNotice } from '../components/LiveDataNotice.js';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
@@ -60,6 +61,7 @@ function Scope2() {
   const KWH_TOTAL_LABEL = `~${(COMPOSED_ANNUAL_KWH / 1_000_000).toFixed(1)}M kWh/yr (Year 1)`;
   return (
     <div>
+      <LiveDataNotice error={s2.error} fallbackLabel="the published Scope 2 figures" />
       <h1 style={styles.title}>Scope 2 — Purchased Electricity</h1>
       <p style={styles.subtitle}>
         Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
