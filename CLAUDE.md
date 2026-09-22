@@ -2364,3 +2364,34 @@ controls proving it catches all three real defects and ignores all three
 correct lines.
 
 Suite 1,922 → 1,928; 130 → 131 files.
+
+## Phase 467 — one transatlantic round trip, one number
+
+A round-trip transatlantic flight was priced three ways on three surfaces a
+student sees, none derived from the others: `equivalents.js` held ICAO's
+sourced **1.4 mt one-way** (so 2.8 round trip), the homepage tip said **2.5**,
+and the forest-offset lesson said **1.6**.
+
+2.5 was not simply a third number. `personalFootprint.js` retired it **by
+name** as sitting below all four published methods, and
+`carbonMathPremises.test.js` already pinned that `/carbon-math` had stopped
+using it — the homepage tip had kept it. And 1.6 prices a *round trip* below
+the repo's own *one-way* rate, while labelling itself CO₂e when it is a
+CO₂-only figure.
+
+The ICAO constant is the only transatlantic figure here with a source
+attached, so it is now exported along with a derived round trip, and both
+prose surfaces interpolate it instead of restating it.
+
+**What this deliberately does not do:** it does not settle which
+international-travel factor the dashboard should adopt.
+`MT_PER_INTL_FLIGHT = 3.7` is a broader per-student average and stays where it
+is. The point is that when that question is answered, it is a one-line change
+rather than a hunt across three files — the same move as Phase 466.
+
+*The tip's comparison is now checked, not trusted.* It claims a round trip
+beats a student's whole share of Scope 2; that is arithmetic over two live
+constants (2.8 against 390/340 = 1.15), so a test asserts it rather than
+letting the sentence vouch for itself.
+
+Suite 1,928 → 1,932; 131 → 132 files.

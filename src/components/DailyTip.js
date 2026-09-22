@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { heatingSetbackSaving, MT_PER_STUDENT_HEATING_BASELINE } from '../utils/personalFootprint.js';
+import { MT_PER_TRANSAT_ROUND_TRIP } from '../utils/equivalents.js';
 
 // Daily-rotating "tip of the day" card. Picks a tip based on day
 // of year so it changes every day without persistence. 30 tips =
@@ -54,7 +55,7 @@ const TIPS = [
   {
     icon: '✈️',
     title: 'Combine trips',
-    body: 'One round-trip transatlantic flight ≈ 2.5 mtCO₂e — more than KUA\'s entire scope 2 emissions per student per year. Combine breaks where possible.',
+    body: `One round-trip transatlantic flight ≈ ${MT_PER_TRANSAT_ROUND_TRIP} mtCO₂e — more than the entire scope 2 footprint of one KUA student for a year. Combine breaks where possible.`,
   },
   {
     icon: '♻️',

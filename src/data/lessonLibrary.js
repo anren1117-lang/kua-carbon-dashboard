@@ -15,6 +15,8 @@
 //   4. List 1+ KUA course names from the verified set below
 //   5. Pick a format from FORMATS and a gradeBand from GRADE_BANDS
 
+import { MT_PER_TRANSAT_ROUND_TRIP } from '../utils/equivalents.js';
+
 export const DEPARTMENTS = [
   'Science',
   'Mathematics',
@@ -204,7 +206,7 @@ export const lessonLibrary = [
       'Understand additionality and why "the forest covers it" isn\'t a complete answer',
     ],
     dashboardPages: ['/sinks-os', '/methodology'],
-    studentTask: 'Compute the kg CO₂ stored by 1 acre of mature NE hardwood in one growing year. Then compute how many years that acre would need to offset a single round-trip trans-Atlantic flight (~1.6 tCO₂e). Reflect: how many acres would offset every flight to KUA each year?',
+    studentTask: `Compute the kg CO₂ stored by 1 acre of mature NE hardwood in one growing year. Then compute how many years that acre would need to offset a single round-trip trans-Atlantic flight (~${MT_PER_TRANSAT_ROUND_TRIP} tCO₂e, twice the ICAO one-way rate on /methodology). Reflect: how many acres would offset every flight to KUA each year?`,
     teacherPrep: 'Have /sinks-os and /methodology open on the smart-board; print the Birdsey table as a handout.',
   },
   {

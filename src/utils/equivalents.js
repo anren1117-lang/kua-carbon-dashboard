@@ -33,7 +33,13 @@ export function energyEquivalents(kwh) {
 const MT_PER_CAR_YEAR    = 4.6;       // EPA: average passenger car emits ~4.6 mtCO2e/yr
 const MT_PER_TREE_YEAR   = 0.0605;    // EPA: avg US tree sequesters ~60.5 kg CO2/yr
 const MT_PER_HOME_YEAR   = 8.81;      // EPA: avg US home electricity = ~8.81 mtCO2e/yr
-const MT_PER_TRANSAT_FLT = 1.4;       // ICAO: avg one-way transatlantic flight per pax
+// ICAO: avg ONE-WAY transatlantic flight per pax. Exported, with the round
+// trip derived from it, because three surfaces quote a transatlantic round
+// trip in prose and each had drifted to its own number. This is the only
+// transatlantic figure in the repo with a source attached, so it is the one
+// the prose derives from.
+export const MT_PER_TRANSAT_FLT = 1.4;
+export const MT_PER_TRANSAT_ROUND_TRIP = MT_PER_TRANSAT_FLT * 2;
 const MT_PER_GAL_GAS     = 0.00878;   // EPA: 8.78 kg CO2/gallon gasoline
 // ISO-NE effective output-basis factor (≈0.000235 mtCO2e/kWh — see gridMix.js).
 // Derive reactively from the per-fuel composition so this stays in sync if the mix changes.
