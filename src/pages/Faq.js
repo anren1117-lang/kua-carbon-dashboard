@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ModulePage, ModuleSection } from '../components/ModuleShell.js';
+import { LEARNING_PATH_COUNT } from '../components/LearnAgent.js';
 
 // Convert a question string to a URL-safe anchor slug:
 // "How is this measured?" → "how-is-this-measured"
@@ -167,7 +168,7 @@ const FAQ = [
     q: "I'm a teacher — is there content I can use in class?",
     a: (
       <>
-        Yes — the Learn portal has eight short learning paths (Intro for any grade, Standard
+        Yes — the Learn portal has {LEARNING_PATH_COUNT} short learning paths (Intro for any grade, Standard
         with KUA's specific data, AP-level deep dives in chem / bio / physics / stats). The
         Teacher portal lets you assign lessons + see results. <Link to="/learn" style={linkStyle}>Open Learn →</Link>
         {' · '}<Link to="/teacher" style={linkStyle}>Teacher portal →</Link>

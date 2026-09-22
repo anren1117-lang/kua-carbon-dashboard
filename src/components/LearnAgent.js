@@ -48,7 +48,7 @@ function Fmt({ text }) {
   );
 }
 
-// AP-aligned curriculum across 9 paths. Subject tags reference the AP course
+// AP-aligned curriculum across the self-paced paths. Subject tags reference the AP course
 // content frameworks: APES (Environmental Science), AP Chem, AP Bio, AP Physics,
 // AP Stats. Each path mixes concept cards, knowledge quizzes, and worked-math
 // scenarios with given inputs and full calculation chains in the explanation.
@@ -1668,6 +1668,16 @@ function AllExplanations({ options, pickedIdx, pickedCorrect }) {
     </div>
   );
 }
+
+/**
+ * How many self-paced paths exist, derived from the array above.
+ *
+ * Three files stated this independently and all three disagreed: the FAQ said
+ * eight, Learn.js said 11, and this file's own header said 9. There are 11.
+ * Exported so a reader-facing count follows the content instead of drifting
+ * away from it again.
+ */
+export const LEARNING_PATH_COUNT = paths.length;
 
 export function LearnAgent() {
   const [activePathId, setActivePathId] = useState(null);

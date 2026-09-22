@@ -2276,3 +2276,26 @@ value would have destroyed a correct route-specific figure, which is the
 opposite of the fix.
 
 Suite 1,911 → 1,915; 127 → 128 files.
+
+## Phase 464: three files counted the same thing three ways
+
+- `Faq.js` told a teacher the Learn portal has **eight** short learning paths.
+- `Learn.js` said **11** in a comment.
+- `LearnAgent.js`'s own header said **9**.
+
+There are **eleven**. A teacher following the FAQ is told eight and finds
+eleven — on the page whose whole job is answering "what is actually here".
+
+A fourth hardcoded number would have drifted exactly like the first three, so
+`LEARNING_PATH_COUNT = paths.length` is now exported and the FAQ renders it.
+The count follows the content; nobody has to remember.
+
+*Verified in the built chunk, not the DOM.* The FAQ is an accordion that does
+not render collapsed answers, and a synthetic click did not expand it in jsdom
+— so a render assertion would have proved nothing either way. The bundle shows
+`"…the Learn portal has ", x, " short learning paths…"` with `x` bound to the
+import, which is the thing worth knowing. The import also tree-shakes cleanly:
+the Faq chunk is 9.6 KB, so pulling a count out of a 1,900-line module did not
+drag the lessons in with it.
+
+Suite 1,915 → 1,919; 128 → 129 files.
