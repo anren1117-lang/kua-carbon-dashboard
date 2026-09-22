@@ -2299,3 +2299,33 @@ the Faq chunk is 9.6 KB, so pulling a count out of a 1,900-line module did not
 drag the lessons in with it.
 
 Suite 1,915 → 1,919; 128 → 129 files.
+
+## Phase 465: the number the whole sinks argument rests on, stated as fact
+
+KUA publishes a **1,300-acre campus**. It does not publish a forested acreage.
+The ~1,000 acres this dashboard uses is the project's own working figure —
+CLAUDE.md recorded that in Phase 414, and `ScopeExplainer` says so in the copy.
+
+`LearnAgent` asserted it as fact three times, in the lessons that introduce
+sinks: *"KUA owns roughly 1,000 acres of forest in New Hampshire"*, *"The sink
+at KUA is the ~1,000 acres of campus forest"*, and a Birdsey math problem
+opening *"KUA has ~1,000 acres of forested land"*.
+
+It matters more here than anywhere else: the sink is **more than half of gross
+emissions**, so this single unpublished number decides whether the school reads
+as nearly balanced or clearly positive. All three now name the published 1,300
+first and flag the 1,000 as ours.
+
+**Prose asserts; a givens table inherits.** `{ label: 'Forested area', value:
+'1,000 acres' }` is a parameter of a stated problem, not a claim about the
+world — the scenario line above it carries the caveat, and requiring one inside
+a table cell would be noise. The test encodes that distinction rather than
+flattening it, the same call as Phase 446's link-versus-mention.
+
+*Two of my own guards were wrong again, and both refused to write.* The first
+demanded the caveat on **every** line containing the acreage, including that
+table cell. The second classified prose by `body: '` — but one of these bodies
+is a **template literal**, so a real assertion read as not-prose and the count
+came up short. Fixed to accept both quote styles.
+
+Suite 1,919 → 1,922; 129 → 130 files.
