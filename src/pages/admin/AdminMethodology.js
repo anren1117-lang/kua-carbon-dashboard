@@ -313,7 +313,7 @@ function AdminMethodology() {
             <tr><td style={styles.td}>— Oil generation</td><td style={styles.td}>0.78 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
             <tr><td style={styles.td}>— Coal generation</td><td style={styles.td}>0.95 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
             <tr><td style={styles.td}>— Net imports (NY + Quebec hydro)</td><td style={styles.td}>0.30 kg CO₂/kWh</td><td style={styles.td}>NYISO + Quebec hydro blend</td></tr>
-            <tr><td style={styles.td}>ISO-NE input-energy basis (cross-ref only)</td><td style={styles.td}>643 lb CO₂/MWh</td><td style={styles.td}>ISO-NE 2024 Emissions Report</td></tr>
+            <tr><td style={styles.td}>ISO-NE in-region average, 2022 (cross-ref only)</td><td style={styles.td}>643 lb CO₂/MWh</td><td style={styles.td}>ISO-NE Emissions Report — 2024 is 597, 2023 is 633</td></tr>
             <tr><td style={styles.td}>Tree storage</td><td style={styles.td}>7.69 kg C/m²</td><td style={styles.td}>Nowak et al. (2013)</td></tr>
             <tr><td style={styles.td}>Tree sequestration</td><td style={styles.td}>0.28 kg C/m²/yr</td><td style={styles.td}>Nowak et al. (2013)</td></tr>
           </tbody>

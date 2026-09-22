@@ -854,8 +854,10 @@ export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 
 // MISLABELLED — 643.0 is NOT ISO-NE's 2024 rate. ISO-NE published 597 lb/MWh
 // generation-only (560 including imports) for 2024, and 633 for 2023; 643 is a
-// stale figure, most likely 2022 (that attribution is second-hand; the part
-// confirmed against ISO-NE directly is simply that 643 is not 2024).
+// stale figure from 2022 — CONFIRMED against ISO-NE's own published analysis,
+// which gives the 2022 in-region rate as 643 lb/MWh (565 including net
+// imports). Earlier revisions of this note could only say 643 was not 2024;
+// the year is now established directly from the primary source.
 //
 // Left at 643 for now rather than silently corrected, because this factor sets
 // the avoided-emissions figures on the public Renewables page, and changing it

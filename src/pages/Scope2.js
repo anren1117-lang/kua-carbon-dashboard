@@ -160,7 +160,7 @@ function Scope2() {
           futureMethod: 'Drop the annualization multiplier once a full calendar year of BMS data is captured (~Jan 2027) — kWh figure flips from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[
-          { title: 'ISO New England Electric Generator Air Emissions Report 2024', use: '643 lb CO₂/MWh in-region · 177 lb CO₂/MWh imported (Canadian hydro share)' },
+          { title: 'ISO New England Electric Generator Air Emissions Report', use: '597 lb CO₂/MWh in-region for 2024 (560 including net imports). The 643 lb/MWh figure often quoted is the 2022 in-region rate — ISO-NE reports 633 for 2023 — so it is a vintage behind, not a different basis.' },
           { title: 'EPA eGRID 2022', use: 'NPCC New England subregion emission rates for cross-validation' },
           { title: 'GHG Protocol Scope 2 Guidance', source: 'WRI/WBCSD 2015', use: 'Location-based vs market-based dual reporting framework' },
           { title: 'New Hampshire Public Utilities Commission', use: 'Liberty Utilities (Granite State Electric) tariff documentation' },
@@ -289,7 +289,7 @@ function Scope2() {
           },
           {
             heading: 'Why ISO New England matters',
-            body: 'ISO-NE runs the wholesale grid for the six New England states. They publish an annual Air Emissions Report that gives the average lb-CO₂-per-MWh of all generators feeding the regional grid. In 2024 that was 643 lb/MWh from in-region generation, and 177 lb/MWh from imported power (much of which is Canadian hydro).',
+            body: 'ISO-NE runs the wholesale grid for the six New England states. They publish an annual Air Emissions Report that gives the average lb-CO₂-per-MWh of all generators feeding the regional grid. For 2024 that was 597 lb/MWh from in-region generation, falling from 633 in 2023 and 643 in 2022. Imported power — much of it Canadian hydro — is far cleaner, which is why the rate including net imports is lower still at 560.',
             citation: 'ISO New England Electric Generator Air Emissions Report 2024.',
           },
           {

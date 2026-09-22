@@ -2016,3 +2016,41 @@ Hutchinson — **1643 is a year**. Only the teaching surfaces are fixed here; th
 ISO-NE attribution needs the primary source and gets its own phase.
 
 Suite 1,864 → 1,869; 119 → 120 files.
+
+## Phase 456: 643 lb/MWh is ISO-NE's 2022 rate — settled from the primary source
+
+Phase 455 removed 643 from the teaching surfaces but deliberately left three
+others alone, because they made **two different claims** and I could not tell
+which was right without the source:
+
+- `Scope2.js` asserted 643 was the **2024 in-region** rate.
+- `Methodology.js` and `AdminMethodology.js` called it an **input-energy
+  basis** figure.
+
+ISO New England's own published analysis settles it: the **2022** in-region
+rate was **643 lb/MWh** (565 including net imports). Their later analyses give
+**633 for 2023** (571 with imports), and `scopeTotals` records **597** for 2024.
+
+So both claims were wrong in the same way — 643 is a *vintage* behind, not a
+different basis. `scopeTotals.js:857` had already guessed "most likely 2022"
+but flagged the attribution as **second-hand**; it is now first-hand, and the
+hedge is gone.
+
+Scope 2's explainer now walks the series (597 ← 633 ← 643) rather than naming
+one number, which is what makes the vintage visible to a reader instead of
+something they have to take on trust.
+
+**The test pins the vintage, not the number.** 643 may legitimately appear as a
+historical comparison — it just may never appear without a 2022 label. My first
+version forbade `643` and `2024` on the same *line*, which failed against the
+very sentences that fix the problem ("597 for 2024; the 643 figure is 2022").
+That was the test being wrong, not the copy.
+
+*Also caught by the same run:* my replacement comment said the earlier note
+"hedged this as second-hand; it no longer is" — which still contains the phrase
+the assertion forbids. Rewritten to describe the change without quoting it.
+
+Suite 1,869 → 1,878; 120 → 121 files.
+
+Sources: ISO-NE via isonewswire — 2022 (643 in-region / 565 with imports) and
+2023 (633 / 571) analyses.
