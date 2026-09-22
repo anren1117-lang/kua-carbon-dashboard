@@ -185,7 +185,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'How big is one ton of CO₂?',
-        body: 'A **metric ton (mt) = 1,000 kilograms** — roughly the weight of a small car. But CO₂ is a gas, so the **physical volume** is harder to picture. At standard temperature and pressure, **one metric ton of CO₂ would fill a sphere about 8 meters across** — bigger than a typical house room.\n\nFor scale comparisons:\n\n**The average American** emits about **16 mtCO₂e per year** — among the highest per-capita rates in the world.\n**The average European** emits about **8 mtCO₂e per year** — half the US rate, despite similar standards of living.\n**The global average** is about **5 mtCO₂e per person per year**.\n**To stay under 1.5 °C** of warming, the global average needs to fall to about **2 mtCO₂e per person per year by 2050**.\n\n**KUA students\' school-related footprint** is roughly **13 mtCO₂e per year gross** — and about **5 mtCO₂e once the campus forest is subtracted**. That gap is the forest doing the work: close to 8 mt per student, every year. (Personal home emissions are separate from the school dashboard.)',
+        body: 'A **metric ton (mt) = 1,000 kilograms** — roughly the weight of a small car. But CO₂ is a gas, so the **physical volume** is harder to picture. At standard temperature and pressure, **one metric ton of CO₂ would fill a sphere about 10 meters across** — over 500 cubic metres, bigger than a typical house room.\n\nFor scale comparisons:\n\n**The average American** emits about **16 mtCO₂e per year** — among the highest per-capita rates in the world.\n**The average European** emits about **8 mtCO₂e per year** — half the US rate, despite similar standards of living.\n**The global average** is about **5 mtCO₂e per person per year**.\n**To stay under 1.5 °C** of warming, the global average needs to fall to about **2 mtCO₂e per person per year by 2050**.\n\n**KUA students\' school-related footprint** is roughly **13 mtCO₂e per year gross** — and about **5 mtCO₂e once the campus forest is subtracted**. That gap is the forest doing the work: close to 8 mt per student, every year. (Personal home emissions are separate from the school dashboard.)',
       },
       {
         type: 'quiz',
@@ -283,7 +283,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Some choices matter way more than others',
-        body: 'Not all "green" actions are created equal. **The numbers vary by 100×, sometimes 1,000×.** Turning off a light feels good but barely moves the needle. Choosing not to take one international flight saves more carbon than a decade of conscientious light-switching.\n\nThis is **not** a reason to give up on small actions — they add up at scale, and they build habits. But it IS a reason to **pay attention to magnitude**. If you only have time and energy for one thing, **do the big thing first**.\n\nA rough guide for KUA students, ordered by yearly carbon impact:\n\n**Travel decisions** — by far the largest. One round-trip flight to East Asia ≈ **3,000 kg CO₂e**. One flight to California ≈ 1,000 kg. Driving 1,000 miles ≈ 400 kg. Train Boston-NYC ≈ 50 kg per round trip.\n**Diet patterns** — meaningful. Switching half your beef meals to chicken for a year ≈ **300 kg saved**. Going fully vegetarian ≈ 500–1,000 kg saved.\n**Daily energy use** — small per item, big at scale. Showering shorter, electronics off when not in use, lower thermostat at night ≈ **20–100 kg saved per year per habit**.\n**Civic + institutional action** — the multiplier. Pushing for a heat-pump retrofit, organizing for clean-energy procurement, voting for climate policy ≈ **hundreds of times your personal footprint** if you succeed.',
+        body: 'Not all "green" actions are created equal. **The numbers vary by 100×, sometimes 1,000×.** Turning off a light feels good but barely moves the needle. Choosing not to take one international flight saves more carbon than a decade of conscientious light-switching.\n\nThis is **not** a reason to give up on small actions — they add up at scale, and they build habits. But it IS a reason to **pay attention to magnitude**. If you only have time and energy for one thing, **do the big thing first**.\n\nA rough guide for KUA students, ordered by yearly carbon impact:\n\n**Travel decisions** — by far the largest. One round-trip flight to East Asia ≈ **3,000 kg CO₂e**. One flight to California ≈ 1,000 kg. Driving 1,000 miles ≈ 299 kg. Train Boston-NYC ≈ 50 kg per round trip.\n**Diet patterns** — meaningful. Switching half your beef meals to chicken for a year ≈ **300 kg saved**. Going fully vegetarian ≈ 500–1,000 kg saved.\n**Daily energy use** — small per item, big at scale. Showering shorter, electronics off when not in use, lower thermostat at night ≈ **20–100 kg saved per year per habit**.\n**Civic + institutional action** — the multiplier. Pushing for a heat-pump retrofit, organizing for clean-energy procurement, voting for climate policy ≈ **hundreds of times your personal footprint** if you succeed.',
       },
       {
         type: 'quiz',
@@ -1004,7 +1004,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'New England grid mix 2024',
-        body: 'Natural gas: 51%. Nuclear: 23%. Renewables (solar/wind/biomass): ~14%. Net imports (mostly Canadian hydro): ~12%. Coal/oil: <1%.',
+        body: 'Natural gas: 51%. Nuclear: 23%. Renewables (solar/wind/biomass): ~12%. Hydro: ~6%. Net imports (mostly Canadian hydro): ~7%. Coal/oil: ~1%.',
       },
       {
         type: 'quiz',
@@ -1280,15 +1280,15 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: stack-rank three reduction levers',
-        scenario: '(a) Heat pump retrofit on one dorm using 6,000 gal/yr oil → ~43 mt savings. (b) LED retrofit cutting electricity 12% from current 2.3M kWh. (c) 30 international students take 1 fewer round trip to East Asia.',
+        scenario: '(a) Heat pump retrofit on one dorm using 6,000 gal/yr oil → ~43 mt savings. (b) LED retrofit cutting electricity 12% from current ~1.66M kWh. (c) 30 international students take 1 fewer round trip to East Asia.',
         given: [
           { label: '(a) Heat pump', value: '~43 mt savings' },
-          { label: '(b) LED retrofit', value: '12% × 2.3M kWh × 0.234 kg/kWh (inventory rate)' },
+          { label: '(b) LED retrofit', value: '12% × 1.66M kWh × 0.234 kg/kWh (inventory rate)' },
           { label: '(c) 30 students × 1 fewer trip', value: '× ~3.7 mtCO₂e per trip' },
         ],
         question: 'Order biggest to smallest:',
         options: [
-          { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 3.7 ≈ 111 mt. (b) = 0.12 × 2,300,000 × 0.234 / 1,000 ≈ 65 mt. (a) = 43 mt. Notice how much work the electricity factor is doing here: swap the inventory rate for the marginal rate and (b) jumps to ~135 mt, which reorders the whole list. Which factor you pick decides the answer, so say which question you are asking before you rank anything.' },
+          { text: '(c) > (b) > (a)', correct: true, explanation: 'Right. (c) = 30 × 3.7 ≈ 111 mt. (b) = 0.12 × 1,663,000 × 0.234 / 1,000 ≈ 47 mt. (a) = 43 mt — so (b) and (a) are nearly tied. Notice how much work the electricity factor is doing: swap the inventory rate for the marginal rate and (b) more than doubles to ~98 mt, close enough to (c) that the ranking turns on an assumption the question never stated. Say which question you are asking before you rank anything.' },
           { text: '(a) > (b) > (c)', correct: false, explanation: 'Heat pump is real but smallest at this scale. The flight reduction across 30 students dominates.' },
           { text: '(b) > (a) > (c)', correct: false, explanation: 'Recheck (c) — 30 students × 3.7 mt per round trip ≈ 111 mt, larger than the LED retrofit.' },
           { text: '(b) > (c) > (a)', correct: false, explanation: 'Wrong on the basis this question gave you — at the stated inventory rate (c) = 111 mt beats LED at 64.7 mt. It would be RIGHT on a marginal factor (~0.49 kg/kWh), where the LED retrofit reaches ~135 mt. Not a careless answer, just one to a different question.' },

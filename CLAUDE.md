@@ -2212,3 +2212,36 @@ lesson content. It belongs with a review of the estimator's own factors rather
 than bolted onto a display fix.
 
 Suite 1,900 → 1,906; 125 → 126 files.
+
+## Phase 462: four LearnAgent figures, and the claim that depended on one
+
+| stated | canonical |
+| --- | --- |
+| Renewables ~14%, net imports ~12% | **12%** and **7%**, with hydro its own **6%** row |
+| Driving 1,000 miles ≈ 400 kg | 0.2986 kg/mi → **299 kg** (400 g/mi is the EPA figure Phase 406 retired) |
+| "current 2.3M kWh" | the Year-1 projection is **~1.66M kWh** |
+| 1 t CO₂ fills a sphere ~8 m across | 1 t at 25 °C is **556 m³** → **~10.2 m**; an 8 m sphere holds about half a tonne |
+
+`LearnAgent:441` already stated the mix and the kWh correctly, so each of these
+contradicted its own file.
+
+**The electricity correction cascaded, and following it through mattered more
+than the number.** A stack-rank question computed (b) LED retrofit from 2.3M
+kWh and concluded: *"swap the inventory rate for the marginal rate and (b)
+jumps to ~135 mt, **which reorders the whole list**."* At the real 1.66M kWh,
+(b) is 47 mt at the inventory rate and 98 mt at the marginal — and 98 **does
+not** pass (c)'s 111, so the reordering claim stops being true. Changing only
+the input would have left a conclusion the new numbers contradict.
+
+The rewrite keeps the teaching point and sharpens it: (b) and (a) are now
+nearly tied at 47 and 43, and the marginal rate brings (b) *close enough* to
+(c) that the ranking turns on an assumption the question never stated.
+
+*The gate blocked this commit once, correctly.* My first pattern forbade
+"~14%" anywhere in the file — but that string also belongs to the thermostat
+**distractor Phase 460 deliberately kept**, explaining where the inflated
+7%-per-°F rule comes from. Scoped to the grid-mix line, and the gate now also
+asserts that distractor still exists, so a later sweep cannot quietly delete
+a wrong answer that is there on purpose.
+
+Suite 1,906 → 1,911; 126 → 127 files.
