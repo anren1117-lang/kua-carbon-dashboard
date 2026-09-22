@@ -95,3 +95,31 @@ export function trajectoryStatus(target, actualValue, year) {
   if (actualValue <= expected * 1.1) return 'lagging';
   return 'off_track';
 }
+
+/**
+ * How the pathway may honestly be described, given how much of it the board
+ * has actually ratified.
+ *
+ * /goals called this "KUA's committed reduction pathway" while every target
+ * carried `approved: false` — and the same page said so twice, in its
+ * "Approved 0 / 4 · Board ratification pending" stat and in each row's
+ * "Pending board approval". AnnualReport had it right ("Targets are
+ * preliminary pending board approval"). For a school board, "committed" is
+ * not a softer word for "proposed": it asserts a ratification that has not
+ * happened.
+ *
+ * Derived rather than reworded, so the day the board ratifies, the page
+ * starts saying "committed" on its own instead of waiting to be remembered.
+ */
+export function pathwayDescription(targets = reductionTargets) {
+  const list = Array.isArray(targets) ? targets : [];
+  if (list.length === 0) return 'No reduction targets are on record yet.';
+  const approved = list.filter((t) => t && t.approved === true).length;
+  if (approved === list.length) {
+    return "KUA's committed reduction pathway — every target below is board-ratified.";
+  }
+  if (approved === 0) {
+    return "KUA's proposed reduction pathway. No target below has been ratified by the board yet, so these are the school's working goals rather than commitments.";
+  }
+  return `KUA's reduction pathway — ${approved} of ${list.length} targets ${approved === 1 ? 'is' : 'are'} board-ratified; the rest are proposed and awaiting approval.`;
+}

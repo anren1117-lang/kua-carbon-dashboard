@@ -10,7 +10,7 @@ import { useCardTilt } from '../hooks/useCardTilt.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { Icon } from '../components/Icon.js';
-import { reductionTargets, targetTrajectoryAt, trajectoryStatus } from '../data/targets.js';
+import { reductionTargets, targetTrajectoryAt, trajectoryStatus, pathwayDescription } from '../data/targets.js';
 import { RESOURCE_CATEGORIES, GOAL_RESOURCES } from '../data/goalsResources.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
@@ -109,7 +109,7 @@ export default function Goals() {
   return (
     <ModulePage
       title="Goals & Targets"
-      subtitle="KUA's committed reduction pathway. Each target plots a linear trajectory from its baseline year to the deadline; the dashboard tracks our measured progress against it."
+      subtitle={`${pathwayDescription(reductionTargets)} Each target plots a linear trajectory from its baseline year to the deadline; the dashboard tracks our measured progress against it.`}
       toolbar={
         <button
           type="button"

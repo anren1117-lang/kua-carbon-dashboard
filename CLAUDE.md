@@ -1808,3 +1808,44 @@ failed fetch instead of rendering build-time constants as live data, and every
 one pins the negative control that an empty table produces no warning.
 
 Suite 1,831 → 1,836; 114 → 115 files.
+
+## Phase 451: "committed" was a claim the board had not made
+
+`/goals` introduced the targets as **"KUA's committed reduction pathway"**.
+All four carry `approved: false` — and the same page says so twice: the summary
+stat reads *"Approved 0 / 4 · Board ratification pending"*, and every target row
+reads *"Pending board approval"*. `AnnualReport` had it right too: *"Targets are
+preliminary pending board approval."*
+
+So one line contradicted the page's own status fields, the report, and the
+data. For a school board "committed" is not a softer word for "proposed" — it
+asserts a ratification that has not happened, on the page a trustee is most
+likely to read first.
+
+`pathwayDescription(targets)` now **derives** the sentence from the approval
+count, so this cannot drift back:
+
+- 0 approved → *"KUA's proposed reduction pathway. No target below has been
+  ratified by the board yet, so these are the school's working goals rather
+  than commitments."*
+- some → *"… 1 of 4 targets is board-ratified; the rest are proposed …"*
+- all → *"KUA's committed reduction pathway — every target below is
+  board-ratified."*
+
+Derived rather than reworded matters here: the day the board ratifies, the page
+starts saying "committed" on its own instead of waiting for someone to
+remember. The test pins all three states plus the empty list, and pins the
+premise (`every target is currently unapproved`) so a stale fixture announces
+itself rather than quietly passing.
+
+**Found by audit, not by the task list** — which is now exhausted of everything
+that does not need a decision from the user.
+
+*Also checked and found CORRECT, recorded so it is not re-investigated:* the
+dining baseline of 235 in `targets.js` matches `scopeTotals.js:445` exactly and
+says so in a comment; the 243 in `BOTTOM_UP_BREAKDOWN` is the independent
+bottom-up cross-check, a different question by design, and the 3.4% gap is that
+cross-check working. The 26 reduction actions total 996 mtCO₂e — 22.8% of
+gross, with no single action above 25%.
+
+Suite 1,836 → 1,844; 115 → 116 files.
