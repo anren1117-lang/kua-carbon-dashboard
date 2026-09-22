@@ -1975,3 +1975,44 @@ and the gate now sweeps every `setup:`/`work:` literal in the file for the same
 class so it cannot recur here.
 
 Suite 1,858 → 1,864; 118 → 119 files.
+
+## Phase 455: the Learn path taught a grid factor this repo calls mislabelled
+
+`scopeTotals.js:855`, in the repo's own words: *"MISLABELLED — 643.0 is NOT
+ISO-NE's 2024 rate. ISO-NE published 597 lb/MWh generation-only for 2024…
+643 is a stale figure, most likely 2022."*
+
+`LearnAgent.js` used 643 in **seven** places, including two worked problems
+students are asked to compute from — and `LearnAgent.js:441` states 597
+correctly five lines before one of them.
+
+Both problems were wrong, in **opposite directions**, because they also picked
+the wrong factor *class*:
+
+- **Dorm, 80,000 kWh CONSUMED.** An inventory question, so the rate is the
+  dashboard's 0.2344 kg/kWh (**517 lb/MWh**) → **18.8 mt**. The quiz taught
+  23.3 — **24% high**.
+- **Solar, 245,000 kWh DISPLACED.** A consequential question, so the rate is
+  AVERT marginal 0.4896 kg/kWh (**1,079 lb/MWh**) → **120 mt**. The quiz taught
+  71.5 — **40% low**, and on the wrong basis entirely. The heat-pump question
+  forty lines later gets this exact distinction right.
+
+The solar explanation now names why the rate differs and what the inventory
+rate would wrongly give (~57 mt), because a corrected number with no reason
+invites the same mistake back.
+
+**The seventh reference was the worst and nearly missed.** My first staged
+write covered the six in the two problems and aborted on `a 643 reference
+survives` — a *concept* lesson stating "for KUA, that is ISO New England at 643
+lb CO₂ per MWh in 2024", teaching the false attribution as prose rather than
+arithmetic.
+
+*Scope held deliberately.* Sweeping the tree found 643 in more places, and they
+are **not the same claim**: `scopeTotals` comments document the history,
+`Scope2.js` asserts 643 is the 2024 **in-region** rate (contradicting this
+repo's own 597), `Methodology`/`AdminMethodology` call it an **input-energy
+basis** figure, and three AP history files mention Louis XIV, Newton and Anne
+Hutchinson — **1643 is a year**. Only the teaching surfaces are fixed here; the
+ISO-NE attribution needs the primary source and gets its own phase.
+
+Suite 1,864 → 1,869; 119 → 120 files.
