@@ -1936,3 +1936,42 @@ no new string. The old minified form `*.8*1e3/80` must be absent from the
 Scenarios chunk.
 
 Suite 1,851 → 1,858; 117 → 118 files.
+
+## Phase 454: three worked examples that taught the wrong number
+
+`/carbon-math` promises "all using KUA-specific numbers". Three of its eight
+questions broke that promise, each differently — and a student who does the
+arithmetic learns the error.
+
+**Q1 — a premise 3.25× KUA's own electricity.** "KUA used about 5,400,000 kWh
+last year." The canonical Scope 2 is 390 mt at 0.234446 kg/kWh = **1,663,496
+kWh**. The internal arithmetic was fine (5.4M × 0.234 = 1,264 mt); the premise
+was not. Now 1,660,000 kWh → **389 mt**, the figure /scope-2 publishes.
+
+**Q2 — the flight figure this repo retired by name.** "One round-trip
+transatlantic flight is about 2.5 mtCO₂e." `personalFootprint.js:37-44` retired
+2.5 explicitly as sitting *below all four published methods*, and uses **3.7**.
+Worse, the conclusion read "125 mt across just 50 students is more per-person
+than most American adults emit in a year" — that is **2.5 mt/person** against
+this repo's own `FOOTPRINT_REFERENCE.usAdultAvgMt` of **16**. False by 6.4×,
+and *still false at the corrected 3.7*, so it had to go rather than be
+rescaled. It now says a single journey is close to a quarter of a US adult's
+entire year, and more than a Paris-aligned 2 mt lifetime budget for twelve
+months — both true.
+
+**Q5 — a net that did not follow from its own answer.** The question computes
+2,100 mt of drawdown, then states "The net figure is about 1,725". But
+4,375 − 2,100 = **2,275**. The 1,725 comes from the *adopted* per-stand sink of
+2,650, which the question never introduces — so a student who subtracts gets a
+different number than the page. It now shows both, and says which one the
+dashboard actually uses.
+
+*Process — the fifth quoting break of this run, and the suite caught it exactly
+as documented.* I wrote `the dashboard's cohort-weighted figure` inside a
+single-quoted JS literal. Tests fell 1,858 → **1,816** with one file failing to
+**transform** — which reads like 42 broken assertions and is one file that never
+parsed. Fixed by **rephrasing to avoid the apostrophe** rather than escaping it,
+and the gate now sweeps every `setup:`/`work:` literal in the file for the same
+class so it cannot recur here.
+
+Suite 1,858 → 1,864; 118 → 119 files.

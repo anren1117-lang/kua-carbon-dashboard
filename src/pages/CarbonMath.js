@@ -17,13 +17,13 @@ const QUESTIONS = [
   {
     id: 'q1',
     level: 'intro',
-    setup: 'KUA used about 5,400,000 kWh of grid electricity last year. ISO New England\'s emissions factor is 0.234 kg CO₂ per kWh. What is KUA\'s Scope 2 footprint in metric tons of CO₂?',
-    answer: 1264,
+    setup: 'KUA used about 1,660,000 kWh of grid electricity last year. ISO New England\'s emissions factor is 0.234 kg CO₂ per kWh. What is KUA\'s Scope 2 footprint in metric tons of CO₂?',
+    answer: 389,
     unit: 'mtCO₂e',
     tolerance: 0.05, // ±5%
     work: [
-      '5,400,000 kWh × 0.234 kg/kWh = 1,263,600 kg CO₂',
-      '1,263,600 kg ÷ 1,000 ≈ 1,264 mtCO₂e',
+      '1,660,000 kWh × 0.234 kg/kWh = 388,440 kg CO₂',
+      '388,440 kg ÷ 1,000 ≈ 389 mtCO₂e — the figure /scope-2 publishes.',
       'Why divide: 1,000 kg = 1 metric ton. We always report institutional footprints in metric tons.',
     ],
   },
@@ -42,13 +42,13 @@ const QUESTIONS = [
   {
     id: 'q3',
     level: 'intro',
-    setup: 'One round-trip transatlantic flight is about 2.5 mtCO₂e. KUA has roughly 50 international students, each flying home once per year. What\'s the total flight footprint?',
-    answer: 125,
+    setup: 'One round-trip international flight is about 3.7 mtCO₂e (the cohort-weighted figure this dashboard uses). KUA has roughly 50 international students, each flying home once per year. What\'s the total flight footprint?',
+    answer: 185,
     unit: 'mtCO₂e',
     tolerance: 0.05,
     work: [
-      '50 students × 1 round trip × 2.5 mt = 125 mtCO₂e',
-      'Why this dominates: 125 mt across just 50 students is more per-person than most American adults emit in a year.',
+      '50 students × 1 round trip × 3.7 mt = 185 mtCO₂e',
+      'Why this dominates: that is 3.7 mt from a single journey — close to a quarter of a US adult\'s ENTIRE annual footprint (~16 mt), and more than the 2 mt a Paris-aligned lifestyle allows for a whole year.',
     ],
   },
   {
@@ -73,7 +73,7 @@ const QUESTIONS = [
     tolerance: 0.05,
     work: [
       '1,000 acres × 2.1 mt/acre/yr = 2,100 mtCO₂e/yr',
-      'Why this matters: at 2.1 mt/acre/yr the forest offsets a large share of KUA\'s ~4,375 mt gross — but not all of it. The net figure is about 1,725 mtCO₂e/yr, so KUA is NOT net-negative; the sink makes the number much smaller, not negative.',
+      'Why this matters: at this flat rate the forest offsets a large share of KUA\'s ~4,375 mt gross — but not all of it: 4,375 − 2,100 = 2,275 mt net. The dashboard does not use the flat rate; it adopts the per-stand inventory of 2,650 mt, which gives the ~1,725 mt it publishes. Either way KUA is NOT net-negative — the sink makes the number much smaller, not negative.',
     ],
   },
   {
