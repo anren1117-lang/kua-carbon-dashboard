@@ -2182,3 +2182,33 @@ Suite 1,894 → 1,900; 124 → 125 files.
 
 Sources: US DOE *Program Your Thermostat for Automatic Savings*; ENERGY STAR
 smart-thermostat guidance.
+
+## Phase 461: pledging a cut made the number go up
+
+The pledge card on `/your-footprint` rendered:
+
+> That's ~**0.26** mtCO₂e off your footprint (**0.86 → 1.22** mtCO₂e total).
+
+`currentMt` was the top **row** — the single biggest contributor — while
+`newTotalMt` was the **whole footprint** after the cut. Both were labelled
+"total", and since the total always exceeds any one row, the arrow pointed the
+wrong way. A student who pledged a reduction watched their number rise:
+
+- day student: 0.86 → **1.22** (up 0.36, while claiming a 0.26 cut)
+- US boarder: 1.20 → **1.46**
+
+The arrow now runs total → total — **1.48 → 1.22** — and the difference equals
+the reduction the same sentence claims. The test derives both sides from
+`estimatePersonalFootprint` rather than hardcoding, and pins the premise that
+made the bug possible: any single row is smaller than the total.
+
+*Caught myself adding the same class of defect.* My first fix kept the row
+value as a new `focusMt` property that nothing rendered — exactly the "property
+wearing a comment" pattern Phase 419 established. Dropped.
+
+Also noted for #23, not fixed here: `personalFootprint.js:59-61` prices a
+2–3 °F setback at **7%**, the same inflated rule Phase 460 corrected in the
+lesson content. It belongs with a review of the estimator's own factors rather
+than bolted onto a display fix.
+
+Suite 1,900 → 1,906; 125 → 126 files.

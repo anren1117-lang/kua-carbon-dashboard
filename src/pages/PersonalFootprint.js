@@ -348,7 +348,11 @@ function PledgeSection({ totalMt, components, studentType }) {
     if (!top) return;
     const pledge = {
       focus: top.label,
-      currentMt: top.mt,
+      // The card renders "currentMt -> newTotalMt ... total", and newTotalMt
+      // is the WHOLE footprint after the cut. Starting the arrow at the top
+      // ROW compared a row against a total, so pledging a reduction showed
+      // the number going UP (day student: 0.86 -> 1.22).
+      currentMt: totalMt,
       targetReductionPct: 30,
       reductionMt: +(top.mt * 0.30).toFixed(2),
       newTotalMt: +(totalMt - top.mt * 0.30).toFixed(2),
