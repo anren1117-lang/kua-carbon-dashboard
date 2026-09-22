@@ -2151,3 +2151,34 @@ It also proves the implication rather than asserting it: 4.5 × 15 and 0.4 × 15
 both land within 10 of 60.
 
 Suite 1,890 → 1,894; 123 → 124 files.
+
+## Phase 460: a thermostat rule six times the published one, credited to ENERGY STAR
+
+DOE/ENERGY STAR publish roughly **10% a year** on heating for a **7–10 °F
+setback over 8 hours a day** — about **1.2% per °F**. Two lessons ran well
+above that, and one named a source that does not say it.
+
+**"~30 mtCO₂e across the building."** A 2 °F overnight setback on a dorm
+burning 6,000 gal/yr. That dorm's *entire* heating footprint is 6,000 × 10.21 =
+**61.3 mt**, so the claim is **49% of all its heating emissions** from turning a
+radiator down two degrees at night. At the DOE rate it is about **1.5 mt** —
+still worth doing, and it scales across every dorm, which is the honest version
+of the point.
+
+**"About 7% per °F of setback × ~2 °F ≈ 14%. EPA ENERGY STAR documents this
+rule."** Three faults in one sentence: the rate is ~6× the published one, the
+attribution does not hold, and the question asks about **22 °C → 20 °C**, which
+is **3.6 °F**, not 2.
+
+The quiz now answers its own question: 3.6 °F × 1.2% ≈ **4%**. And **14%
+survives as a distractor** explaining where it comes from — a wrong answer a
+student is likely to reach is more useful kept and explained than deleted.
+
+*Verified against the primary source before correcting an attribution*, the
+same way Phase 456 settled the ISO-NE vintage. The test pins the dorm total
+against `FUEL_FACTORS_KG_PER_GAL`, so a fuel reprice moves the lesson with it.
+
+Suite 1,894 → 1,900; 124 → 125 files.
+
+Sources: US DOE *Program Your Thermostat for Automatic Savings*; ENERGY STAR
+smart-thermostat guidance.

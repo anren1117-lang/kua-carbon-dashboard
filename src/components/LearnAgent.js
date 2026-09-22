@@ -349,7 +349,7 @@ const paths = [
         type: 'quiz',
         question: 'Which of these is a "free" carbon reduction — no money, minimal time, just habit change?',
         options: [
-          { text: 'Setting your radiator one notch lower at night', correct: true, explanation: 'Right. **No money, no time investment** — just a habit change. Lowering setpoint 2 °F overnight saves ~7% of heating energy. For a typical dorm using 6,000 gal/year heating oil, that\'s ~30 mtCO₂e of CO₂ across the building. The same applies to turning off lights and electronics when not in use.' },
+          { text: 'Setting your radiator one notch lower at night', correct: true, explanation: 'Right. **No money, no time investment** — just a habit change. DOE puts a 7–10 °F setback over 8 hours a day at about 10% a year, so roughly 1.2% per °F; a 2 °F overnight setback saves on the order of 2–3% of heating energy. For a typical dorm burning 6,000 gal/year of heating oil — about 61 mtCO₂e — that is roughly **1.5 mtCO₂e**, and it scales across every dorm on campus. The same applies to turning off lights and electronics when not in use.' },
           { text: 'Buying carbon offsets to cover your annual flights', correct: false, explanation: 'This costs money and doesn\'t actually reduce your emissions — you\'re paying someone else to reduce theirs. The CO₂ from your flight still goes up.' },
           { text: 'Installing solar panels on your house', correct: false, explanation: 'Solar costs significant up-front money (and isn\'t something most students can do anyway). Real impact, but not free.' },
           { text: 'Buying organic food', correct: false, explanation: 'Organic food is often slightly less carbon-intensive but costs more, and the carbon difference is small compared to switching from beef to plant-based foods.' },
@@ -1496,8 +1496,8 @@ const paths = [
         type: 'quiz',
         question: 'Setting a dorm radiator from 22 °C to 20 °C overnight saves roughly:',
         options: [
-          { text: '~14% of overnight heating energy', correct: true, explanation: 'Right. About **7% per °F of setback × ~2 °F ≈ 14%** of overnight heating. EPA ENERGY STAR documents this rule. Across an NH winter, ~30-50 kg CO₂e per dorm room saved from a free habit change.' },
-          { text: '~1%', correct: false, explanation: 'Too low — 2 °F lower is real impact.' },
+          { text: '~14% of overnight heating energy', correct: false, explanation: 'That is what you get from a 7%-per-°F rule of thumb — about six times the published rate. DOE gives roughly 10% a year for a 7–10 °F setback over 8 hours, which is near 1.2% per °F.' },
+          { text: '~4% of overnight heating energy', correct: true, explanation: 'Right. 22 °C → 20 °C is **3.6 °F**, and DOE puts a setback at roughly **1.2% per °F** (about 10% a year for 7–10 °F over 8 hours). 3.6 × 1.2 ≈ **4%**. Small per room — but free, and it multiplies across every dorm.' },
           { text: '~50%', correct: false, explanation: 'Too high — setback only applies to overnight hours.' },
           { text: '~80%', correct: false, explanation: 'Way too high — would risk frozen pipes.' },
         ],
