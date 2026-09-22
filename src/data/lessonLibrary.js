@@ -179,14 +179,14 @@ export const lessonLibrary = [
     courses: ['Physics (H)', 'AP Physics C', 'Conceptual Physics (H)'],
     gradeBand: '9–12',
     durationMin: 25,
-    summary: 'KUA\'s 220 kW rooftop solar runs at ~14% capacity factor. Students derive the energy delivered per year at 14% vs. 100% and explain the three biggest physical reasons for the gap.',
+    summary: 'KUA runs 60 kW of operational solar across three arrays. Using the NH regional typical capacity factor of ~14%, students derive the energy delivered per year at 14% vs. 100% and explain the three biggest physical reasons for the gap.',
     learningGoals: [
       'Compute annual energy from power × time × capacity factor',
       'Identify the geometry, weather, and equipment losses',
       'Apply unit conversion (kW → kWh → MWh)',
     ],
     dashboardPages: ['/scope-2', '/scenarios', '/methodology'],
-    studentTask: 'Calculate annual kWh for 220 kW at 14% CF and at 100% CF. Then list (and rank) the three biggest physical reasons for the gap.',
+    studentTask: 'Calculate annual kWh for 60 kW at 14% CF and at 100% CF. Then list (and rank) the three biggest physical reasons for the gap.',
     teacherPrep: 'Confirm the 14% CF number on /methodology before class.',
   },
   {
@@ -233,7 +233,7 @@ export const lessonLibrary = [
     courses: ['AP Chemistry', 'Chemistry (H)', 'AP Environmental Science'],
     gradeBand: '11–12',
     durationMin: 20,
-    summary: 'IPCC AR6 GWP values for HFCs: R-410A = 2,088, R-134a = 1,430, R-32 = 675. Why are these numbers so much bigger than CO₂\'s 1, and what does that mean for a 1-pound charge?',
+    summary: 'IPCC AR6 GWP values for HFCs: R-410A = 2,256, R-134a = 1,530, R-32 = 771. Why are these numbers so much bigger than CO₂\'s 1, and what does that mean for a 1-pound charge?',
     learningGoals: [
       'Define global warming potential and the 100-year integration window',
       'Compute CO₂-equivalent emissions from a refrigerant leak',
@@ -492,7 +492,7 @@ export const lessonLibrary = [
       'Estimate annual energy output from a probabilistic input',
     ],
     dashboardPages: ['/scope-2', '/methodology', '/scenarios'],
-    studentTask: 'Given ρ_air = 1.225 kg/m³, rotor area for a 15 kW turbine, and Cp ≈ 0.35: (1) compute instantaneous P at v = 4, 6, 8, 10, 12 m/s. (2) Assume a Weibull(k=2, λ=6 m/s) wind distribution. Integrate to estimate annual kWh. (3) Compare to KUA\'s published 220 kW solar — which gives more energy per dollar?',
+    studentTask: 'Given ρ_air = 1.225 kg/m³, rotor area for a 15 kW turbine, and Cp ≈ 0.35: (1) compute instantaneous P at v = 4, 6, 8, 10, 12 m/s. (2) Assume a Weibull(k=2, λ=6 m/s) wind distribution. Integrate to estimate annual kWh. (3) Compare to the 60 kW of solar KUA actually has operating — which gives more energy per dollar?',
     teacherPrep: 'Pair with the New Hampshire wind atlas for site context (5,500 ft hub-height isn\'t standard for a school).',
   },
   {

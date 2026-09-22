@@ -2094,3 +2094,36 @@ that only works on half its inputs is worse than none, because its silence
 means nothing.
 
 Suite 1,878 → 1,883; 121 → 122 files.
+
+## Phase 458: two lesson figures students were asked to compute from
+
+**AR4 values wearing an AR6 label.** `lessonLibrary.js` opened a refrigerant
+lesson with *"IPCC AR6 GWP values for HFCs: R-410A = 2,088, R-134a = 1,430,
+R-32 = 675"*, then asked students to compute CO₂e from a charge loss using
+them. AR6 GWP-100 is **2,256 / 1,530 / 771** — which is exactly what this
+repo's own `REFRIGERANT_GWP100` carries, and what Phase 437 sourced the
+`emissionFactors` rows to (IPCC AR6 WG1 Ch.7). 2,088 is the **AR4** figure the
+EU F-Gas Regulation still mandates, which is why it circulates; 675 is close to
+the **AR5** value of 677. Confirmed against the literature before publishing a
+correction to teaching content.
+
+**A solar array 3.7× its real size.** Three lessons cited *"KUA's 220 kW
+rooftop solar"*, one of them as *"KUA's **published** 220 kW solar"*.
+`renewables.js` lists three **operational** arrays totalling **60 kW** DC
+(40 + 12 + 8), plus a 60 kW array **planned** for 2027. 220 matches neither.
+At the lesson's own 14% CF it implies ~270,000 kWh/yr against a
+measured-anchored `SOLAR_ANNUAL_KWH` of **~16,750**.
+
+The capacity factor was relabelled too: 14% is a fair **NH regional** planning
+figure, but attributing it to KUA as observed performance is the other half of
+the same error. I did **not** assert a measured CF in its place — only one of
+the three feeds reports, so that number is not mine to publish yet.
+
+*The third 220 kW nearly escaped, and the reason is in my own notes.* My first
+sweep printed that line truncated at 230 characters, so I saw a wind-turbine
+task and concluded it was unrelated — the claim sat 140 characters further
+along the same line. The staged write caught it (`220 kW survives`), which is
+the third time this session a guard has blocked a partial fix. **Never judge a
+long line from truncated output.**
+
+Suite 1,883 → 1,890; 122 → 123 files.
