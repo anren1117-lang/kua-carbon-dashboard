@@ -179,7 +179,7 @@ export default function Sinks() {
       >
         <ul style={styles.notes}>
           <li><strong>Annual flux vs stock.</strong> The "annual sequestration" figure is a flux — how fast new carbon is being added each year. The "soil carbon stored" figure is a stock — how much is sitting in the top 30 cm right now.</li>
-          <li><strong>Range.</strong> Birdsey 1992 reports US-forest accumulation rates of 0.6–6.7 mtCO₂e/acre/yr depending on age, species, and site quality. We use mid-range stand-specific rates and label the totals as preliminary until inventory work tightens them.</li>
+          <li><strong>Range.</strong> Birdsey 1992 reports US-forest accumulation rates of 0.6–6.7 mtCO₂e/acre/yr across all ages, species and site qualities, and a US-forest average near 2.1. The stand table above averages{' '}{(ANNUAL_SEQUESTRATION_MT / TOTAL_FOREST_ACRES).toFixed(2)} mtCO₂e/acre/yr — above that average, because the mix blends in the Nowak open-grown rate, which comes from urban trees. Totals stay labelled preliminary until inventory work tightens them.</li>
           <li><strong>Permanence risk.</strong> Forest carbon is reversible. A windthrow event, beetle kill, or fire releases it. Sequestration claims should always carry that disclaimer in any external report.</li>
           <li><strong>Additionality.</strong> KUA didn't plant these forests as an offset — they were already here. That's still legitimate to measure, but it's not the same thing as creating new offsets, and it shouldn't be sold as carbon credits without a verified registry process.</li>
         </ul>

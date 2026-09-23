@@ -108,6 +108,24 @@ describe('the adopted sink figure is disclosed as the top of its spread', () => 
     expect(peer).toMatch(/SINKS_RECONCILIATION/);
   });
 
+  // The same page's caveat list called the stand rates "mid-range" against
+  // Birdsey's full 0.6-6.7 US span — while the page's own provenance text puts
+  // Birdsey's US-forest AVERAGE at 2.1 and the stand table averages 2.65.
+  // Picking the widest possible range to call a figure mid-range is the same
+  // move as calling the top of a spread its middle.
+  it('the caveat states the actual per-acre average, not "mid-range"', async () => {
+    mount(Sinks2);
+    await waitFor(() => {
+      expect(screen.getAllByText(/Birdsey/).length).toBeGreaterThan(0);
+    });
+    const html = document.body.textContent;
+    expect(html).not.toMatch(/mid-range/i);
+    // the stand table's own weighted rate, derived rather than asserted
+    const rate = (SINKS_RECONCILIATION.adoptedMt / 1000).toFixed(2);
+    expect(rate).toBe('2.65');
+    expect(html).toContain(rate);
+  });
+
   it('/sinks-os states it too — the page the lessons send students to', async () => {
     mount(Sinks2);
     await waitFor(() => {

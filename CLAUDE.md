@@ -2560,3 +2560,30 @@ the static figures and once for the live ones. A single-occurrence assertion
 refused to write rather than fixing one and leaving the other.
 
 Suite 1,947 → 1,951; 135 → 136 files.
+
+## Phase 472 — the caveat that undercut the caveat
+
+Phase 471 added "2,650 is the top of a 4-method spread" to the Sinks OS
+module. Four sections further down, the same page's caveat list said the stand
+rates were **"mid-range"**.
+
+Both cannot be doing honest work. The trick is the choice of range: Birdsey
+1992 spans 0.6–6.7 mtCO₂e/acre/yr *across every US forest type, age and site
+quality*, and 2.65 does sit inside it. But the page's own provenance text puts
+Birdsey's US-forest **average** at 2.1, and the stand table averages 2.65. Pick
+the widest possible span and almost anything is mid-range.
+
+The caveat now states the stand table's actual weighted rate, derived from the
+data, and says plainly that it sits above the Birdsey average because the mix
+blends in a Nowak open-grown rate drawn from urban trees.
+
+*Fourth time this session my replacement text restated the phrase its own
+guard forbids* — the new sentence originally said that calling the rates
+"mid-range" would be the flattering framing. The rendered test caught it after
+the write guard did not, because I had written the guard as
+`'mid-range stand-specific'` (the old phrasing) while the test asserts on
+`/mid-range/i`. **The refinement: make the write guard match the test's
+assertion exactly, not a narrower phrase.** The clause was cut rather than
+rephrased — editorializing about our own copy is weaker writing anyway.
+
+Suite 1,951 → 1,952.
