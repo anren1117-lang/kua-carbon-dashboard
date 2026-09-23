@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import {
   allTypicalFootprints,
@@ -991,7 +992,7 @@ const paths = [
         question: 'Annual sequestration:',
         options: [
           { text: '~570 mtCO₂e/yr', correct: false, explanation: 'Stopped at C mass — multiply by 44/12 to convert carbon to CO₂.' },
-          { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey conservative end). Dashboard mid-estimate of ~2,650 blends with the higher Nowak rate for open-grown trees.' },
+          { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey conservative end). The dashboard adopts ~2,650 by blending in the higher Nowak rate, which is an URBAN open-grown rate — that is why the adopted figure sits at the top of its four-method range (1,000-2,650), not in the middle. The central is 1,730.' },
           { text: '~10,000 mtCO₂e/yr', correct: false, explanation: 'Recheck lb → kg conversion (×0.4536, not ×4.5).' },
           { text: '~1,252 mtCO₂e/yr', correct: false, explanation: 'You used the rate directly without scaling acreage and converting units. The given rate is per acre and in lb of CARBON.' },
         ],
@@ -1009,7 +1010,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'AP Bio at ecosystem scale',
-        body: 'Light reactions → ATP/NADPH → Calvin cycle → C fixation. GPP minus respiration equals NPP — the new biomass. C3 vs C4 vs CAM are the three evolutionary photosynthetic strategies. DBH gives biomass; biomass × 0.5 = carbon; × 44/12 = CO₂. KUA\'s forest pulls roughly 2,000 mtCO₂e/yr conservatively, ~3,000 mid-estimate.',
+        body: `Light reactions → ATP/NADPH → Calvin cycle → C fixation. GPP minus respiration equals NPP — the new biomass. C3 vs C4 vs CAM are the three evolutionary photosynthetic strategies. DBH gives biomass; biomass × 0.5 = carbon; × 44/12 = CO₂. KUA's forest pulls somewhere between ${SINKS_RECONCILIATION.lowMt.toLocaleString()} and ${SINKS_RECONCILIATION.highMt.toLocaleString()} mtCO₂e/yr depending on the method; the ${SINKS_RECONCILIATION.methodCount}-method central is ${SINKS_RECONCILIATION.centralMt.toLocaleString()} and the dashboard adopts the top of the range.`,
       },
     ],
   },

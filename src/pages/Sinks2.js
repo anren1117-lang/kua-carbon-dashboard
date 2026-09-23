@@ -10,6 +10,7 @@ import {
   soilCarbonStored,
 } from '../data/sinks.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
+import { SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
 
 // Sinks OS module — forest + soil sequestration. Mirrors the Renewables
 // module pattern. Lives at /sinks-os to avoid colliding with the older
@@ -62,7 +63,13 @@ export default function Sinks() {
       <LiveDataNotice error={live.error} fallbackLabel="the stand-weighted placeholder inventory" />
       <MetricGrid metrics={[
         { label: 'Forest acres',        value: totalAcres.toLocaleString(), accent: '#22c55e' },
-        { label: 'Annual sequestration', value: annualMt.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac', note: isMeasured ? 'Live forest_stand_actuals' : 'Stand-weighted (placeholder)' },
+        { label: 'Annual sequestration', value: annualMt.toFixed(0), unit: 'mtCO₂e/yr', accent: '#86efac',
+          // The adopted figure is the TOP of the four-method spread. /sinks says
+          // so in its headline block; this page is the one the lesson library
+          // sends students to, so it has to say so too.
+          note: isMeasured
+            ? 'Live forest_stand_actuals'
+            : `Stand-weighted; +${SINKS_RECONCILIATION.gapPct}% vs the ${SINKS_RECONCILIATION.methodCount}-method central of ${SINKS_RECONCILIATION.centralMt.toLocaleString()}` },
         { label: 'Soil carbon stored',   value: Math.round(totalSoilStored).toLocaleString(), unit: 'mtCO₂e', accent: '#fbbf24', note: 'Top 30 cm' },
         { label: 'Forest stands',        value: standCount, accent: '#22d3ee' },
       ]} />
@@ -83,7 +90,7 @@ export default function Sinks() {
               <ProvenancePill provenance={isMeasured ? 'measured' : 'estimated'} />
               <span style={styles.provLabel}>Annual sequestration ({annualMt.toFixed(0)} mtCO₂e/yr)</span>
             </div>
-            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> 7 placeholder forest stands (named "North Hill", "Potato Patch", "Chellis Pond riparian", etc. — not from a KUA forest inventory) × per-acre rates that sit inside IPCC LULUCF default ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total acreage and the mix of mature hardwood / softwood / transitional / open-grown is real-ish; the per-stand subdivision and individual acreages are invented.</div>
+            <div style={styles.provMethod}><span style={styles.provMethodLabel}>Today:</span> 7 placeholder forest stands (named "North Hill", "Potato Patch", "Chellis Pond riparian", etc. — not from a KUA forest inventory) × per-acre rates that sit inside IPCC LULUCF default ranges (Birdsey 1992 US-forest average 2.1 mtCO₂e/acre/yr to Nowak 2013 open-grown 4.2). Total acreage and the mix of mature hardwood / softwood / transitional / open-grown is real-ish; the per-stand subdivision and individual acreages are invented.{' '}<strong>Where this sits:</strong> {SINKS_RECONCILIATION.adoptedMt.toLocaleString()} is the top of a {SINKS_RECONCILIATION.methodCount}-method spread running {SINKS_RECONCILIATION.lowMt.toLocaleString()}–{SINKS_RECONCILIATION.highMt.toLocaleString()}, central {SINKS_RECONCILIATION.centralMt.toLocaleString()}. The low end is EPA GHG Equivalencies, the only method here that is independent of KUA assumptions. A real forest inventory is what would settle it.</div>
             <div style={styles.provMethod}><span style={styles.provMethodLabel}>Target:</span> Commission a USFS Forest Inventory & Analysis-style stand survey of the actual KUA woodlot — species composition, age class, basal area, real per-stand acreage. IPCC per-acre rates stay (they're appropriate for this regional + age-class mix); inputs become real. Flips estimated → cited.</div>
           </div>
           <div style={styles.provRow}>

@@ -2515,3 +2515,48 @@ Test-only phase: no rendered output changed, so there is no runtime marker to
 verify in the bundle.
 
 Suite 1,943 → 1,947; 134 → 135 files.
+
+## Phase 471 — the sink figure stops calling itself a mid-estimate
+
+Task #16 asks whether the campus forest really pulls 2,650 mtCO₂e. That is a
+decision about the number. This phase is about how the number describes
+itself, which is not a decision at all.
+
+`geographicEstimates.js` already computes `SINKS_RECONCILIATION`: the adopted
+2,650 is the **top** of a four-method spread running 1,000–2,650, central
+1,730 — +53%. The only method in the set independent of KUA assumptions (EPA
+GHG Equivalencies) is the 1,000.
+
+**`/sinks` renders that gap. `/sinks-os` did not** — it showed 2,650 with the
+note "Stand-weighted (placeholder)" and imported nothing from
+`geographicEstimates`. That is the page `lessonLibrary.js` sends students to
+*twice*, asking them to compare their own leaf-level or logistic-growth
+derivation against "the published 2,650". A student landing near 1,700 was
+being told, implicitly, that they had got it wrong.
+
+**Then the sweep found the word itself.** "Mid-estimate" was attached to the
+adopted figure in four places across two files:
+
+- `PeerComparison.js`, twice (static and live variants of the same note) —
+  in the component that benchmarks KUA against peer schools, which is exactly
+  where the sink flatters KUA most.
+- `LearnAgent.js`, in a quiz explanation that correctly derives Birdsey as
+  2,083 and then calls 2,650 the "mid-estimate" it blends toward.
+- `LearnAgent.js` again — **"~3,000 mid-estimate", above even the adopted
+  figure.**
+
+The page's own provenance text already said the closed-canopy source
+(Birdsey 1992) averages 2.1 mtCO₂e/acre/yr, while the stand table averages
+2.65 — so the adopted rate sits above its own closed-canopy citation, and the
+gap is made up by a Nowak **urban** open-grown rate applied well beyond the 40
+acres it fits.
+
+All four now state the range and which end the dashboard adopts. Nothing was
+repriced: whether to adopt 1,730 instead is still #16, still open, and now
+visible on every surface that makes the claim.
+
+*The anchor caught a duplicate again* — the peer note exists twice, once for
+the static figures and once for the live ones. A single-occurrence assertion
+refused to write rather than fixing one and leaving the other.
+
+Suite 1,947 → 1,951; 135 → 136 files.

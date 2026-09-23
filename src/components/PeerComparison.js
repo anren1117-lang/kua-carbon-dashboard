@@ -3,6 +3,7 @@ import { useIsNarrow } from '../hooks/useViewport.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
@@ -42,7 +43,7 @@ export const peers = [
     scope3:  round1(KUA_SCOPE3_TOTAL_MT / TOTAL_STUDENTS),
     sinks:   round1(-ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS),
     offsets: 0,
-    note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${KUA_SCOPE1_TOTAL_MT.toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(KUA_SCOPE2_ANNUAL_MT).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${GRID_MIX_TOTAL_MTCO2E.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${KUA_SCOPE3_TOTAL_MT.toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at mid-estimate sequestration.` },
+    note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${KUA_SCOPE1_TOTAL_MT.toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(KUA_SCOPE2_ANNUAL_MT).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${GRID_MIX_TOTAL_MTCO2E.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${KUA_SCOPE3_TOTAL_MT.toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at the top of a ${SINKS_RECONCILIATION.methodCount}-method range (${SINKS_RECONCILIATION.lowMt.toLocaleString()}–${SINKS_RECONCILIATION.highMt.toLocaleString()}, central ${SINKS_RECONCILIATION.centralMt.toLocaleString()}) rather than the middle of it — which matters here, because the sink is what puts KUA ahead of its peers.` },
   { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
     scope1: 4.0, scope2: 1.5, scope3: 4.5, sinks: 0, offsets: 0,
     note: 'ESTIMATED SHAPE, not a published figure. Exeter publishes a 2023 plan ("Building from Strength Toward a Zero Carbon Future") with targets — 75% cut in Scope 1+2 from a 2005 baseline by 2031, zero by 2050, and roughly 60% achieved since 2005 — but no per-student inventory and no Scope 3 breakdown we could locate. The split above is an order-of-magnitude sketch for a larger boarding cohort in older buildings on heating oil. Sinks: not quantified in their reporting, which is not the same as zero.' },
@@ -101,7 +102,7 @@ function buildLivePeers(live, s2) {
       scope1: round1(scope1 / TOTAL_STUDENTS),
       scope2: round1(scope2 / TOTAL_STUDENTS),
       scope3: round1(scope3 / TOTAL_STUDENTS),
-      note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${Math.round(scope1).toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(scope2).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${ytdMt.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${Math.round(scope3).toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at mid-estimate sequestration.`,
+      note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${Math.round(scope1).toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(scope2).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${ytdMt.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${Math.round(scope3).toLocaleString()} mt — dominated by international + US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) at the top of a ${SINKS_RECONCILIATION.methodCount}-method range (${SINKS_RECONCILIATION.lowMt.toLocaleString()}–${SINKS_RECONCILIATION.highMt.toLocaleString()}, central ${SINKS_RECONCILIATION.centralMt.toLocaleString()}) rather than the middle of it — which matters here, because the sink is what puts KUA ahead of its peers.`,
     };
   });
 }
