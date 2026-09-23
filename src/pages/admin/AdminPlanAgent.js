@@ -1397,7 +1397,7 @@ const SCENARIO_PRESETS = [
   {
     id: 'sinks-protect',
     label: 'Sinks-first · protect + expand',
-    desc: 'Capitalize on the 2,650 mt/yr forest sequestration. Conservation easement, tree inventory, soil sampling.',
+    desc: 'Capitalize on the ~1,829 mt/yr forest sequestration. Conservation easement, tree inventory, soil sampling.',
     accent: '#22c55e',
     apply: {
       capitalAppetite: 'medium',

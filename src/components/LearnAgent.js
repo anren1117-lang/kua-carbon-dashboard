@@ -507,7 +507,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Sinks — the only category that goes the other way',
-        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is its forest. KUA publishes a **1,300-acre** campus; the **~1,000 acres** counted as forest is our own working figure, not a published one. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of net annual sequestration (Birdsey 1992) for typical forests. Open-grown urban trees can hit 4.2 (Nowak 2013) because they grow faster without competition. KUA\'s ~1,000 acres × these rates × stand-mix weighting gives **1,000–2,650 mtCO₂e/year** drawdown across published methods, and the dashboard adopts the per-stand inventory result of **~2,650 mtCO₂e/year** — the very top of that spread. Worth knowing why the bottom is so much lower: EPA\'s figure for an average US forest is **1.0 mtCO₂e per acre per year**, because it counts all five carbon pools and is *net* of logging and decay, while the 2.1–4.2 rates are growth of standing trees. An unharvested woodlot like KUA\'s should beat the national net average — but adopting the top of the range is a choice, and a real forest inventory is what would settle it.\n\n**Why does this matter so much?** Because it\'s **more than half the magnitude of KUA\'s gross emissions**. If gross emissions are ~4,375 mtCO₂e/year and sequestration is ~2,650 mtCO₂e/year, then **net emissions are about ~1,725 mtCO₂e/year**. Per student, that\'s about 5.0 mtCO₂e. For context you can actually cite: across the 35 higher-education footprints in the Valls-Val and Bovea review, the average was **2.67 mtCO₂e per student**, ranging from 0.06 to 10.94 — so KUA sits *above* that mean and inside the range. The boarding-school figures on the peer chart are illustrative estimates, not published inventories, so treat them as shapes rather than a ranking. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university carbon-footprint studies and found that only **14%** had calculated any compensation potential at all; where they did, it offset between 0.09% and 18% of gross emissions. Another 26% raised campus reforestation as a recommendation rather than something they had measured. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks** — but be careful who you accuse of which. Middlebury College is the example usually reached for, and it does not fit: their 2016 neutrality came mostly from real reductions (a biomass plant that cut fuel oil 91%, solar, and 87 efficiency projects), and the residual was closed with credits quantified from **their own 2,100-acre Bread Loaf forest** under a conservation easement. That is physical carbon on land they control — the same kind of thing KUA counts. The real difference is *accounting treatment*: KUA reports its forest as a sink inside the inventory, Middlebury monetised theirs as tradable credits. The genuinely weak version of a neutrality claim is buying cheap third-party offsets while emissions stay flat, and that is worth naming when you actually find it.',
+        body: 'Up to this point, every category has counted carbon flowing INTO the atmosphere. Scope 1, Scope 2, and Scope 3 are all positive numbers — emissions added. **Sinks are the opposite**: they count carbon flowing OUT of the atmosphere, into stable storage on KUA\'s land.\n\nThe sink at KUA is its forest. KUA publishes a **1,300-acre** campus; the **~1,000 acres** counted as forest is our own working figure, not a published one. Through **photosynthesis** — the chemistry every biology student learns — trees pull CO₂ from the air, combine it with water and sunlight to make glucose, and lock that carbon into wood, leaves, roots, and soil. The reaction is **6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂**. About half of a tree\'s dry weight is carbon, and that carbon stays put — for decades or centuries — until the tree dies and decomposes (slowly returning the carbon to the soil) or burns (returning it quickly to the atmosphere).\n\n**The math.** US forest research gives roughly **2.1 mtCO₂e per acre per year** of LIVE-TREE growth (Birdsey 1992) — gross of harvest removals, so an upper bound rather than a net flux. Open-grown urban trees measure higher per acre of canopy (Nowak 2013) because they grow without competition. Pricing the ~1,000 acres on a NET basis instead, from the GTR NE-343 annual-increment tables by forest type and age class, gives the per-stand result the dashboard adopts: **~1,829 mtCO₂e/year**, inside a published spread of **1,000–2,100 mtCO₂e/year**. Worth knowing why the bottom is so much lower: EPA\'s figure for an average US forest is **1.0 mtCO₂e per acre per year**, because it counts all five carbon pools and is *net* of logging and decay, while the 2.1–4.2 rates are growth of standing trees. An unharvested woodlot like KUA\'s should beat the national net average, which is why the adopted figure sits above EPA\'s 1.0 — but it is now built from net-increment tables rather than from growth of standing trees, and a real forest inventory is what would settle it.\n\n**Why does this matter so much?** Because it\'s **more than half the magnitude of KUA\'s gross emissions**. If gross emissions are ~4,375 mtCO₂e/year and sequestration is ~1,829 mtCO₂e/year, then **net emissions are about ~2,546 mtCO₂e/year**. Per student, that\'s about 7.5 mtCO₂e. For context you can actually cite: across the 35 higher-education footprints in the Valls-Val and Bovea review, the average was **2.67 mtCO₂e per student**, ranging from 0.06 to 10.94 — so KUA sits *above* that mean and inside the range. The boarding-school figures on the peer chart are illustrative estimates, not published inventories, so treat them as shapes rather than a ranking. KUA looks low not because we emit less than peer schools (we emit similar amounts), but because **we measure our forest and they don\'t**.\n\n**Most peer schools never quantify their sinks.** Valls-Val and Bovea (2021) reviewed 35 university carbon-footprint studies and found that only **14%** had calculated any compensation potential at all; where they did, it offset between 0.09% and 18% of gross emissions. Another 26% raised campus reforestation as a recommendation rather than something they had measured. This gap — measured emissions on one side, unmeasured drawdown on the other — is what drove the design of KUA\'s dashboard. The point of measuring sinks isn\'t to make KUA look good; it\'s to **report the actual net carbon balance**, which is the number that matters for the climate.\n\nThere\'s an important caveat to add: **buying offsets is not the same as measuring physical sinks** — but be careful who you accuse of which. Middlebury College is the example usually reached for, and it does not fit: their 2016 neutrality came mostly from real reductions (a biomass plant that cut fuel oil 91%, solar, and 87 efficiency projects), and the residual was closed with credits quantified from **their own 2,100-acre Bread Loaf forest** under a conservation easement. That is physical carbon on land they control — the same kind of thing KUA counts. The real difference is *accounting treatment*: KUA reports its forest as a sink inside the inventory, Middlebury monetised theirs as tradable credits. The genuinely weak version of a neutrality claim is buying cheap third-party offsets while emissions stay flat, and that is worth naming when you actually find it.',
       },
       {
         type: 'concept',
@@ -741,18 +741,18 @@ const paths = [
     steps: [
       {
         type: 'concept',
-        heading: 'KUA\'s headline number is ~1,725 mtCO₂e/year',
-        body: 'That\'s the NET balance — gross emissions minus on-campus sequestration. The composite range across all method combinations is 418–5,064 mt because most of the inputs are estimates. Once measured data fills in, the range tightens.',
+        heading: 'KUA\'s headline number is ~2,546 mtCO₂e/year',
+        body: 'That\'s the NET balance — gross emissions minus on-campus sequestration. The composite range across all method combinations is 987–5,044 mt because most of the inputs are estimates. Once measured data fills in, the range tightens.',
       },
       {
         type: 'concept',
         heading: 'AP Stats: range, point estimate, and uncertainty',
-        body: 'A point estimate (1,725) by itself is misleading without an uncertainty range. Our composite cross-check range is 418–5,064 — meaning the "true" value is most plausibly somewhere in that band. AP Statistics calls this a confidence interval. The width of the interval comes from the uncertainty in each line item: Scope 1 published-method range 895–1,875, Scope 3 1,802–3,779, sinks 1,000–2,650 — the sinks band is the widest, and it is why the net range below is so broad. These uncertainties propagate.',
+        body: 'A point estimate (2,546) by itself is misleading without an uncertainty range. Our composite cross-check range is 987–5,044 — meaning the "true" value is most plausibly somewhere in that band. AP Statistics calls this a confidence interval. The width of the interval comes from the uncertainty in each line item: Scope 1 published-method range 895–1,875, Scope 3 1,802–3,779, sinks 1,000–2,100 — the sinks band is the widest, and it is why the net range below is so broad. These uncertainties propagate.',
       },
       {
         type: 'concept',
         heading: 'Where does the headline come from?',
-        body: 'Gross: ~4,375 mtCO₂e/yr (Scope 1 ~1,350 + Scope 2 ~390 + Scope 3 ~2,635). Sequestration: ~2,650 mtCO₂e/yr drawdown. Net: 4,375 − 2,650 = 1,725.',
+        body: 'Gross: ~4,375 mtCO₂e/yr (Scope 1 ~1,350 + Scope 2 ~390 + Scope 3 ~2,635). Sequestration: ~1,829 mtCO₂e/yr drawdown on a net basis. Net: 4,375 − 1,829 = 2,546.',
       },
       {
         type: 'quiz',
@@ -801,18 +801,18 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: per-student net footprint',
-        scenario: 'KUA gross: ~4,375 mtCO₂e. Sequestration: ~2,650 mtCO₂e. Enrollment: ~340 students.',
+        scenario: 'KUA gross: ~4,375 mtCO₂e. Sequestration: ~1,829 mtCO₂e. Enrollment: ~340 students.',
         given: [
           { label: 'Gross', value: '4,375 mtCO₂e/yr' },
-          { label: 'Sequestration', value: '2,650 mtCO₂e/yr' },
+          { label: 'Sequestration', value: '1,829 mtCO₂e/yr' },
           { label: 'Students', value: '340' },
         ],
         question: 'Net per student:',
         options: [
-          { text: '~5.0 mtCO₂e/student', correct: true, explanation: 'Right. Net = 4,375 − 2,650 = 1,725. Per student = 1,725/340 = 5.07 mtCO₂e.' },
+          { text: '~7.5 mtCO₂e/student', correct: true, explanation: 'Right. Net = 4,375 − 1,829 = 2,546. Per student = 2,546/340 = 7.49 mtCO₂e.' },
           { text: '~12.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
-          { text: '~7.8 mtCO₂e/student', correct: false, explanation: 'That\'s sequestration per student alone (2,650/340 = 7.8). The net is gross minus sinks, divided by enrollment.' },
-          { text: '~3.4 mtCO₂e/student', correct: false, explanation: 'Older value from a previous methodology iteration. Current canonical is ~5.0 mt/student.' },
+          { text: '~5.4 mtCO₂e/student', correct: false, explanation: 'That\'s sequestration per student alone (1,829/340 = 5.4). The net is gross minus sinks, divided by enrollment.' },
+          { text: '~3.4 mtCO₂e/student', correct: false, explanation: 'Older value from a previous methodology iteration. Current canonical is ~7.5 mt/student.' },
         ],
       },
       {
@@ -845,7 +845,7 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'KUA reports ~5.1 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
+        question: 'KUA reports ~7.5 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
         options: [
           { text: 'It would drop, because more students share the same fixed emissions', correct: true, explanation: 'Right. **Most KUA emissions are roughly fixed costs of operating the campus** — heating buildings, generating administrative emissions, maintaining facilities. Adding students adds some marginal emissions (more food, more travel) but proportionally less. Per-student would drop because the denominator grows faster than the numerator. This is why "per-student" can be a deceptive metric on its own — it rewards growth without necessarily reducing total impact.' },
           { text: 'It would stay exactly the same', correct: false, explanation: 'Per-student divides total by enrollment. Both numbers change with growth, but not proportionally. Per-student typically falls.' },
@@ -856,7 +856,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'You can verify the dashboard yourself',
-        body: 'Net ~1,725 mt/yr (composite cross-check range 418–5,064). 60% of gross from Scope 3. Per student ~5.1 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
+        body: 'Net ~2,546 mt/yr (composite cross-check range 987–5,044). 60% of gross from Scope 3. Per student ~7.5 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
       },
     ],
   },
@@ -992,7 +992,7 @@ const paths = [
         question: 'Annual sequestration:',
         options: [
           { text: '~570 mtCO₂e/yr', correct: false, explanation: 'Stopped at C mass — multiply by 44/12 to convert carbon to CO₂.' },
-          { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey conservative end). The dashboard adopts ~2,650 by blending in the higher Nowak rate, which is an URBAN open-grown rate — that is why the adopted figure sits at the top of its four-method range (1,000-2,650), not in the middle. The central is 1,730.' },
+          { text: '~2,083 mtCO₂e/yr', correct: true, explanation: 'Right. 1,000 × 1,252 × 0.4536 / 1,000 = 568 mtC × 44/12 = 2,083 mtCO₂e/yr (Birdsey live-tree growth, gross of harvest removals). The dashboard no longer prices the forest that way: it adopts ~1,829, built from GTR NE-343 NET annual increment by forest type and age class, with the open-grown acres taken from the Nowak New Hampshire NET rate rather than his gross US average. That is why the adopted figure now sits BELOW this Birdsey number instead of above it.' },
           { text: '~10,000 mtCO₂e/yr', correct: false, explanation: 'Recheck lb → kg conversion (×0.4536, not ×4.5).' },
           { text: '~1,252 mtCO₂e/yr', correct: false, explanation: 'You used the rate directly without scaling acreage and converting units. The given rate is per acre and in lb of CARBON.' },
         ],
@@ -1194,18 +1194,18 @@ const paths = [
       {
         type: 'math',
         heading: 'Math: same school, different methodology',
-        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,375 mtCO₂e gross, 2,650 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
+        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,375 mtCO₂e gross, 1,829 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
         given: [
           { label: 'Gross (both)', value: '4,375 mtCO₂e' },
-          { label: 'Sequestration (real)', value: '2,650 mtCO₂e' },
+          { label: 'Sequestration (real)', value: '1,829 mtCO₂e' },
           { label: 'Students (both)', value: '340' },
         ],
         question: 'Difference in published per-student footprint:',
         options: [
-          { text: 'Both publish ~5.0 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
-          { text: 'A: ~5.1 mt; B: ~12.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,375 − 2,650) / 340 = 5.07. B: 4,375 / 340 = 12.87. Same physical campus, 2.5× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
+          { text: 'Both publish ~7.5 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
+          { text: 'A: ~7.5 mt; B: ~12.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,375 − 1,829) / 340 = 7.49. B: 4,375 / 340 = 12.87. Same physical campus, 1.7× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
           { text: 'Both publish ~9.0 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
-          { text: 'A: ~5.1 mt; B: ~5.1 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 5.1 (A) and 12.9 (B).' },
+          { text: 'A: ~7.5 mt; B: ~7.5 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 7.5 (A) and 12.9 (B).' },
         ],
       },
       {
@@ -1213,7 +1213,7 @@ const paths = [
         question: 'What\'s the fundamental difference between an "offset" and an on-campus "sink"?',
         options: [
           { text: 'They\'re the same thing', correct: false, explanation: 'They\'re not — and the distinction matters a lot for honest reporting.' },
-          { text: 'Offsets are purchased credits paid for emissions reductions or removals elsewhere; sinks are physical drawdown happening on your own land', correct: true, explanation: 'Right. **An offset is a financial transaction** — you pay someone else (a forest project in Brazil, a wind farm in Texas) to either reduce their own emissions or pull carbon from the atmosphere on your behalf. **A sink is physical drawdown** happening on land you control. Offsets work in principle but their quality varies enormously, and there\'s no guarantee the seller actually delivered what they sold. KUA\'s ~2,650 mtCO₂e/yr from the campus forest is reported as a sink inside its own inventory. Middlebury is a useful contrast for the *mechanism* rather than for honesty: they quantified their own Bread Loaf forest and sold it forward as credits, so the same physical carbon left their inventory as an offset instead of a sink.' },
+          { text: 'Offsets are purchased credits paid for emissions reductions or removals elsewhere; sinks are physical drawdown happening on your own land', correct: true, explanation: 'Right. **An offset is a financial transaction** — you pay someone else (a forest project in Brazil, a wind farm in Texas) to either reduce their own emissions or pull carbon from the atmosphere on your behalf. **A sink is physical drawdown** happening on land you control. Offsets work in principle but their quality varies enormously, and there\'s no guarantee the seller actually delivered what they sold. KUA\'s ~1,829 mtCO₂e/yr from the campus forest is reported as a sink inside its own inventory. Middlebury is a useful contrast for the *mechanism* rather than for honesty: they quantified their own Bread Loaf forest and sold it forward as credits, so the same physical carbon left their inventory as an offset instead of a sink.' },
           { text: 'Offsets are bigger than sinks', correct: false, explanation: 'Either can be bigger — depends on the project. The fundamental difference is offsets-as-payment vs sinks-as-physical-drawdown, not size.' },
           { text: 'Sinks are more expensive', correct: false, explanation: 'Sinks (your existing forest) are typically free if you already own the land. Offsets cost real money. The cost direction is opposite of what this option claims.' },
         ],

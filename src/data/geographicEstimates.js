@@ -828,15 +828,17 @@ const _sinksRange = (() => {
   // Method C: the per-stand inventory. NOT AN INDEPENDENT CHECK — this is
   // the figure the dashboard adopts (ANNUAL_SEQUESTRATION_MT), so it cannot
   // corroborate itself. Kept in the spread to show where the adopted number
-  // sits relative to published rates, which is at the very top.
+  // sits relative to published rates.
   //
-  // Its rates also lean on Nowak 2013, an URBAN-tree study. That is the
-  // right source for the 40 open-grown acres and a stretch for the other
-  // 960 acres of closed canopy.
+  // Repriced to a net basis (task #16): the stand rates are GTR NE-343 net
+  // annual increment for unharvested NE stands, with Nowak's New Hampshire
+  // NET rate scaled by canopy cover for the 40 open-grown acres. It no
+  // longer sits at the top of this spread — method A does, and method A is
+  // live-tree growth gross of removals.
   const C = {
     label: 'KUA per-stand inventory (the adopted figure — not independent)',
     mt: ANNUAL_SEQUESTRATION_MT, // already computed in sinks.js from per-stand rates
-    basis: `Per-stand inventory in src/data/sinks.js: ${forestStands.length} stands × stand-specific rates (open-grown from Nowak et al. 2013, closed-canopy from Birdsey 1992), weighted by KUA's forest-type mix. This is the dashboard's own adopted total, listed for comparison rather than as corroboration.`,
+    basis: `Per-stand inventory in src/data/sinks.js: ${forestStands.length} stands × stand-specific rates (closed canopy from Smith et al. 2006 GTR NE-343 net annual increment by type and age class; open-grown from the Nowak et al. 2013 New Hampshire NET rate scaled by canopy cover), weighted by KUA's forest-type mix. This is the dashboard's own adopted total, listed for comparison rather than as corroboration.`,
   };
   // Method D: EPA GHG Equivalencies — the authoritative national net rate,
   // and the only genuinely independent number in this set. Added Phase 411.
@@ -858,11 +860,17 @@ export const SINKS_BOTTOM_UP_MT = Math.round(_sinksRange.central);
  * reader to rediscover it, so a page can render it the way Scope2.js renders
  * the eGRID gap.
  *
- * The dashboard adopts the per-stand inventory (2,650) — the TOP of a
- * four-method spread whose central is 1,730. That method is labelled "not
- * independent" above; EPA GHG Equivalencies (1,000) is the only genuinely
- * independent number in the set. Whether to adopt the central instead is an
- * open decision, so this states the gap without resolving it.
+ * Task #16 is decided: the per-stand inventory was repriced from a
+ * growth-side basis to a net one, and the adopted figure fell from 2,650 to
+ * ~1,829. It is no longer the top of this spread. The top is now method A,
+ * Birdsey live-tree growth gross of harvest removals, which is exactly the
+ * basis the reprice moved away from.
+ *
+ * The adopted figure still sits above the four-method central, and that is
+ * expected rather than hidden: the other three methods are national or
+ * statewide rates that average in harvested acres, while KUA does not
+ * harvest its woodlot. EPA GHG Equivalencies (1,000) remains the only
+ * genuinely independent number in the set.
  */
 export const SINKS_RECONCILIATION = {
   adoptedMt: Math.round(ANNUAL_SEQUESTRATION_MT),
@@ -871,7 +879,7 @@ export const SINKS_RECONCILIATION = {
   highMt: Math.round(_sinksRange.high),
   methodCount: _sinksRange.methods.length,
   gapPct: +(((ANNUAL_SEQUESTRATION_MT - _sinksRange.central) / _sinksRange.central) * 100).toFixed(1),
-  note: 'Adopted figure is the per-stand inventory, the top of the four-method spread; the central is 1,730. A real forest inventory is what would settle it.',
+  note: 'Adopted figure is the per-stand inventory, repriced to a net basis in 2026. It sits above the four-method central because the other methods average in harvested acres and KUA does not harvest. A real forest inventory is what would settle it.',
 };
 
 export const SINKS_COMPONENT_RANGES = [

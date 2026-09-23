@@ -15,65 +15,83 @@
  * @property {number} acres
  * @property {'mixed_hardwood'|'softwood'|'transitional'|'open_grown'} type
  * @property {string} ageClass        'young' | 'intermediate' | 'mature' | 'old_growth'
- * @property {number} mtco2eAcreYr    Per-acre rate (Birdsey 1992 / Nowak 2013).
- *   NOT net ecosystem sequestration — see SEQUESTRATION_BASIS below for what
- *   these two sources actually measure and why it matters.
+ * @property {string} rateBasis       The published figure this rate came from.
+ * @property {number} mtco2eAcreYr    Net annual increment, mtCO2e/acre/yr.
  * @property {string} dominantSpecies
  */
 
 /** @type {ForestStand[]} */
 export const forestStands = [
-  { id: 'stand_north',     name: 'North Hill — mixed hardwood',          acres: 320, type: 'mixed_hardwood', ageClass: 'mature',       mtco2eAcreYr: 2.8, dominantSpecies: 'Sugar maple, red oak, yellow birch' },
-  { id: 'stand_potato',    name: 'Potato Patch — pine + transitional',    acres: 180, type: 'transitional',   ageClass: 'intermediate', mtco2eAcreYr: 3.2, dominantSpecies: 'White pine, red maple, beech' },
-  { id: 'stand_chellis',   name: 'Chellis Pond riparian',                 acres:  60, type: 'mixed_hardwood', ageClass: 'mature',       mtco2eAcreYr: 2.4, dominantSpecies: 'Eastern hemlock, yellow birch' },
-  { id: 'stand_south',     name: 'South ridge — softwood',                acres: 240, type: 'softwood',       ageClass: 'mature',       mtco2eAcreYr: 1.9, dominantSpecies: 'White pine, hemlock' },
-  { id: 'stand_open',      name: 'Open-grown campus trees',               acres:  40, type: 'open_grown',     ageClass: 'mature',       mtco2eAcreYr: 4.2, dominantSpecies: 'Sugar maple, oak, elm (street trees)' },
-  { id: 'stand_athletic',  name: 'Athletic-fields buffer',                acres: 100, type: 'transitional',   ageClass: 'young',        mtco2eAcreYr: 2.6, dominantSpecies: 'White ash, black cherry, red maple' },
-  { id: 'stand_french',    name: 'French\'s Ledges — slope hardwood',     acres:  60, type: 'mixed_hardwood', ageClass: 'mature',       mtco2eAcreYr: 2.5, dominantSpecies: 'Red oak, sugar maple' },
+  { id: 'stand_north',     name: 'North Hill — mixed hardwood',          acres: 320, type: 'mixed_hardwood', ageClass: 'mature',       mtco2eAcreYr: 1.79, dominantSpecies: 'Sugar maple, red oak, yellow birch',
+    rateBasis: 'GTR NE-343 maple-beech-birch, 65-95 yr band (the band holding ~65% of NH forest carbon)' },
+  { id: 'stand_potato',    name: 'Potato Patch — pine + transitional',    acres: 180, type: 'transitional',   ageClass: 'intermediate', mtco2eAcreYr: 2.20, dominantSpecies: 'White pine, red maple, beech',
+    rateBasis: 'GTR NE-343 maple-beech-birch at 35-55 yr (2.70 falling to 2.23), blended down for the pine component' },
+  { id: 'stand_chellis',   name: 'Chellis Pond riparian',                 acres:  60, type: 'mixed_hardwood', ageClass: 'mature',       mtco2eAcreYr: 1.69, dominantSpecies: 'Eastern hemlock, yellow birch',
+    rateBasis: 'GTR NE-343 spruce-balsam fir, 65-95 yr — the closest published type for a hemlock-dominated riparian stand' },
+  { id: 'stand_south',     name: 'South ridge — softwood',                acres: 240, type: 'softwood',       ageClass: 'mature',       mtco2eAcreYr: 1.15, dominantSpecies: 'White pine, hemlock',
+    rateBasis: 'GTR NE-343 white-red-jack pine, 65-95 yr' },
+  { id: 'stand_open',      name: 'Open-grown campus trees',               acres:  40, type: 'open_grown',     ageClass: 'mature',       mtco2eAcreYr: 1.31, dominantSpecies: 'Sugar maple, oak, elm (street trees)',
+    rateBasis: 'Nowak 2013 New Hampshire NET rate, 2.38 mtCO2e per acre of CANOPY, x 55% canopy cover — the denominator is canopy, not ground' },
+  { id: 'stand_athletic',  name: 'Athletic-fields buffer',                acres: 100, type: 'transitional',   ageClass: 'young',        mtco2eAcreYr: 3.00, dominantSpecies: 'White ash, black cherry, red maple',
+    rateBasis: 'GTR NE-343 maple-beech-birch peak increment 3.28 at 25-35 yr, blended down for the pine component' },
+  { id: 'stand_french',    name: 'French\'s Ledges — slope hardwood',     acres:  60, type: 'mixed_hardwood', ageClass: 'mature',       mtco2eAcreYr: 2.17, dominantSpecies: 'Red oak, sugar maple',
+    rateBasis: 'GTR NE-343 oak-hickory 2.55 at 65-95 yr blended with maple-beech-birch 1.79' },
 ];
 
 /**
- * What the per-acre rates above actually measure — the thing that decides
- * whether the adopted total is right.
+ * What the per-acre rates above measure, and what they assume.
  *
- * Both sources are real and correctly transcribed. Neither was published to
- * answer "how much CO2 does this property remove from the atmosphere in a
- * year", which is the question this dashboard asks them.
+ * Task #16, decided: the sink is priced on a NET basis. The rates were
+ * previously growth-side figures answering a different question — Birdsey 1992
+ * Table 2.14 is accumulation in LIVE TREES, gross of harvest removals and
+ * excluding soil, forest floor, dead wood and understory; and the open-grown
+ * rate was Nowak 2013's GROSS US average per m2 of CANOPY, applied per acre of
+ * ground. Together those put the total at 2,650, the top of every published
+ * spread.
  *
- *   Birdsey 1992 (USDA WO-59), Table 2.14 — "annual average accumulation of
- *   carbon in LIVE TREES on timberland". Derived from FIA net annual growth
- *   of growing stock: gross growth minus mortality, and NOT minus harvest
- *   removals. It excludes soil, forest floor, dead wood and understory.
- *   Northeast/Mid-Atlantic by type (lb C/acre/yr -> mtCO2e/acre/yr):
- *   oak-pine 1,911 -> 3.18, oak-hickory 1,719 -> 2.86, maple-beech-birch
- *   1,386 -> 2.31, white-red-jack pine 1,115 -> 1.85, spruce-fir 968 -> 1.61;
- *   all NE timberland 1,447 -> 2.41; US average 1,252 -> 2.08.
+ * They now come from the GTR NE-343 yield tables (Smith, Heath, Skog & Birdsey
+ * 2006) — net annual increment for UNHARVESTED Northeastern stands across all
+ * non-soil pools — with Nowak's own New Hampshire NET rate for the open-grown
+ * acres, scaled by canopy cover.
  *
- *   Nowak et al. 2013, Environmental Pollution 178:229-236 — urban and
- *   community trees across 28 cities and 6 states. The widely quoted 0.277
- *   kg C/m2/yr is the GROSS rate (-> 4.11 mtCO2e per acre of CANOPY/yr, which
- *   is where 4.2 comes from). Nowak's own NET rate is 0.205, i.e. 74% of
- *   gross. His New Hampshire row is 0.217 gross -> 2.38 net. And the
- *   denominator is acres of tree canopy, not acres of land.
+ * Increment by age, maple-beech-birch (GTR NE-343, mtCO2e/acre/yr):
+ *   15-25  3.12  |  25-35  3.28 (peak)  |  35-45  2.70  |  55-65  2.23
+ *   75-85  1.78  |  85-95  1.59         |  115-125 1.05
+ * Means for the 65-95 yr band by type: maple-beech-birch 1.79, oak-hickory
+ * 2.55, spruce-balsam fir 1.69, white-red-jack pine 1.15.
  *
- * So the rates here are growth-side numbers. Published NET figures for the
- * same acreage run lower: EPA GHG Equivalencies 1.00 mtCO2e/acre/yr (all five
- * pools, net of harvest and disturbance); USDA FS Domke et al. 0.84; and
- * Smith/Heath/Skog/Birdsey 2006 (GTR NE-343) yield tables give 1.6-2.0 for
- * unharvested NE hardwood at 65-95 years, the age band holding ~65% of NH
- * forest carbon.
+ * The result is ~1.83 mtCO2e/acre/yr. For comparison, the age-weighted central
+ * for a flat NH-typical mature mix is 1.77, and this dashboard's own
+ * four-method spread — computed years earlier by an unrelated route — centres
+ * on 1.73. This table sits a little above both because the forest genuinely
+ * contains a young stand, an intermediate stand and open-grown trees.
  *
- * Whether to reprice on that basis is an open decision, tracked as task #16.
- * SINKS_RECONCILIATION in geographicEstimates.js publishes the gap meanwhile.
+ * Two assumptions are doing real work and are stated rather than buried:
+ *
+ *   No harvest. GTR NE-343 yield tables model unharvested stands. NH
+ *   timberland as a whole runs growth:removals of about 1.9:1, which is why
+ *   statewide net rates (EPA 1.00, Domke 0.84) land lower. KUA does not
+ *   harvest its woodlot; if that changes, so does this number.
+ *
+ *   Canopy cover. Nowak's rate is per acre of tree canopy. The 40 open-grown
+ *   acres are campus ground, not closed canopy, so the rate is scaled. 55% is
+ *   an assumption and the easiest input here to replace with a measurement —
+ *   canopy cover is readable straight off aerial imagery.
+ *
+ * Soil carbon is excluded: GTR NE-343 holds soil organic carbon constant
+ * across age classes, and NH FIA reports statewide forest carbon stocks
+ * falling 0.5% since 2012, so including it would not raise this figure.
  */
 export const SEQUESTRATION_BASIS = {
-  measures: 'live-tree growth (Birdsey) and gross urban canopy sequestration (Nowak)',
-  excludesHarvestRemovals: true,
-  excludesNonLiveTreePools: true,
-  nowakGrossToNetRatio: 0.74,
+  basis: 'net annual increment, unharvested stands, all non-soil pools',
+  source: 'Smith, Heath, Skog & Birdsey 2006 (USDA FS GTR NE-343) yield tables; open-grown from Nowak et al. 2013 New Hampshire NET rate',
+  assumesNoHarvest: true,
+  excludesSoilCarbon: true,
+  campusCanopyCover: 0.55,
+  retiredBasis: 'live-tree growth gross of removals (Birdsey 1992) plus Nowak gross US urban canopy — gave 2,650',
   publishedNetComparators: [
-    { source: 'EPA GHG Equivalencies (2024)', mtco2eAcreYr: 1.00, basis: 'all five pools, net of harvest and disturbance' },
-    { source: 'Domke et al., USDA FS RU FS-382', mtco2eAcreYr: 0.84, basis: 'forest land remaining forest land, 1990-2020' },
+    { source: 'EPA GHG Equivalencies (2024)', mtco2eAcreYr: 1.00, basis: 'all five pools, net of harvest and disturbance, national' },
+    { source: 'Domke et al., USDA FS RU FS-382', mtco2eAcreYr: 0.84, basis: 'forest land remaining forest land, 1990-2020, national' },
     { source: 'Smith et al. 2006, GTR NE-343', mtco2eAcreYr: 1.8, basis: 'unharvested NE hardwood, 65-95 yr, non-soil pools' },
   ],
 };

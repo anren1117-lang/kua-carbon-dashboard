@@ -6,6 +6,16 @@
 // reduction. The Goals page computes a linear trajectory between the
 // two and plots the current measured value against it.
 
+import { GROSS_MT } from './scopeTotals.js';
+import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
+
+// The gross and net baselines are DERIVED, not typed. The net one was a
+// literal 1,725 until the forest sink was repriced (task #16) and it silently
+// described a balance the dashboard no longer reported. Deriving both keeps
+// the Goals trajectory anchored to whatever the canonical modules say.
+const GROSS_BASELINE_MT = Math.round(GROSS_MT);
+const NET_BASELINE_MT = Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT);
+
 /**
  * @typedef {Object} ReductionTarget
  * @property {string} id
@@ -27,7 +37,7 @@ export const reductionTargets = [
     title: '50% gross-emissions reduction by 2030',
     scope: 'gross',
     baselineYear: 2024,
-    baselineValue: 4375, // bottom-up cross-check central: Scope 1 1,350 + Scope 2 390 + Scope 3 2,635
+    baselineValue: GROSS_BASELINE_MT, // bottom-up cross-check central: Scope 1 1,350 + Scope 2 390 + Scope 3 2,635
     targetYear: 2030,
     percentReduction: 50,
     description: 'Halve KUA\'s gross annual emissions vs the 2024 preliminary baseline. Achievable largely through dorm thermostat adjustments, beef-portion reductions, and the planned Whittemore + Miller solar arrays.',
@@ -63,7 +73,7 @@ export const reductionTargets = [
     title: 'Net-zero net carbon by 2050',
     scope: 'net',
     baselineYear: 2024,
-    baselineValue: 1725, // gross 4,375 − sinks 2,650
+    baselineValue: NET_BASELINE_MT, // gross minus the net-basis forest sink (task #16)
     targetYear: 2050,
     percentReduction: 100,
     description: 'After all other reductions, close the remaining gap with verified removal credits or expanded forest stewardship. KUA\'s net is already low because of the campus forest; full net-zero is a 25-year horizon project.',

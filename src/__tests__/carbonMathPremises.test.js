@@ -73,12 +73,17 @@ describe('Q5 states a net that follows from its own answer', () => {
   it('does not assert 1,725 from a 2,100 drawdown', () => {
     const q5 = src.slice(src.indexOf('sequesters roughly 2.1'));
     const block = q5.slice(0, 900);
-    if (/1,725/.test(block)) {
-      // allowed ONLY if the block also explains the adopted 2,650 sink it
-      // comes from — otherwise the subtraction does not reproduce.
-      expect(block).toMatch(/2,650/);
+    // The adopted sink was repriced to a net basis (task #16), so the net it
+    // implies moved with it. Derive both rather than pinning literals that go
+    // stale the next time the sink moves.
+    const adopted = Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString();
+    const net = Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toLocaleString();
+    if (new RegExp(net).test(block)) {
+      // allowed ONLY if the block also explains the adopted sink it comes
+      // from — otherwise the subtraction does not reproduce.
+      expect(block).toMatch(new RegExp(adopted));
     }
     expect(GROSS_MT - 2100).toBe(2275);
-    expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBe(1725);
+    expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBeCloseTo(2546, 0);
   });
 });

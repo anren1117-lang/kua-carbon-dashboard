@@ -999,8 +999,13 @@ describe('canonical scope-totals invariants', () => {
     const netT   = reductionTargets.find((t) => t.id === 'tg_net_2050');
     expect(grossT).toBeTruthy();
     expect(netT).toBeTruthy();
-    expect(grossT.baselineValue).toBe(GROSS_MT);
-    expect(netT.baselineValue).toBe(GROSS_MT - ANNUAL_SEQUESTRATION_MT);
+    // Exact equality only ever held because both canonical totals happened to
+    // be integers. Repricing the forest sink to a net basis (task #16) made the
+    // net 2,546.2, and a board-facing target must not carry a tenth of a tonne
+    // — targets.js rounds. The guard is that the baseline TRACKS the canonical
+    // total, not that it reproduces its floating-point tail.
+    expect(grossT.baselineValue).toBe(Math.round(GROSS_MT));
+    expect(netT.baselineValue).toBe(Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT));
   });
 
   it('Scope 1 placeholder is inside the cross-check range', async () => {

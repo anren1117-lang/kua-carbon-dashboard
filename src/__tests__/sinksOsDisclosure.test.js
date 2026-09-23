@@ -72,10 +72,20 @@ const central = SINKS_RECONCILIATION.centralMt.toLocaleString();
 const gap = String(SINKS_RECONCILIATION.gapPct);
 
 describe('the adopted sink figure is disclosed as the top of its spread', () => {
-  it('the gap is real and worth disclosing', () => {
-    expect(SINKS_RECONCILIATION.adoptedMt).toBe(SINKS_RECONCILIATION.highMt);
-    expect(SINKS_RECONCILIATION.gapPct).toBeGreaterThan(25);
+  // Task #16 repriced the sink to a net basis. The adopted figure is no longer
+  // the top of the spread — the top is now Birdsey live-tree growth, gross of
+  // harvest removals, which is the basis the reprice moved AWAY from. It still
+  // sits above the four-method central, because the other three methods are
+  // national or statewide rates that average in harvested acres while KUA does
+  // not harvest. That is a smaller gap and an explainable one, but it is still
+  // a gap, so it still has to be disclosed.
+  it('the adopted figure is no longer the top of its own spread', () => {
+    expect(SINKS_RECONCILIATION.adoptedMt).toBeLessThan(SINKS_RECONCILIATION.highMt);
+    expect(SINKS_RECONCILIATION.adoptedMt).toBeGreaterThan(SINKS_RECONCILIATION.lowMt);
     expect(SINKS_RECONCILIATION.methodCount).toBe(4);
+    // above the central, but nothing like the +53% it was before
+    expect(SINKS_RECONCILIATION.gapPct).toBeGreaterThan(0);
+    expect(SINKS_RECONCILIATION.gapPct).toBeLessThan(30);
   });
 
   it('/sinks states the central it sits above', async () => {
@@ -122,7 +132,7 @@ describe('the adopted sink figure is disclosed as the top of its spread', () => 
     expect(html).not.toMatch(/mid-range/i);
     // the stand table's own weighted rate, derived rather than asserted
     const rate = (SINKS_RECONCILIATION.adoptedMt / 1000).toFixed(2);
-    expect(rate).toBe('2.65');
+    expect(rate).toBe('1.83');
     expect(html).toContain(rate);
   });
 

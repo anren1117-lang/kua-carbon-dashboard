@@ -2635,3 +2635,71 @@ Nothing was repriced. Sources are now described by what they measure —
 /sinks-os and the method label in `geographicEstimates.js`.
 
 Suite 1,952 → 1,957; 136 → 137 files.
+
+## Phase 474 — the forest sink is repriced to a net basis
+
+Task #16, decided and applied. The adopted sink moves **2,650 → 1,829**
+mtCO₂e/yr (2.65 → 1.83 per acre), so net moves **1,725 → 2,546** and net per
+student **5.07 → 7.49**.
+
+Every new rate is traceable to a published figure rather than tuned to hit a
+target — GTR NE-343 net annual increment for unharvested NE stands, by type
+and age class, with Nowak's own New Hampshire NET rate for the open-grown
+acres scaled by canopy cover:
+
+| stand | acres | was | now | from |
+| --- | --- | --- | --- | --- |
+| North Hill, mature hardwood | 320 | 2.8 | 1.79 | MBB 65–95 yr |
+| Potato Patch, intermediate | 180 | 3.2 | 2.20 | MBB 35–55 yr, blended for pine |
+| Chellis riparian, mature | 60 | 2.4 | 1.69 | spruce-balsam fir 65–95 yr |
+| South ridge, mature softwood | 240 | 1.9 | 1.15 | white-red-jack pine 65–95 yr |
+| Open-grown campus trees | 40 | 4.2 | 1.31 | Nowak NH **net** 2.38 × 55% canopy |
+| Athletic buffer, young | 100 | 2.6 | 3.00 | MBB peak 3.28 at 25–35 yr |
+| French's Ledges, mature | 60 | 2.5 | 2.17 | oak-hickory 2.55 blended with MBB |
+
+**The age ordering flipped the right way round.** Increment peaks young and
+declines with age in every published yield table; the old table had mature
+hardwood above the young stand. Now young 3.00 > intermediate 2.20 > mature
+1.79, and no mature stand exceeds the young one.
+
+**The adopted figure is no longer the top of its own spread.** The top is now
+Birdsey live-tree growth (2,100) — the basis this phase moved away from. The
+spread tightened to 1,000–2,100 and the gap over central fell from +53% to
++20%. That remaining gap is explainable and is published rather than hidden:
+the other three methods are national or statewide rates that average in
+harvested acres, and KUA does not harvest.
+
+**Convergence worth recording.** 1.83/acre against a research central of
+1.77 and the dashboard's own four-method central of 1.73, computed years
+earlier by an unrelated route.
+
+**Blast radius: 22 sites in LearnAgent alone, ~40 across the app**, including
+quiz answer OPTIONS, not just explanations — the distractor "~7.8
+mtCO₂e/student" would have collided with the new correct answer of ~7.5, so it
+became ~5.4 (sequestration per student). The statistics worked example on
+/carbon-math moved with it: the sink half-range is now ±550 rather than ±825,
+so the net SD falls from ±849 to ±585.
+
+*Three things the guards caught that I would have shipped:*
+
+- **A 19th LearnAgent site my own enumeration missed**, and then a 20th and
+  21st inside a single 4,192-character line that held two separate passages.
+  A blanket `if forbidden in s` check after the substitutions is what found
+  them; the staged write refused three times before it wrote.
+- **`liveDataWiring` caught a defect I introduced.** Importing the canonical
+  totals into `DailyTip` made it a surface showing a build-time figure with no
+  live hook. The card was *already* stale-prone with the numbers typed in —
+  the guard simply could not see a literal. It now reads
+  `useMeasuredScopeTotals`, which already composes gross, sink and net and
+  falls back internally, so no second fallback is needed.
+- **The `targets.js` baseline could no longer be exact.** `1,725` was only
+  ever exactly `GROSS_MT − ANNUAL_SEQUESTRATION_MT` because both happened to
+  be integers; the net basis gives 2,546.2, and a board-facing target must not
+  carry a tenth of a tonne. Both baselines are now derived and rounded, and
+  the guard asserts the baseline *tracks* the canonical total rather than
+  reproducing its floating-point tail.
+
+Not swept, deliberately: `5.07` in the BMS exports is a kWh meter reading, and
+`1682-1725` in the AP history content is Peter the Great.
+
+Suite 1,957 → 1,958.

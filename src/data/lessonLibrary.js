@@ -287,7 +287,7 @@ export const lessonLibrary = [
     courses: ['AP Statistics', 'Prob., Stats., and Data Science (H)'],
     gradeBand: '12',
     durationMin: 50,
-    summary: 'The dashboard reports KUA\'s net annual footprint as 1,725 mtCO₂e with no uncertainty band. Pick three big inputs, assume each has a ±10–20% uncertainty, and propagate the combined band using the variance-addition rule.',
+    summary: 'The dashboard reports KUA\'s net annual footprint as ~2,546 mtCO₂e with no uncertainty band. Pick three big inputs, assume each has a ±10–20% uncertainty, and propagate the combined band using the variance-addition rule.',
     learningGoals: [
       'Apply the variance-addition rule for independent errors',
       'Translate a ± percent uncertainty into a standard deviation',
@@ -529,7 +529,7 @@ export const lessonLibrary = [
       'Fit r and K to two data points',
     ],
     dashboardPages: ['/sinks-os', '/methodology'],
-    studentTask: 'Assume KUA\'s forest currently stores C₀ = 200,000 mtCO₂e and sequesters 2,650 mtCO₂e/year, with maximum carrying capacity K = 400,000 mtCO₂e. (1) Write the logistic ODE. (2) Solve. (3) Estimate r. (4) Predict when sequestration drops below 1,000 mtCO₂e/year.',
+    studentTask: 'Assume KUA\'s forest currently stores C₀ = 200,000 mtCO₂e and sequesters 1,829 mtCO₂e/year, with maximum carrying capacity K = 400,000 mtCO₂e. (1) Write the logistic ODE. (2) Solve. (3) Estimate r. (4) Predict when sequestration drops below 1,000 mtCO₂e/year.',
   },
   {
     id: 'l_apcalc_bc_series',
@@ -556,14 +556,14 @@ export const lessonLibrary = [
     courses: ['AP Biology', 'Biology (H)'],
     gradeBand: '11–12',
     durationMin: 50,
-    summary: 'Scale up the photosynthesis equation (6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂) from a single leaf\'s gas-exchange rate to KUA\'s 1,000-acre forest. Compare your derived annual CO₂ uptake to the published 2,650 mtCO₂e on /sinks-os.',
+    summary: 'Scale up the photosynthesis equation (6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂) from a single leaf\'s gas-exchange rate to KUA\'s 1,000-acre forest. Compare your derived annual CO₂ uptake to the published 1,829 mtCO₂e on /sinks-os.',
     learningGoals: [
       'Stoichiometric calculation across the photosynthesis equation',
       'Scale from leaf-area gas exchange (mol/m²/s) to acreage',
       'Reconcile bottom-up estimates with published ecosystem-level numbers',
     ],
     dashboardPages: ['/sinks-os', '/methodology'],
-    studentTask: 'Assume net leaf-level CO₂ uptake of 8 µmol/m²/s during the 6-hour daily growing window for 180 days. Estimate per-acre annual uptake. Multiply by 1,000 acres. Compare to /sinks-os\' 2,650 mtCO₂e. If they disagree, hypothesize why.',
+    studentTask: 'Assume net leaf-level CO₂ uptake of 8 µmol/m²/s during the 6-hour daily growing window for 180 days. Estimate per-acre annual uptake. Multiply by 1,000 acres. Compare to /sinks-os\' 1,829 mtCO₂e. If they disagree, hypothesize why. Note that the published figure is a NET annual increment, while a leaf-level scale-up gives gross uptake before respiration and decay.',
     teacherPrep: 'Background reading: standard AP Bio photosynthesis unit. Pair with a real leaf-area-index estimate for NE hardwoods (~4–6).',
   },
   {
@@ -616,7 +616,7 @@ export const lessonLibrary = [
       'Defend a stylistic choice in the margins of your draft',
     ],
     dashboardPages: ['/', '/sinks-os', '/scope-1', '/scope-2', '/methodology'],
-    studentTask: '800-word essay on KUA\'s 1,725 mtCO₂e in the voice of Dillard, Carson, or Leopold. Margin notes annotate at least 5 places where you made a stylistic choice + why.',
+    studentTask: '800-word essay on KUA\'s ~2,546 mtCO₂e net in the voice of Dillard, Carson, or Leopold. Margin notes annotate at least 5 places where you made a stylistic choice + why.',
   },
   {
     id: 'l_apush_energy_history',

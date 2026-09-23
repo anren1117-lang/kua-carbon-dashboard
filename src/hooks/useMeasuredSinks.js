@@ -1,10 +1,10 @@
 // Hydrate sinks (forest sequestration) from the
 // forest_stand_actuals Supabase table.
 //
-// Falls back to the hardcoded src/data/sinks.js inventory (~2,650 mt
+// Falls back to the hardcoded src/data/sinks.js inventory (~1,829 mt
 // from 7 named stands) when the table is empty. The hardcoded
-// inventory IS itself a defensible per-stand × per-acre × Birdsey/
-// Nowak rate calc — the live table just lets admins replace it with
+// inventory IS itself a defensible per-stand × per-acre × GTR NE-343
+// net-increment calc — the live table just lets admins replace it with
 // a real USFS Forest Inventory & Analysis-style walk-through.
 
 import { useEffect, useState } from 'react';

@@ -19,8 +19,9 @@ const SEQ_TOTAL  = Math.round(ANNUAL_SEQUESTRATION_MT);
 const SEQ_PER_ST = +(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS).toFixed(1);
 // Share of gross that even the TOP of the spread offsets. Computed, not
 // asserted: this page claimed for many phases that the optimistic end beat
-// the whole campus, which no published figure supports (2,650 high, and even
-// 4.2 mt/acre x 1,000 acres = 4,200, against gross 4,375).
+// the whole campus, which no published figure supports (2,100 high on the
+// current net basis, against gross 4,375; it was 2,650 before the 2026
+// reprice and even that did not beat gross).
 const SINK_OFFSET_PCT = Math.round((SINKS_RANGE.high / GROSS_MT) * 100);
 const SEQ_LOW    = Math.round(SINKS_RANGE.low);
 const SEQ_HIGH   = Math.round(SINKS_RANGE.high);

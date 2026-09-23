@@ -78,8 +78,9 @@ export function runScenario({
   // Scope 3 is part of the footprint the forest offsets, so it belongs in the
   // baseline even though no lever here touches it. Omitting it while still
   // subtracting the FULL sink published KUA as 910 mt NET-NEGATIVE on
-  // /scenarios — 1,350 + 390 = 1,740 gross against a 2,650 sink — while every
-  // other surface published +1,725. Defaulting to 0 keeps old callers working,
+  // /scenarios — 1,350 + 390 = 1,740 gross against the 2,650 sink of the time
+// (repriced to ~1,829 in task #16) — while every
+  // other surface published the net of the day. Defaulting to 0 keeps old callers working,
   // so scenarioBaselineNet.test.js pins that the page supplies it.
   scope3Mt = 0,
   sinksMt,

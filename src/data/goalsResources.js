@@ -1,3 +1,8 @@
+import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
+
+// Derived, not typed — the forest sink was repriced to a net basis (#16).
+const FOREST_SINK_MT = Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString();
+
 // Resource library backing the /goals "Resources & references" section.
 // Each entry is one row in the section's grid: title, blurb, href, and
 // a `kind` that drives the color pill. `href` strings starting with "/"
@@ -303,7 +308,7 @@ export const GOAL_RESOURCES = [
   },
   {
     title: 'Forest sinks (annual sequestration)',
-    blurb: 'The campus 1,000-acre forest pulls ~2,650 mtCO₂e/yr. Single largest lever in KUA\'s net carbon balance.',
+    blurb: `The campus 1,000-acre forest pulls ~${FOREST_SINK_MT} mtCO₂e/yr on a net basis. Single largest lever in the KUA net carbon balance.`,
     href: '/sinks',
     category: 'internal',
   },

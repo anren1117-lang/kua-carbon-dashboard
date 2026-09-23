@@ -49,9 +49,9 @@ const FAQ = [
       <>
         It's the total amount of greenhouse gas (mostly CO₂) emitted by an activity, building,
         or organization in a year — expressed in metric tons of CO₂-equivalent (mtCO₂e). KUA's
-        gross footprint is about 4,375 mtCO₂e/yr; the campus forest pulls back roughly 2,650
-        (the top of a published 1,000–2,650 spread — see the forest question below)
-        of those, leaving a <strong>net</strong> of about 1,725 mtCO₂e/yr — the figure shown on
+        gross footprint is about 4,375 mtCO₂e/yr; the campus forest pulls back roughly 1,829
+        (inside a published 1,000–2,100 spread — see the forest question below)
+        of those, leaving a <strong>net</strong> of about 2,546 mtCO₂e/yr — the figure shown on
         the homepage, and the more honest number. (An earlier version of this answer said 1,500
         gross against 2,100 of drawdown, which implied KUA was net-negative. It is not.) <Link to="/" style={linkStyle}>See the headline number →</Link>
       </>
@@ -121,10 +121,12 @@ const FAQ = [
     a: (
       <>
         Roughly 1,000 acres of KUA's 1,300-acre campus is treated as forested, sequestering an
-        estimated 2,650 mtCO₂e/year via tree growth and soil carbon. Two caveats worth knowing:
+        estimated 1,829 mtCO₂e/year via tree growth. Two caveats worth knowing:
         the 1,000-acre figure is our own working number — KUA publishes the 1,300-acre campus
-        total but not a forested acreage — and 2,650 sits at the top of a published spread that
-        runs from 1,000 (EPA's average-US-forest rate) to 2,650. This is what makes KUA's net
+        total but not a forested acreage — and that 1,829 is a NET-basis figure, inside a
+        published spread running from 1,000 (EPA's average-US-forest rate) to 2,100 (live-tree
+        growth gross of harvest removals). It was 2,650 until 2026, when the rates were moved
+        off a growth-side basis. This is what makes KUA's net
         footprint substantially smaller than peer boarding schools that don't measure their
         forest. <Link to="/sinks-os" style={linkStyle}>See the sinks page →</Link>
       </>

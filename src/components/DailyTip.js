@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { heatingSetbackSaving, MT_PER_STUDENT_HEATING_BASELINE } from '../utils/personalFootprint.js';
 import { MT_PER_TRANSAT_ROUND_TRIP } from '../utils/equivalents.js';
+import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Daily-rotating "tip of the day" card. Picks a tip based on day
 // of year so it changes every day without persistence. 30 tips =
@@ -15,6 +16,12 @@ import { MT_PER_TRANSAT_ROUND_TRIP } from '../utils/equivalents.js';
 // same habit in the personal-footprint estimator, so the two can never state
 // different savings for the same action. A boarder is out of the room about
 // 12 hours of a school day.
+// The forest tip quotes three campus totals. They used to be typed in, which
+// meant the card went on reciting a release-time number after an admin
+// entered real data — invisible to liveDataWiring.test.js, because a literal
+// is not an import. It now reads the live hook and falls back to the
+// canonical build-time constants, so the guard can see it and it cannot
+// drift. (The sink was repriced to a net basis in task #16.)
 const SETBACK_2DEGF = Math.abs(heatingSetbackSaving(2, 12));
 const SETBACK_2DEGF_MT = SETBACK_2DEGF * MT_PER_STUDENT_HEATING_BASELINE;
 
@@ -70,7 +77,7 @@ const TIPS = [
   {
     icon: '🌳',
     title: 'The KUA forest does a LOT',
-    body: 'The ~1,000 acres of forest on campus sequester roughly 2,650 mtCO₂e/year — which is why KUA\'s net footprint (~1,725 mt) is so much smaller than its gross (~4,375 mt).',
+    body: ({ sinkMt, netMt, grossMt }) => `The ~1,000 acres of forest on campus sequester roughly ${sinkMt} mtCO₂e/year on a net basis — which is why the KUA net footprint (~${netMt} mt) is smaller than its gross (~${grossMt} mt).`,
     link: '/sinks-os',
     linkText: 'See the math',
   },
@@ -158,7 +165,19 @@ function dayOfYear(d = new Date()) {
 }
 
 export function DailyTip() {
+  // useMeasuredScopeTotals already composes gross, sink and net, and each of
+  // its child hooks falls back to the canonical build-time constant on its
+  // own. So these are always the best figure available and need no second
+  // fallback here.
+  const live = useMeasuredScopeTotals();
   const tip = useMemo(() => TIPS[dayOfYear() % TIPS.length], []);
+  const body = typeof tip.body === 'function'
+    ? tip.body({
+      sinkMt: Math.round(live.sinkMt).toLocaleString(),
+      netMt: Math.round(live.netMt).toLocaleString(),
+      grossMt: Math.round(live.grossMt).toLocaleString(),
+    })
+    : tip.body;
   return (
     <div style={styles.wrap}>
       <section style={styles.card} className="kua-card-hover">
@@ -170,7 +189,7 @@ export function DailyTip() {
           <div style={styles.icon} aria-hidden="true">{tip.icon}</div>
           <div style={{ flex: 1 }}>
             <h3 style={styles.title}>{tip.title}</h3>
-            <p style={styles.text}>{tip.body}</p>
+            <p style={styles.text}>{body}</p>
             {tip.link && (
               <Link to={tip.link} style={styles.link} className="kua-cta-card">
                 {tip.linkText} →
