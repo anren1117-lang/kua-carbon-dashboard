@@ -12,6 +12,7 @@
 // Scope 3 and the helpers that combine all three.
 
 import { GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH } from './gridMix.js';
+import { getFactorByKey } from './emissionFactors.js';
 import { avertAvoidedKgPerKwh, AVERT_SOURCE } from './gridMixHistory.js';
 import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT, REPORTING_PERIOD } from './academicCalendar.js';
 
@@ -600,17 +601,53 @@ function describeWasteSkips({ unit, type, amount }) {
 // Per-trip mtCO2e estimate by destination region. Used for study_abroad
 // and faculty_travel rows where each row is a single trip (not an annual
 // per-student multiplier). DEFRA 2024 long-haul ECONOMY 0.322
+// The canonical long-haul air factor, read from the factor table rather
+// than restated, so a factor refresh moves these trips with it.
+const AIR_LONG_HAUL_KG_PER_MILE = getFactorByKey('travel', 'air_long_haul').kgco2e_per_unit;
+
 // kg/passenger-mi (incl. the indirect effects of non-CO2 emissions)
 // × typical great-circle BOS↔region distances.
 //
 // Rescaled in Phase 404 by 0.322/0.241 = 1.336. The old values were built
 // on 0.241, which matched no row of the published DEFRA table.
-const TRIP_MT_BY_REGION = {
-  domestic: 0.5,   // BOS↔continental US, mostly DRIVE — unchanged, the
-                   // car factor (0.351 kg/mi) did not move
-  europe:   3.2,   // BOS↔EU long-haul (was 2.4)
-  asia:     4.0,   // BOS↔East Asia long-haul (was 3.0; matches intl student RT)
-  other:    3.3,   // catch-all for South America, Africa, Oceania (was 2.5)
+/**
+ * Representative one-way great-circle distances from Boston, and the factor
+ * they are priced at. Stated here so the per-trip numbers below can be
+ * DERIVED rather than typed — the previous table printed this method beside
+ * itself and then disagreed with it by up to 42%.
+ *
+ * Distances are unweighted means of the destinations a KUA study-abroad or
+ * faculty trip actually plausibly goes to:
+ *   europe  LHR 3,256 / CDG 3,439 / FRA 3,659 / MAD 3,402 / ZRH 3,735
+ *   asia    HND 6,713 / ICN 6,813 / PEK 6,721 / PVG 7,293 / HKG 7,957
+ *   other   GRU 4,808 / JNB 7,863 / SYD 10,098 / LOS 5,114 / BOG 2,610
+ *
+ * `other` is a genuine catch-all and the widest of the three: its members run
+ * from 1.7 mt (Bogota) to 6.5 mt (Sydney). The mean is the honest placeholder,
+ * but a real trip row should map to a specific region rather than land here.
+ */
+export const TRIP_REGION_BASIS = {
+  factorKgPerPassengerMile: AIR_LONG_HAUL_KG_PER_MILE,
+  factorSource: 'DEFRA 2024 long-haul economy, incl. indirect non-CO2 effects (ef_air_long)',
+  oneWayMiles: { europe: 3498, asia: 7099, other: 6098 },
+  domesticNote: 'Domestic trips are mostly DRIVEN, not flown, so 0.5 mt is not derived from the air factor and must not be swept into the same rule.',
+};
+
+const tripMt = (miles) => +((miles * 2 * AIR_LONG_HAUL_KG_PER_MILE) / 1000).toFixed(2);
+
+// Per-trip mtCO2e by destination region. Long-haul entries are computed from
+// TRIP_REGION_BASIS; only `domestic` is a standalone figure, because it is a
+// drive rather than a flight.
+//
+// Phase 404 rescaled this table by 0.322/0.241 to move it onto the published
+// DEFRA factor. That corrected the factor and left the implied distances
+// alone, so the rescale carried the original error forward — Europe went
+// 2.4 -> 3.2 when its own method gives 2.25. (Task #18.)
+export const TRIP_MT_BY_REGION = {
+  domestic: 0.5,                                   // BOS<->continental US, mostly driven
+  europe:   tripMt(TRIP_REGION_BASIS.oneWayMiles.europe),   // ~2.25 (was 3.2)
+  asia:     tripMt(TRIP_REGION_BASIS.oneWayMiles.asia),     // ~4.57 (was 4.0)
+  other:    tripMt(TRIP_REGION_BASIS.oneWayMiles.other),    // ~3.93 (was 3.3)
 };
 
 // Map a destination_country string (free-text from the admin form) to
@@ -825,7 +862,7 @@ export function composeScope3FromRecords(records = {}) {
       mt: Math.round(tripMt),
       perStudentMt: null,
       provenance: (sa.length + fac.length) > 0 ? 'measured' : 'estimated',
-      method: 'Per-trip mtCO₂e by destination region (domestic 0.5 / Europe 3.2 / Asia 4.0 / other 3.3) — DEFRA 2024 long-haul economy × great-circle distances from BOS.',
+      method: `Per-trip mtCO₂e by destination region (domestic ${TRIP_MT_BY_REGION.domestic} / Europe ${TRIP_MT_BY_REGION.europe} / Asia ${TRIP_MT_BY_REGION.asia} / other ${TRIP_MT_BY_REGION.other}) — DEFRA 2024 long-haul economy × mean great-circle distances from BOS. Long-haul values are computed from those distances, not typed, so the method and the numbers cannot drift apart.`,
     },
   ];
 

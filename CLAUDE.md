@@ -2738,3 +2738,46 @@ comments explain, they do not teach, the distinction `proseFigures.test.js`
 already draws.
 
 Suite 1,958 → 1,960.
+
+## Phase 476 — task #18 was not a choice between sources
+
+`TRIP_MT_BY_REGION` prices a study-abroad or faculty trip by destination
+region, and printed its own method beside itself: *"DEFRA 2024 long-haul
+economy × great-circle distances from BOS."* It then disagreed with that
+method by up to 42%.
+
+| region | stated | its own method implies |
+| --- | --- | --- |
+| europe | 3.2 | **2.25** |
+| asia | 4.0 | **4.57** |
+| other | 3.3 | **3.93** |
+
+**That 2.25 is the "2.25 vs 3.2" of task #18** — which had sat open as a
+decision between two published figures. It is not one. There is only ever one
+Europe number in the repo; the other side of the comparison is what the
+printed method computes to. BOS↔Europe great-circle averages ~3,500 mi each
+way across LHR/CDG/FRA/MAD/ZRH, and 3,500 × 2 × 0.322 kg = 2.25 mt.
+
+**How it got there.** Phase 404 rescaled the whole table by 0.322/0.241
+because the old values sat on a factor matching no published DEFRA row. That
+fixed the *factor* and left the implied *distances* untouched — so the rescale
+carried the original error forward, 2.4 → 3.2, rather than correcting it. A
+rescale preserves whatever was wrong underneath it.
+
+Values are now computed from stated one-way distances and the canonical
+`ef_air_long` factor, so the method and the number cannot drift apart again.
+The rendered method string interpolates them too.
+
+**This is not a blanket cut.** Europe falls 30%, but Asia rises 14% and the
+catch-all rises 19% — the table was wrong in both directions, which is what
+you expect when distances rather than the factor are the problem.
+
+Scope is contained: this table prices only live admin-entered study-abroad and
+faculty rows, so no published headline moves today. It corrects what those
+rows will cost when real trip data arrives.
+
+`other` remains a genuine catch-all and is the honest weak point — its members
+run from 1.7 mt (Bogotá) to 6.5 mt (Sydney), so the mean is a placeholder and
+the basis says so.
+
+Suite 1,960 → 1,965; 137 → 138 files.

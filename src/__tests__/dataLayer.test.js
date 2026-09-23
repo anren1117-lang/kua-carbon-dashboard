@@ -852,10 +852,12 @@ describe('composeScope3FromRecords (live Supabase tables → measured Scope 3)',
   });
 
   it('adds per-trip mt for study_abroad and faculty_travel rows', () => {
-    // 1 China study-abroad (asia 4.0) + 1 USA faculty trip (domestic 0.5) = 4.5 mt
-    // Plus 1 day student × 1.4 mt = 1.4 mt → 6 mt total travel row.
-    // asia was 3.0 until Phase 404 corrected TRIP_MT_BY_REGION to the
-    // published DEFRA long-haul economy factor.
+    // 1 China study-abroad (asia 4.57) + 1 USA faculty trip (domestic 0.5)
+    // + 1 day student × 1.4 mt = 6.47 → 6 mt total travel row.
+    // asia was 3.0 until Phase 404 moved TRIP_MT_BY_REGION onto the published
+    // DEFRA long-haul factor, and 4.0 until the distances were corrected too
+    // (task #18) — the rescale had fixed the factor and left the implied
+    // distances carrying the original error.
     const r = composeScope3FromRecords({
       dayStudents: [{}],
       studyAbroad: [{ destination_country: 'China' }],
