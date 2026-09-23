@@ -798,12 +798,15 @@ export const SCOPE1_COMPONENT_RANGES = [
 // open-grown trees. Three published methodologies bracket the range.
 const _sinksRange = (() => {
   const totalAcres = 1000;
-  // Method A: Birdsey 1992 USDA WO-59 — average US forest.
+  // Method A: Birdsey 1992 USDA WO-59 — average US forest. This is LIVE-TREE
+  // net growth, gross of harvest removals and excluding soil, forest floor
+  // and dead wood; see SEQUESTRATION_BASIS in sinks.js. It therefore sits
+  // above any published NET rate for the same ground.
   // 2.1 mtCO2e/acre/yr (closed-canopy mixed-age).
   const A = {
-    label: 'Birdsey 1992 average US-forest sequestration',
+    label: 'Birdsey 1992 US-forest live-tree growth (gross of removals)',
     mt: totalAcres * 2.1,
-    basis: `${totalAcres.toLocaleString()} acres × 2.1 mtCO2e/acre/yr (Birdsey 1992 USDA WO-59 average for US closed-canopy forest, mixed-age stands).`,
+    basis: `${totalAcres.toLocaleString()} acres × 2.1 mtCO2e/acre/yr (Birdsey 1992 USDA WO-59, average annual carbon accumulation in LIVE TREES on US timberland, mixed-age stands — gross of harvest removals and excluding soil, forest floor and dead wood).`,
   };
   // Method B: USDA NH FIA — NH-specific, rebuilt in Phase 411.
   //

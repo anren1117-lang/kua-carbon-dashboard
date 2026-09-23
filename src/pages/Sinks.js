@@ -113,8 +113,8 @@ function Sinks() {
           note: headlineNote,
         }}
         references={[
-          { title: 'Nowak, D.J. et al. (2013)', source: 'Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage; 0.28 kg C/m²/yr sequestration (urban tree averages across 28 cities, 6 states)' },
-          { title: 'Birdsey, R.A. (1992)', source: 'USDA Forest Service General Technical Report WO-59', use: 'Average US forest accumulates 1,252 lb C/acre/year; 59% of total carbon held below ground' },
+          { title: 'Nowak, D.J. et al. (2013)', source: 'Urban Forestry & Urban Greening', use: '7.69 kg C/m² storage; 0.277 kg C/m²/yr GROSS sequestration per m² of canopy (urban tree averages, 28 cities and 6 states). Nowak reports net as 74% of gross, and his New Hampshire row is 0.217 gross' },
+          { title: 'Birdsey, R.A. (1992)', source: 'USDA Forest Service General Technical Report WO-59', use: 'Average US forest accumulates 1,252 lb C/acre/year (≈2.08 mtCO₂e) in LIVE TREES — gross of harvest removals, excluding soil, forest floor and dead wood; 59% of total carbon held below ground' },
           { title: 'Morin, R.S. et al. (2020)', source: 'USDA Forest Inventory and Analysis, NH', use: 'NH forests average 31.8 tons C/acre; maple/beech/birch covers 52% of state forestland' },
           { title: 'USDA Urban Tree Database', use: 'Species-specific allometric equations replacing the Jenkins-style fallback' },
           { title: 'Valls-Val, K. & Bovea, M.D. (2021)', source: 'Sustainability', use: 'Systematic review identifying that sinks are rarely quantified in HEI carbon inventories — the gap KUA closes' },
@@ -170,7 +170,7 @@ function Sinks() {
             impact: '+30 to +150 mtCO₂e/yr',
             detail: 'Selective thinning of suppressed trees boosts growth rates of dominant trees and overall stand productivity. Avoid clear-cutting; managed mature forests sequester more than even-age monocultures.',
             data: [
-              { input: 'Average forest sequestration', value: '~2.1 mtCO₂e/acre/yr', source: 'Birdsey (1992)' },
+              { input: 'Average forest live-tree growth', value: '~2.1 mtCO₂e/acre/yr', source: 'Birdsey (1992) — gross of removals, live trees only' },
               { input: 'Productivity boost from selective management', value: '15 – 35%', source: 'USDA Forest Service silvicultural studies' },
               { input: 'Manageable forest acres at KUA', value: '~600 – 800', source: 'KUA campus estimate (subset of total 1,000 ac)' },
             ],

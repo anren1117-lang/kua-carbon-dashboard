@@ -114,7 +114,7 @@ export default function Sinks() {
 
       <ModuleSection
         title="Forest stands"
-        hint="Sequestration rates from Birdsey 1992 (US-forest accumulation by region/age) and Nowak 2013 (open-grown urban-tree canopy). Open-grown trees grow faster per acre than dense forest because they aren't competing for light."
+        hint="Per-acre rates from Birdsey 1992 (live-tree accumulation by region/age, gross of harvest removals) and Nowak 2013 (gross sequestration per acre of open-grown urban-tree canopy). Open-grown trees grow faster per acre than dense forest because they aren't competing for light."
       >
         <div style={styles.list}>
           {sortedStands.map((s) => {

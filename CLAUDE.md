@@ -2587,3 +2587,51 @@ assertion exactly, not a narrower phrase.** The clause was cut rather than
 rephrased — editorializing about our own copy is weaker writing anyway.
 
 Suite 1,951 → 1,952.
+
+## Phase 473 — the rates answer a different question than the one we ask them
+
+Task #16 has been open for dozens of phases as "is the sink 2,650 or ~1,100?".
+It turns out not to be a dispute about a number. It is a units-of-meaning
+problem, and the same one as [inventory vs consequential] electricity factors:
+**both sources are real and correctly transcribed, and neither was published
+to answer "how much CO₂ does this property remove from the atmosphere in a
+year."**
+
+- **Birdsey 1992, Table 2.14** is *annual accumulation of carbon in LIVE
+  TREES on timberland* — FIA net annual growth of growing stock, which is
+  gross growth minus mortality and **not** minus harvest removals, with no
+  soil, forest floor, dead wood or understory.
+- **Nowak et al. 2013's** widely quoted 0.277 kg C/m²/yr is the **GROSS** rate
+  **per m² of canopy**. Nowak's own net is 0.205 — 74% of gross — and his New
+  Hampshire row is 0.217 gross, 2.38 net per canopy acre.
+
+The open-grown stand rate of 4.2 is Nowak's gross US average (0.277 → 4.11;
+the 0.28 the references page quotes → 4.15). The test proves that by
+conversion rather than by trusting a comment.
+
+Published **net** rates for the same ground, for contrast: EPA GHG
+Equivalencies **1.00**, USDA FS Domke et al. **0.84**, and GTR NE-343 yield
+tables **1.6–2.0** for unharvested NE hardwood at 65–95 years — the age band
+holding ~65% of NH forest carbon. The stand table averages **2.65**.
+
+**The convergence worth noting.** An age-class-weighted estimate from the
+published yield tables gives **1.77 mtCO₂e/acre/yr**. The dashboard's own
+four-method central, computed years earlier by a completely different route,
+is **1.73**. Two independent paths, 2.1% apart.
+
+Every conversion above was re-derived here rather than taken on trust; all of
+them check. The one apparent discrepancy — EPA's 0.27 × 44/12 = 0.99 against a
+published 1.00 — is EPA's own rounding.
+
+**Also recorded, not fixed:** the stand table gives mature hardwood 2.8 and
+the young stand 2.6. Every published yield table has increment *peaking*
+young and declining with age (GTR NE-343: maple-beech-birch 3.28 at 25–35 yr
+falling to 1.59 at 85–95), and Birdsey says so in words on page 1. A test now
+asserts the inversion *exists*, so the finding stays visible and the test
+flips when #16 is settled.
+
+Nothing was repriced. Sources are now described by what they measure —
+`SEQUESTRATION_BASIS` in `sinks.js`, plus the citation text on /sinks,
+/sinks-os and the method label in `geographicEstimates.js`.
+
+Suite 1,952 → 1,957; 136 → 137 files.
