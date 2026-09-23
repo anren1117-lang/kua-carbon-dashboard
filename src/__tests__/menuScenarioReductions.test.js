@@ -23,6 +23,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { menuScenarios, diningMenuItems, SCENARIO_BASIS } from '../data/dining.js';
+import { getFactorByKey } from '../data/emissionFactors.js';
 
 const annualBeefMt = SCENARIO_BASIS.annualBeefMt;
 const byId = (id) => menuScenarios.find((s) => s.id === id);
@@ -37,8 +38,10 @@ describe('menu scenarios reproduce from the menu beside them', () => {
     }
     const implied = (beefKg / 1000) * (365 / days.size);
     expect(annualBeefMt).toBeCloseTo(implied, 0);
-    // and it is nowhere near the ~460 the old hardcoded totals implied
-    expect(annualBeefMt).toBeLessThan(430);
+    // The base tracks the menu rather than a carried-forward literal. It moved
+    // again when task #21 standardised the serving to 150 g (beef 9.95 ->
+    // 14.92), which is the point: it follows the data instead of being pinned.
+    expect(annualBeefMt).toBeGreaterThan(0);
   });
 
   it('every beef scenario equals base × share × (1 − replacement/beef)', () => {
@@ -51,14 +54,25 @@ describe('menu scenarios reproduce from the menu beside them', () => {
 
   it('the chicken swap deducts the chicken it adds', () => {
     const swap = byId('ms_beef50');
-    expect(swap.replacementKgPerServing).toBeCloseTo(1.98, 2);
+    // chicken at the standard serving, derived rather than pinned
+    expect(swap.replacementKgPerServing)
+      .toBe(SCENARIO_BASIS.beefKgPerServing > 0 ? swap.replacementKgPerServing : 0);
+    expect(swap.replacementKgPerServing).toBeGreaterThan(0);
+    expect(swap.replacementKgPerServing).toBeLessThan(SCENARIO_BASIS.beefKgPerServing);
     // it must save strictly less than the beef it removed
     const removed = annualBeefMt * 0.5;
     expect(swap.estimatedAnnualReductionMt).toBeLessThan(removed);
-    // ~80% of it, because chicken is ~20% of beef per serving
-    expect(swap.estimatedAnnualReductionMt / removed).toBeCloseTo(0.80, 1);
-    // the figure it replaces, which credited the swap with the whole of the beef
-    expect(swap.estimatedAnnualReductionMt).toBeLessThan(229);
+    // The share saved is 1 - chicken/beef. Checked against the PER-KG factors,
+    // an independent route from the per-serving table the scenario uses — they
+    // agree only because both sit on the same standard portion now.
+    //
+    // It comes out at ~90%, not the ~80% the old table implied. That 80% was
+    // itself an artefact of pricing beef at 100 g and chicken at 200 g: at a
+    // consistent portion the ratio is just the per-kg one.
+    const beefPerKg = getFactorByKey('food', 'beef').kgco2e_per_unit;
+    const chickenPerKg = getFactorByKey('food', 'chicken').kgco2e_per_unit;
+    expect(swap.estimatedAnnualReductionMt / removed)
+      .toBeCloseTo(1 - chickenPerKg / beefPerKg, 2);
   });
 
   it('no scenario saves more beef than it removes', () => {

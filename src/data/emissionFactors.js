@@ -228,6 +228,31 @@ export function getFactor(id) {
   return factorsById[id] || null;
 }
 
+/**
+ * The portion size every per-serving food figure in this dashboard is built
+ * from. Task #21, decided.
+ *
+ * The dining table used to carry three implied portions across six categories
+ * — beef and eggs at 100 g, pork/chicken/fish at 200 g, legumes at 330 g —
+ * while the personal-footprint tool stated 150 g. None of those were chosen:
+ * Phase 405 rescaled each row by its own protein's correction ratio, which by
+ * design preserved whatever portion was assumed underneath rather than
+ * re-deriving it, so the portions were inherited and never decided.
+ *
+ * 150 g is adopted because it is the figure the footprint tool already
+ * documented, and it sits in the normal served range — the USDA reference
+ * portion for cooked meat is 85 g and a dining-hall serving is typically
+ * 113-170 g. Stated here, beside the per-kg factors it multiplies, so a
+ * per-serving figure is never typed in again.
+ */
+export const STANDARD_SERVING_KG = 0.150;
+
+/** Per-serving kgCO2e for a food subcategory at the standard portion. */
+export function servingKgFor(subcategory) {
+  const f = getFactorByKey('food', subcategory);
+  return f === null ? null : +(f.kgco2e_per_unit * STANDARD_SERVING_KG).toFixed(2);
+}
+
 export function getFactorByKey(category, subcategory) {
   return factorsByCategorySub[`${category}:${subcategory}`] || null;
 }

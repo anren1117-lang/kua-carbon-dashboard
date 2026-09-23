@@ -84,26 +84,17 @@ export default function Dining() {
       ]} />
 
       <div style={styles.portionNote} role="note">
-        <strong>One serving, two portion sizes.</strong> These figures price a beef serving at{' '}
-        {PORTION_RECONCILIATION.diningBeefKgPerServing} kg CO₂e, which implies a{' '}
-        {PORTION_RECONCILIATION.diningImpliedGrams} g portion — while the personal-footprint tool
-        states {PORTION_RECONCILIATION.footprintStatedGrams} g and prices the same serving at{' '}
-        {PORTION_RECONCILIATION.footprintBeefKgPerServing} kg, a {PORTION_RECONCILIATION.gapPct}% gap.
-        Beef is also the only meat here implying {PORTION_RECONCILIATION.diningImpliedGrams} g; pork,
-        chicken and fish all imply {PORTION_RECONCILIATION.otherMeatsImpliedGrams} g. Both trace to
-        the same Poore &amp; Nemecek per-kg figure, so the gap is portion size, not sourcing.{' '}
-        <strong>The whole table:</strong>{' '}
-        {Object.entries(PORTION_RECONCILIATION.impliedGramsByCategory)
-          .map(([cat, g]) => `${cat} ${g} g`).join(', ')}
-        {' '}— {PORTION_RECONCILIATION.distinctPortionSizes} distinct portion sizes across six
-        categories, an artefact of rescaling each row by its own protein&rsquo;s correction ratio
-        rather than re-deriving the portion.{' '}
-        <strong>What reconciling would cost:</strong> beef is most of the menu&rsquo;s emissions, so
-        a uniform portion raises this page&rsquo;s total either way — about{' '}
-        {PORTION_RECONCILIATION.standardisePct.at150}% at 150 g (the size the personal-footprint
-        tool states) or {PORTION_RECONCILIATION.standardisePct.at200}% at 200 g (what three of the
-        four meats already imply). That is why it is held for a deliberate decision rather than
-        averaged away here.
+        <strong>One serving, one portion size.</strong> Every figure on this page prices a{' '}
+        {PORTION_RECONCILIATION.adoptedGrams} g serving, so a beef serving is{' '}
+        {PORTION_RECONCILIATION.diningBeefKgPerServing} kg CO₂e here and the same number in the
+        personal-footprint tool. Each one is its Poore &amp; Nemecek per-kg factor multiplied by
+        that portion — none of them are typed in.{' '}
+        <strong>It was not always so.</strong> Until 2026 this table carried three different
+        implied portions — beef and eggs at 100 g, pork, chicken and fish at 200 g, legumes at
+        330 g — while the footprint tool stated 150 g. None had been chosen: a factor correction
+        had rescaled each row by its own protein&rsquo;s ratio, which preserved whatever portion
+        was assumed underneath. Standardising raised this page&rsquo;s total by about a quarter,
+        almost all of it beef, which had been priced at the smallest portion of the six.
       </div>
 
       <ModuleSection

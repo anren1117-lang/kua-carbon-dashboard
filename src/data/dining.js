@@ -1,4 +1,4 @@
-import { getFactorByKey } from './emissionFactors.js';
+import { getFactorByKey, servingKgFor, STANDARD_SERVING_KG } from './emissionFactors.js';
 // Dining & food-system data. Mock POS records, vendors, ingredient purchases,
 // food-waste logs, and menu scenarios. The dashboard uses these for the
 // dining module and supplier/Scope-3 food estimates.
@@ -18,14 +18,19 @@ import { getFactorByKey } from './emissionFactors.js';
 // correction ratio, so whatever portion size was originally assumed is
 // preserved rather than re-guessed. See emissionFactors.js for why the
 // per-kg factors moved.
-const mealCategories = /** @type {const} */ ([
-  { category: 'beef',       proteinType: 'beef',     factorPerServing: 9.95 },
-  { category: 'pork',       proteinType: 'pork',     factorPerServing: 2.46 },
-  { category: 'chicken',    proteinType: 'chicken',  factorPerServing: 1.98 },
-  { category: 'fish',       proteinType: 'fish',     factorPerServing: 2.72 },
-  { category: 'vegetarian', proteinType: 'eggs',     factorPerServing: 0.47 },
-  { category: 'vegan',      proteinType: 'legumes',  factorPerServing: 0.33 },
-]);
+// Per-serving figures are DERIVED: per-kg factor x STANDARD_SERVING_KG. They
+// used to be typed, and carried three different implied portions because
+// Phase 405 rescaled each row by its own protein's correction ratio and
+// preserved whatever portion was assumed underneath. Task #21 settled the
+// portion at 150 g; see STANDARD_SERVING_KG for why.
+const mealCategories = [
+  { category: 'beef',       proteinType: 'beef' },
+  { category: 'pork',       proteinType: 'pork' },
+  { category: 'chicken',    proteinType: 'chicken' },
+  { category: 'fish',       proteinType: 'fish' },
+  { category: 'vegetarian', proteinType: 'eggs' },
+  { category: 'vegan',      proteinType: 'legumes' },
+].map((m) => ({ ...m, factorPerServing: servingKgFor(m.proteinType) }));
 
 /**
  * TWO PORTION SIZES FOR ONE SERVING, published rather than quietly averaged.
@@ -62,10 +67,15 @@ const CATEGORY_PROTEIN = {
 const _servingKgByCategory = Object.fromEntries(
   mealCategories.map((m) => [m.category, m.factorPerServing]),
 );
+// Rounded to the nearest 5 g on purpose. This is a DIVERGENCE DIAGNOSTIC, not
+// a measurement: per-serving figures carry 2 decimal places, so dividing back
+// out lands at 149-151 g for what is one 150 g convention. Five-gram buckets
+// drop that artefact and still separate a real 100 g row from a 200 g one,
+// which is the only thing this needs to detect.
 const _impliedGramsByCategory = Object.fromEntries(
   mealCategories.map((m) => {
     const perKg = getFactorByKey('food', CATEGORY_PROTEIN[m.category]).kgco2e_per_unit;
-    return [m.category, +((m.factorPerServing / perKg) * 1000).toFixed(0)];
+    return [m.category, Math.round(((m.factorPerServing / perKg) * 1000) / 5) * 5];
   }),
 );
 
@@ -99,14 +109,15 @@ export const PORTION_RECONCILIATION = {
     if (!_standardiseCache) _standardiseCache = _computeStandardisePct();
     return _standardiseCache;
   },
-  diningBeefKgPerServing: 9.95,
-  footprintBeefKgPerServing: 15,
-  diningImpliedGrams: 100,
+  diningBeefKgPerServing: servingKgFor('beef'),
+  footprintBeefKgPerServing: servingKgFor('beef'),
+  adoptedGrams: STANDARD_SERVING_KG * 1000,
+  diningImpliedGrams: STANDARD_SERVING_KG * 1000,
   footprintStatedGrams: 150,
-  otherMeatsImpliedGrams: 200,
+  otherMeatsImpliedGrams: STANDARD_SERVING_KG * 1000,
   gapPct: +(((15 - 9.95) / 9.95) * 100).toFixed(0),
-  aligned: false,
-  note: 'A beef serving is priced at 9.95 kg CO2e on the dining page (implying a 100 g portion) and 15 kg CO2e in the personal-footprint tool (a stated 150 g). Beef is also the only meat here implying a 100 g portion; pork, chicken and fish all imply 200 g. Both trace to the same Poore & Nemecek per-kg figure, so the gap is portion size, not sourcing. Reconciling it moves the published dining total, so it is held for a deliberate decision.',
+  aligned: true,
+  note: `Every per-serving figure is its Poore & Nemecek per-kg factor x the standard ${STANDARD_SERVING_KG * 1000} g portion, so the dining page and the personal-footprint tool price a serving identically. Task #21 settled this: the table previously carried three implied portions (beef and eggs 100 g, pork/chicken/fish 200 g, legumes 330 g) against the tool's stated 150 g, none of them chosen - a factor correction had rescaled each row by its own protein's ratio and preserved whatever portion was underneath.`,
 };
 
 /** @type {DiningMenuItem[]} */

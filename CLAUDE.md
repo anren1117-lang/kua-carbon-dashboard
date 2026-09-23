@@ -2871,3 +2871,54 @@ that did not compute; this pattern is arithmetic that computes perfectly from
 a premise nobody re-checked.
 
 Suite 1,969 → 1,974; 139 → 140 files.
+
+## Phase 479 — one serving size, stated once (task #21)
+
+Adopted: **150 g**, and every per-serving food figure in the dashboard is now
+its Poore & Nemecek per-kg factor multiplied by that portion.
+
+| | was | now |
+| --- | --- | --- |
+| beef | 9.95 (100 g) | **14.92** |
+| pork | 2.46 (200 g) | **1.84** |
+| chicken | 1.98 (200 g) | **1.49** |
+| fish | 2.72 (200 g) | **2.04** |
+| vegetarian / eggs | 0.47 (100 g) | **0.70** |
+| vegan / legumes | 0.33 (330 g) | **0.15** |
+
+150 g because it is the figure `personalFootprint.js` already documented, and
+it sits in the served range (USDA reference portion for cooked meat is 85 g; a
+dining-hall serving is typically 113–170 g). Beef lands on 14.92 — which is
+exactly what the tool's "call it ~15" was rounding. **The tool was right and
+the dining table was the outlier**, which is not what the open question looked
+like from the outside.
+
+`STANDARD_SERVING_KG` lives in `emissionFactors.js`, beside the per-kg factors
+it multiplies, so a per-serving figure is never typed again. The dining table
+and the footprint tool now read the same helper and cannot disagree about what
+a serving is; `PORTION_RECONCILIATION.aligned` is true.
+
+**Two things fell out of standardising that were invisible before.**
+
+The beef→chicken swap scenario saves **90%** of the beef it removes, not 80%.
+That 80% was itself an artefact of pricing beef at 100 g and chicken at 200 g —
+at a consistent portion the ratio is simply the per-kg one, 9.9/99.5. Phase 478
+fixed the swap's *logic*; this fixed the inputs it was reasoning over. The test
+now checks that share against the per-kg factors, an independent route from the
+per-serving table the scenario uses.
+
+And the menu's annual beef rose 386 → 579 mt, which is the +27% this page was
+always going to cost. Both scenario totals and the page total moved with it
+because everything downstream was already derived — nothing needed chasing.
+
+*Phase 477's test had to be rewritten*, since it guarded the disclosure of an
+*unreconciled* table. It now pins the settled state and keeps the diagnostic
+that found the problem, with a negative control proving the diagnostic would
+still catch a category drifting back off the convention.
+
+*One of my own guards was wrong again*: the implied-grams diagnostic divides a
+2-decimal per-serving figure back out and landed on 149/150/151 for what is one
+150 g convention. Bucketed to 5 g — enough to kill the double-rounding artefact,
+nowhere near enough to hide a real 100-vs-200 split.
+
+Suite 1,974 → 1,979; 140 → 141 files.

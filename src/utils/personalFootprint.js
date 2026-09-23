@@ -16,6 +16,7 @@
 // can show "your beef-eating accounts for 1.2 mt of your 4.8 mt."
 
 import { KG_PER_KWH } from '../data/gridMix.js';
+import { servingKgFor } from '../data/emissionFactors.js';
 import { INSTRUCTIONAL_DAYS, STUDENT_RESIDENCY_WEEKS } from '../data/academicCalendar.js';
 
 // Per-mile car emissions. EPA GHG Emission Factors Hub 2025, Table 10
@@ -43,10 +44,12 @@ const SCHOOL_DAYS_PER_YEAR = INSTRUCTIONAL_DAYS;
 export const MT_PER_DOMESTIC_FLIGHT = 0.6;
 export const MT_PER_INTL_FLIGHT     = 3.7;
 
-// Beef per kg: 99.5 kg CO₂e (Poore & Nemecek via OWID, beef herd, full
-// supply chain). A "beef serving" is ~150 g — call it ~15 kg CO₂e per
-// serving. Was 9, built on the superseded 60 kg/kg figure — Phase 405.
-const KG_PER_BEEF_SERVING = 15;
+// Beef per kg: 99.5 kg CO₂e (Poore & Nemecek via OWID, beef herd, full supply
+// chain) at the standard 150 g serving. This was a typed ~15 and the dining
+// page priced the same serving at 9.95 on an inherited 100 g portion; task #21
+// settled the portion and both now derive from one place, so the tool and the
+// dining table cannot disagree about what a serving is.
+export const KG_PER_BEEF_SERVING = servingKgFor('beef');
 // Was 52 — a full calendar year of campus beef and dorm showers for students
 // who go home for summer, winter and spring breaks. The page invites students
 // to "audit + push back on" each assumption, so this one is now both smaller
