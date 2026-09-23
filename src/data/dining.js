@@ -1,3 +1,4 @@
+import { getFactorByKey } from './emissionFactors.js';
 // Dining & food-system data. Mock POS records, vendors, ingredient purchases,
 // food-waste logs, and menu scenarios. The dashboard uses these for the
 // dining module and supplier/Scope-3 food estimates.
@@ -46,7 +47,58 @@ const mealCategories = /** @type {const} */ ([
  * SINKS_RECONCILIATION. What is NOT acceptable is leaving a reader to meet
  * both numbers on different pages with nothing saying they disagree.
  */
+// Implied portion size per category, DERIVED from the per-serving figure and
+// the canonical per-kg factor rather than asserted. This is what exposed that
+// the table carries four different assumptions, not the two the note used to
+// name: beef and eggs at 100 g, pork/chicken/fish at 200 g, legumes at 330 g.
+//
+// Same cause as task #18: Phase 405 rescaled each row by its own protein's
+// correction ratio, which preserved whatever portion was assumed underneath
+// instead of re-deriving it. A rescale carries its errors forward.
+const CATEGORY_PROTEIN = {
+  beef: 'beef', pork: 'pork', chicken: 'chicken',
+  fish: 'fish', vegetarian: 'eggs', vegan: 'legumes',
+};
+const _servingKgByCategory = Object.fromEntries(
+  mealCategories.map((m) => [m.category, m.factorPerServing]),
+);
+const _impliedGramsByCategory = Object.fromEntries(
+  mealCategories.map((m) => {
+    const perKg = getFactorByKey('food', CATEGORY_PROTEIN[m.category]).kgco2e_per_unit;
+    return [m.category, +((m.factorPerServing / perKg) * 1000).toFixed(0)];
+  }),
+);
+
+// What reconciling would actually cost, so the open decision can be judged
+// rather than just noted. Beef is ~68% of the menu's emissions, so any uniform
+// portion raises the total — 150 g because that is the size the
+// personal-footprint tool already states, 200 g because that is what three of
+// the four meats already imply.
+// Computed lazily: diningMenuItems is declared below this object, so running
+// it at module init would hit the temporal dead zone. Memoised on first read.
+let _standardiseCache = null;
+const _computeStandardisePct = () => {
+  const base = { cur: 0, at150: 0, at200: 0 };
+  for (const item of diningMenuItems) {
+    const perKg = getFactorByKey('food', CATEGORY_PROTEIN[item.category])?.kgco2e_per_unit;
+    if (!perKg) continue;
+    const s = item.servingsServed || 0;
+    base.cur += s * item.kgco2ePerServing;
+    base.at150 += s * perKg * 0.150;
+    base.at200 += s * perKg * 0.200;
+  }
+  const pct = (v) => +(((v - base.cur) / base.cur) * 100).toFixed(0);
+  return { at150: pct(base.at150), at200: pct(base.at200) };
+};
+
 export const PORTION_RECONCILIATION = {
+  impliedGramsByCategory: _impliedGramsByCategory,
+  servingKgByCategory: _servingKgByCategory,
+  distinctPortionSizes: new Set(Object.values(_impliedGramsByCategory)).size,
+  get standardisePct() {
+    if (!_standardiseCache) _standardiseCache = _computeStandardisePct();
+    return _standardiseCache;
+  },
   diningBeefKgPerServing: 9.95,
   footprintBeefKgPerServing: 15,
   diningImpliedGrams: 100,

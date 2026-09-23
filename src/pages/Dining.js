@@ -91,9 +91,19 @@ export default function Dining() {
         {PORTION_RECONCILIATION.footprintBeefKgPerServing} kg, a {PORTION_RECONCILIATION.gapPct}% gap.
         Beef is also the only meat here implying {PORTION_RECONCILIATION.diningImpliedGrams} g; pork,
         chicken and fish all imply {PORTION_RECONCILIATION.otherMeatsImpliedGrams} g. Both trace to
-        the same Poore &amp; Nemecek per-kg figure, so the gap is portion size, not sourcing.
-        Reconciling it moves the published dining total, so it is held for a deliberate decision
-        rather than averaged away here.
+        the same Poore &amp; Nemecek per-kg figure, so the gap is portion size, not sourcing.{' '}
+        <strong>The whole table:</strong>{' '}
+        {Object.entries(PORTION_RECONCILIATION.impliedGramsByCategory)
+          .map(([cat, g]) => `${cat} ${g} g`).join(', ')}
+        {' '}— {PORTION_RECONCILIATION.distinctPortionSizes} distinct portion sizes across six
+        categories, an artefact of rescaling each row by its own protein&rsquo;s correction ratio
+        rather than re-deriving the portion.{' '}
+        <strong>What reconciling would cost:</strong> beef is most of the menu&rsquo;s emissions, so
+        a uniform portion raises this page&rsquo;s total either way — about{' '}
+        {PORTION_RECONCILIATION.standardisePct.at150}% at 150 g (the size the personal-footprint
+        tool states) or {PORTION_RECONCILIATION.standardisePct.at200}% at 200 g (what three of the
+        four meats already imply). That is why it is held for a deliberate decision rather than
+        averaged away here.
       </div>
 
       <ModuleSection

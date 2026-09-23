@@ -2781,3 +2781,45 @@ run from 1.7 mt (Bogotá) to 6.5 mt (Sydney), so the mean is a placeholder and
 the basis says so.
 
 Suite 1,960 → 1,965; 137 → 138 files.
+
+## Phase 477 — disclose the whole portion table, not the one comparison
+
+`PORTION_RECONCILIATION` published the beef gap honestly: dining prices a beef
+serving at 9.95 kg (implying 100 g) while the footprint tool states 150 g and
+prices it at 15 kg. What it did not say is that the table carries **three
+distinct portion sizes across six categories**, derived here from the canonical
+per-kg factors rather than asserted:
+
+| | per serving | ÷ per kg | implies |
+| --- | --- | --- | --- |
+| beef | 9.95 | 99.5 | **100 g** |
+| vegetarian (eggs) | 0.47 | 4.7 | **100 g** |
+| pork | 2.46 | 12.3 | 200 g |
+| chicken | 1.98 | 9.9 | 200 g |
+| fish | 2.72 | 13.6 | 200 g |
+| vegan (legumes) | 0.33 | 1.0 | **330 g** |
+
+**Same cause as task #18.** Phase 405 rescaled each row by its own protein's
+correction ratio, which by design "preserves whatever portion size was
+originally assumed rather than re-guessing it". That is the right instinct for
+a factor refresh and the wrong outcome here: it carried three inconsistent
+portion assumptions forward intact. A rescale preserves whatever is wrong
+underneath it — twice now in this codebase.
+
+**And it now says what reconciling would cost**, which is the thing a reader
+needs in order to judge whether the open decision matters. Beef is ~68% of the
+menu's emissions, so a uniform portion raises this page's total either way:
+**+27% at 150 g** (the size the footprint tool already states) or **+70% at
+200 g** (what three of the four meats already imply).
+
+Nothing was repriced — the gate asserts the adopted figures are untouched and
+that the new fields are derived rather than typed. `standardisePct` is
+computed lazily because `PORTION_RECONCILIATION` is declared above
+`diningMenuItems`, and running it at module init hit the temporal dead zone.
+
+*I miscounted my own finding first* — the header said four portion sizes when
+there are three distinct values across six categories. Caught by writing the
+assertion as `distinctPortionSizes === new Set(...).size` rather than pinning
+a number I had counted by eye.
+
+Suite 1,965 → 1,969; 138 → 139 files.
