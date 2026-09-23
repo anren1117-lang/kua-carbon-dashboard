@@ -136,6 +136,39 @@ describe('the adopted sink figure is disclosed as the top of its spread', () => 
     expect(html).toContain(rate);
   });
 
+  // Interpolation protects the NUMBERS but not the CLAIMS about them. After
+  // the reprice (task #16) every one of these strings recomputed its figures
+  // correctly and went on asserting, in words, that the adopted value sits at
+  // the top of the spread — which stopped being true the moment it moved.
+  it('no surface claims the adopted figure is the top of its spread', () => {
+    expect(SINKS_RECONCILIATION.adoptedMt).toBeLessThan(SINKS_RECONCILIATION.highMt);
+    const FILES = [
+      'components/PeerComparison.js', 'components/LearnAgent.js',
+      'pages/Sinks2.js', 'pages/Sinks.js', 'pages/Faq.js',
+      'pages/CarbonCredits.js', 'pages/TeacherPortal.js', 'pages/AnnualReport.js',
+    ];
+    const CLAIM = /(is|sits at) the (very )?top of (a|the|its)[^.`]{0,40}(spread|range)|adopts? the top of (the|its) range|we adopt the top|the adopted figure sits at the top/i;
+    const offenders = [];
+    for (const rel of FILES) {
+      readFileSync(resolve(process.cwd(), rel), 'utf8').split('\n').forEach((line, i) => {
+        if (line.trimStart().startsWith('//')) return;
+        if (CLAIM.test(line)) offenders.push(`${rel}:${i + 1}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('the stand per-acre range quoted on /sinks matches the stand table', async () => {
+    const { forestStands } = await import('../data/sinks.js');
+    const rates = forestStands.map((s) => s.mtco2eAcreYr);
+    const lo = Math.min(...rates).toFixed(2);
+    const hi = Math.max(...rates).toFixed(2);
+    const rendered = readFileSync(resolve(process.cwd(), 'pages/Sinks.js'), 'utf8')
+      .split('\n').filter((l) => !l.trimStart().startsWith('//')).join('\n');
+    expect(rendered).not.toMatch(/1\.9[–-]4\.2/);     // the pre-reprice rates
+    expect(`${lo}-${hi}`).toBe('1.15-3.00');
+  });
+
   it('/sinks-os states it too — the page the lessons send students to', async () => {
     mount(Sinks2);
     await waitFor(() => {

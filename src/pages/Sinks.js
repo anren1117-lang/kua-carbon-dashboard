@@ -1,7 +1,7 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
-import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES } from '../data/sinks.js';
+import { ANNUAL_SEQUESTRATION_MT, TOTAL_FOREST_ACRES, forestStands } from '../data/sinks.js';
 import { SINKS_RANGE, SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { GROSS_MT } from '../data/scopeTotals.js';
@@ -23,6 +23,13 @@ const SEQ_PER_ST = +(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS).toFixed(1);
 // current net basis, against gross 4,375; it was 2,650 before the 2026
 // reprice and even that did not beat gross).
 const SINK_OFFSET_PCT = Math.round((SINKS_RANGE.high / GROSS_MT) * 100);
+// The per-acre band the stands actually carry. Was typed as 1.9–4.2 and went
+// stale the moment task #16 repriced the rates — the kind of literal a
+// reprice cannot reach.
+const STAND_RATE_BAND = (() => {
+  const r = forestStands.map((s) => s.mtco2eAcreYr);
+  return `${Math.min(...r).toFixed(1)}–${Math.max(...r).toFixed(1)}`;
+})();
 const SEQ_LOW    = Math.round(SINKS_RANGE.low);
 const SEQ_HIGH   = Math.round(SINKS_RANGE.high);
 
@@ -59,8 +66,8 @@ function Sinks() {
   const headlineAcres = isMeasured ? live.acres : TOTAL_FOREST_ACRES;
   const headlineProvenance = isMeasured ? 'measured' : 'estimated';
   const headlineNote = isMeasured
-    ? `Composed live from ${live.standCount} forest_stand_actuals row${live.standCount === 1 ? '' : 's'} × per-acre sequestration rates. Roughly ${headlineAcres.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 1.9–4.2 mtCO₂e per acre per year. Even at the top of the published spread the forest offsets about ${SINK_OFFSET_PCT}% of gross emissions, not all of them — KUA is not net-negative.`
-    : `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at 1.9–4.2 mtCO₂e per acre per year. Even at the top of the published spread the forest offsets about ${SINK_OFFSET_PCT}% of gross emissions, not all of them — KUA is not net-negative.`;
+    ? `Composed live from ${live.standCount} forest_stand_actuals row${live.standCount === 1 ? '' : 's'} × per-acre sequestration rates. Roughly ${headlineAcres.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at ${STAND_RATE_BAND} mtCO₂e per acre per year. Even at the top of the published spread the forest offsets about ${SINK_OFFSET_PCT}% of gross emissions, not all of them — KUA is not net-negative.`
+    : `KUA is the only school in the peer chart with a quantified physical sink. Roughly ${TOTAL_FOREST_ACRES.toLocaleString()} acres of campus forest absorbs CO₂ via photosynthesis at ${STAND_RATE_BAND} mtCO₂e per acre per year. Even at the top of the published spread the forest offsets about ${SINK_OFFSET_PCT}% of gross emissions, not all of them — KUA is not net-negative.`;
 
   return (
     <div>

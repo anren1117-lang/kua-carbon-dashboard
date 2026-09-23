@@ -1010,7 +1010,7 @@ const paths = [
       {
         type: 'finish',
         heading: 'AP Bio at ecosystem scale',
-        body: `Light reactions → ATP/NADPH → Calvin cycle → C fixation. GPP minus respiration equals NPP — the new biomass. C3 vs C4 vs CAM are the three evolutionary photosynthetic strategies. DBH gives biomass; biomass × 0.5 = carbon; × 44/12 = CO₂. KUA's forest pulls somewhere between ${SINKS_RECONCILIATION.lowMt.toLocaleString()} and ${SINKS_RECONCILIATION.highMt.toLocaleString()} mtCO₂e/yr depending on the method; the ${SINKS_RECONCILIATION.methodCount}-method central is ${SINKS_RECONCILIATION.centralMt.toLocaleString()} and the dashboard adopts the top of the range.`,
+        body: `Light reactions → ATP/NADPH → Calvin cycle → C fixation. GPP minus respiration equals NPP — the new biomass. C3 vs C4 vs CAM are the three evolutionary photosynthetic strategies. DBH gives biomass; biomass × 0.5 = carbon; × 44/12 = CO₂. KUA's forest pulls somewhere between ${SINKS_RECONCILIATION.lowMt.toLocaleString()} and ${SINKS_RECONCILIATION.highMt.toLocaleString()} mtCO₂e/yr depending on the method; the ${SINKS_RECONCILIATION.methodCount}-method central is ${SINKS_RECONCILIATION.centralMt.toLocaleString()}, and the dashboard adopts ${SINKS_RECONCILIATION.adoptedMt.toLocaleString()} — above that central, because the other methods average in harvested acres and this woodlot is not harvested.`,
       },
     ],
   },

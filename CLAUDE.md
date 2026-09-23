@@ -2703,3 +2703,38 @@ Not swept, deliberately: `5.07` in the BMS exports is a kWh meter reading, and
 `1682-1725` in the AP history content is Peter the Great.
 
 Suite 1,957 → 1,958.
+
+## Phase 475 — interpolation protects the number, not the claim about it
+
+Phase 474 repriced the sink and every interpolated figure followed correctly.
+Four surfaces then went on asserting, **in words**, that the adopted value was
+"the top of a 4-method spread" — which had stopped being true the moment it
+moved. The interpolated range updated itself *inside the sentence claiming the
+adopted figure was its maximum*, so /sinks-os read:
+
+> 1,829 **is the top of** a 4-method spread running 1,000–2,100
+
+The numeric residual gate came back clean, because there was no stale number to
+find. That is the whole lesson: **deriving a figure protects the figure; the
+sentence around it usually also makes a claim about where that figure sits, and
+that claim is still a literal.**
+
+Fixed on `PeerComparison` (both copies of the note), `LearnAgent`, `Sinks2` and
+`Sinks`, each now stating a relation the data actually encodes — *above its
+central of X, because the other methods average in harvested acres and this
+woodlot is not harvested* — rather than a rank that silently rots.
+
+Also caught: `/sinks` still quoted the per-acre band as **1.9–4.2**, the
+pre-reprice rates, as a literal. It is now derived from the stand table
+(1.2–3.0), which is the kind of number a reprice cannot otherwise reach.
+
+*Both of my new guards were wrong first, in the usual direction.* The
+positional regex flagged "Even at the top of the published spread the forest
+offsets X% of gross" — a true statement about the spread, not a claim about the
+adopted figure. And the rate-band assertion flagged **my own comment**
+explaining what the band used to be: the fifth time this run that replacement
+text restated the string its guard forbids. Both now skip comment lines —
+comments explain, they do not teach, the distinction `proseFigures.test.js`
+already draws.
+
+Suite 1,958 → 1,960.
