@@ -3,12 +3,43 @@ import { perStudentMt } from '../utils/modelledPrecision.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
+import {
+  allTypicalFootprints,
+  MT_PER_INTL_FLIGHT,
+  MT_PER_DOMESTIC_FLIGHT,
+  KG_PER_MILE_CAR,
+} from '../utils/personalFootprint.js';
 
 // Reactive headline figures — composed from the same canonical sources the
 // rest of the dashboard imports, so the lesson narrative cannot drift from
 // the homepage hero. Quiz scenarios further down still use round legacy
 // inputs so each scenario's math lines up with its answer choices; those
 // blocks are flagged in-line where they appear.
+// Travel figures for the "biggest lever" block, read from the same estimator
+// that powers /personal-footprint. The block previously averaged every
+// student type into a single 5-8 mt range, which fits only international
+// boarders and is 3-5x high for day students and US boarders — and it priced
+// a 1,000-mile drive at 0.40 kg/mi, the fleet-average factor this repo
+// replaced with the EPA commuting factor. The spread between types IS the
+// lesson, so it is stated rather than averaged away.
+//
+// toFixed(1) deliberately, because that is what PeerSpectrum on
+// /personal-footprint prints. It renders 7.85 as 7.8 rather than 7.9 — a
+// float artifact — but the point here is that the lesson and the page show
+// the SAME string, so rounding half-up would reintroduce the mismatch this
+// block exists to remove.
+const TRAVEL = (() => {
+  const [day, usBoarder, intl] = allTypicalFootprints();
+  return {
+    day:        day.totalMt.toFixed(1),
+    usBoarder:  usBoarder.totalMt.toFixed(1),
+    intl:       intl.totalMt.toFixed(1),
+    intlFlight: MT_PER_INTL_FLIGHT,
+    domFlight:  MT_PER_DOMESTIC_FLIGHT,
+    drive1000:  ((KG_PER_MILE_CAR * 1000) / 1000).toFixed(1),
+  };
+})();
+
 const KUA = (() => {
   const gross = Math.round(GROSS_MT);
   const sinks = Math.round(ANNUAL_SEQUESTRATION_MT);
@@ -298,7 +329,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'Building a personal carbon budget',
-        body: 'A useful mental tool for daily decisions: think of yourself as having a **carbon budget** — like a money budget, but for emissions.\n\n**A reasonable target.** To stay under 1.5 °C of global warming, the global average per-person carbon budget needs to fall to about **2 mtCO₂e/year by 2050**. That\'s far below the average American\'s current ~16 mt or even the global average ~5 mt. As a high-school student, you\'re not "hitting" that 2-mt target — but knowing the number gives you a frame.\n\n**Estimate your current footprint.** Add up rough magnitudes: international travel × 3 mtCO₂e per round trip, domestic flights × 1 mt each, food (heavy beef diet adds ~1-2 mt, mostly-plant subtracts ~1), home/dorm energy × 1-2 mt. A typical student lands around **5-8 mtCO₂e/year**.\n\n**Pick one or two changes that move the number.** Don\'t try to do everything. The point of a budget is to identify where the leverage is. If your budget is dominated by one international flight, the highest-leverage change is travel, not light bulbs.\n\n**Track and adjust.** Like a financial budget, a carbon budget is most useful when revisited periodically. After a year, look back: did the changes you committed to actually happen? What got in the way? What surprised you?\n\nThis isn\'t about guilt. It\'s about **visibility** — turning vague good intentions into a clear measurement loop. Cordero et al. (2020) found that students who calculated and tracked their own footprints were still choosing differently five years on — about 2.9 tonnes CO₂ per year each. The act of measurement itself is the intervention.',
+        body: `A useful mental tool for daily decisions: think of yourself as having a **carbon budget** — like a money budget, but for emissions.\n\n**A reasonable target.** To stay under 1.5 °C of global warming, the global average per-person carbon budget needs to fall to about **2 mtCO₂e/year by 2050**. That's far below the average American's current ~16 mt or even the global average ~5 mt. As a high-school student, you're not "hitting" that 2-mt target — but knowing the number gives you a frame.\n\n**Estimate your current footprint.** Add up rough magnitudes: international travel × ${TRAVEL.intlFlight} mtCO₂e per round trip, domestic flights × ${TRAVEL.domFlight} mt each, food (heavy beef diet adds ~1-2 mt, mostly-plant subtracts ~1), home/dorm energy × 1-2 mt. A typical student lands somewhere in **${TRAVEL.day}–${TRAVEL.intl} mtCO₂e/year** — the estimator on /personal-footprint puts a day student at the bottom of that range and an international boarder at the top, almost entirely because of flights.\n\n**Pick one or two changes that move the number.** Don't try to do everything. The point of a budget is to identify where the leverage is. If your budget is dominated by one international flight, the highest-leverage change is travel, not light bulbs.\n\n**Track and adjust.** Like a financial budget, a carbon budget is most useful when revisited periodically. After a year, look back: did the changes you committed to actually happen? What got in the way? What surprised you?\n\nThis isn't about guilt. It's about **visibility** — turning vague good intentions into a clear measurement loop. Cordero et al. (2020) found that students who calculated and tracked their own footprints were still choosing differently five years on — about 2.9 tonnes CO₂ per year each. The act of measurement itself is the intervention.`,
       },
       {
         type: 'concept',
@@ -1396,7 +1427,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'For KUA students, travel is the biggest lever',
-        body: 'A student\'s personal annual footprint at KUA might be 5–8 mtCO₂e. A single intercontinental round-trip is ~3. Domestic flight: ~1. Driving 1,000 miles: ~0.4. Train BOS↔NYC: ~0.05.',
+        body: `Personal footprints at KUA are not one number — they split by how a student travels. The estimator on /personal-footprint puts a typical day student at ~${TRAVEL.day} mtCO₂e a year and a US boarder at ~${TRAVEL.usBoarder}, but an international boarder at ~${TRAVEL.intl}. Almost the whole gap is flying.\n\nThe levers, per trip: intercontinental round-trip ~${TRAVEL.intlFlight} mtCO₂e. Domestic round-trip: ~${TRAVEL.domFlight}. Driving 1,000 miles: ~${TRAVEL.drive1000}. Train BOS↔NYC: ~0.05.`,
       },
       {
         type: 'math',
@@ -1677,6 +1708,10 @@ function AllExplanations({ options, pickedIdx, pickedCorrect }) {
  * Exported so a reader-facing count follows the content instead of drifting
  * away from it again.
  */
+// Exported so tests can assert on the prose a student actually reads.
+// A source-text regex can pass against an interpolated body that still
+// renders the wrong sentence; this is the surface that matters.
+export const LEARNING_PATHS = paths;
 export const LEARNING_PATH_COUNT = paths.length;
 
 export function LearnAgent() {

@@ -28,7 +28,7 @@ import { INSTRUCTIONAL_DAYS, STUDENT_RESIDENCY_WEEKS } from '../data/academicCal
 // questions — the fleet average ON THE ROAD versus the factor EPA
 // publishes for commuting inventories. This file computes a commute, so
 // it takes the commuting factor. The gap is stated rather than hidden.
-const KG_PER_MILE_CAR = 0.2986;
+export const KG_PER_MILE_CAR = 0.2986;
 // Was 170 here while the institutional inventory assumed 180 for the same
 // commute — about 6% apart, and both numbers visible to the same student.
 // One source now; see academicCalendar.js for why it is two constants, not one.
@@ -40,8 +40,8 @@ const SCHOOL_DAYS_PER_YEAR = INSTRUCTIONAL_DAYS;
 // two-RT-plus-summer). 3.7 is the central of that range, so the calculator a
 // student audits now agrees with the inventory the school publishes.
 // At ~1.6 RTs/yr that implies ~6 mtCO₂e/yr for an international boarder.
-const MT_PER_DOMESTIC_FLIGHT = 0.6;
-const MT_PER_INTL_FLIGHT     = 3.7;
+export const MT_PER_DOMESTIC_FLIGHT = 0.6;
+export const MT_PER_INTL_FLIGHT     = 3.7;
 
 // Beef per kg: 99.5 kg CO₂e (Poore & Nemecek via OWID, beef herd, full
 // supply chain). A "beef serving" is ~150 g — call it ~15 kg CO₂e per

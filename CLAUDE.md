@@ -2395,3 +2395,43 @@ constants (2.8 against 390/340 = 1.15), so a test asserts it rather than
 letting the sentence vouch for itself.
 
 Suite 1,928 → 1,932; 131 → 132 files.
+
+## Phase 468 — the lesson stops contradicting the calculator beside it
+
+The "travel is the biggest lever" block carried four figures. Three disagreed
+with the estimator this same dashboard ships, and two were numbers the repo
+had already retired by name elsewhere:
+
+| lesson said | the estimator says |
+| --- | --- |
+| footprint "might be 5–8 mtCO₂e" | 1.4 day / 1.6 US boarder / 7.8 international |
+| intercontinental RT "~3" | `MT_PER_INTL_FLIGHT` 3.7 |
+| "Domestic flight: ~1" | `MT_PER_DOMESTIC_FLIGHT` 0.6 |
+| "Driving 1,000 miles: ~0.4" | 0.2986 kg/mi → ~0.3 |
+
+5–8 describes **only** the international boarder and is 3–5× high for the two
+types most students belong to. And 0.40 kg/mi is the fleet-average factor
+`personalFootprint.js` explicitly replaced with EPA's commuting factor — the
+lesson kept the retired one.
+
+The spread between student types *is* the teaching point, so the block now
+states all three and derives every figure from the estimator.
+
+**The residual gate found the same claim a second time**, in the carbon-budget
+block, feeding a worked estimation exercise with the same two stale flight
+factors. That line was 1,620 characters with six escaped apostrophes, so it was
+converted to a template literal by transforming the parsed string — unescape,
+substitute, re-wrap — rather than retyping it.
+
+*The first red was the wrong red, and this time it was caught.* Asserting on
+the rendered prose needs `LEARNING_PATHS` exported; without it the test failed
+on an undefined import and proved nothing about the text — the Phase 449 trap.
+The export landed first, the red was re-checked until each failure named a real
+wrong number, and only then was the prose fixed.
+
+*`toFixed(1)` is kept deliberately* even though it renders 7.85 as 7.8: that is
+what `PeerSpectrum` prints on /personal-footprint, and the point is that the
+two surfaces show the same string. Rounding half-up here would reintroduce the
+mismatch the phase exists to remove.
+
+Suite 1,932 → 1,938; 132 → 133 files.
