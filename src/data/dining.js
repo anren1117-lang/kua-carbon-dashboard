@@ -218,15 +218,63 @@ export const foodWasteLogs = (() => {
  * @property {number} estimatedAnnualReductionMt
  */
 
-// Reduction totals rescaled in Phase 415 by the beef-factor correction
-// (x1.658). Phase 405 moved factorPerServing from 6.0 to 9.95 but left these
-// hardcoded, so this file disagreed with itself for ten phases. The
-// local-produce scenario is unchanged — it does not derive from the beef
-// factor.
+/**
+ * Scenario reductions are COMPUTED from the menu above and the canonical
+ * per-serving factors. They used to be hardcoded, and carried two faults:
+ *
+ *   A swap that counted its replacement as zero. "Beef -> chicken 50% swap,
+ *   preserve protein servings" was credited with the entire footprint of the
+ *   beef it removed. The chicken that replaces it still emits 1.98 kg a
+ *   serving against beef's 9.95, so the saving is ~80% of what was removed.
+ *   A swap cannot save the whole of the thing it swapped.
+ *
+ *   A rescaled base. Phase 415 rescaled these totals by the beef-factor
+ *   correction (x1.658) because Phase 405 had moved factorPerServing and left
+ *   them hardcoded. That re-anchored the level and kept the implied beef base,
+ *   which worked out near 460 mt/yr against the ~386 mt/yr the menu carries.
+ *   The same failure as tasks #18 and #21: a rescale preserves whatever is
+ *   wrong underneath it.
+ *
+ * Each beef scenario now declares what replaces the beef it removes, and the
+ * reduction follows from base x share x (1 - replacement/beef).
+ */
+export const SCENARIO_BASIS = (() => {
+  let beefKg = 0;
+  const days = new Set();
+  for (const m of diningMenuItems) {
+    days.add(m.date);
+    if (m.category === 'beef') beefKg += (m.servingsServed || 0) * m.kgco2ePerServing;
+  }
+  const windowDays = days.size || 1;
+  return {
+    windowDays,
+    beefKgPerServing: _servingKgByCategory.beef,
+    annualBeefMt: +((beefKg / 1000) * (365 / windowDays)).toFixed(1),
+  };
+})();
+
+/** Annual mtCO2e saved by cutting `pct`% of beef and serving `replacementKg` instead. */
+const _scenarioReduction = (pct, replacementKg) => Math.round(
+  SCENARIO_BASIS.annualBeefMt * (pct / 100)
+    * (1 - replacementKg / SCENARIO_BASIS.beefKgPerServing),
+);
 /** @type {MenuScenario[]} */
 export const menuScenarios = [
-  { id: 'ms_meatlessmonday',   name: 'Meatless Mondays',           description: 'Replace all beef on Mondays with vegetarian/vegan options.',          beefReductionPct: 14, vegetarianIncreasePct: 14, estimatedAnnualReductionMt: 63 },
-  { id: 'ms_beef20',           name: 'Cut beef 20%',                description: 'Reduce beef portions and frequency by 20% across the week.',         beefReductionPct: 20, vegetarianIncreasePct: 12, estimatedAnnualReductionMt: 93 },
-  { id: 'ms_beef50',           name: 'Beef → chicken 50% swap',     description: 'Swap half of beef entrées for chicken; preserve protein servings.',  beefReductionPct: 50, vegetarianIncreasePct:  0, estimatedAnnualReductionMt: 229 },
-  { id: 'ms_localproduce',     name: '50% local produce sourcing',  description: 'Shift produce procurement to within-100-mile vendors.',              beefReductionPct:  0, vegetarianIncreasePct:  0, estimatedAnnualReductionMt: 12 },
+  { id: 'ms_meatlessmonday',   name: 'Meatless Mondays',           description: 'Replace all beef on Mondays with vegetarian/vegan options.',
+    beefReductionPct: 14, vegetarianIncreasePct: 14,
+    replacementKgPerServing: _servingKgByCategory.vegetarian,
+    estimatedAnnualReductionMt: _scenarioReduction(14, _servingKgByCategory.vegetarian) },
+  { id: 'ms_beef20',           name: 'Cut beef 20%',                description: 'Reduce beef portions and frequency by 20% across the week.',
+    beefReductionPct: 20, vegetarianIncreasePct: 12,
+    replacementKgPerServing: _servingKgByCategory.vegetarian,
+    estimatedAnnualReductionMt: _scenarioReduction(20, _servingKgByCategory.vegetarian) },
+  { id: 'ms_beef50',           name: 'Beef → chicken 50% swap',     description: 'Swap half of beef entrées for chicken; preserve protein servings.',
+    beefReductionPct: 50, vegetarianIncreasePct:  0,
+    replacementKgPerServing: _servingKgByCategory.chicken,
+    estimatedAnnualReductionMt: _scenarioReduction(50, _servingKgByCategory.chicken) },
+  // Not a beef scenario: this one is a procurement-distance saving and does
+  // not derive from the beef factor, so it stays on its own basis.
+  { id: 'ms_localproduce',     name: '50% local produce sourcing',  description: 'Shift produce procurement to within-100-mile vendors.',
+    beefReductionPct:  0, vegetarianIncreasePct:  0,
+    estimatedAnnualReductionMt: 12 },
 ];

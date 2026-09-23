@@ -2823,3 +2823,51 @@ assertion as `distinctPortionSizes === new Set(...).size` rather than pinning
 a number I had counted by eye.
 
 Suite 1,965 → 1,969; 138 → 139 files.
+
+## Phase 478 — a swap cannot save the whole of the thing it swapped
+
+The /dining menu scenarios publish an annual reduction each, rendered as the
+headline number of the scenario card. Three of the four are beef scenarios,
+and none reproduced from the menu data sitting beside them on the same page.
+
+**A swap that counted its replacement as zero.** *"Beef → chicken 50% swap —
+swap half of beef entrées for chicken; preserve protein servings"* was
+credited with **229 mt**, the entire footprint of the beef removed. The
+chicken that replaces it still emits 1.98 kg a serving against beef's 9.95, so
+the saving is ~80% of what was removed, not 100%. That is wrong on its face,
+independent of any base: you cannot save all of a serving you replaced with
+another serving.
+
+**A rescaled base.** Phase 415 rescaled these totals by the beef-factor
+correction (×1.658) because Phase 405 had moved `factorPerServing` and left
+them hardcoded — the comment says as much, and that the file "disagreed with
+itself for ten phases". Re-anchoring the level kept the implied beef base,
+which works out near 460 mt/yr against the ~386 mt/yr the menu actually
+carries.
+
+| scenario | was | now |
+| --- | --- | --- |
+| Meatless Mondays | 63 | **51** |
+| Cut beef 20% | 93 | **74** |
+| Beef → chicken 50% swap | 229 | **155** |
+| 50% local produce | 12 | 12 (own basis, untouched) |
+
+Each beef scenario now declares what replaces the beef it removes, and the
+reduction follows from `base × share × (1 − replacement/beef)`. The
+local-produce scenario is a procurement-distance saving with no beef term, so
+it is explicitly left alone rather than swept into the same rule.
+
+**Third instance of one pattern, and it now has a name.** Task #18 (trip
+distances), task #21 (dining portions) and this all failed the same way:
+
+> A rescale preserves whatever is wrong underneath it.
+
+Each time, a factor was corrected and the quantity it multiplied was left
+carrying the original error — which is exactly what rescaling is *for* when
+the underlying quantity is sound, and exactly what makes it dangerous when it
+is not. The fix in all three was the same: derive the quantity from its stated
+basis instead of scaling the symptom. Phase 470's sweep looked for arithmetic
+that did not compute; this pattern is arithmetic that computes perfectly from
+a premise nobody re-checked.
+
+Suite 1,969 → 1,974; 139 → 140 files.
