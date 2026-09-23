@@ -2473,3 +2473,45 @@ while explaining them. The staged write refused, as in Phases 456 and 466. The
 fix each time is to **describe** the retired claim rather than restate it.
 
 Suite 1,938 → 1,943; 133 → 134 files.
+
+## Phase 470 — check the worked examples, not just the totals
+
+`proseFigures.test.js` guards the headline totals in teaching prose. Nothing
+checked that a *stated calculation* actually computes — which is the part a
+student is invited to redo by hand.
+
+This evaluates every contiguous arithmetic chain in the eleven teaching files,
+with normal operator precedence, including restated intermediates
+("50×1 + 4×28 + 0.1×273 = 50 + 112 + 27.3 = 189.3").
+
+**It found nothing. 28 chains, all correct** — which is the result worth
+reporting plainly rather than manufacturing a fix for.
+
+Getting to that answer took four passes, and each false alarm is now a
+documented allowance rather than noise:
+
+- **Left-to-right evaluation was wrong.** Prose uses normal precedence, so
+  `50×1 + 4×28 + 0.1×273` is 189.3, not 412,703. Evaluating naively made a
+  correct example look 200,000% off.
+- **Unit rescale.** `6,000 × 10.21 = 61.3 mt` is right — in kg. Powers of
+  1,000 are accepted rather than requiring the prose to spell out kg→mt.
+- **Continuations are skipped, not failed.** `2.77 kg C/gal × 44.01/12.01 =
+  10.15` has a unit word inside the expression; a scan entering at `44.01`
+  sees a fragment. A chain preceded by an operator is a tail of something
+  longer, so it is skipped — inventing a verdict on a fragment is worse.
+- **A bare `N = M` is a label.** `GWP-100 = 28` is not a sum. The left side
+  must contain an operator to count as a calculation at all.
+
+The test carries controls in both directions — a corrupted chain must be
+flagged and a correct one must not — plus a floor on how many chains it finds,
+so it cannot pass by quietly matching nothing.
+
+*It also caught a real gap in my own earlier scan:* the Python version had
+`if not path.exists(): continue`, so a wrong path (`pages/EnergyEquivalents.js`
+— the file is in `components/`) was silently skipped. The test fails loudly on
+a missing file instead.
+
+Test-only phase: no rendered output changed, so there is no runtime marker to
+verify in the bundle.
+
+Suite 1,943 → 1,947; 134 → 135 files.
