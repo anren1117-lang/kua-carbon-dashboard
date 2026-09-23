@@ -2922,3 +2922,48 @@ still catch a category drifting back off the convention.
 nowhere near enough to hide a real 100-vs-200 split.
 
 Suite 1,974 → 1,979; 140 → 141 files.
+
+## Phase 480 — the figure task #12 was going to adopt was mislabelled
+
+Before repricing purchased goods I checked the arithmetic behind the number I
+was about to adopt. It does not hold.
+
+The Phase 404 audit measured the four sectors the 0.40 factor claims to
+average, against EPA Supply Chain v1.3:
+
+| sector | kg CO₂e/USD | commodities |
+| --- | --- | --- |
+| Paper (322) | 0.537 | 11 |
+| Computers & electronics (334) | 0.096 | 24 |
+| Soap & cleaning (3256) | 0.315 | 4 |
+| Apparel (315) | 0.120 | 7 |
+
+and recorded **"unweighted mean 0.222"**. It is not. The unweighted mean of
+those four is **0.267**. 0.222 is approximately the **commodity-count-weighted**
+mean (0.224) — and counting NAICS-6 codes is a meaningless weight for a spend
+basket, because the number of commodity codes in a sector says nothing about
+what a school buys.
+
+That mislabel had propagated: into the task list, into my own notes, and into
+the summary I gave as "the unweighted mean of the relevant sectors is 0.222". I
+repeated it without checking, which is precisely the failure this project keeps
+finding in everyone else's text.
+
+**The adopted 0.40 is still indefensible, and now quantifiably so.** It sits
+above three of the four sectors it claims to average. Reaching it needs a
+basket about **62% paper**, while the same note describes the basket as
+"dominated by electronics and apparel" — the two lowest of the four.
+
+**Nothing was repriced.** The gate asserts the factor is still 0.40 and gross
+still 4,375. The sector means are an internal audit result that has not been
+checked against the EPA file, and the $3M spend they multiply is itself a
+placeholder; both are load-bearing for a ~10% move in gross, so they get
+verified first. The sector table, the two candidate weightings and the implied
+paper share are now published as data and rendered on /scope-3.
+
+*The reachability rule earned its keep.* `liveDataWiring` discovers every
+`*_RECONCILIATION` export in `data/` and requires a page to import it — so the
+new object was flagged as an orphan the moment it existed, exactly as Phase 448
+intended when it replaced three hardcoded assertions with a sweep.
+
+Suite 1,979 → 1,984; 141 → 142 files.

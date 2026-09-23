@@ -2,7 +2,7 @@ import React from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
-import { SCOPE3_TOTAL_MT } from '../data/scopeTotals.js';
+import { SCOPE3_TOTAL_MT, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { factorVintageFor, describeFactorVintage, SCOPE3_FACTOR_KEYS } from '../data/emissionFactors.js';
@@ -30,6 +30,7 @@ const categories = [
 ];
 
 const styles = {
+  factorNote: { marginTop: 16, padding: '12px 16px', borderRadius: 8, border: '1px solid #92400e', background: '#3a2a0d', color: '#fcd34d', fontSize: 13, lineHeight: 1.6 },
   title: { margin: 0, fontSize: 36, fontWeight: 700 },
   subtitle: { marginTop: 10, color: '#94a3b8', maxWidth: 760, fontSize: 17, lineHeight: 1.6 },
   excluded: { marginTop: 16, padding: 12, background: '#0f172a', border: '1px dashed #334155', borderRadius: 8, color: '#94a3b8', fontSize: 13 },
@@ -108,6 +109,22 @@ function Scope3() {
           },
         ]}
       />
+
+      <div style={styles.factorNote} role="note">
+        <strong>The purchased-goods factor is above the sectors it averages.</strong>{' '}
+        Goods are priced at {GOODS_FACTOR_RECONCILIATION.adopted} kg CO₂e per dollar, described as a
+        weighted average of paper, IT, cleaning and apparel. Measured against EPA Supply Chain v1.3,
+        those four are{' '}
+        {PURCHASED_GOODS_SECTORS.map((x) => `${x.label} ${x.kgPerUsd}`).join(', ')} — so an equal
+        weighting gives {GOODS_FACTOR_RECONCILIATION.unweightedMean} and weighting by commodity count
+        gives {GOODS_FACTOR_RECONCILIATION.countWeightedMean}. Reaching{' '}
+        {GOODS_FACTOR_RECONCILIATION.adopted} needs a basket about{' '}
+        {Math.round(GOODS_FACTOR_RECONCILIATION.impliedPaperShare * 100)}% paper, while the basket
+        here is described as dominated by electronics and apparel — the two lowest of the four.{' '}
+        It is left as it is rather than quietly cut: the sector figures are an internal audit result
+        that has not been checked against the EPA file, and the spend they multiply is itself a
+        placeholder. Both would have to be real before a number this size should move.
+      </div>
 
       <ScopePageInfo
         color="#8b5cf6"

@@ -137,7 +137,10 @@ const KG_PER_LB = 0.45359237;
 //   computers/elec (334)   mean 0.096   (n=24)
 //   soap/cleaning (3256)   mean 0.315   (n=4)
 //   apparel (315)               0.120   (n=7)
-//   unweighted mean             0.222
+//   unweighted mean of the four 0.267
+//   weighted by commodity count 0.224  <- this is the 0.222 earlier
+//                                         notes called "unweighted"; counting
+//                                         NAICS codes is not a spend weight
 // Across all 1,016 commodities the median is 0.173 and the p90 is 0.595,
 // so 0.40 sits near the 80th percentile for a basket dominated by
 // electronics and apparel. Repricing to ~0.222 would cut the purchased-
@@ -153,7 +156,65 @@ const KG_PER_LB = 0.45359237;
 // That is a headline movement resting on a spend mix nobody has measured
 // (the $3M is itself a placeholder), so it is a decision for KUA, not a
 // silent edit. Published here rather than quietly closed.
+/**
+ * The four sectors the default factor claims to average, measured against EPA
+ * Supply Chain GHG Emission Factors v1.3 in the Phase 404 audit. Published as
+ * data so the weighting is visible and arguable instead of hidden inside one
+ * number.
+ */
+export const PURCHASED_GOODS_SECTORS = [
+  { naics: '322',  label: 'Paper',                   kgPerUsd: 0.537, commodityCount: 11 },
+  { naics: '334',  label: 'Computers & electronics', kgPerUsd: 0.096, commodityCount: 24 },
+  { naics: '3256', label: 'Soap & cleaning',         kgPerUsd: 0.315, commodityCount: 4 },
+  { naics: '315',  label: 'Apparel',                 kgPerUsd: 0.120, commodityCount: 7 },
+];
+
 export const PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD = 0.40;
+
+/**
+ * What the adopted factor is, against what its own stated basis gives.
+ *
+ * The audit note that measured these sectors called 0.222 the "unweighted
+ * mean". It is not: the unweighted mean of the four is 0.267. 0.222 is
+ * approximately the COMMODITY-COUNT-weighted mean (0.224), and counting
+ * NAICS-6 codes is a meaningless weight for a spend basket — the number of
+ * commodity codes in a sector says nothing about what a school buys. That
+ * mislabel propagated into the task list as the figure to adopt.
+ *
+ * The adopted 0.40 sits above three of the four sectors it claims to average.
+ * Reaching it requires a basket that is mostly paper, while the same note
+ * describes the basket as "dominated by electronics and apparel" — the two
+ * lowest. So the constant contradicts its own stated composition.
+ *
+ * Not repriced here: the sector means themselves are an internal audit
+ * finding, not yet checked against the EPA file, and they would be
+ * load-bearing for a ~10% move in gross. Stated, not silently adopted.
+ */
+export const GOODS_FACTOR_RECONCILIATION = (() => {
+  const v = PURCHASED_GOODS_SECTORS.map((x) => x.kgPerUsd);
+  const n = PURCHASED_GOODS_SECTORS.map((x) => x.commodityCount);
+  const unweightedMean = +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(3);
+  const countWeightedMean = +(
+    v.reduce((a, b, i) => a + b * n[i], 0) / n.reduce((a, b) => a + b, 0)
+  ).toFixed(3);
+  const paper = PURCHASED_GOODS_SECTORS.find((x) => x.naics === '322').kgPerUsd;
+  const others = PURCHASED_GOODS_SECTORS.filter((x) => x.naics !== '322');
+  const othersMean = others.reduce((a, x) => a + x.kgPerUsd, 0) / others.length;
+  const adopted = PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD;
+  return {
+    adopted,
+    unweightedMean,
+    countWeightedMean,
+    impliedPaperShare: +((adopted - othersMean) / (paper - othersMean)).toFixed(2),
+    aligned: false,
+    note: 'The adopted 0.40 kg CO2e/USD sits above three of the four sectors it claims to average. '
+      + 'An equal weighting of those sectors gives 0.267; weighting by commodity count gives 0.224. '
+      + 'The 0.222 that earlier notes called the "unweighted mean" is the count-weighted one, which '
+      + 'is not a spend weight. Reaching 0.40 needs a basket that is mostly paper, against a stated '
+      + 'basket dominated by electronics and apparel. Held pending verification of the sector means '
+      + 'against the EPA file and a real mapping of KUA spend to sectors.',
+  };
+})();
 
 /**
  * Sum a purchased_goods table to mtCO2e: spend × EEIO factor.
