@@ -9,6 +9,20 @@
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from './scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
 import { TOTAL_STUDENTS } from './students.js';
+import { getFactorByKey } from './emissionFactors.js';
+import { STAFF_WORK_DAYS } from './academicCalendar.js';
+
+// Carpool article. The body used to state a 25-mpg-derived per-mile figure
+// as what a typical car emits, and cited an EPA consumer page that publishes
+// a different number — the exact pairing emissionFactors.js records Phase 406
+// as having fixed. That figure is fine as a labelled sensitivity input in
+// geographicEstimates.js; it is not a fact to state to a reader. The factor,
+// the citation and every downstream number now come from the factor row.
+const CAR_FACTOR       = getFactorByKey('travel', 'passenger_car_avg');
+const CAR_KG_PER_MILE  = CAR_FACTOR.kgco2e_per_unit;
+const CARPOOL_SOLO_DAY = 20 * CAR_KG_PER_MILE;                       // 10-mile one-way commute
+const CARPOOL_WEEK_KG  = ((CARPOOL_SOLO_DAY / 2) * 5).toFixed(1);    // each of the two, per week
+const CARPOOL_PAIR_MT  = ((CARPOOL_SOLO_DAY * STAFF_WORK_DAYS) / 1000).toFixed(1);
 
 const grossMt   = Math.round(GROSS_MT);
 const sinksMt   = Math.round(ANNUAL_SEQUESTRATION_MT);
@@ -78,8 +92,8 @@ export const knowledgeArticles = [
     topic: 'transport',
     readingLevel: 'intermediate',
     keywords: ['carpool', 'commute', 'driving', 'gas'],
-    body: 'A typical passenger car emits about 0.351 kg CO2 per mile. If you carpool a 10-mile commute with one other person five days a week, you avoid about 17.5 kg/week of CO2 vs solo driving — roughly 0.7 mtCO2e/year per pair. Multiply across a faculty/staff body and the savings are real.',
-    sourceDoc: 'EPA Greenhouse Gases from a Typical Passenger Vehicle',
+    body: `A typical passenger car emits about ${CAR_KG_PER_MILE} kg CO2e per vehicle-mile — the EPA Scope 3 commuting factor, the same one the dashboard prices commutes with. If you carpool a 10-mile commute with one other person five days a week, you each avoid about ${CARPOOL_WEEK_KG} kg of CO2 a week versus driving solo — about ${CARPOOL_PAIR_MT} mtCO2e a year for the pair, across ${STAFF_WORK_DAYS} work days. Multiply across a faculty/staff body and the savings are real.`,
+    sourceDoc: CAR_FACTOR.source,
   },
   {
     id: 'ka_grid_clean',

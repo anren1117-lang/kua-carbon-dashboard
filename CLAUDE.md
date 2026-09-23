@@ -2435,3 +2435,41 @@ two surfaces show the same string. Rounding half-up here would reintroduce the
 mismatch the phase exists to remove.
 
 Suite 1,932 → 1,938; 132 → 133 files.
+
+## Phase 469 — a factor sweep, and the article it caught
+
+Phases 466–468 all fixed the same shape of defect, so this phase went looking
+for the rest of it: a context-matched sweep of the teaching files for prose
+restating a per-unit factor the code already defines.
+
+**Most of what it flagged was the sweep being wrong**, which is the usual
+ratio. Beef at "99.5 kg CO₂e" is per *kilogram* (Poore & Nemecek), not per
+serving — and 99.5 × the 0.15 kg serving is 14.9, so it corroborates
+`KG_PER_BEEF_SERVING = 15` rather than contradicting it. "0.49 kg/kWh" is the
+AVERT marginal rate in displacement contexts. "0.37 kg/kWh" is the US average,
+named as such. And ISO-NE at "0.271 kg/kWh" is the 2024 **in-region** rate
+(597 lb/MWh), explained in the same paragraph and distinct from the
+output-basis 0.2344 the inventory uses.
+
+**One was real.** The carpool knowledge article stated *"a typical passenger
+car emits about 0.351 kg CO2 per mile"* and cited EPA's consumer
+"Typical Passenger Vehicle" page. `emissionFactors.js` records that exact
+pairing as what Phase 406 fixed: the page publishes ~400 g/mi, and the figure
+matched neither it nor the Hub. It survives in `geographicEstimates.js` — but
+labelled there as a 25-mpg assumption, which is a fair sensitivity input and
+not a fact to state to a reader.
+
+Factor, citation and the worked arithmetic now all come from the factor row:
+0.2986 kg/vehicle-mile, 14.9 kg/week each, 1.1 mt/year for the pair across the
+180 staff work days. The old 17.5 and 0.7 followed from 0.351 and no longer do.
+
+A tripwire now guards the class: any prose sentence claiming "N kg per mile"
+must state the canonical factor, with a control proving the sweep fires on the
+retired figure and stays quiet on the fix.
+
+*Third time this session my replacement comment quoted the string my own guard
+forbids* — here by writing out both the retired number and the bad citation
+while explaining them. The staged write refused, as in Phases 456 and 466. The
+fix each time is to **describe** the retired claim rather than restate it.
+
+Suite 1,938 → 1,943; 133 → 134 files.
