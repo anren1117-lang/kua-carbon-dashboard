@@ -502,7 +502,7 @@ function Year1ProjectionSection({ s2 }) {
           Projected (NH seasonal shape)
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#cbd5e1' }}>
-          <svg width={14} height={8}><line x1={0} y1={4} x2={14} y2={4} stroke="#fbbf24" strokeWidth={2} strokeDasharray="3 2" /></svg>
+          <svg width={14} height={8} aria-hidden="true" focusable="false"><line x1={0} y1={4} x2={14} y2={4} stroke="#fbbf24" strokeWidth={2} strokeDasharray="3 2" /></svg>
           Cumulative Year 1 total
         </span>
       </div>

@@ -2967,3 +2967,47 @@ new object was flagged as an orphan the moment it existed, exactly as Phase 448
 intended when it replaced three hardcoded assertions with a sweep.
 
 Suite 1,979 → 1,984; 141 → 142 files.
+
+## Phase 481 — an accessibility sweep that reported 31 and meant 1
+
+Broadening past the carbon data, I swept every page and component for `<svg>`
+elements carrying no `aria-*` or `role`. It reported **31**. After opening each
+one, **one** was real.
+
+The four false-positive classes, all invisible to a regex over JSX:
+
+- **Prop spreads** — `<svg {...svgProps(p)}>`, where the icon library already
+  sets `'aria-hidden': true` inside the helper. That was 22 of the 31.
+- **Comments** — a line reading `// createSvgTag returns a complete
+  <svg>...</svg> string` matches happily.
+- **`aria-hidden` ancestors** — three icons sit inside a parent
+  `<span aria-hidden="true">`, which hides the whole subtree.
+- **`<text>` children** — the Goals progress ring renders its percent as an SVG
+  `<text>` node, and the load-duration curve labels its own p10 and base-load
+  lines. Both already announce.
+
+The one real defect was a 14×8 legend swatch in `Scope2BmsInsights` drawing a
+dashed line next to the words "Cumulative Year 1 total" — decoration beside its
+own label, now `aria-hidden`.
+
+**The part worth keeping is what I nearly did instead.** The obvious fix for an
+"unlabelled chart" is `role="img"` plus a summary label. `role="img"` makes an
+element a *leaf* for assistive tech: descendants stop being exposed. The scope
+donut's `<path>` segments each already carry
+`aria-label="Scope 1 — direct: 1,350 mtCO₂e (31%)"`, and adding `role="img"` to
+its wrapper would have destroyed every one of them — in the name of
+accessibility. Same for any chart with `<text>` labels inside.
+
+So no blanket rule was applied, and **no guard was added**. A test encoding
+"every svg is hidden or labelled" would have to understand spreads, ancestors,
+comments and children; the naive version is exactly the sweep that just
+over-reported thirty-fold, and a guard that cries wolf is worse than none.
+
+The honest headline: this codebase's accessibility is in good shape — 180
+aria-labels, 75 roles, zero images without alt, four `<div onClick>` — and the
+survey's value was confirming that rather than finding work.
+
+*Fourth over-reporting sweep of the session.* Opening every hit before acting
+is what kept a regression out of the build.
+
+Suite unchanged at 1,984.
