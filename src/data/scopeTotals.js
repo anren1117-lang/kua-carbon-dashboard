@@ -190,6 +190,35 @@ export const PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD = 0.40;
  * finding, not yet checked against the EPA file, and they would be
  * load-bearing for a ~10% move in gross. Stated, not silently adopted.
  */
+/**
+ * What comparable institutions actually use for spend-based Scope 3 Cat 1.
+ * Each kgPerUsd is recomputed from the spend and emissions its own source
+ * states, so the arithmetic is checkable rather than quoted.
+ *
+ * Four institutions across three different databases (EPA SEF, CEDA, EIO-LCA,
+ * USEEIO) land at 0.24-0.42 and bracket the published higher-education sector
+ * factor of 0.332.
+ */
+export const PEER_SPEND_FACTORS = [
+  { institution: 'University of Michigan', year: 'FY2020', kgPerUsd: 0.240, blended: true,
+    emissionsT: 673000, spendUsd: 2809241627.20,
+    basis: 'All purchased goods and services, EPA Supply Chain SEFs; stated range 0.133-0.449.' },
+  { institution: 'UC Berkeley (Doyle)', year: 'FY2009', kgPerUsd: 0.258, blended: true,
+    emissionsT: 127924.85, spendUsd: 494968275.81,
+    basis: 'All procurement, CEDA factors on 2002 USD; Penn State HHD later cites 0.257 from the same work.' },
+  { institution: 'Oregon University System', year: 'FY2008', kgPerUsd: 0.380, blended: true,
+    emissionsT: 232917, spendUsd: 612551332,
+    basis: 'Seven institutions, all supply-chain purchases, Carnegie Mellon EIO-LCA.' },
+  { institution: 'MIT (Perlman)', year: 'FY2016', kgPerUsd: 0.420, blended: false,
+    emissionsT: 78806, spendUsd: 187600000,
+    basis: 'MATERIAL GOODS ONLY (18.4% of spend; services excluded), USEEIO on 2007 USD.' },
+  { institution: 'MIT, university-sector code', year: 'FY2016', kgPerUsd: 0.283, blended: false,
+    emissionsT: 53175, spendUsd: 187600000,
+    basis: 'Same spend priced with the single USEEIO college/university commodity code.' },
+  { institution: 'WRI / USEEIO 2017 higher-ed sector', year: '2017', kgPerUsd: 0.332, blended: true,
+    basis: 'Published directly as 0.000331922 MT CO2e per dollar for the colleges and universities sector.' },
+];
+
 export const GOODS_FACTOR_RECONCILIATION = (() => {
   const v = PURCHASED_GOODS_SECTORS.map((x) => x.kgPerUsd);
   const n = PURCHASED_GOODS_SECTORS.map((x) => x.commodityCount);
@@ -207,12 +236,32 @@ export const GOODS_FACTOR_RECONCILIATION = (() => {
     countWeightedMean,
     impliedPaperShare: +((adopted - othersMean) / (paper - othersMean)).toFixed(2),
     aligned: false,
+    priceBasis: {
+      question: 'EPA publishes each factor without margins (producer price) and with margins '
+        + '(purchaser price). A spend-based calculation takes what was actually PAID, which is the '
+        + 'purchaser-price column. Which column the four sector means above came from is not recorded.',
+      epaExampleRatio: 1.41,
+      epaExample: 'Office Furniture 337214: 0.216 without margins, 0.305 with — a ratio of 1.41.',
+      impliedUnweightedIfProducerPrice: 0.377,
+      applied: false,
+      appliedNote: 'NOT applied. One worked example is not a correction factor: margins vary widely '
+        + 'by sector, and retail-heavy goods carry far larger ones than bulk materials. Recorded as '
+        + 'the most likely explanation for the sector means looking low, not as an adjustment.',
+    },
+    recommendation: 'Do not reprice downward on the evidence available. The adopted 0.40 sits inside '
+      + 'the 0.24-0.42 band that four peer institutions reach across three databases, near the top of '
+      + 'it; the 0.267 and 0.224 candidates sit at or below its bottom. Settling this needs the EPA '
+      + 'purchaser-price column confirmed and KUA spend mapped to sectors — not a reweighting of '
+      + 'numbers whose price basis is unknown.',
     note: 'The adopted 0.40 kg CO2e/USD sits above three of the four sectors it claims to average. '
       + 'An equal weighting of those sectors gives 0.267; weighting by commodity count gives 0.224. '
       + 'The 0.222 that earlier notes called the "unweighted mean" is the count-weighted one, which '
       + 'is not a spend weight. Reaching 0.40 needs a basket that is mostly paper, against a stated '
-      + 'basket dominated by electronics and apparel. Held pending verification of the sector means '
-      + 'against the EPA file and a real mapping of KUA spend to sectors.',
+      + 'basket dominated by electronics and apparel. But peer institutions land at 0.24-0.42 across '
+      + 'three databases and the published higher-education sector factor is 0.332, so the adopted '
+      + 'value is inside the peer band while the lower candidates are not. The likeliest reading is '
+      + 'that the sector means are on the producer-price basis and the adopted factor is on the '
+      + 'purchaser-price one, which is the correct basis for spend. Held, and no longer held as a cut.',
   };
 })();
 

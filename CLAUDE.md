@@ -3011,3 +3011,54 @@ survey's value was confirming that rather than finding work.
 is what kept a regression out of the build.
 
 Suite unchanged at 1,984.
+
+## Phase 482 — the evidence reversed the conclusion, and I had already shipped the wrong one
+
+Phase 480 published, on /scope-3, that the 0.40 purchased-goods factor "sits
+above the sectors it claims to average" and that reaching it needs a basket
+~62% paper. Both are still arithmetically true of the recorded sector means.
+Both were also one-sided, and they were live.
+
+Two things were missing, and they point the other way.
+
+**What peers actually use.** Each recomputed here from the spend and emissions
+its own source states, not quoted:
+
+| | | kg CO₂e/$ |
+| --- | --- | --- |
+| U-Michigan, all PGS | FY2020 | 0.240 *(bounds 0.133–0.449)* |
+| UC Berkeley (Doyle) | FY2009 | 0.258 |
+| Oregon University System | FY2008 | 0.380 |
+| MIT (Perlman), material goods only | FY2016 | 0.420 |
+| MIT, university-sector code | FY2016 | 0.283 |
+| WRI / USEEIO higher-ed sector | 2017 | **0.332** *(published directly)* |
+
+Four institutions, three databases, landing at **0.24–0.42** and bracketing the
+published higher-education sector factor. **KUA's 0.40 is inside that band.
+The 0.267 and 0.224 candidates sit at or below its bottom.**
+
+**The price basis.** EPA publishes every factor twice — without margins, what a
+producer receives, and with margins, what a buyer pays. Spend-based accounting
+needs the second. EPA's own worked example (Office Furniture 337214) goes 0.216
+→ 0.305, a ratio of **1.41**; applying that to the four recorded means moves
+their average from 0.267 to **0.377**, next door to the adopted figure. So the
+gap is most likely a *price basis*, not an inflated factor.
+
+That ratio is **recorded, not applied** — one worked example is not a
+correction factor, and margins vary far more for retail-heavy goods than for
+bulk materials. `priceBasis.applied` is `false` and the gate asserts it.
+
+**Recommendation reversed: do not reprice this downward.** Reweighting numbers
+whose price basis is unknown would move a published figure onto worse
+information than it currently rests on. Settling it needs the EPA
+purchaser-price column confirmed and KUA spend mapped to sectors.
+
+*Twice wrong on one task.* First I repeated "the unweighted mean is 0.222"
+without checking the arithmetic (Phase 480 caught it: it is 0.267). Then, having
+caught that, I still framed the result as a one-sided case for cutting — because
+I checked that the sectors sat below 0.40 without checking whether they were on
+the same price basis, or what anyone else uses. The first error was arithmetic;
+the second was exactly the "don't overclaim from true numbers" failure, with
+every individual number correct.
+
+Suite 1,984 → 1,989; 142 → 143 files.

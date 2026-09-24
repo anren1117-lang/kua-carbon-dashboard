@@ -2,7 +2,7 @@ import React from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
-import { SCOPE3_TOTAL_MT, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION } from '../data/scopeTotals.js';
+import { SCOPE3_TOTAL_MT, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION, PEER_SPEND_FACTORS } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { factorVintageFor, describeFactorVintage, SCOPE3_FACTOR_KEYS } from '../data/emissionFactors.js';
@@ -111,19 +111,29 @@ function Scope3() {
       />
 
       <div style={styles.factorNote} role="note">
-        <strong>The purchased-goods factor is above the sectors it averages.</strong>{' '}
-        Goods are priced at {GOODS_FACTOR_RECONCILIATION.adopted} kg CO₂e per dollar, described as a
-        weighted average of paper, IT, cleaning and apparel. Measured against EPA Supply Chain v1.3,
-        those four are{' '}
-        {PURCHASED_GOODS_SECTORS.map((x) => `${x.label} ${x.kgPerUsd}`).join(', ')} — so an equal
-        weighting gives {GOODS_FACTOR_RECONCILIATION.unweightedMean} and weighting by commodity count
-        gives {GOODS_FACTOR_RECONCILIATION.countWeightedMean}. Reaching{' '}
-        {GOODS_FACTOR_RECONCILIATION.adopted} needs a basket about{' '}
-        {Math.round(GOODS_FACTOR_RECONCILIATION.impliedPaperShare * 100)}% paper, while the basket
-        here is described as dominated by electronics and apparel — the two lowest of the four.{' '}
-        It is left as it is rather than quietly cut: the sector figures are an internal audit result
-        that has not been checked against the EPA file, and the spend they multiply is itself a
-        placeholder. Both would have to be real before a number this size should move.
+        <strong>What the purchased-goods factor rests on.</strong> Goods are priced at{' '}
+        {GOODS_FACTOR_RECONCILIATION.adopted} kg CO₂e per dollar, described as a weighted average of
+        paper, IT, cleaning and apparel. The four sector figures on file are{' '}
+        {PURCHASED_GOODS_SECTORS.map((x) => `${x.label} ${x.kgPerUsd}`).join(', ')} — all but paper
+        below the adopted value, and an equal weighting of them gives{' '}
+        {GOODS_FACTOR_RECONCILIATION.unweightedMean}.{' '}
+        <strong>That gap is probably a price basis, not an inflated factor.</strong> EPA publishes
+        every factor twice: without margins, which is what a producer receives, and with margins,
+        which is what a buyer actually pays. Spend-based accounting needs the second. EPA&rsquo;s own
+        worked example moves 0.216 to 0.305, a ratio of{' '}
+        {GOODS_FACTOR_RECONCILIATION.priceBasis.epaExampleRatio} — and applying that to the sectors
+        above would put their average at{' '}
+        {GOODS_FACTOR_RECONCILIATION.priceBasis.impliedUnweightedIfProducerPrice}, beside the adopted
+        figure. It is recorded rather than applied, because margins vary a lot by sector.{' '}
+        <strong>Comparable institutions agree with the adopted end.</strong>{' '}
+        {PEER_SPEND_FACTORS.filter((x) => x.blended)
+          .map((x) => `${x.institution} ${x.kgPerUsd}`).join(', ')} — four institutions across three
+        databases landing between{' '}
+        {Math.min(...PEER_SPEND_FACTORS.map((x) => x.kgPerUsd))} and{' '}
+        {Math.max(...PEER_SPEND_FACTORS.map((x) => x.kgPerUsd))}, bracketing the published
+        higher-education sector factor of 0.332. So the number here is left alone: settling it needs
+        the EPA purchaser-price column confirmed and KUA spend mapped to sectors, not a reweighting
+        of figures whose price basis is unknown.
       </div>
 
       <ScopePageInfo
