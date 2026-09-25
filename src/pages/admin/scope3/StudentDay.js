@@ -3,12 +3,25 @@ import { useTable } from './useTable';
 import { formStyles as s } from './formStyles';
 import { PeriodNote } from './PeriodNote';
 import { EducationalCard } from '../../../components/EducationalCard';
-import { REPORTING_SCHOOL_YEAR } from '../../../data/academicCalendar.js';
+import { REPORTING_SCHOOL_YEAR, INSTRUCTIONAL_DAYS } from '../../../data/academicCalendar.js';
+import { getFactorByKey } from '../../../data/emissionFactors.js';
+import { useMeasuredScopeTotals } from '../../../hooks/useMeasuredScopeTotals.js';
+
+// Figure AND share derived. This read "roughly 1.5 mtCO2e ... about 0.7%":
+// 1.5 came from the 0.404 kg/mi factor Phase 406 retired, and 0.7% was never
+// right at all — one commuter is ~0.02% of gross, not 0.7%.
+//
+// Gross comes from the live composer rather than the build-time constant,
+// because this sentence states a SHARE of it and has to move when an admin
+// enters data. liveDataWiring.test.js caught the static version.
+const COMMUTE_MT = (10 * 2 * INSTRUCTIONAL_DAYS
+  * getFactorByKey('travel', 'passenger_car_avg').kgco2e_per_unit) / 1000;
 
 const empty = { zip_code: '', graduation_year: '2026', school_year: REPORTING_SCHOOL_YEAR };
 
 function StudentDay() {
   const { rows, error, insert, remove } = useTable('day_students', 'created_at');
+  const live = useMeasuredScopeTotals();
   const [form, setForm] = useState(empty);
   const [msg, setMsg] = useState(null);
 
@@ -42,7 +55,7 @@ function StudentDay() {
           {
             heading: 'Order of magnitude',
             body: [
-              'A 10-mile one-way commute, driven solo every school day for 36 weeks, produces roughly 1.5 mtCO₂e per year — about 0.7% of KUA\'s entire annual footprint, from a single person.',
+              `A 10-mile one-way commute, driven solo every school day for ${INSTRUCTIONAL_DAYS} days, produces roughly ${COMMUTE_MT.toFixed(1)} mtCO₂e per year — about ${(COMMUTE_MT / live.grossMt * 100).toFixed(2)}% of the entire annual KUA footprint. Small per person, which is the point: it only matters multiplied by everyone who drives.`,
               'Carpooling with one other person cuts per-passenger emissions in half. Switching from a gas car to an EV cuts them by about 60% on the New England grid.',
               'Walking and biking are zero-emission. Below ~3 miles, they\'re often faster than driving once you account for parking.',
             ],

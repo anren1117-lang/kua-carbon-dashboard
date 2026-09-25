@@ -3254,3 +3254,45 @@ a retired net-negative claim as history — correctly, so the FAQ is
 allow-listed rather than rewritten.
 
 Suite 1,999 → 2,004; 146 files.
+
+## Phase 487 — the third pass, run properly
+
+Phase 486 named three ways a reprice leaves prose behind: stale **figures**,
+stale **positional claims**, stale **adjectives**. There is a fourth that sits
+between them — **proportional claims**, which contain a number but the number
+is a *ratio*, so a sweep for stale figures walks straight past it.
+
+Twelve hardcoded "N% of gross / of Scope 3 / of the net" statements exist.
+**Ten check out**, which is the usual ratio and the reason to open each:
+purchased goods at "roughly half of Scope 3" is 49.9%, heating at "~95% of
+Scope 1" is 95.5%, "60% of gross from Scope 3" is 60.0%, a 200 kW array at
+"about 15% of total electricity" is 14.7%, and the rest quote outside
+literature. Two did not.
+
+**The reprice artefact.** *"~185 mtCO₂e/yr — about 11% of KUA's entire net
+balance."* Correct at the old net of 1,725. The net is now 2,566, so the same
+185 mt is **7%**.
+
+**The one that was never right.** `/admin` student-commute card: *"a 10-mile
+one-way commute … produces roughly 1.5 mtCO₂e per year — about 0.7% of KUA's
+entire annual footprint, from a single person."* Both halves wrong. The 1.5
+comes from the 0.404 kg/mi factor Phase 406 retired; at the EPA commuting
+factor the same commute is **1.07 mt**. And 1.5 mt is 0.034% of gross, not
+0.7% — **the card overstated one commuter's share by about thirty times**, on a
+page whose entire job is to give an administrator a sense of scale. No reprice
+caused that; it had been wrong all along, and no figure-level sweep could see
+it because 0.7 is not a stale total, it is a wrong ratio.
+
+Both now derive the figure *and* the share.
+
+*`liveDataWiring` caught me a second time, the same way.* Deriving the share
+meant importing `GROSS_MT`, which made an admin page display a build-time
+figure with no live hook. It now reads `useMeasuredScopeTotals`, so the share
+moves when an admin enters data — which is the whole point of stating a share
+on a data-entry page.
+
+*And my own test selector was wrong first.* Two lesson bodies mention 185 mt;
+`.find()` took the one without a percentage, and the failure message showed me
+the wrong string rather than a missing one. Tightened to require both.
+
+Suite 2,004 → 2,008; 147 files.

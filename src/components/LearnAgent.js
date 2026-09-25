@@ -29,6 +29,11 @@ import {
 // float artifact — but the point here is that the lesson and the page show
 // the SAME string, so rounding half-up would reintroduce the mismatch this
 // block exists to remove.
+// Net used by prose that states a share of it. Derived so a reprice moves
+// the ratio as well as the figure — the 11% this replaced was correct
+// against a net of 1,725 and wrong against 2,566.
+const NET_MT_FOR_PROSE = GROSS_MT - ANNUAL_SEQUESTRATION_MT;
+
 const TRAVEL = (() => {
   const [day, usBoarder, intl] = allTypicalFootprints();
   return {
@@ -1347,7 +1352,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'The biggest individual lever: travel',
-        body: 'A long-haul economy round-trip from East Asia produces ~3.7 mtCO₂e per passenger on the cohort-weighted central. If 50 international students replace one trip with an extended on-campus stay, that\'s ~185 mtCO₂e/yr — about 11% of KUA\'s entire net balance.',
+        body: `A long-haul economy round-trip from East Asia produces ~3.7 mtCO₂e per passenger on the cohort-weighted central. If 50 international students replace one trip with an extended on-campus stay, that's ~185 mtCO₂e/yr — about ${Math.round((185 / NET_MT_FOR_PROSE) * 100)}% of the KUA net balance.`,
       },
       {
         type: 'concept',
