@@ -3062,3 +3062,49 @@ the second was exactly the "don't overclaim from true numbers" failure, with
 every individual number correct.
 
 Suite 1,984 → 1,989; 142 → 143 files.
+
+## Phase 483 — every page renders, and now something checks that
+
+The one verification this project never had: does a page *render*. Not "is it
+correct" — the other 143 test files are for that — but does a reader who clicks
+the link get a screen instead of a blank one.
+
+Phase 439 shipped a `ReferenceError` to production because `export { x } from
+'y'` forwards to consumers without creating a local binding. The suite was
+green: that phase's tests asserted on **source text** and never invoked
+anything, and no test mounted the page. It reached production and stayed there
+until the next phase went looking.
+
+**119 page files. Fifty were mounted by some test. The other sixty-nine could
+throw on first paint with the whole suite green.** Now every module under
+`pages/**` whose default export is a component gets mounted, with the same
+Supabase harness the other render tests use and a wildcard route so pages that
+read params get one.
+
+**All of them render.** The only modules that came back were seven colocated
+helpers — `useTable`, `useFactor`, `formStyles`, `RecordsTable`, `PeriodNote`,
+`PreviewBanner`, `_shared` — which are hooks, styles and sub-components living
+next to the screens that use them, not pages. They are skipped by the rule "a
+page is a module whose default export is a component", and the skip list is
+*counted and capped at 12* so it cannot quietly grow to swallow real pages.
+
+**The control matters more than the pass.** I broke `Faq.js` with a
+render-time `ReferenceError` — the exact Phase 439 shape — and the test
+returned `"../pages/Faq.js — render threw: __deliberatelyUndefinedForControl
+is not defined"`, naming the page and the cause. Restored, green. A guard I had
+not watched fail would have been worth nothing.
+
+Three assertions keep it from passing vacuously: zero failures, **more than 100
+pages actually mounted**, and the skip list under 12. If the glob ever breaks,
+the count fails rather than the loop quietly finding nothing.
+
+*Why this instead of a browser.* The intent was to load the deployed site and
+look for runtime errors. The local Playwright profile is held by another
+session and the cloud browser is unauthenticated — but a one-off browser check
+would have proved it once, on one page, on one day. This proves it for every
+page, on every run, forever. The blocked path turned out to be the worse one.
+
+Test-only: no rendered output changed, so there is no runtime marker to verify
+in the bundle.
+
+Suite 1,989 → 1,991; 143 → 144 files.
