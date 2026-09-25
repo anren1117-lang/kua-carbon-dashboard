@@ -199,6 +199,53 @@ export const PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD = 0.40;
  * USEEIO) land at 0.24-0.42 and bracket the published higher-education sector
  * factor of 0.332.
  */
+/**
+ * The EPA dataset, read from its own methodology document rather than
+ * inferred. Source: Wesley Ingwersen, "About the Supply Chain Greenhouse Gas
+ * Emission Factors v1.2 NAICS-6 Datasets", USEPA, 12 April 2023.
+ *
+ * The load-bearing correction: every factor type shares a PURCHASER-PRICE
+ * denominator. Verbatim — "The dollar in the denominator of all factors uses
+ * purchaser prices in 2021 USD." Margins are not a price basis. Margin
+ * Emission Factors add the EMISSIONS of the trade and transport industries
+ * that move a good from producer to buyer, in the numerator.
+ *
+ * So SEF+MEF is still the right column for spend-based accounting, but the
+ * correction it represents is small: mean margin 0.0282 kg CO2e/USD, max
+ * 0.270, and zero for 55% of commodities.
+ */
+export const EPA_SUPPLY_CHAIN_BASIS = {
+  documentedVersion: 'v1.2',
+  documentDate: '2023-04-12',
+  citedInThisRepo: 'v1.3',
+  versionCaveat: 'Figures here are read from the v1.2 methodology document. The v1.3 document '
+    + 'could not be retrieved, so these distributions are labelled v1.2 rather than presented as '
+    + 'current. The methodology statements — three factor types, purchaser-price denominator, '
+    + 'intended for Scope 3 Cat 1 — are structural and carry across versions.',
+  commodities: 1016,
+  naicsVintage: 2017,
+  ghgDataYear: 2019,
+  denominator: 'purchaser prices in 2021 USD',
+  gwp: 'IPCC AR4 100-yr',
+  intendedFor: 'GHG Protocol Scope 3 Category 1 (purchased goods and services) and Category 2',
+  factorTypes: ['SEF', 'MEF', 'SEF+MEF'],
+  marginsAreAPriceBasis: false,
+  marginsAre: 'the emissions of the trade and transport industries that move a good from producer '
+    + 'to buyer — added in the numerator, not a switch of price basis',
+  correctColumnForSpend: 'SEF+MEF',
+  // Table 1, distributions across the 1,016 commodities
+  withoutMargins: { min: 0.013, q1: 0.1230, median: 0.187, mean: 0.3579, q3: 0.4015, max: 10.989 },
+  withMargins:    { min: 0.013, q1: 0.1288, median: 0.208, mean: 0.3860, q3: 0.4483, max: 10.989 },
+  margins: {
+    mean: 0.0282,
+    max: 0.270,
+    nonZeroShare: 0.45,
+    officeFurnitureExample: 0.089,
+    note: 'EPA Table 1. Margins are zero for 55% of commodities and always smaller than the '
+      + 'corresponding SEF, so a with-margins factor is dominated by its without-margins part.',
+  },
+};
+
 export const PEER_SPEND_FACTORS = [
   { institution: 'University of Michigan', year: 'FY2020', kgPerUsd: 0.240, blended: true,
     emissionsT: 673000, spendUsd: 2809241627.20,
@@ -237,17 +284,21 @@ export const GOODS_FACTOR_RECONCILIATION = (() => {
     impliedPaperShare: +((adopted - othersMean) / (paper - othersMean)).toFixed(2),
     aligned: false,
     priceBasis: {
-      question: 'EPA publishes each factor without margins (producer price) and with margins '
-        + '(purchaser price). A spend-based calculation takes what was actually PAID, which is the '
-        + 'purchaser-price column. Which column the four sector means above came from is not recorded.',
-      epaExampleRatio: 1.41,
-      epaExample: 'Office Furniture 337214: 0.216 without margins, 0.305 with — a ratio of 1.41.',
-      impliedUnweightedIfProducerPrice: 0.377,
+      question: 'EPA publishes three factor types per commodity — without margins (SEF), the '
+        + 'margins alone (MEF), and with margins (SEF+MEF). All three are per purchaser-price '
+        + 'dollar; margins add the emissions of the trade and transport industries that move a '
+        + 'good from producer to buyer. Spend-based accounting wants SEF+MEF. Which column the '
+        + 'four sector means above came from is still not recorded.',
       applied: false,
-      appliedNote: 'NOT applied. One worked example is not a correction factor: margins vary widely '
-        + 'by sector, and retail-heavy goods carry far larger ones than bulk materials. Recorded as '
-        + 'the most likely explanation for the sector means looking low, not as an adjustment.',
+      impliedUnweightedWithMargins: +(0.267 + 0.0282).toFixed(3),
+      correctedNote: 'Phase 482 described this as a producer-versus-purchaser price switch and '
+        + 'illustrated it with one commodity whose margin is 0.089 — over three times the mean. '
+        + 'Both were wrong. EPA states the denominator is purchaser price for ALL factor types, '
+        + 'and Table 1 puts the mean margin at 0.0282 with margins zero for 55% of commodities. '
+        + 'Adding a typical margin to the four sectors moves their average from about 0.267 to '
+        + 'about 0.295 — still well under the adopted 0.40. Margins do not close this gap.',
     },
+    recommendationRestsOn: 'the peer band, not the margin correction — see EPA_SUPPLY_CHAIN_BASIS',
     recommendation: 'Do not reprice downward on the evidence available. The adopted 0.40 sits inside '
       + 'the 0.24-0.42 band that four peer institutions reach across three databases, near the top of '
       + 'it; the 0.267 and 0.224 candidates sit at or below its bottom. Settling this needs the EPA '

@@ -3108,3 +3108,55 @@ Test-only: no rendered output changed, so there is no runtime marker to verify
 in the bundle.
 
 Suite 1,989 → 1,991; 143 → 144 files.
+
+## Phase 484 — read the source, and it corrected me again
+
+Three research agents had died trying to answer one question: which EPA column
+the purchased-goods sector means came from. So I fetched the methodology
+document and read it.
+
+**Wesley Ingwersen, "About the Supply Chain Greenhouse Gas Emission Factors
+v1.2 NAICS-6 Datasets", USEPA, 12 April 2023.** Verbatim:
+
+> "The dollar in the denominator of all factors uses purchaser prices in 2021
+> USD."
+
+**All three factor types share a purchaser-price denominator.** Margins are not
+a price basis — Margin Emission Factors add, in the *numerator*, the emissions
+of the trade and transport industries that move a good from producer to buyer.
+
+Which makes Phase 482's explanation wrong, on a live page. I had written that
+"without margins" is a producer price and "with margins" a purchaser price, and
+that the sector means looked low because they were on the wrong side of that
+split.
+
+**And the correction is much smaller than I implied.** EPA's Table 1 puts the
+mean margin at **0.0282** kg CO₂e/USD, max 0.270, and states margins are
+"non-zero for 45% of commodities" — zero for the other 55%. The Office Furniture
+example I generalised from carries a margin of 0.089, **over three times the
+mean**. Adding a typical margin moves the four sectors from ~0.267 to **~0.295**,
+not the 0.377 I published. Margins do not close this gap.
+
+**The conclusion survives; its support changed.** "Do not reprice" now rests on
+the peer band alone — four institutions across three databases at 0.24–0.42,
+bracketing the published higher-education sector factor of 0.332. And against
+EPA's own v1.2 distribution the adopted 0.40 sits between the median (0.208) and
+the third quartile (0.4483) of all 1,016 commodities: high, but not the "near the
+80th percentile" the older comment claimed.
+
+*Version honesty.* The code cites v1.3; only v1.2 was retrievable, so every
+distribution figure is labelled v1.2 rather than passed off as current. The
+structural statements — three factor types, purchaser-price denominator, Scope 3
+Cat 1 intent — carry across versions. I did **not** "correct" the code's 2022
+USD / AR5 citation to v1.2's 2021 USD / AR4, because those are version-specific
+and I could not verify v1.3.
+
+*Phase 482's test had to be updated*, because it asserted the 1.41 ratio — a
+test encoding a claim I later found to be wrong. It now asserts the ratio is
+**gone**.
+
+**Three agents failed at this; one `curl` and `pdftotext` settled it.** When the
+question is "what does this document say", fetching the document beats
+delegating the reading of it.
+
+Suite 1,991 → 1,997; 144 → 145 files.

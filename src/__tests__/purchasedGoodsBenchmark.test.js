@@ -21,18 +21,15 @@
 // sector factor of 0.332. KUA's adopted 0.40 sits inside that band, near the
 // top. The 0.222 and 0.267 candidates sit at or BELOW its bottom.
 //
-// And the likely explanation for the sector means looking low: EPA publishes
-// factors "without margins" (producer price) and with margins (purchaser
-// price), and a spend-based calculation takes what was actually PAID — the
-// purchaser-price column. EPA's own worked example, Office Furniture 337214,
-// is 0.216 without margins and 0.305 with, a ratio of 1.41. Applying that
-// ratio to the recorded means moves their average from 0.267 to 0.377, next
-// door to the adopted 0.40.
+// A second explanation was floated here and then read from the source and
+// withdrawn — see epaSupplyChainBasis.test.js. EPA publishes three factor
+// types, and all three share a purchaser-price denominator; margins add the
+// emissions of trade and transport, not a change of price basis. They are also
+// small (mean 0.0282, zero for 55% of commodities), so they move these four
+// sectors from ~0.267 to ~0.295, nowhere near the adopted 0.40.
 //
-// That ratio is ONE example and margins vary a lot by sector — retail-heavy
-// goods carry far larger margins than bulk materials — so it is recorded as
-// indicative, not applied as a correction. The conclusion it supports is
-// narrow but firm: do not reprice this downward on the evidence available.
+// The conclusion therefore rests on the peer band alone, which is where this
+// file's assertions live: do not reprice downward on the evidence available.
 
 import { describe, it, expect } from 'vitest';
 import {
@@ -76,10 +73,15 @@ describe('the spend factor is checked against what peers actually use', () => {
     expect(R.countWeightedMean).toBeLessThan(lowestBlended);
   });
 
-  it('the price-basis question is recorded, and not silently applied', () => {
+  it('the margins question is recorded, and not silently applied', () => {
     expect(R.priceBasis.question).toMatch(/purchaser/i);
-    expect(R.priceBasis.epaExampleRatio).toBeCloseTo(1.41, 2);
-    // indicative only — the reconciliation must NOT have rescaled the sectors
+    // Phase 484 read the EPA document and removed the 1.41 ratio this used to
+    // assert: it came from one commodity whose margin is over three times the
+    // mean, and it was attached to a producer-vs-purchaser story that EPA's own
+    // text contradicts. What replaces it is the typical case.
+    expect(R.priceBasis.epaExampleRatio).toBeUndefined();
+    expect(R.priceBasis.correctedNote).toMatch(/purchaser price for ALL factor types/i);
+    // the reconciliation must still NOT have rescaled the sectors
     const recorded = PURCHASED_GOODS_SECTORS.map((s) => s.kgPerUsd);
     expect(recorded).toEqual([0.537, 0.096, 0.315, 0.120]);
     expect(R.priceBasis.applied).toBe(false);

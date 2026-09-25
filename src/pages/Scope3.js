@@ -2,7 +2,7 @@ import React from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
-import { SCOPE3_TOTAL_MT, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION, PEER_SPEND_FACTORS } from '../data/scopeTotals.js';
+import { SCOPE3_TOTAL_MT, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION, PEER_SPEND_FACTORS, EPA_SUPPLY_CHAIN_BASIS } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { factorVintageFor, describeFactorVintage, SCOPE3_FACTOR_KEYS } from '../data/emissionFactors.js';
@@ -115,25 +115,30 @@ function Scope3() {
         {GOODS_FACTOR_RECONCILIATION.adopted} kg CO₂e per dollar, described as a weighted average of
         paper, IT, cleaning and apparel. The four sector figures on file are{' '}
         {PURCHASED_GOODS_SECTORS.map((x) => `${x.label} ${x.kgPerUsd}`).join(', ')} — all but paper
-        below the adopted value, and an equal weighting of them gives{' '}
+        below the adopted value, averaging{' '}
         {GOODS_FACTOR_RECONCILIATION.unweightedMean}.{' '}
-        <strong>That gap is probably a price basis, not an inflated factor.</strong> EPA publishes
-        every factor twice: without margins, which is what a producer receives, and with margins,
-        which is what a buyer actually pays. Spend-based accounting needs the second. EPA&rsquo;s own
-        worked example moves 0.216 to 0.305, a ratio of{' '}
-        {GOODS_FACTOR_RECONCILIATION.priceBasis.epaExampleRatio} — and applying that to the sectors
-        above would put their average at{' '}
-        {GOODS_FACTOR_RECONCILIATION.priceBasis.impliedUnweightedIfProducerPrice}, beside the adopted
-        figure. It is recorded rather than applied, because margins vary a lot by sector.{' '}
-        <strong>Comparable institutions agree with the adopted end.</strong>{' '}
+        <strong>Margins do not explain the gap.</strong> EPA publishes three factor types per
+        commodity — without margins, the margins alone, and with margins — and every one is per
+        purchaser-price dollar; margins add the emissions of the trade and transport industries that
+        move a good from producer to buyer. Spend-based accounting wants the with-margins column,
+        but EPA&rsquo;s own distribution puts the mean margin at{' '}
+        {EPA_SUPPLY_CHAIN_BASIS.margins.mean} kg CO₂e per dollar and zero for{' '}
+        {Math.round((1 - EPA_SUPPLY_CHAIN_BASIS.margins.nonZeroShare) * 100)}% of commodities, so
+        adding one moves these four to about{' '}
+        {GOODS_FACTOR_RECONCILIATION.priceBasis.impliedUnweightedWithMargins} — still under the
+        adopted figure.{' '}
+        <strong>What does support it is what comparable institutions use.</strong>{' '}
         {PEER_SPEND_FACTORS.filter((x) => x.blended)
           .map((x) => `${x.institution} ${x.kgPerUsd}`).join(', ')} — four institutions across three
         databases landing between{' '}
         {Math.min(...PEER_SPEND_FACTORS.map((x) => x.kgPerUsd))} and{' '}
         {Math.max(...PEER_SPEND_FACTORS.map((x) => x.kgPerUsd))}, bracketing the published
-        higher-education sector factor of 0.332. So the number here is left alone: settling it needs
-        the EPA purchaser-price column confirmed and KUA spend mapped to sectors, not a reweighting
-        of figures whose price basis is unknown.
+        higher-education sector factor of 0.332. Against EPA&rsquo;s own {EPA_SUPPLY_CHAIN_BASIS.documentedVersion}{' '}
+        distribution the adopted value sits between the median ({EPA_SUPPLY_CHAIN_BASIS.withMargins.median})
+        and the third quartile ({EPA_SUPPLY_CHAIN_BASIS.withMargins.q3}) of all{' '}
+        {EPA_SUPPLY_CHAIN_BASIS.commodities.toLocaleString()} commodities. So it is left alone:
+        settling it needs KUA spend mapped to sectors and the four sector figures traced to a
+        specific EPA column, not a reweighting of numbers whose provenance is unknown.
       </div>
 
       <ScopePageInfo
