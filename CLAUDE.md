@@ -3213,3 +3213,44 @@ replaces the canonical factor. Restored, with a comment saying why it must not
 be derived.
 
 Suite 1,997 → 1,999; 145 files.
+
+## Phase 486 — the adjectives did not move with the numbers
+
+Across tasks #16 and #5 the headline net went **1,725 → 2,566, a 49% rise**.
+Every interpolated figure followed. Two sentences describing the *scale* of
+that number did not, because they contain no numbers at all:
+
+> "that gap is the single biggest reason KUA's net footprint **reads near
+> zero**" — `/sinks-os` subtitle
+>
+> "KUA's net is **already low** because of the campus forest" — the net-zero
+> target description
+
+The forest offsets **42%** of gross. The majority of the footprint survives it.
+And at ~7.5 mtCO₂e per student the net sits **above** the 2.67 mean across the
+35 higher-education inventories in Valls-Val & Bovea (2021) — a comparison this
+dashboard makes itself, on another page, while calling the number low.
+
+Both now state the share, derived rather than typed, and say plainly that a
+large lever is not a solved problem.
+
+**This is the third distinct form of the same failure**, and worth naming as a
+set:
+
+1. **Figures** go stale — caught by the residual sweeps.
+2. **Positional claims** go stale ("the top of the spread") — Phase 475, where
+   the interpolated range updated itself *inside* a sentence asserting the
+   adopted value was its maximum.
+3. **Adjectives of scale** go stale — this phase. *Small, low, near zero, most
+   of, negligible, approaching.* No numeric sweep can see them, because there
+   is no number to check.
+
+So a reprice needs three passes. I had been running one, and running it well.
+
+*Six of the eight hits were fine*, which is the usual ratio and the reason for
+opening each: `/sinks` derives its offset share, `NetEstimate` branches on the
+sign, `DailyTip` interpolates both figures, `/carbon-math` and the FAQ narrate
+a retired net-negative claim as history — correctly, so the FAQ is
+allow-listed rather than rewritten.
+
+Suite 1,999 → 2,004; 146 files.

@@ -11,6 +11,7 @@ import {
 } from '../data/sinks.js';
 import { useMeasuredSinks } from '../hooks/useMeasuredSinks.js';
 import { SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
+import { GROSS_MT } from '../data/scopeTotals.js';
 
 // Sinks OS module — forest + soil sequestration. Mirrors the Renewables
 // module pattern. Lives at /sinks-os to avoid colliding with the older
@@ -58,7 +59,7 @@ export default function Sinks() {
   return (
     <ModulePage
       title="Carbon Sinks"
-      subtitle="On-campus carbon drawdown — what KUA's roughly 1,000 acres of forest and the soil under it pull out of the air every year. Most peer schools don't measure their sinks at all; that gap is the single biggest reason KUA's net footprint reads near zero."
+      subtitle={`On-campus carbon drawdown — what the roughly 1,000 acres of KUA forest and the soil under it pull out of the air every year. Most peer schools do not measure their sinks at all, which is why the KUA net reads lower than theirs. It does not read near zero: the forest offsets about ${Math.round((ANNUAL_SEQUESTRATION_MT / GROSS_MT) * 100)}% of gross, so the majority of the footprint is still there after it.`}
     >
       <LiveDataNotice error={live.error} fallbackLabel="the stand-weighted placeholder inventory" />
       <MetricGrid metrics={[

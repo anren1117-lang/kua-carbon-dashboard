@@ -76,7 +76,7 @@ export const reductionTargets = [
     baselineValue: NET_BASELINE_MT, // gross minus the net-basis forest sink (task #16)
     targetYear: 2050,
     percentReduction: 100,
-    description: 'After all other reductions, close the remaining gap with verified removal credits or expanded forest stewardship. KUA\'s net is already low because of the campus forest; full net-zero is a 25-year horizon project.',
+    description: `After all other reductions, close the remaining gap with verified removal credits or expanded forest stewardship. The campus forest removes about ${Math.round((ANNUAL_SEQUESTRATION_MT / GROSS_MT) * 100)}% of gross, which is a large lever and not a solved problem — what remains is still the majority of the footprint. Full net-zero is a 25-year horizon project.`,
     owner: 'Board of Trustees',
     approved: false,
   },
