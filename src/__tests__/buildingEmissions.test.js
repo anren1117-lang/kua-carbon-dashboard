@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { seasonalYearFraction, seasonalShares, monthlyPattern } from '../data/seasonalPatterns.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 
 const sampleBuildings = [
   { id: 'a', name: 'A', category: 'Academic', sqft: 10_000, occupants: 100 },
@@ -201,7 +202,7 @@ describe('computeBuildingEmissions — seasonal annualization', () => {
 });
 
 describe('computeBuildingEmissions — emissions math + intensity', () => {
-  it('mtCO2e = annualKwh × 0.235 / 1000 by default', () => {
+  it('mtCO2e = annualKwh x the canonical grid factor / 1000', () => {
     const { rows } = computeBuildingEmissions({
       buildings: sampleBuildings,
       monthlyHistory: { a: { '2026-01': 1000, '2026-02': 1000 } },
@@ -209,7 +210,10 @@ describe('computeBuildingEmissions — emissions math + intensity', () => {
     });
     const a = rows.find((r) => r.id === 'a');
     expect(a.annualKwh).toBe(9_467);
-    expect(a.mtCO2e).toBeCloseTo(9_467 * 0.235 / 1000, 2);
+    // Derived, not pinned: task #5 moved the canonical factor from the
+    // per-fuel reconstruction (0.2344) to EPA's published rate (0.2464),
+    // and this assertion should follow it rather than restate a literal.
+    expect(a.mtCO2e).toBeCloseTo((9_467 * KG_PER_KWH) / 1000, 2);
   });
 
   it('honors an override kgPerKwh', () => {
@@ -219,6 +223,9 @@ describe('computeBuildingEmissions — emissions math + intensity', () => {
       kgPerKwh: 1.0,
     });
     const a = rows.find((r) => r.id === 'a');
+    // Deliberately NOT derived from KG_PER_KWH: the point of this case is that
+    // the override replaces the canonical factor, so 9,240 kWh x 1.0 = 9.24 mt
+    // whatever the canonical factor happens to be.
     expect(a.mtCO2e).toBeCloseTo(9.24, 2);
   });
 
@@ -228,8 +235,10 @@ describe('computeBuildingEmissions — emissions math + intensity', () => {
       monthlyHistory: { a: { '2026-01': 10_000 } }, // 92,400 annualized
     });
     const a = rows.find((r) => r.id === 'a');
-    // 92,400 kWh × 0.235 = 21,714 kg, / 10,000 sqft = 2.17 kg/sqft/yr
-    expect(a.kgPerSqft).toBeCloseTo(2.17, 1);
+    // 92,400 kWh x the canonical factor / 10,000 sqft. Derived so it tracks
+    // the factor: this read 2.17 on the reconstruction and 2.28 on the
+    // published rate adopted in task #5.
+    expect(a.kgPerSqft).toBeCloseTo((92_400 * KG_PER_KWH) / 10_000, 1);
   });
 
   it('intensity is 0 for a zero-sqft building (no divide-by-zero)', () => {

@@ -27,10 +27,12 @@ const netPer = (GROSS_MT - ANNUAL_SEQUESTRATION_MT) / TOTAL_STUDENTS;
 
 describe('gross and net per student are not swapped', () => {
   it('the canonical figures are what this test assumes', () => {
-    expect(grossPer).toBeCloseTo(12.87, 1);
+    // 12.87 until task #5 repriced Scope 2 to the published eGRID rate
+    expect(grossPer).toBeCloseTo(12.93, 1);
     // Was 5.07. The forest sink was repriced from a growth-side basis to a net
     // one (task #16), which moved the net per student up, not down.
-    expect(netPer).toBeCloseTo(7.49, 1);
+    // 7.49 until task #5 repriced Scope 2 to the published eGRID rate
+    expect(netPer).toBeCloseTo(7.55, 1);
     expect(grossPer).toBeGreaterThan(netPer);
   });
 

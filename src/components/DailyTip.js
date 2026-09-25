@@ -103,7 +103,7 @@ const TIPS = [
   {
     icon: '🌍',
     title: 'New Hampshire\'s grid is cleaner than most',
-    body: 'ISO-NE\'s effective electricity emissions factor is ~0.234 kg CO₂/kWh — about half the national average. KUA\'s scope 2 is small partly because of where we live.',
+    body: 'ISO-NE\'s effective electricity emissions factor is ~0.246 kg CO₂/kWh — about half the national average. KUA\'s scope 2 is small partly because of where we live.',
     link: '/scope-2',
     linkText: 'See Scope 2',
   },

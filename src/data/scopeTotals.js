@@ -145,9 +145,9 @@ const KG_PER_LB = 0.45359237;
 // so 0.40 sits near the 80th percentile for a basket dominated by
 // electronics and apparel. Repricing to ~0.222 would cut the purchased-
 // goods line from 1,315 mt to 730 mt (1,315 x 0.222/0.40), taking GROSS
-// from 4,375 to 3,790 — a 13.4% reduction. Against the net-basis forest
-// sink adopted in task #16, net would move 2,546 -> 1,961 and per-student
-// net 7.49 -> 5.77. (Read 1,725 -> 1,140 and 5.07 -> 3.35 before that
+// from 4,395 to 3,790 — a 13.4% reduction. Against the net-basis forest
+// sink adopted in task #16, net would move 2,566 -> 1,961 and per-student
+// net 7.55 -> 5.77. (Read 1,725 -> 1,140 and 5.07 -> 3.35 before that
 // reprice; the gross reduction is unchanged, the net it lands on is not.)
 //   (Phase 420: this read "~666 mt" and "~15%". Those came from applying
 //   the ratio to a rounded line value instead of 1,315 — my own derived
@@ -1065,7 +1065,7 @@ export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 // gap instead of closing it. Two further problems to settle in that same pass:
 // this is ISO-NE's OPERATIONAL rate while Scope 2 reports on eGRID's
 // location-based rate (different boundaries — eGRID nets out biogenic CO2), and
-// 643 lb/MWh = 0.2917 kg/kWh sits ~24% above the 0.2344 Scope 2 uses, so one
+// 643 lb/MWh = 0.2917 kg/kWh sits ~24% above the 0.2464 Scope 2 uses, so one
 // kWh is currently valued two ways depending on which page you are on.
 // Hard-coded here so the composer stays pure (no Supabase fetch).
 // Phase 392 — this is now the SAME factor Scope 2 reports on (gridMix.js).
@@ -1079,7 +1079,7 @@ export const SCOPE3_TOTAL_MT = composeScope3().totalMt;
 // Avoided-emissions figures on /renewables fall by about a fifth as a result.
 // That is the honest direction: the old factor overstated what the solar avoids.
 // CORRECTED WITHIN PHASE 392. My first pass pointed this at the Scope 2
-// inventory factor (0.2344) in the name of "one kWh, one number". That was
+// inventory factor (0.2464) in the name of "one kWh, one number". That was
 // wrong, and it made this figure worse than the mislabelled 643 it replaced.
 //
 // Scope 2 asks what our consumption emitted — an INVENTORY question, answered

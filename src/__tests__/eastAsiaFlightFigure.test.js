@@ -46,7 +46,8 @@ describe('the East Asia round trip has one unlabelled value', () => {
     // 3.7 mt against a ~5 kg/yr light-switching baseline is ~750x, not 800x.
     expect(src).not.toMatch(/800× as much as a year/);
     // and against gross per student, one trip is ~29%, two are ~57%
-    expect(grossPerStudent).toBeCloseTo(12.87, 1);
+    // 12.87 until task #5 repriced Scope 2 to the published eGRID rate
+    expect(grossPerStudent).toBeCloseTo(12.93, 1);
     // Asserted as the claim the copy actually makes — "close to a third" and
     // "well over half" — rather than a rounded point. 7.4/12.87 is 57.5%,
     // which sits exactly on toBeCloseTo(57, 0)'s boundary.

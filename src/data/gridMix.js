@@ -84,6 +84,57 @@ const GRID_MIX_FACTORS = [
 
 const TOTAL_PCT = GRID_MIX_FACTORS.reduce((s, f) => s + f.mixPercent, 0); // 100.23
 
+export const GRID_MIX_YEAR = 2024;            // ISO-NE factor source year
+export const KUA_USAGE_YEAR = 2026;            // KUA usage year
+export const KUA_USAGE_PERIOD = 'YTD composed from monthly captures + Meter Trends CSV';
+
+// ── Time-varying grid (Phase 391) ─────────────────────────────────────────
+
+/** Weighted kg CO2e per kWh implied by the seven rows above. ~0.2344. */
+export const RECONSTRUCTED_KG_PER_KWH = +GRID_MIX_FACTORS
+  .reduce((s, f) => s + (f.mixPercent / TOTAL_PCT) * f.emissionFactor * 1000, 0)
+  .toFixed(6);
+
+
+/** The eGRID edition KUA's usage year should be reported against. */
+export const REPORTING_VINTAGE = vintageForUsageYear(KUA_USAGE_YEAR);
+
+/** EPA's published rate for that edition, in kg/kWh. ~0.2464.
+ *  vintageKgPerKwh() returns null by contract for a row with an unusable rate,
+ *  and this runs at module scope — an unguarded .toFixed() on null would throw
+ *  while the module is evaluating and take down every page that imports it. */
+const reportingKgPerKwh = vintageKgPerKwh(REPORTING_VINTAGE);
+export const EGRID_REPORTING_KG_PER_KWH = reportingKgPerKwh === null
+  ? null
+  : +reportingKgPerKwh.toFixed(6);
+
+/**
+ * THE grid emission factor. One kWh, one number (Phase 392).
+ *
+ * Everything that turns kilowatt-hours into mtCO2e imports this. Before Phase
+ * 392 the same quantity was hardcoded five separate ways at 0.235
+ * (buildingEmissions, CampusMonthlyTrend, scenarioModel, personalFootprint, the
+ * emissionFactors catalog) with a rival 0.2917 driving the Renewables page — so
+ * /campus-map, /renewables and /scope-2 disagreed about what a kilowatt-hour
+ * costs, by up to 24%.
+ *
+ * ADOPTED: EPA's published eGRID rate for the reporting vintage (task #5).
+ * This is what GHG Protocol location-based Scope 2 asks for, and it is the
+ * figure a reviewer can look up. The per-fuel RECONSTRUCTION is kept as
+ * RECONSTRUCTED_KG_PER_KWH and still drives the fuel-composition breakdown;
+ * FACTOR_RECONCILIATION publishes the gap between them.
+ *
+ * Routing every consumer through one export is what made that switch a single
+ * line: when the decision was taken, all nineteen surfaces moved together
+ * instead of one page at a time.
+ *
+ * The fallback is not cosmetic. vintageKgPerKwh() returns null by contract for
+ * an unusable row, and this runs at module scope — an unguarded null here
+ * would take down every page that imports it, so it falls back to the
+ * reconstruction rather than poisoning the whole app.
+ */
+export const KG_PER_KWH = EGRID_REPORTING_KG_PER_KWH ?? RECONSTRUCTED_KG_PER_KWH;
+
 /** @type {GridMixSource[]} */
 // Per-fuel rows are derived: kwhUsed = COMPOSED_YTD_KWH × mix-fraction;
 // mtCO2e = kwhUsed × emissionFactor. When COMPOSED_YTD_KWH changes
@@ -109,8 +160,23 @@ export function composeGridMix(ytdKwh) {
 }
 
 export const gridMix = composeGridMix(COMPOSED_YTD_KWH);
+const GRID_MIX_TOTAL_KWH_SOURCE = COMPOSED_YTD_KWH;
 
-export const GRID_MIX_TOTAL_MTCO2E = +gridMix.reduce((s, r) => s + r.mtCO2e, 0).toFixed(2);
+/**
+ * The per-fuel reconstruction, kept because it is what the composition chart
+ * shows. It is NOT the reported total any more — see GRID_MIX_TOTAL_MTCO2E.
+ */
+export const GRID_MIX_COMPOSITION_MTCO2E = +gridMix.reduce((s, r) => s + r.mtCO2e, 0).toFixed(2);
+
+/**
+ * REPORTED Scope 2, YTD: metered kWh x the adopted factor. Task #5 moved this
+ * off the per-fuel sum and onto EPA's published rate, so the fuel rows below
+ * no longer add up to it — deliberately. They answer "which fuels", this
+ * answers "what do we report", and rescaling the rows to force agreement would
+ * carry the reconstruction's error into a figure that is supposed to be the
+ * published one.
+ */
+export const GRID_MIX_TOTAL_MTCO2E = +((GRID_MIX_TOTAL_KWH_SOURCE * KG_PER_KWH) / 1000).toFixed(2);
 // YTD electricity flows through from composedYtd.js — not hardcoded.
 export const GRID_MIX_TOTAL_KWH = COMPOSED_YTD_KWH;
 // Annual scope-2 mtCO2e at the current grid mix.
@@ -120,51 +186,11 @@ export const GRID_MIX_ANNUAL_MTCO2E = +(GRID_MIX_TOTAL_MTCO2E * COMPOSED_ANNUALI
  *  same per-fuel rounding as the constants above — for live admin-fed data. */
 export function composeScope2Mt(ytdKwh, year1Kwh) {
   if (!(ytdKwh > 0)) return { ytdMt: 0, annualMt: 0 };
-  const ytdMt = +composeGridMix(ytdKwh).reduce((s, r) => s + r.mtCO2e, 0).toFixed(2);
+  // Adopted factor, not the per-fuel sum — same basis as the constants above.
+  const ytdMt = +((ytdKwh * KG_PER_KWH) / 1000).toFixed(2);
   return { ytdMt, annualMt: +(ytdMt * (year1Kwh / ytdKwh)).toFixed(1) };
 }
 
-export const GRID_MIX_YEAR = 2024;            // ISO-NE factor source year
-export const KUA_USAGE_YEAR = 2026;            // KUA usage year
-export const KUA_USAGE_PERIOD = 'YTD composed from monthly captures + Meter Trends CSV';
-
-// ── Time-varying grid (Phase 391) ─────────────────────────────────────────
-
-/** Weighted kg CO2e per kWh implied by the seven rows above. ~0.2344. */
-export const RECONSTRUCTED_KG_PER_KWH = +GRID_MIX_FACTORS
-  .reduce((s, f) => s + (f.mixPercent / TOTAL_PCT) * f.emissionFactor * 1000, 0)
-  .toFixed(6);
-
-/**
- * THE grid emission factor. One kWh, one number (Phase 392).
- *
- * Everything that turns kilowatt-hours into mtCO2e imports this. Before Phase
- * 392 the same quantity was hardcoded five separate ways at 0.235
- * (buildingEmissions, CampusMonthlyTrend, scenarioModel, personalFootprint, the
- * emissionFactors catalog) with a rival 0.2917 driving the Renewables page — so
- * /campus-map, /renewables and /scope-2 disagreed about what a kilowatt-hour
- * costs, by up to 24%.
- *
- * This is the per-fuel RECONSTRUCTION, not EPA's published rate. See
- * FACTOR_RECONCILIATION above for why adopting the published rate is a
- * governance decision rather than an edit. The reason for routing every
- * consumer through one export is precisely that when that decision is taken,
- * every surface moves together instead of one page at a time — which is the
- * failure mode this project keeps having.
- */
-export const KG_PER_KWH = RECONSTRUCTED_KG_PER_KWH;
-
-/** The eGRID edition KUA's usage year should be reported against. */
-export const REPORTING_VINTAGE = vintageForUsageYear(KUA_USAGE_YEAR);
-
-/** EPA's published rate for that edition, in kg/kWh. ~0.2464.
- *  vintageKgPerKwh() returns null by contract for a row with an unusable rate,
- *  and this runs at module scope — an unguarded .toFixed() on null would throw
- *  while the module is evaluating and take down every page that imports it. */
-const reportingKgPerKwh = vintageKgPerKwh(REPORTING_VINTAGE);
-export const EGRID_REPORTING_KG_PER_KWH = reportingKgPerKwh === null
-  ? null
-  : +reportingKgPerKwh.toFixed(6);
 
 /**
  * The gap between what this file computes and what EPA publishes, stated in
@@ -178,7 +204,17 @@ export const FACTOR_RECONCILIATION = {
   gapPct: +(((EGRID_REPORTING_KG_PER_KWH - RECONSTRUCTED_KG_PER_KWH) / RECONSTRUCTED_KG_PER_KWH) * 100).toFixed(1),
   vintage: REPORTING_VINTAGE.vintage,
   source: REPORTING_VINTAGE.source,
-  note: 'Per-fuel reconstruction runs below EPA\'s published eGRID NEWE rate. The published rate is what GHG Protocol location-based Scope 2 asks for; adopting it would raise reported Scope 2 and is held for a deliberate phase because the current figure is also the targets.js baseline.',
+  adoptedKgPerKwh: KG_PER_KWH,
+  adopted: 'published',
+  note: 'ADOPTED (task #5): Scope 2 is reported at EPA\'s published eGRID NEWE rate, which is what '
+    + 'GHG Protocol location-based Scope 2 asks for and what a reviewer can look up. The per-fuel '
+    + 'reconstruction runs below it and is retained, because it is what the fuel-composition '
+    + 'breakdown shows — so those rows deliberately no longer sum to the reported total. Rescaling '
+    + 'them to force agreement would push the reconstruction\'s error into a figure whose whole '
+    + 'point is that it is the published one.',
+  compositionNote: 'gridMix rows answer "which fuels". GRID_MIX_TOTAL_MTCO2E answers "what do we '
+    + 'report". GRID_MIX_COMPOSITION_MTCO2E is the rows summed, kept visible so the difference is '
+    + 'readable rather than surprising.',
 };
 
 /** How out of date the reporting factor is for the usage year. */

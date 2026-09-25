@@ -925,7 +925,7 @@ export default function AdminPlanAgent() {
               target={`Already measured. Improvement: drop the seasonally anchored annualization (×${s2.annualizeFactor.toFixed(2)} today) once a full year of BMS data is captured.`}
               sourcePath="src/data/electricityLedger.js" />
             <CtxRow provenance="cited" label={`Scope 2 mtCO₂e (${Math.round(s2.annualMt || SCOPE2_ANNUAL_MT).toLocaleString()} mt/yr annualized)`}
-              today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.234 kg/kWh, in eGRID NEWE published range."
+              today="Measured kWh × per-fuel output emission factors (combined-cycle gas 0.40 kg/kWh, oil 0.78, coal 0.95, imports 0.30) summed over ISO-NE 2024 generation mix. System rate ≈ 0.246 kg/kWh, in eGRID NEWE published range."
               target="Already at target methodology. Refresh as eGRID NEWE 2024 publishes (expected late 2026)."
               sourcePath="src/data/gridMix.js" />
             <CtxRow

@@ -3,7 +3,7 @@ import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
 // Gross → sinks → net, as a subtraction you can watch happen.
 //
-// "Gross 4,375, net 2,546" is two numbers a student has to hold in their head
+// "Gross 4,395, net 2,566" is two numbers a student has to hold in their head
 // and relate. A waterfall makes the relationship physical: three bars stack up
 // to the gross total, the forest bar drops back down, and what's left standing
 // is the net. The arithmetic is the picture.

@@ -20,7 +20,7 @@ const SEQ_PER_ST = +(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS).toFixed(1);
 // Share of gross that even the TOP of the spread offsets. Computed, not
 // asserted: this page claimed for many phases that the optimistic end beat
 // the whole campus, which no published figure supports (2,100 high on the
-// current net basis, against gross 4,375; it was 2,650 before the 2026
+// current net basis, against gross 4,395; it was 2,650 before the 2026
 // reprice and even that did not beat gross).
 const SINK_OFFSET_PCT = Math.round((SINKS_RANGE.high / GROSS_MT) * 100);
 // The per-acre band the stands actually carry. Was typed as 1.9–4.2 and went

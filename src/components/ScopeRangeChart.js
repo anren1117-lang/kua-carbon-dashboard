@@ -5,7 +5,7 @@ import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 // Size versus certainty — the relationship this dashboard states in words and
 // has never shown.
 //
-// A student reading "Scope 3: ~2,635 mt" and "Scope 2: ~390 mt" concludes that
+// A student reading "Scope 3: ~2,635 mt" and "Scope 2: ~410 mt" concludes that
 // Scope 3 is the important one and Scope 2 is a rounding error. Both true. What
 // the text hides is that the 2,635 could be anywhere from 1,727 to 3,721 —
 // the UNCERTAINTY on Scope 3 alone is roughly four times the whole of Scope 2.

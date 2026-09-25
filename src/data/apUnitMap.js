@@ -183,7 +183,7 @@ export const apUnitMap = [
         num: 8,
         name: 'Acids and Bases',
         fit: 'direct',
-        hook: 'Ocean acidification — same equilibrium as Unit 7, now quantitative. Compute ΔpH from a 100-ppm rise in atmospheric CO₂. Connect back to KUA\'s ~2,546 mtCO₂e net contribution.',
+        hook: 'Ocean acidification — same equilibrium as Unit 7, now quantitative. Compute ΔpH from a 100-ppm rise in atmospheric CO₂. Connect back to KUA\'s ~2,566 mtCO₂e net contribution.',
         dashboardPages: ['/methodology', '/'],
         linkedLessonIds: [],
       },
@@ -514,7 +514,7 @@ export const apUnitMap = [
       { num: 3, name: 'Production, Cost, and the Perfect Competition Model', fit: 'none', hook: null, dashboardPages: [], linkedLessonIds: [] },
       { num: 4, name: 'Imperfect Competition', fit: 'none', hook: null, dashboardPages: [], linkedLessonIds: [] },
       { num: 5, name: 'Factor Markets', fit: 'none', hook: null, dashboardPages: [], linkedLessonIds: [] },
-      { num: 6, name: 'Market Failure and the Role of Government', fit: 'direct', hook: 'Carbon = textbook negative externality. Apply the deadweight loss + Pigouvian tax framework to KUA\'s ~2,546 mtCO₂e net. Connect to the MAC curve lesson.', dashboardPages: ['/scenarios', '/executive', '/'], linkedLessonIds: ['l_macc_curve', 'l_peer_compare'] },
+      { num: 6, name: 'Market Failure and the Role of Government', fit: 'direct', hook: 'Carbon = textbook negative externality. Apply the deadweight loss + Pigouvian tax framework to KUA\'s ~2,566 mtCO₂e net. Connect to the MAC curve lesson.', dashboardPages: ['/scenarios', '/executive', '/'], linkedLessonIds: ['l_macc_curve', 'l_peer_compare'] },
     ],
   },
 

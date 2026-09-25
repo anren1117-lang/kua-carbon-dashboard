@@ -25,12 +25,30 @@ import {
   KUA_USAGE_YEAR,
 } from '../data/gridMix.js';
 
-describe('the inventory was not repriced', () => {
-  it('still reports 390 mtCO2e for the year', () => {
-    expect(GRID_MIX_ANNUAL_MTCO2E).toBe(390);
+// Task #5, decided: Scope 2 is now reported at EPA's published eGRID NEWE
+// rate rather than the per-fuel reconstruction. This block used to assert the
+// opposite — that the inventory had NOT been repriced — which was the right
+// guard while the decision was open and is the wrong one now.
+//
+// What survives unchanged is the reconstruction itself: it still prices the
+// fuel-composition breakdown, and RECONSTRUCTED_KG_PER_KWH is still pinned to
+// six figures so a change to any row's factor or share fails here.
+describe('the inventory is reported at the published rate', () => {
+  it('reports Scope 2 at kWh x the published eGRID rate', () => {
+    expect(GRID_MIX_ANNUAL_MTCO2E).toBeCloseTo(409.9, 1);
+    // moved up from 390, the reconstruction figure, by the published gap
+    expect(GRID_MIX_ANNUAL_MTCO2E).toBeGreaterThan(390);
+    expect(GRID_MIX_ANNUAL_MTCO2E / 390).toBeCloseTo(
+      1 + FACTOR_RECONCILIATION.gapPct / 100, 2,
+    );
   });
 
-  it('still prices a kWh at the reconstruction, not the published rate', () => {
+  it('adopts the published rate, and says so', () => {
+    expect(FACTOR_RECONCILIATION.adopted).toBe('published');
+    expect(FACTOR_RECONCILIATION.adoptedKgPerKwh).toBe(EGRID_REPORTING_KG_PER_KWH);
+  });
+
+  it('keeps the reconstruction for the fuel composition', () => {
     // 0.234446 = the seven per-fuel rows weighted by mix share. Written as a
     // literal so a change to any row's factor or share fails here.
     expect(RECONSTRUCTED_KG_PER_KWH).toBeCloseTo(0.234446, 6);

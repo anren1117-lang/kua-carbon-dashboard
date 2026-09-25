@@ -49,9 +49,9 @@ const FAQ = [
       <>
         It's the total amount of greenhouse gas (mostly CO₂) emitted by an activity, building,
         or organization in a year — expressed in metric tons of CO₂-equivalent (mtCO₂e). KUA's
-        gross footprint is about 4,375 mtCO₂e/yr; the campus forest pulls back roughly 1,829
+        gross footprint is about 4,395 mtCO₂e/yr; the campus forest pulls back roughly 1,829
         (inside a published 1,000–2,100 spread — see the forest question below)
-        of those, leaving a <strong>net</strong> of about 2,546 mtCO₂e/yr — the figure shown on
+        of those, leaving a <strong>net</strong> of about 2,566 mtCO₂e/yr — the figure shown on
         the homepage, and the more honest number. (An earlier version of this answer said 1,500
         gross against 2,100 of drawdown, which implied KUA was net-negative. It is not.) <Link to="/" style={linkStyle}>See the headline number →</Link>
       </>

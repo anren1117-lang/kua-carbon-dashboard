@@ -3160,3 +3160,56 @@ question is "what does this document say", fetching the document beats
 delegating the reading of it.
 
 Suite 1,991 → 1,997; 144 → 145 files.
+
+## Phase 485 — Scope 2 reports at the published rate (task #5)
+
+Adopted recommendation (a): report at EPA's published eGRID NEWE rate, and
+relabel the per-fuel breakdown as composition rather than rescaling it.
+
+| | was | now |
+| --- | --- | --- |
+| Grid factor | 0.234446 (reconstruction) | **0.246391** (published eGRID) |
+| Scope 2 | 390 | **410** |
+| Gross | 4,375 | **4,395** |
+| Net | 2,546 | **2,566** |
+| Net per student | 7.49 | **7.55** |
+
+**The structural half is the part that mattered.** `SCOPE2_TOTAL_MT` summed the
+seven per-fuel rows; it did not multiply by `KG_PER_KWH`. The two agreed only
+because the constant *was* the mix-weighted reconstruction of those same rows.
+Flipping the constant alone would have repriced every kWh consumer — showers,
+lessons, equivalents, nineteen files — while leaving campus Scope 2 at 390. A
+half-applied reprice, which is the defect class this whole run has been
+removing.
+
+So the reported total is now `metered kWh × the adopted factor`, and the rows
+are `GRID_MIX_COMPOSITION_MTCO2E`, kept and published. **They deliberately no
+longer sum to the reported total** — they answer "which fuels", it answers
+"what do we report". Rescaling them to force agreement would push the
+reconstruction's error into the figure whose entire point is that it is the
+published one. (Third time this run that rescaling was the wrong move.)
+
+Phase 392's comment turned out to be exactly right: *"routing every consumer
+through one export is precisely that when that decision is taken, every surface
+moves together instead of one page at a time."* It was one line.
+
+**Twenty-one tests failed, and every one was a guard doing its job** — 15
+prose tripwires, the per-fuel-sum invariant, two factor pins, and one test
+named `the inventory was not repriced`, written to forbid exactly this. That
+last one is now inverted, with the reconstruction still pinned to six figures.
+
+*Two things the sweep moved but the sentences didn't*, the Phase 475 lesson
+again: `ScopeExplainer` had its factor updated to 0.246 while still saying
+"about 5% below EPA's published rate", and a LearnAgent scenario read
+"0.2464 kg CO₂ per kWh, which is 517 lb per MWh" — the two halves of one
+sentence disagreeing by 5%. The dorm quiz moved with it: 517 → 543 lb/MWh,
+answer 18.8 → 19.7 mt, and both order-of-magnitude distractors rescaled so they
+stay wrong by exactly 10×.
+
+*One of my own substitutions was semantically wrong and the suite caught it.*
+I derived `expect(a.mtCO2e).toBeCloseTo(9.24)` from `KG_PER_KWH` — in a test
+called `honors an override kgPerKwh`, whose entire point is that the override
+replaces the canonical factor. Restored, with a comment saying why it must not
+be derived.
+
+Suite 1,997 → 1,999; 145 files.

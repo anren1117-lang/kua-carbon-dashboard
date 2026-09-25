@@ -9,7 +9,7 @@
 // Both problems were wrong, and in opposite directions:
 //
 //   DORM  80,000 kWh CONSUMED. That is an inventory question, so the rate is
-//         the dashboard's 0.234446 kg/kWh (517 lb/MWh) = 18.8 mt. The quiz
+//         the dashboard's 0.246391 kg/kWh (543 lb/MWh) = 19.7 mt. The quiz
 //         taught 23.3 — 24% high.
 //
 //   SOLAR 245,000 kWh DISPLACED. That is a consequential question, so the
@@ -35,12 +35,14 @@ describe('the teaching problems use the rates the dashboard publishes', () => {
 
   it('the dorm problem prices CONSUMPTION at the inventory rate', () => {
     const inventoryLb = Math.round((KG_PER_KWH * 1000) / LB);
-    expect(inventoryLb).toBe(517);
+    expect(inventoryLb).toBe(543);
     expect(src).toMatch(new RegExp(`${inventoryLb} lb`));
-    // 80 MWh x 517 lb x 0.4536 = 18,761 kg
+    // 80 MWh x 543 lb x 0.4536 = 19,704 kg
     const mt = (80 * inventoryLb * LB) / 1000;
-    expect(mt).toBeCloseTo(18.8, 1);
-    expect(src).toMatch(/~18\.8 mtCO₂e/);
+    // 18.8 on the per-fuel reconstruction; 19.7 on the published rate
+    // adopted in task #5.
+    expect(mt).toBeCloseTo(19.7, 1);
+    expect(src).toMatch(/~19\.7 mtCO₂e/);
     expect(src).not.toMatch(/~23\.3 mtCO₂e/);
   });
 

@@ -83,7 +83,11 @@ describe('Q5 states a net that follows from its own answer', () => {
       // from — otherwise the subtraction does not reproduce.
       expect(block).toMatch(new RegExp(adopted));
     }
-    expect(GROSS_MT - 2100).toBe(2275);
-    expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBeCloseTo(2546, 0);
+    // Derived: gross moved when Scope 2 was repriced to the published eGRID
+    // rate (task #5), and this subtraction should follow it.
+    expect(GROSS_MT - 2100).toBeCloseTo(GROSS_MT - 2100, 1);
+    expect(Math.round(GROSS_MT - 2100)).toBe(2295);
+    // 2,546 until task #5; Scope 2 moved to the published eGRID rate
+    expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBeCloseTo(2566, 0);
   });
 });

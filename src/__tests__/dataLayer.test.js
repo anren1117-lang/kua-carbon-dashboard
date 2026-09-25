@@ -91,9 +91,23 @@ describe('data layer integrity', () => {
     expect(total).toBeLessThan(101);
   });
 
-  it('grid-mix mtCO2e shares sum to the published total within 1 mt', () => {
+  // Task #5 moved the REPORTED total onto EPA's published rate while the rows
+  // stayed on the per-fuel reconstruction, so they deliberately no longer add
+  // up to it. The invariant that still has to hold is that they add up to the
+  // composition figure, and that the difference between the two is exactly the
+  // factor gap — not drift.
+  it('grid-mix mtCO2e shares sum to the COMPOSITION total within 1 mt', async () => {
+    const { GRID_MIX_COMPOSITION_MTCO2E } = await import('../data/gridMix.js');
     const total = gridMix.reduce((s, g) => s + g.mtCO2e, 0);
-    expect(Math.abs(total - GRID_MIX_TOTAL_MTCO2E)).toBeLessThan(1);
+    expect(Math.abs(total - GRID_MIX_COMPOSITION_MTCO2E)).toBeLessThan(1);
+  });
+
+  it('the reported total sits above the composition by exactly the factor gap', async () => {
+    const { GRID_MIX_COMPOSITION_MTCO2E, FACTOR_RECONCILIATION } = await import('../data/gridMix.js');
+    expect(GRID_MIX_TOTAL_MTCO2E).toBeGreaterThan(GRID_MIX_COMPOSITION_MTCO2E);
+    const impliedGapPct = ((GRID_MIX_TOTAL_MTCO2E - GRID_MIX_COMPOSITION_MTCO2E)
+      / GRID_MIX_COMPOSITION_MTCO2E) * 100;
+    expect(impliedGapPct).toBeCloseTo(FACTOR_RECONCILIATION.gapPct, 1);
   });
 
   it('grid-mix kWh shares sum to the published total within 1%', () => {

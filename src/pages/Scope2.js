@@ -25,7 +25,7 @@ import { GridVintageChart } from '../components/GridVintageChart.js';
 // derived inside the component from the live ledger instead.
 //
 // Was hardcoded at 0.235 while the live dashboard on this same page computed
-// 0.2344 from the per-fuel rows — two figures for one quantity, thirty lines of
+// 0.2464 from the per-fuel rows — two figures for one quantity, thirty lines of
 // DOM apart. Derived from the same composition now.
 const KG_PER_KWH = effectiveKgPerKwh();
 // Solar displaces generation at the MARGIN, not at the inventory average.
@@ -87,9 +87,14 @@ function Scope2() {
           </span>
         </div>
         <div style={styles.row}>
-          <span style={styles.label}>Against EPA's published rate</span>
+          <span style={styles.label}>Rate this page reports at</span>
           <span style={styles.value}>
-            {FACTOR_RECONCILIATION.publishedKgPerKwh} kg CO₂e/kWh published — this page runs {FACTOR_RECONCILIATION.gapPct}% below it, so Scope 2 here is a conservative-low estimate
+            {FACTOR_RECONCILIATION.publishedKgPerKwh} kg CO₂e/kWh — EPA&rsquo;s published eGRID NEWE
+            rate, which is what GHG Protocol location-based Scope 2 asks for. The per-fuel
+            reconstruction of the same grid gives{' '}
+            {FACTOR_RECONCILIATION.reconstructedKgPerKwh}, {FACTOR_RECONCILIATION.gapPct}% lower; it
+            still prices the fuel breakdown below, so those rows deliberately do not sum to the
+            reported total.
           </span>
         </div>
         {/* The period mismatch is stated HERE and nowhere else — this is where
