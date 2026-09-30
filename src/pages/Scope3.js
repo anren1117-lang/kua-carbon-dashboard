@@ -2,7 +2,7 @@ import React from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
-import { SCOPE3_TOTAL_MT, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION, PEER_SPEND_FACTORS, EPA_SUPPLY_CHAIN_BASIS } from '../data/scopeTotals.js';
+import { SCOPE3_TOTAL_MT, SCOPE3_LINES, SCOPE3_LARGEST_LINE, PURCHASED_GOODS_SECTORS, GOODS_FACTOR_RECONCILIATION, PEER_SPEND_FACTORS, EPA_SUPPLY_CHAIN_BASIS } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
 import { factorVintageFor, describeFactorVintage, SCOPE3_FACTOR_KEYS } from '../data/emissionFactors.js';
@@ -147,7 +147,15 @@ function Scope3() {
           total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`,
           totalRange: `${SCOPE3_RANGE.low.toLocaleString()} – ${SCOPE3_RANGE.high.toLocaleString()} mt. The three student-travel components are genuine cross-checks — a built-up calculation beside an independently published benchmark (EPA SLD / Andover-Exeter / Yale). Dining, waste, commute, goods and upstream fuel are parameter sensitivities on one model each, so their spread measures assumption dependence rather than agreement between sources.`,
           perStudent: headlinePerStudent,
-          thirdMetric: { label: 'Dominant source', value: 'Purchased goods', note: 'goods ~1,315 mt ≈ 50% of S3; travel ~760 mt ≈ 29%' },
+          thirdMetric: {
+            label: 'Dominant source',
+            value: SCOPE3_LARGEST_LINE.source.replace(/\s*\(.*\)\s*$/, ''),
+            note: SCOPE3_LINES.slice()
+              .sort((a, b) => b.mt - a.mt)
+              .slice(0, 2)
+              .map((r) => `${r.source.replace(/\s*\(.*\)\s*$/, '').toLowerCase()} ~${r.mt.toLocaleString()} mt ≈ ${Math.round(r.shareOfScope3)}%`)
+              .join('; '),
+          },
           period: REPORTING_PERIOD.label,
           factorVintage: describeFactorVintage(factorVintageFor(SCOPE3_FACTOR_KEYS, FACTOR_USAGE_YEAR)),
           dataIssue,

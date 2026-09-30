@@ -2,7 +2,7 @@ import React from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { EducationalCard } from '../components/EducationalCard';
 import { ScopePageInfo } from '../components/ScopePageInfo';
-import { SCOPE1_TOTAL_MT } from '../data/scopeTotals.js';
+import { SCOPE1_TOTAL_MT, SCOPE1_LARGEST_LINE } from '../data/scopeTotals.js';
 import { SCOPE1_RANGE } from '../data/geographicEstimates.js';
 import { KG_PER_KWH, KUA_USAGE_YEAR } from '../data/gridMix.js';
 import { REPORTING_PERIOD } from '../data/academicCalendar.js';
@@ -92,7 +92,11 @@ function Scope1() {
           total: `${isMeasured ? '' : '~'}${headlineTotal.toLocaleString()}`,
           totalRange: `${SCOPE1_RANGE.low.toLocaleString()} – ${SCOPE1_RANGE.high.toLocaleString()} mt. All three components are PARAMETER SENSITIVITIES, not independent methods: one model per component run at three assumptions (heating at ASHRAE 90.1 / KUA-typical NH-CZ6 / ENERGY STAR HDD-direct intensities; fleet and refrigerants likewise). The spread shows how much the answer depends on those assumptions — it is not three sources agreeing.`,
           perStudent: headlinePerStudent,
-          thirdMetric: { label: 'Dominant source', value: 'Heating', note: '~95% of Scope 1' },
+          thirdMetric: {
+            label: 'Dominant source',
+            value: SCOPE1_LARGEST_LINE.source,
+            note: `~${Math.round(SCOPE1_LARGEST_LINE.shareOfScope1)}% of Scope 1`,
+          },
           period: REPORTING_PERIOD.label,
           factorVintage: describeFactorVintage(factorVintageFor(SCOPE1_FACTOR_KEYS, FACTOR_USAGE_YEAR)),
           dataIssue,

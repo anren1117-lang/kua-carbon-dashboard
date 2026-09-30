@@ -23,7 +23,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { GROSS_MT } from '../data/scopeTotals.js';
+import { GROSS_MT, HEATING_SHARE_OF_SCOPE1 } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { getFactorByKey } from '../data/emissionFactors.js';
 import { INSTRUCTIONAL_DAYS } from '../data/academicCalendar.js';
@@ -78,7 +78,14 @@ describe('proportional claims state the proportion they actually are', () => {
     // guarding against a sweep that "fixes" correct prose
     const scope3 = readFileSync(resolve(process.cwd(), 'pages/Scope3.js'), 'utf8');
     expect(scope3).toMatch(/roughly half of Scope 3/);
+    // Scope 1's share is no longer a literal. It read "~95% of Scope 1",
+    // which was right for 95.5%, and now derives to "~96%" — the same claim,
+    // rounded the way every other surface rounds. Assert the CLAIM, not the
+    // string, so this guard keeps working the next time the value moves.
     const scope1 = readFileSync(resolve(process.cwd(), 'pages/Scope1.js'), 'utf8');
-    expect(scope1).toMatch(/~95% of Scope 1/);
+    expect(scope1).toContain('SCOPE1_LARGEST_LINE.shareOfScope1');
+    expect(scope1).not.toMatch(/~\d+% of Scope 1'/);   // no hand-typed copy
+    expect(HEATING_SHARE_OF_SCOPE1 * 100).toBeGreaterThan(90);
+    expect(HEATING_SHARE_OF_SCOPE1 * 100).toBeLessThan(100);
   });
 });

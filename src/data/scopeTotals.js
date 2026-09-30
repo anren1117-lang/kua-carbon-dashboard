@@ -1146,6 +1146,17 @@ export const SCOPE1_HEATING_MT = SCOPE1_PLACEHOLDER_BREAKDOWN
 export const HEATING_SHARE_OF_SCOPE1 =
   SCOPE1_HEATING_MT / SCOPE1_PLACEHOLDER_BREAKDOWN.reduce((sum, r) => sum + r.mt, 0);
 
+// Scope 1's ordering, exported the way Scope 3's is. /scope-1 stated its
+// dominant source as two literals — the word "Heating" and "~95% of Scope 1"
+// — which happened to be right. Phase 488 showed what a hand-typed ordering
+// is worth when the data under it moves.
+export const SCOPE1_LINES = SCOPE1_PLACEHOLDER_BREAKDOWN.map((r) => ({
+  source: r.source,
+  mt: r.mt,
+  shareOfScope1: +((r.mt / SCOPE1_PLACEHOLDER_BREAKDOWN.reduce((s, x) => s + x.mt, 0)) * 100).toFixed(1),
+}));
+export const SCOPE1_LARGEST_LINE = SCOPE1_LINES.reduce((a, b) => (b.mt > a.mt ? b : a));
+
 /** The documented KUA mix — see the heating row's own method string. */
 export const HEATING_OIL_FRACTION = 0.90;
 

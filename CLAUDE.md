@@ -3345,3 +3345,38 @@ purchased goods is 49.9%". Fixed with a semicolon, and guarded: no surface may
 place the label after sentence-ending punctuation.
 
 Suite 2,008 → 2,014; 148 files.
+
+## Phase 489 — the last hand-typed rankings
+
+Phase 488 derived the Scope 3 ordering because five surfaces had it wrong.
+Three "Dominant source" metrics were still typed by hand, and all three were
+**right**:
+
+| surface | said | is |
+|---|---|---|
+| `/scope-1` | "Heating", "~95% of Scope 1" | 95.5% ✓ |
+| `/scope-3` | "Purchased goods", "~50% / ~29%" | 49.9% / 28.8% ✓ |
+| `/scope-2` | "New England grid (51%)" | `mixPercent` 51 ✓ |
+
+Which is the argument for changing them, not against it. A literal that is
+right today is not a weaker derived value — it is a different kind of thing: a
+record of what someone believed once. Scope 3's literals were right too, until
+a reprice moved the data and nobody moved the words.
+
+`SCOPE1_LINES` / `SCOPE1_LARGEST_LINE` and `GRID_MIX_LARGEST` now exist
+alongside `SCOPE3_LINES`, and all three pages read them.
+
+*One real change fell out of it.* Heating is 95.5% of Scope 1, and the derived
+form rounds it the way every other surface rounds — so `/scope-1` now reads
+**~96%**, not ~95%. That collided with `proportionalClaims.test.js`, whose
+"claims that were already right are left alone" case asserted the literal
+`~95% of Scope 1`. The test was asserting a *string* where it meant to assert
+a *claim*; it now checks that the page derives the share and that the share is
+between 90 and 100, so it survives the next move instead of pinning the prose.
+
+*And the new guard was green on its first run,* because I edited before writing
+it. Ran all six of its patterns against the committed pre-edit files to prove
+it discriminates — all six fire. A guard that has never been red is a guard of
+unknown strength.
+
+Suite 2,014 → 2,018; 149 files.

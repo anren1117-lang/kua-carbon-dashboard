@@ -178,6 +178,12 @@ export const GRID_MIX_COMPOSITION_MTCO2E = +gridMix.reduce((s, r) => s + r.mtCO2
  */
 export const GRID_MIX_TOTAL_MTCO2E = +((GRID_MIX_TOTAL_KWH_SOURCE * KG_PER_KWH) / 1000).toFixed(2);
 // YTD electricity flows through from composedYtd.js — not hardcoded.
+// The fuel that supplies the most electricity — distinct from the fuel
+// responsible for the most emissions, which on this grid is the same row
+// but need not be. /scope-2's narrative stated the share as a literal 51%
+// in two places; it reads mixPercent now.
+export const GRID_MIX_LARGEST = gridMix.reduce((a, b) => (b.mixPercent > a.mixPercent ? b : a));
+
 export const GRID_MIX_TOTAL_KWH = COMPOSED_YTD_KWH;
 // Annual scope-2 mtCO2e at the current grid mix.
 export const GRID_MIX_ANNUAL_MTCO2E = +(GRID_MIX_TOTAL_MTCO2E * COMPOSED_ANNUALIZE_FACTOR).toFixed(1);

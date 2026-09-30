@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
-import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, GRID_MIX_LARGEST } from '../data/gridMix.js';
 import { COMPOSED_ANNUALIZE_FACTOR as ANNUALIZE_FACTOR, SNAPSHOT_ANNUALIZE_FACTOR, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js';
 import { dayOfWeekPattern, monthlyPattern } from '../data/seasonalPatterns.js';
 import { ProvenancePill } from './ProvenancePill.js';
@@ -112,9 +112,9 @@ export function Scope2LiveDashboard() {
         'Methane leaks during extraction (2-3%) increase warming impact',
         'Hydraulic fracturing (fracking) can contaminate groundwater',
         'Lower particulate and sulfur emissions than coal or oil',
-        'Dominant fuel source in New England grid (51%)'
+        `Dominant fuel source in New England grid (${GRID_MIX_LARGEST.mixPercent}%)`
       ],
-      globalContext: 'Natural gas provides 51% of New England electricity (ISO-NE 2024). The region relies heavily on natural gas due to pipeline infrastructure and coal/oil plant retirements.',
+      globalContext: `Natural gas provides ${GRID_MIX_LARGEST.mixPercent}% of New England electricity (ISO-NE ${GRID_MIX_YEAR}). The region relies heavily on natural gas due to pipeline infrastructure and coal/oil plant retirements.`,
       efficiency: '40-60% efficient in combined-cycle plants (best among fossil fuels).',
       costComparison: 'Moderate cost at $0.05-0.08 per kWh. Price volatile due to market fluctuations and pipeline constraints in winter.',
       history: 'Became dominant after 2008 shale gas boom. Now provides over half of New England electricity.',
