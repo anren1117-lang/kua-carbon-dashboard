@@ -26,7 +26,7 @@ const categories = [
   { num: 5, name: 'Waste Generated in Operations', desc: 'Landfill, recycling, composting; includes avoided virgin material and fugitive landfill methane.', factor: 'EPA WARM model', status: 'In dashboard (waste table)' },
   { num: 6, name: 'Business Travel', desc: 'Faculty/staff flights, trains, hotels, mileage on KUA business.', factor: 'EPA Hub (ground); DEFRA (air, incl. indirect non-CO₂ effects)', status: 'In dashboard (faculty_travel)' },
   { num: 7, name: 'Employee Commuting', desc: 'Daily travel of non-resident faculty and staff to campus.', factor: 'EPA per-passenger-mile by mode', status: 'Planned' },
-  { num: '+', name: 'Student Travel', desc: 'Term-break, international, and athletic team travel — likely the single largest Scope 3 source.', factor: 'Per-passenger-mile by mode (Yale-style addition)', status: 'In dashboard (day/us/intl/study_abroad)' },
+  { num: '+', name: 'Student Travel', desc: 'Term-break, international, and athletic team travel — the second largest Scope 3 line after purchased goods, and the one students have most control over.', factor: 'Per-passenger-mile by mode (Yale-style addition)', status: 'In dashboard (day/us/intl/study_abroad)' },
 ];
 
 const styles = {

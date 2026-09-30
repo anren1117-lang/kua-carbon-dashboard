@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
-import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
+import {
+  SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT,
+  SCOPE3_LINES, SCOPE3_LARGEST_LINE, SCOPE3_LARGEST_LABEL,
+} from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { SINKS_RECONCILIATION } from '../data/geographicEstimates.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -57,6 +60,12 @@ const KUA = (() => {
     gross:  gross.toLocaleString(),
     sinks:  sinks.toLocaleString(),
     net:    net.toLocaleString(),
+    // The Scope 3 ordering, derived. The lesson below teaches that the
+    // expected answer for a boarding school is travel and the measured one
+    // here is not, so both shares have to come from the data.
+    s3Top: SCOPE3_LARGEST_LABEL,
+    s3TopPct: SCOPE3_LARGEST_LINE.shareOfScope3,
+    s3TravelPct: SCOPE3_LINES.find((r) => /student travel/i.test(r.source)).shareOfScope3,
     perStudent: perStudentMt(net, TOTAL_STUDENTS),
   };
 })();
@@ -497,7 +506,25 @@ const paths = [
       {
         type: 'concept',
         heading: 'Scope 3 — everything else',
-        body: '**Scope 3 is the biggest, messiest, and usually most important category** at any institution that doesn\'t own factories. It covers every emission that\'s indirectly caused by your activities but happens at someone else\'s facility, on someone else\'s account.\n\nThe GHG Protocol formally divides Scope 3 into **15 categories**: purchased goods and services, capital goods, fuel and energy upstream, upstream transportation, waste, business travel, employee commuting, upstream leased assets, downstream transportation, processing of sold products, use of sold products, end-of-life, downstream leased assets, franchises, investments. Most of those don\'t apply to a school (we don\'t sell physical products, we don\'t have franchises, we don\'t hold investments at scale), but several do.\n\n**For a residential boarding school, the dominant Scope 3 source is student travel.** When a student flies from Boston to Tokyo for winter break, the airline burns jet fuel, but it\'s indirectly caused by KUA\'s decision to enroll international students who need to fly home. The Yale Office of Sustainability formalized this as a "student travel" category outside the GHG Protocol\'s 15 because it\'s materially the largest source at residential institutions and was being missed in standard accounting.\n\n**Other Scope 3 sources for KUA:**\n\n**Purchased goods and services** — the food in the dining hall, the paper for class, the lab supplies, the cleaning products, the new computers. Each of these embodies emissions from production, transportation, and packaging. We estimate this using the EPA Supply Chain GHG Emission Factors (a method called Environmentally-Extended Input-Output, or EEIO), which gives kg CO₂e per dollar spent in each industry sector.\n\n**Waste** — landfilled trash, recycling, composting, hazardous waste. Each disposal pathway has its own emission factor in the EPA\'s WARM model. Landfilled food waste is particularly bad because it generates methane as it decomposes.\n\n**Commuting** — non-resident faculty and staff driving to campus. Smaller for KUA than for a day school, but real.\n\n**Upstream fuel and energy** — the emissions caused by drilling, refining, and transporting the heating oil that KUA already burns in Scope 1. The combustion is Scope 1, but the upstream supply chain is Scope 3.\n\n**Why Scope 3 is hardest to measure:** the data lives at suppliers, vendors, and individual students\' homes — not on a meter at KUA. We use estimation methods (spend-based, distance-based, average factors) that get better as more specific data comes in. KUA\'s Scope 3 dashboard placeholder is **~2,635 mtCO₂e/year** (bottom-up cross-check ~2,635 mt central, range 1,802–3,779 across 3-4 published methods), dominated by student travel with the rest split among goods, dining, waste, commuting, and upstream fuel.',
+        body: `**Scope 3 is the biggest, messiest, and usually most important category** at any institution that doesn't own factories. It covers every emission that's indirectly caused by your activities but happens at someone else's facility, on someone else's account.
+
+The GHG Protocol formally divides Scope 3 into **15 categories**: purchased goods and services, capital goods, fuel and energy upstream, upstream transportation, waste, business travel, employee commuting, upstream leased assets, downstream transportation, processing of sold products, use of sold products, end-of-life, downstream leased assets, franchises, investments. Most of those don't apply to a school (we don't sell physical products, we don't have franchises, we don't hold investments at scale), but several do.
+
+**The Scope 3 source everyone expects to dominate a boarding school is student travel.** When a student flies from Boston to Tokyo for winter break, the airline burns jet fuel, but it's indirectly caused by KUA's decision to enroll international students who need to fly home. The Yale Office of Sustainability formalized this as a "student travel" category outside the GHG Protocol's 15 because it is material at residential institutions and was being missed in standard accounting.
+
+**At KUA the expectation is wrong, and the inventory is how we know.** Student travel is ${KUA.s3TravelPct}% of KUA's Scope 3; ${KUA.s3Top} is ${KUA.s3TopPct}% — nearly double. That gap changes what a school should do: if you assume travel dominates you go after flights, which a school cannot cut much without changing who it enrolls, and you leave purchasing alone — the larger line, and the one a business office can actually move. The habit to take from this is that a fact about your sector is a hypothesis about your campus, and the inventory is the test.
+
+**Other Scope 3 sources for KUA:**
+
+**Purchased goods and services** — the food in the dining hall, the paper for class, the lab supplies, the cleaning products, the new computers. Each of these embodies emissions from production, transportation, and packaging. We estimate this using the EPA Supply Chain GHG Emission Factors (a method called Environmentally-Extended Input-Output, or EEIO), which gives kg CO₂e per dollar spent in each industry sector.
+
+**Waste** — landfilled trash, recycling, composting, hazardous waste. Each disposal pathway has its own emission factor in the EPA's WARM model. Landfilled food waste is particularly bad because it generates methane as it decomposes.
+
+**Commuting** — non-resident faculty and staff driving to campus. Smaller for KUA than for a day school, but real.
+
+**Upstream fuel and energy** — the emissions caused by drilling, refining, and transporting the heating oil that KUA already burns in Scope 1. The combustion is Scope 1, but the upstream supply chain is Scope 3.
+
+**Why Scope 3 is hardest to measure:** the data lives at suppliers, vendors, and individual students' homes — not on a meter at KUA. We use estimation methods (spend-based, distance-based, average factors) that get better as more specific data comes in. KUA's Scope 3 dashboard placeholder is **~2,635 mtCO₂e/year** (bottom-up cross-check ~2,635 mt central, range 1,802–3,779 across 3-4 published methods), led by ${KUA.s3Top} at ${KUA.s3TopPct}%, then student travel at ${KUA.s3TravelPct}%, with dining, upstream fuel, commuting and waste making up the remainder.`,
       },
       {
         type: 'quiz',

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { heatingSetbackSaving, MT_PER_STUDENT_HEATING_BASELINE } from '../utils/personalFootprint.js';
 import { MT_PER_TRANSAT_ROUND_TRIP } from '../utils/equivalents.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { SCOPE3_LARGEST_LABEL, SCOPE3_LARGEST_LINE } from '../data/scopeTotals.js';
 
 // Daily-rotating "tip of the day" card. Picks a tip based on day
 // of year so it changes every day without persistence. 30 tips =
@@ -90,8 +91,8 @@ const TIPS = [
   },
   {
     icon: '📊',
-    title: 'The biggest scope at KUA is travel',
-    body: 'Scope 3 (mostly student + faculty travel) is ~2x larger than Scope 1 (heating fuel) + Scope 2 (electricity) combined. Travel is the biggest reducible category at a boarding school.',
+    title: 'The biggest scope at KUA is Scope 3',
+    body: ({ scopeMultiple }) => `Scope 3 is about ${scopeMultiple}x Scope 1 (heating fuel) plus Scope 2 (electricity) combined. Inside it, ${SCOPE3_LARGEST_LABEL} leads at ${SCOPE3_LARGEST_LINE.shareOfScope3}% — more than student travel, which is the one people expect.`,
     link: '/scope-3',
     linkText: 'See Scope 3',
   },
@@ -173,6 +174,7 @@ export function DailyTip() {
   const tip = useMemo(() => TIPS[dayOfYear() % TIPS.length], []);
   const body = typeof tip.body === 'function'
     ? tip.body({
+      scopeMultiple: (live.scope3Mt / (live.scope1Mt + live.scope2Mt)).toFixed(1),
       sinkMt: Math.round(live.sinkMt).toLocaleString(),
       netMt: Math.round(live.netMt).toLocaleString(),
       grossMt: Math.round(live.grossMt).toLocaleString(),

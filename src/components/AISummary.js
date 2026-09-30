@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { perStudentMt } from '../utils/modelledPrecision.js';
 import { supabase } from '../supabaseClient';
 import { useSpotlight } from '../hooks/useSpotlight.js';
-import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
+import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT, SCOPE3_LARGEST_LABEL, SCOPE3_LARGEST_LINE } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 
@@ -37,7 +37,7 @@ function compose(records, totals) {
     `KUA's preliminary total carbon footprint is approximately ${gross.toLocaleString()} mtCO₂e per year across Scopes 1, 2, and 3.`
   );
   sentences.push(
-    `Scope 3 is the largest contributor at roughly ${P.scope3.toLocaleString()} mtCO₂e — about ${Math.round(P.scope3 / gross * 100)}% of the total — dominated by student travel (international + US-boarder term-break flights), with dining, purchased goods, and waste making up the rest.`
+    `Scope 3 is the largest contributor at roughly ${P.scope3.toLocaleString()} mtCO₂e — about ${Math.round(P.scope3 / gross * 100)}% of the total — led by ${SCOPE3_LARGEST_LABEL} at ${SCOPE3_LARGEST_LINE.shareOfScope3}% of Scope 3, then student travel (international + US-boarder term-break flights), with dining, upstream fuel and waste making up the rest.`
   );
   sentences.push(
     `Heating fuel (Scope 1) contributes ~${P.scope1.toLocaleString()} mtCO₂e from cold-climate combustion, while purchased electricity (Scope 2) adds another ${P.scope2} mtCO₂e from the ISO-NE 2024 grid.`

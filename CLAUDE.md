@@ -3296,3 +3296,52 @@ on a data-entry page.
 the wrong string rather than a missing one. Tightened to require both.
 
 Suite 2,004 → 2,008; 147 files.
+
+## Phase 488 — superlatives and orderings, the fifth class of stale prose
+
+A claim that *X is the biggest* contains no figure and no ratio, so none of the
+four earlier sweeps could see it — and unlike an adjective of scale, it is not
+a matter of degree. It is flatly true or false.
+
+Five surfaces said KUA's Scope 3 is dominated by student travel. It is not:
+
+| Scope 3 line | mt | share |
+|---|---|---|
+| purchased goods | 1,315 | **49.9%** |
+| student travel | 760 | 28.8% |
+| dining | 235 | 8.9% |
+| upstream fuel | 230 | 8.7% |
+| commuting | 90 | 3.4% |
+| waste | 5 | 0.2% |
+
+Purchased goods is nearly double travel. `/scope-3` already labelled its
+"Dominant source" correctly as purchased goods — while the same page's category
+list called student travel "likely the single largest Scope 3 source". One
+page, two answers, both rendered.
+
+**This one misdirects the action.** A school reading "your Scope 3 is mostly
+travel" goes after flights, which it cannot cut much without changing who it
+enrolls. The number says the larger lever is procurement — and procurement is
+something a business office can actually move. Getting the ordering wrong
+defeats the purpose of the page.
+
+Also retired here: *"Scope 3 is ~2x larger than Scope 1 + Scope 2 combined."*
+It is **1.5x** (2,635 against 1,760), and was never 2x.
+
+The ordering is now derived once — `SCOPE3_LINES`, `SCOPE3_LARGEST_LINE`,
+`SCOPE3_LARGEST_LABEL` — so five surfaces cannot hold five opinions about it.
+
+*The commit gate found a surface my own test did not.* I listed four files;
+the fixed-string sweep found a fifth, a full `LearnAgent` teaching body that
+stated it twice — once as a general claim about boarding schools, once as a
+claim about KUA. The lesson now teaches the gap instead of hiding it: the
+expected answer for a residential school **is** travel, KUA's measured answer
+is not, and a fact about your sector is a hypothesis about your campus. Test
+list widened to match the gate.
+
+*And a derived label has a grammatical position.* `SCOPE3_LARGEST_LABEL` is
+lowercased for mid-sentence use, so interpolating it produced "Scope 3.
+purchased goods is 49.9%". Fixed with a semicolon, and guarded: no surface may
+place the label after sentence-ending punctuation.
+
+Suite 2,008 → 2,014; 148 files.

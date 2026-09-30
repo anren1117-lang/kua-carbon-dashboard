@@ -611,6 +611,31 @@ const SCOPE3_PLACEHOLDER_BREAKDOWN = [
   { source: 'Commuting',                                 mt:   90, provenance: 'estimated', method: '52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated.' },
   { source: 'Waste',                                     mt:    5, provenance: 'estimated', method: '420 people × per-day generation × diversion-split scenarios × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors. NOTE: this 5 mt row was derived under the old credit-taking factors; on the corrected Cat 5 basis the same activity is ~22 mt. Not moved here because this row sums into SCOPE3_PLACEHOLDER_MT — see the waste range in geographicEstimates.js for the corrected figure. Hauler invoices (tons by stream) not yet integrated.' },
 ];
+/**
+ * The Scope 3 ordering, derived and exported once.
+ *
+ * Four surfaces used to assert their own answer to "what dominates Scope 3",
+ * and three of them said student travel. Purchased goods is 1,315 mt against
+ * travel's 760 — nearly double. /scope-3 labelled its own "Dominant source"
+ * correctly while its category list said the opposite, on the same page.
+ *
+ * Exported so the ordering is read rather than remembered: a claim about which
+ * line is biggest is not something four files should each decide.
+ */
+export const SCOPE3_LINES = SCOPE3_PLACEHOLDER_BREAKDOWN.map((r) => ({
+  source: r.source,
+  mt: r.mt,
+  shareOfScope3: +((r.mt / SCOPE3_PLACEHOLDER_MT) * 100).toFixed(1),
+}));
+
+/** The single biggest Scope 3 line. Currently purchased goods, ~50%. */
+export const SCOPE3_LARGEST_LINE = SCOPE3_LINES.reduce((a, b) => (b.mt > a.mt ? b : a));
+
+/** Short label for prose: "purchased goods", "student travel". */
+export const SCOPE3_LARGEST_LABEL = SCOPE3_LARGEST_LINE.source
+  .replace(/\s*\(.*\)\s*$/, '')
+  .toLowerCase();
+
 
 export function composeScope3() {
   return {
