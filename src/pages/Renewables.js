@@ -1,8 +1,19 @@
 import React from 'react';
 import { EducationalCard } from '../components/EducationalCard';
 import { useMeasuredRenewables } from '../hooks/useMeasuredRenewables.js';
+import { PUBLISHED_CLAIMS, SOLAR_RECONCILIATION } from '../data/publishedClaims.js';
 
 const styles = {
+  claims:       { marginTop: 32, borderTop: '1px solid #334155', paddingTop: 24 },
+  claimsTitle:  { fontSize: 20, fontWeight: 650, color: '#e2e8f0', margin: '0 0 8px' },
+  claimsIntro:  { fontSize: 14, lineHeight: 1.6, color: '#94a3b8', margin: '0 0 20px', maxWidth: 760 },
+  claim:        { border: '1px solid #334155', borderRadius: 10, padding: 16, marginBottom: 14, background: '#0f172a' },
+  claimHead:    { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 },
+  claimStatus:  { fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase', color: '#fecaca', padding: '3px 8px', borderRadius: 999 },
+  claimSource:  { fontSize: 12, color: '#7dd3fc', textDecoration: 'none' },
+  claimQuote:   { margin: '0 0 12px', padding: '0 0 0 12px', borderLeft: '3px solid #475569', fontSize: 14, lineHeight: 1.6, color: '#e2e8f0', fontStyle: 'italic' },
+  claimRow:     { fontSize: 13, lineHeight: 1.65, color: '#cbd5e1', marginBottom: 8 },
+  claimSettled: { fontSize: 12, color: '#94a3b8', marginTop: 10, paddingTop: 10, borderTop: '1px dashed #334155' },
   title: { margin: 0, fontSize: 32, fontWeight: 700 },
   subtitle: { marginTop: 8, color: '#94a3b8', maxWidth: 760 },
   list: { marginTop: 24, display: 'grid', gap: 16 },
@@ -174,6 +185,37 @@ function Renewables() {
             </div>
           )}
         </div>
+      </div>
+
+      <div style={styles.claims}>
+        <h2 style={styles.claimsTitle}>What KUA publishes, and what the meters say</h2>
+        <p style={styles.claimsIntro}>
+          These are quoted from KUA&rsquo;s own pages and its contractor&rsquo;s. Where they
+          disagree with this dashboard, the gap is the useful part: each one names a
+          specific thing someone on campus can check. The published solar figures are
+          consistent with each other &mdash; {SOLAR_RECONCILIATION.publishedSharePct}% of
+          campus electricity implies about{' '}
+          {SOLAR_RECONCILIATION.impliedPublishedKwh.toLocaleString()} kWh, or{' '}
+          {SOLAR_RECONCILIATION.impliedPublishedYieldKwhPerKw} kWh per kW per year, which is
+          ordinary for New Hampshire. This dashboard sees{' '}
+          {SOLAR_RECONCILIATION.meteredOperationalKw} kW of metered array against a published{' '}
+          {SOLAR_RECONCILIATION.publishedKw} kW.
+        </p>
+        {PUBLISHED_CLAIMS.map((c) => (
+          <div key={c.id} style={styles.claim}>
+            <div style={styles.claimHead}>
+              <span style={{
+                ...styles.claimStatus,
+                background: c.status === 'diverges' ? '#7f1d1d' : '#78350f',
+              }}>{c.status === 'diverges' ? 'Diverges' : 'Unconfirmed'}</span>
+              <a href={c.url} target="_blank" rel="noreferrer" style={styles.claimSource}>{c.source}</a>
+            </div>
+            <blockquote style={styles.claimQuote}>&ldquo;{c.claim}&rdquo;</blockquote>
+            <div style={styles.claimRow}><strong>This dashboard:</strong> {c.measured}</div>
+            <div style={styles.claimRow}>{c.reading}</div>
+            <div style={styles.claimSettled}>Settled by: {c.settledBy}</div>
+          </div>
+        ))}
       </div>
     </div>
   );

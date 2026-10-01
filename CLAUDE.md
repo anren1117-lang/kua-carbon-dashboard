@@ -3527,3 +3527,53 @@ components did not add up to its own visible total. Parts are rounded first
 now, then summed.
 
 Suite 2,032 → 2,040; 152 files.
+
+## Phase 493 — what KUA publishes, against what the meters say
+
+A research phase. KUA makes public claims about its own energy; nobody had
+checked them against the dashboard. Three disagree.
+
+**Solar.** kua.org: *"KUA's 220kw solar energy plant, comprised of panels on
+roofs and in fields … generating around 16% of campus electricity needs."* This
+repo sees **60 kW** of metered array and derives **1.5%**.
+
+The published pair **corroborates itself**, which is what settles the argument:
+16% of campus need implies ~210,000 kWh, or **957 kWh/kW/yr** for a 220 kW plant
+— an ordinary New Hampshire yield. The repo's figure implies **280 kWh/kW/yr**,
+which no working array produces. So the repo is the outlier.
+
+`renewables.js` already explains most of why, and deserves credit for it: of
+three solar feeds in the BMS export, one reports real generation, one is stuck
+at a negative cumulative value, and one reads as a net consumer (backwards CT).
+**What the published capacity adds is that broken meters are not the whole
+story** — 220 kW of plant against 60 kW of metered array means there are panels
+on this campus the BMS export never reaches.
+
+**Wind.** kua.org says a 15 kW turbine from a 2013 capstone *"continues to
+generate electricity year-round."* The dashboard carries it as not operating,
+with a standing explainer titled "Why the broken wind turbine is still on the
+dashboard." Here the dashboard is right and the website is stale — and it is the
+website the public reads.
+
+**Geothermal.** ReArch, the contractor: the Kilton/Welch renovation incorporates
+*"a geothermal heating and cooling system."* This confirms the Phase 491
+inference about Kilton — but **I did not act on it**, and the reasons are on the
+record in the data:
+
+- it would *shrink* Scope 1 by removing modelled fossil heat from two buildings,
+  and **a correction that flatters deserves more scepticism than one that
+  doesn't**;
+- the source is a contractor page and KUA's own sustainability page never
+  mentions geothermal;
+- **Welch's electricity is not elevated** (1.9 kWh/sqft) the way the story
+  predicts. A shared plant metered at Kilton would explain that — so would the
+  system not running.
+
+So the magnitude is published and nothing moved. That is the honest state.
+
+`/renewables` now carries the comparison with each claim quoted verbatim, its
+source linked, and the specific check that would settle it. Every number in it
+derives from `SOLAR_RECONCILIATION`, including the prose sentence describing the
+measured side.
+
+Suite 2,040 → 2,046; 153 files.
