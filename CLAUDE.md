@@ -3439,3 +3439,44 @@ Open: Kilton still reads 3.5 kWh/sqft against 1.1–2.3 for its peers. Possibly
 the renovation, possibly faculty residences on the same meter. Not acted on.
 
 Suite 2,018 → 2,026; 150 files.
+
+## Phase 491 — the dorm leaderboard ranks a fifth of the footprint
+
+Phase 490 took a dining hall off the dorm leaderboard. This asks the same
+question of the *metric* rather than the roster, and the answer is worse.
+
+No heating fuel is attributed per building anywhere in this repo.
+`buildingEmissions.js` converts kWh with the grid factor and stops; Scope 1
+heating is modelled campus-wide only. Priced with the **same NH-CZ6 dorm
+intensity Scope 1 already uses** (`HEATING_KBTU_PER_SQFT.Dorm`, 75
+kBtu/sqft/yr), heat is **81% of a dorm's modelled footprint** — 413 mt against
+100 mt of electricity across the nine modelled dorms, and above 70% for every
+single one.
+
+So `/buildings` was titled "Dorm **energy** comparison" and claimed it "flags
+the heaviest residential users". It flags the heaviest users of the smaller
+fifth.
+
+**The bias has a direction, which is why disclosure alone isn't enough.** A
+dorm heated with oil keeps its largest source off the board entirely. A dorm
+running heat pumps shows that same heat *as electricity* and ranks worse for
+having electrified. Kilton — the hall KUA renovated and expanded from 14 to 32
+beds — tops electricity-per-resident **and** carries the lowest modelled heat
+share of any dorm (71% against 78–89%). Those are the same fact seen twice.
+The dashboard was penalising the one dorm that electrified.
+
+*What I deliberately did not do.* Folding the modelled heat into the ranking
+would have been one line and would have made it worse. Modelled heat is floor
+area × one constant, identical for every dorm, so it carries **zero** per-dorm
+information — adding it at ~80% weight converts a behaviour leaderboard into a
+ranking of **square feet per resident**, which no student can change, while
+looking more rigorous. `DORM_ENERGY_BASIS.heatFoldedIntoRanking` is `false` and
+`whyNotFolded` says this in the data, and the test asserts neither ranking
+surface so much as mentions `heatMt`.
+
+Both labels now derive the share rather than quoting it, and both name the
+electrification bias instead of just saying "electricity only".
+
+Per-dorm fuel deliveries are the only thing that changes this.
+
+Suite 2,026 → 2,032; 151 files.

@@ -5,6 +5,7 @@ import { getEffectiveBuildings } from '../data/assetInventory.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
+import { DORM_HEAT_SHARE_PCT } from '../data/dormEnergyBasis.js';
 import { monthlyReports } from '../data/monthlyConsumption.js';
 import { useBmsExport } from '../hooks/useBmsExport.js';
 import { useBmsMeterMap } from '../hooks/useBmsMeterMap.js';
@@ -445,8 +446,8 @@ function DormEnergySection({ rows }) {
 
   return (
     <ModuleSection
-      title="Dorm energy comparison"
-      hint="Each dorm's electricity use, ranked. kWh-per-student-per-day flags the heaviest residential users — useful for dorm-cup competitions and targeted setpoint outreach. BMS-mapped dorms show their actual daily kWh trend; the rest show their annual figure as a single bar (no per-day data yet)."
+      title="Dorm electricity comparison"
+      hint={`Each dorm's electricity use, ranked — electricity only. Heating fuel is not metered per building, and at the NH-CZ6 dorm intensity it is about ${DORM_HEAT_SHARE_PCT}% of a dorm's estimated footprint, so this ranks the remaining share and not the heaviest emitters. It also runs against electrification: a dorm on heat pumps shows that heat here, an oil-heated one does not. Useful for setpoint and plug-load outreach; not a carbon ranking. BMS-mapped dorms show their actual daily kWh trend; the rest show their annual figure as a single bar (no per-day data yet).`}
     >
       <div style={styles.dormControls}>
         <span style={styles.dormControlLabel}>Sort by:</span>

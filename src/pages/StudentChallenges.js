@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { dorms } from '../data/dorms.js';
+import { DORM_HEAT_SHARE_PCT } from '../data/dormEnergyBasis.js';
 import { students } from '../data/students.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
@@ -114,7 +115,7 @@ export default function StudentChallenges() {
 
       <ModuleSection
         title="Lowest electricity per student"
-        hint="A different lens: which dorm uses the least electricity per resident? Calibrated against ISO-NE 2024 emission factors."
+        hint={`A different lens: which dorm uses the least electricity per resident? Electricity only — heating fuel isn't metered per building and is roughly ${DORM_HEAT_SHARE_PCT}% of a dorm's estimated footprint, so placing well here is not the same as a small carbon footprint, and a dorm that heats with heat pumps carries its heat in this number while an oil-heated dorm does not. Calibrated against ISO-NE 2024 emission factors.`}
       >
         <div style={styles.list}>
           {sortedByEfficiency.map((d, i) => (
