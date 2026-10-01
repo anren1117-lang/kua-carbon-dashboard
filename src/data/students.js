@@ -14,7 +14,10 @@ import { dorms } from './dorms.js';
  * @property {'novice'|'intermediate'|'advanced'} learningLevel
  */
 
-const dormCycle = ['d_barrette', 'd_kilton', 'd_chellis', 'd_welch', 'd_dexter', 'd_densmore', 'd_kurth', 'd_baxter', 'd_bryant', 'd_rowe', 'd_mikula'];
+// Modeled dorms only — d_hallfarm and d_frost have no building, meter or
+// published headcount, so placing synthetic students there would invent
+// occupancy for a dorm we cannot measure. See DORM_REGISTRY_BASIS.
+const dormCycle = ['d_kilton', 'd_chellis', 'd_welch', 'd_dexter', 'd_densmore', 'd_kurth', 'd_bryant', 'd_rowe', 'd_mikula'];
 
 function makeHash(seed) {
   // Stable mock hash for development. NOT a real privacy primitive.

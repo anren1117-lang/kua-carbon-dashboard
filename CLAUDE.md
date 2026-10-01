@@ -3380,3 +3380,62 @@ it discriminates — all six fire. A guard that has never been red is a guard of
 unknown strength.
 
 Suite 2,014 → 2,018; 149 files.
+
+## Phase 490 — the dorm leaderboard was topped by the dining hall
+
+Asked for better per-dorm resident counts, I went looking for numbers and
+found a classification error instead.
+
+KUA's own campus map — **already in this repo** at
+`src/public/kua-campus-map.png`, with a numbered legend that matches
+`bmsNumber` exactly — lists eleven STUDENT RESIDENTIAL buildings. The registry
+carried two that are not on it, and missed two that are:
+
+| in our registry | what KUA's map says | map section |
+|---|---|---|
+| Barrette — Dorm, 48 residents | #9 Barrette Campus Center, Doe Dining Common | ACADEMIC |
+| Baxter — Dorm, 14 residents | #1 Baxter: Head of School, Administration | ADMINISTRATION |
+| *(missing)* | #19 Hall Farm Dorm | STUDENT RESIDENTIAL |
+| *(missing)* | #20 Frost Dorm | STUDENT RESIDENTIAL |
+
+62 of 228 "residents" — **27%** — were housed in a dining hall and an
+administration building. And because Barrette's meter covers a dining commons,
+it ranked **first on the student dorm leaderboard** at 2,834 kWh/resident and
+6.2 kWh/sqft, against 1.1–2.3 kWh/sqft for every real dorm.
+
+**The energy data had been disagreeing with the classification the whole time,
+and so had another file in this repo** — `buildingPositions.js` has named #9
+"Barrette / Doe" all along. One file knew; the one driving the leaderboard did
+not. Nothing cross-checked them, so nothing said so.
+
+What KUA actually publishes, now recorded in `DORM_REGISTRY_BASIS`:
+
+- 340 students, "76 Percent of students board" → ~258 boarders (kua.org/about)
+- Kilton "from a 14 to a 32-bed residential hall", Welch "to 18 student beds"
+  (kua.org, 22 Nov 2024). Kilton moves 29 → 32.
+- dorms running "from five to 45", including a farmhouse with "as few as 4
+  other students" — so Hall Farm and Frost are **small**
+- **per-dorm headcounts: nowhere.** Two renovated halls have published bed
+  counts and that is the entire public record.
+
+*The correction made the disclosure worse, which is why I believe it.* The gap
+between registry and published boarders was 30; removing the dining hall and
+the admin building took it to **89** (169 against 258). Two small farmhouse
+dorms do not bridge that. Either the per-dorm numbers are low or boarders live
+in faculty houses this registry never modelled — the residential-life roster
+settles it and nothing else does.
+
+Hall Farm and Frost are registered with `population: null` and
+`modeled: false`, not invented. They are excluded from per-resident rankings,
+because a dorm with no meter would otherwise rank at 0 kWh and read as the
+greenest house on campus. **A bed count is not a census either** — 32 beds in
+Kilton is a ceiling, and the basis block says so.
+
+*Green on the first run again.* The new guard was written after the edit, so I
+ran its logic against the committed pre-edit data: five assertions fire. A
+guard that has never been red is of unknown strength.
+
+Open: Kilton still reads 3.5 kWh/sqft against 1.1–2.3 for its peers. Possibly
+the renovation, possibly faculty residences on the same meter. Not acted on.
+
+Suite 2,018 → 2,026; 150 files.

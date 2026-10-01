@@ -4,7 +4,7 @@ import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/building
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, KG_PER_KWH } from '../data/gridMix.js';
 import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
-import { dorms } from '../data/dorms.js';
+import { dorms, DORM_REGISTRY_BASIS } from '../data/dorms.js';
 import { students, TOTAL_STUDENTS } from '../data/students.js';
 import { staff, TOTAL_STAFF } from '../data/staff.js';
 import { reductionActions } from '../data/reductionActions.js';
@@ -45,9 +45,21 @@ describe('data layer integrity', () => {
     expect(getBuildingByBmsNumber(10)?.id).toBe('b_barnfield');
   });
 
-  it('every dorm points to a known building', () => {
+  it('every MODELED dorm points to a known building', () => {
     const ids = new Set(buildings.map((b) => b.id));
-    dorms.forEach((d) => expect(ids.has(d.buildingId)).toBe(true));
+    dorms.filter((d) => d.modeled !== false)
+      .forEach((d) => expect(ids.has(d.buildingId)).toBe(true));
+  });
+
+  it('an unmodeled dorm carries no building and no invented headcount', () => {
+    // Hall Farm (#19) and Frost (#20) are on KUA's student-residential list
+    // and have no meter, footprint or coordinates here. null means unknown.
+    const unmodeled = dorms.filter((d) => d.modeled === false);
+    expect(unmodeled.length).toBe(2);
+    unmodeled.forEach((d) => {
+      expect(d.buildingId).toBeNull();
+      expect(d.population).toBeNull();
+    });
   });
 
   it('every Dorm-categorized building is in the dorm registry', () => {
@@ -68,16 +80,21 @@ describe('data layer integrity', () => {
     // The existing checks above verify topology — every dorm maps to a
     // building — but nothing compared the TOTALS, which is how this registry
     // sat 30 students below the cohort model unnoticed.
-    const registrySum = dorms.reduce((t, d) => t + d.population, 0);
+    const registrySum = dorms
+      .filter((d) => d.modeled !== false)
+      .reduce((t, d) => t + d.population, 0);
     const buildingSum = buildings
       .filter((b) => b.category === 'Dorm')
       .reduce((t, b) => t + (b.dormPopulation || 0), 0);
     expect(registrySum).toBe(buildingSum);
 
-    // KUA publishes 76% boarding; the cohort model encodes ~258. The registry
-    // holds 228. Pinned so that closing the gap is a deliberate edit with a
-    // roster behind it, rather than a silent drift in either direction.
-    expect(registrySum).toBe(228);
+    // KUA publishes 76% boarding; the cohort model encodes ~258. Nine modeled
+    // dorms hold 169. The gap GREW from 30 to 89 when Barrette (the dining
+    // hall) and Baxter (administration) were removed from the dorm registry —
+    // correcting the classification made the disclosure problem bigger, which
+    // is the honest direction. Pinned so closing it takes a roster, not drift.
+    expect(registrySum).toBe(169);
+    expect(DORM_REGISTRY_BASIS.publishedBoarders - registrySum).toBe(89);
   });
 
   it('every student profile points to a known dorm', () => {

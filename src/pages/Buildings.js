@@ -435,7 +435,7 @@ function DormEnergySection({ rows }) {
   const sorted = [...enriched].sort((a, b) => {
     if (sortBy === 'perStudent') return b.kwhPerStudentPerDay - a.kwhPerStudentPerDay;
     if (sortBy === 'kwh')        return b.annualKwh - a.annualKwh;
-    if (sortBy === 'pop')        return b.dormPopulation - a.dormPopulation;
+    if (sortBy === 'pop')        return (b.dormPopulation ?? -1) - (a.dormPopulation ?? -1);
     return 0;
   });
 

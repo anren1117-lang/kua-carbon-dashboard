@@ -2,6 +2,21 @@
 // KUA campus map + dorm rosters; replace with facilities-DB values when
 // available. The dashboard uses these for per-sqft and per-occupant
 // intensities.
+//
+// CLASSIFICATION, corrected against KUA's own campus map (the copy in
+// src/public/kua-campus-map.png, whose numbered legend matches bmsNumber):
+// its STUDENT RESIDENTIAL list is 13 Densmore, 14 Bryant, 15 Dexter-Richards,
+// 16 Rowe, 17 Welch, 18 Kilton, 19 Hall Farm, 20 Frost, 21 Kurth, 22 Chellis,
+// 23 Mikula. Two buildings here were categorised 'Dorm' and are not on it:
+//   #9  Barrette  -> the map files it under ACADEMIC as "Barrette Campus
+//       Center, Doe Dining Common". It carried 48 residents, which put the
+//       DINING HALL at the top of the student dorm leaderboard. Its meter
+//       agrees: 6.2 kWh/sqft against 1.1-2.3 for every real dorm.
+//   #1  Baxter    -> the map files it under ADMINISTRATION as "Baxter: Head
+//       of School, Administration". It carried 14 residents on 1.3 kWh/sqft.
+// Hall Farm (#19) and Frost (#20) are real dorms with no meter, no footprint
+// and no coordinates here, so they are registered in dorms.js as unmodeled
+// rather than invented as buildings. See DORM_REGISTRY_BASIS there.
 
 /**
  * @typedef {Object} Building
@@ -21,8 +36,8 @@
 export const buildings = [
   { id: 'b_miller',     bmsNumber:  5, name: 'Miller Bicentennial Hall',   category: 'Academic', sqft: 38000, occupants: 280, dormPopulation: 0,   hvacSchedule: '06:00-22:00 weekday',   setpointHeatingF: 68, setpointCoolingF: 74 },
   { id: 'b_whittemore', bmsNumber: 11, name: 'Whittemore Athletic Center', category: 'Athletic', sqft: 60000, occupants: 200, dormPopulation: 0,   hvacSchedule: '05:00-23:00 daily',     setpointHeatingF: 65, setpointCoolingF: 76 },
-  { id: 'b_barrette',   bmsNumber:  9, name: 'Barrette',                   category: 'Dorm',     sqft: 22000, occupants: 48,  dormPopulation: 48,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
-  { id: 'b_kilton',     bmsNumber: 18, name: 'Kilton House',               category: 'Dorm',     sqft: 16000, occupants: 29,  dormPopulation: 29,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
+  { id: 'b_barrette',   bmsNumber:  9, name: 'Barrette Campus Center / Doe Dining', category: 'Dining',   sqft: 22000, occupants: 48,  dormPopulation: 0,   hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
+  { id: 'b_kilton',     bmsNumber: 18, name: 'Kilton Hall',                   category: 'Dorm',     sqft: 16000, occupants: 32,  dormPopulation: 32,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_fitch',      bmsNumber:  7, name: 'Fitch',                      category: 'Academic', sqft: 18000, occupants: 140, dormPopulation: 0,   hvacSchedule: '07:00-21:00 weekday',   setpointHeatingF: 68, setpointCoolingF: 74 },
   { id: 'b_silvergym',  bmsNumber: 12, name: 'Alumni Silver Gym',          category: 'Athletic', sqft: 24000, occupants: 120, dormPopulation: 0,   hvacSchedule: '06:00-22:00 daily',     setpointHeatingF: 65, setpointCoolingF: 76 },
   { id: 'b_flickinger', bmsNumber:  8, name: 'Flickinger Arts Center',     category: 'Academic', sqft: 22000, occupants: 90,  dormPopulation: 0,   hvacSchedule: '08:00-22:00 daily',     setpointHeatingF: 68, setpointCoolingF: 74 },
@@ -31,7 +46,7 @@ export const buildings = [
   { id: 'b_dexter',     bmsNumber: 15, name: 'Dexter-Richards Hall',       category: 'Dorm',     sqft: 9000,  occupants: 23,  dormPopulation: 23,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_densmore',   bmsNumber: 13, name: 'Densmore Hall',              category: 'Dorm',     sqft: 8200,  occupants: 21,  dormPopulation: 21,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_kurth',      bmsNumber: 21, name: 'Kurth Hall',                 category: 'Dorm',     sqft: 7600,  occupants: 18,  dormPopulation: 18,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
-  { id: 'b_baxter',     bmsNumber:  1, name: 'Baxter',                     category: 'Dorm',     sqft: 6800,  occupants: 14,  dormPopulation: 14,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
+  { id: 'b_baxter',     bmsNumber:  1, name: 'Baxter (Head of School / Admin)', category: 'Other',    sqft: 6800,  occupants: 14,  dormPopulation: 0,   hvacSchedule: '07:00-18:00 weekday',   setpointHeatingF: 68, setpointCoolingF: 74 },
   { id: 'b_bryant',     bmsNumber: 14, name: 'Bryant Hall',                category: 'Dorm',     sqft: 6500,  occupants: 14,  dormPopulation: 14,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   { id: 'b_rowe',       bmsNumber: 16, name: 'Rowe Hall',                  category: 'Dorm',     sqft: 6300,  occupants: 13,  dormPopulation: 13,  hvacSchedule: '24/7',                  setpointHeatingF: 70, setpointCoolingF: 74 },
   // Bishop Alumni House sleeps visiting alumni, not students — NOT in

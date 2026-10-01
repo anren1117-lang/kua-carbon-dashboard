@@ -40,7 +40,9 @@ export default function StudentChallenges() {
     // 0. All on the same Year 1 basis so dorm rankings are comparable.
     const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
     const snapshotById  = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
-    return dorms.map((d) => {
+    // Unmodeled dorms (no building, no meter, no published headcount) would
+    // otherwise rank at 0 kWh and read as the greenest houses on campus.
+    return dorms.filter((d) => d.modeled !== false).map((d) => {
       const dormStudents = students.filter((s) => s.dormId === d.id);
       const points = dormStudents.reduce((s, st) => s + st.carbonPoints, 0);
       // Consumption only — generation is stored as a positive magnitude, so a
