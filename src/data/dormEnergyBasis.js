@@ -35,15 +35,13 @@ import { SNAPSHOT_ANNUALIZE_FACTOR } from './composedYtd.js';
 import { KG_PER_KWH } from './gridMix.js';
 import { HEATING_KBTU_PER_SQFT } from './geographicEstimates.js';
 import { HEATING_KG_PER_MMBTU } from './scopeTotals.js';
+import { modelledHeatMt } from './buildingEnergyBasis.js';
+
+// One definition of the heat model, shared with the campus map's basis.
+export { modelledHeatMt };
 
 const snapshotById = Object.fromEntries(envysionSnapshot.map((r) => [r.buildingId, r]));
 const buildingById = Object.fromEntries(buildings.map((b) => [b.id, b]));
-
-/** Modelled annual heating mtCO2e for a floor area, at a category intensity. */
-export function modelledHeatMt(sqft, category = 'Dorm') {
-  const mmbtu = (sqft * (HEATING_KBTU_PER_SQFT[category] ?? HEATING_KBTU_PER_SQFT.Other)) / 1000;
-  return (mmbtu * HEATING_KG_PER_MMBTU) / 1000;
-}
 
 /**
  * One row per MODELED dorm: the metered electricity the leaderboard ranks on,

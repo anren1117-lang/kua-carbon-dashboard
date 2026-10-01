@@ -3480,3 +3480,50 @@ electrification bias instead of just saying "electricity only".
 Per-dorm fuel deliveries are the only thing that changes this.
 
 Suite 2,026 → 2,032; 151 files.
+
+## Phase 492 — the same omission, campus-wide, where it reorders
+
+Phase 491 fixed the dorm leaderboard. The same roll-up
+(`utils/buildingEmissions.js`) feeds `/campus-map`, `/compare-buildings` and
+`/buildings/:id` for **every** building, and there the error is worse than an
+omission.
+
+Heating intensity varies by category — Dorm 75, Academic 55, Athletic 45,
+Dining 65 kBtu/sqft/yr. So dropping heat does **not** scale buildings down by a
+common factor. It changes the order:
+
+| rank | by electricity (what shipped) | counting modelled heat |
+|---|---|---|
+| 1 | Miller Bicentennial Hall (92.5) | **Whittemore Athletic Center (263)** |
+| 2 | Barrette / Doe (83.8) | Miller Bicentennial Hall (244) |
+| 5 | **Fitch** (34.1) | **Flickinger Arts Center** (110) |
+
+`/campus-map` titled that section "Top 5 by total emissions" with the hint
+"Where the absolute most carbon comes from." It named the wrong building first
+and the wrong building fifth. Heat is **73%** of the campus building footprint
+(1,214 mt modelled against 439 mt metered).
+
+**The corroboration that this is the inventory's own heat model and not a
+second invention:** it sums to within **6%** of the campus Scope 1 heating
+figure `scopeTotals.js` derives independently (1,214 vs 1,290).
+
+*And note this phase reaches the OPPOSITE conclusion to 491, on purpose.* The
+dorm leaderboard does not fold heat in; the map does. The difference is what
+each surface is for. A competitive ranking must not absorb a term that is floor
+area × one constant — it would rank square footage, which no student controls.
+A descriptive map answering "where does the carbon come from" must not omit
+three quarters of the answer. Same data, two surfaces, two answers, and the
+reason written down in both.
+
+*The commit gate found a fourth surface my test's file list missed* —
+`/buildings/:id` labelled the same electricity figure "Annual emissions". That
+is twice now (Phase 488's `LearnAgent`). A sweep is bounded by the repo; a
+test's file list is bounded by what I happened to notice. **Run the sweep
+first, then write the list from what it returns.**
+
+*My own test caught a real defect too.* `totalMt` was summed from unrounded
+inputs while `elecMt`/`heatMt` published rounded ones, so a row's two visible
+components did not add up to its own visible total. Parts are rounded first
+now, then summed.
+
+Suite 2,032 → 2,040; 152 files.

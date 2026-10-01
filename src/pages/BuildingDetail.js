@@ -103,7 +103,7 @@ export default function BuildingDetail() {
                 to the kilowatt-hour and to 10 kg, on a figure extrapolated from
                 four metered months — precision the method doesn't have. */}
             <Stat label="Annual electricity"  value={`${formatModelledKwh(row.annualKwh, row.yearFraction)} kWh`} />
-            <Stat label="Annual emissions"    value={`${formatModelledMt(row.mtCO2e, row.yearFraction)} mtCO₂e`} />
+            <Stat label="Annual electricity emissions" value={`${formatModelledMt(row.mtCO2e, row.yearFraction)} mtCO₂e`} />
             <Stat label="Share of campus"     value={`${row.sharePercent}%`} />
             <Stat label="Intensity"           value={`${row.kgPerSqft} kg/sqft/yr`} />
             <Stat label={`Rank in ${building.category}s by total`} value={peerCount > 0 ? `#${rankByMt} of ${peerCount}` : '—'} />

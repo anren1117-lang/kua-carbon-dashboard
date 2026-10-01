@@ -79,7 +79,7 @@ export default function CompareBuildings() {
               <CompareRow label="Square feet"   av={a.sqft}                                  bv={b.sqft}                                  unit="sqft" higherIsBetter />
               <CompareRow label="Daily occupants" av={a.occupants}                           bv={b.occupants}                             unit="" />
               <CompareRow label="Annual electricity" av={a.annualKwh}                        bv={b.annualKwh}                             unit="kWh" />
-              <CompareRow label="Annual emissions" av={a.mtCO2e}                             bv={b.mtCO2e}                                unit="mtCO₂e" decimals={1} />
+              <CompareRow label="Annual electricity emissions" av={a.mtCO2e}                             bv={b.mtCO2e}                                unit="mtCO₂e" decimals={1} />
               <CompareRow label="Intensity" av={a.kgPerSqft}                                 bv={b.kgPerSqft}                             unit="kg/sqft/yr" decimals={1} lowerIsBetter />
               <CompareRow label="Share of campus" av={a.sharePercent}                        bv={b.sharePercent}                          unit="%" decimals={1} />
             </tbody>
@@ -156,7 +156,7 @@ function BuildingCard({ b, winner }) {
         {isWinner && <Pill kind="good">✓ More efficient</Pill>}
       </div>
       <div style={styles.bldgStat}>
-        <div style={styles.bldgStatLabel}>Annual emissions</div>
+        <div style={styles.bldgStatLabel}>Annual electricity emissions</div>
         <div style={styles.bldgStatValue}>
           <AnimatedNumber value={b.mtCO2e} decimals={1} duration={1100} />
           <span style={styles.bldgStatUnit}> mtCO₂e</span>

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
+import { CAMPUS_HEAT_SHARE_PCT, TOP5_DISAGREEMENT } from '../data/buildingEnergyBasis.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 import { CampusMonthlyTrend } from '../components/CampusMonthlyTrend.js';
@@ -189,11 +190,11 @@ export default function CampusMap() {
   const unitWord = layoutMode === 'schematic' || layoutMode === 'geographic' ? 'box' : 'dot';
 
   const subtitle = mode === 'monthly'
-    ? `Slice of campus emissions for ${formatMonthLabel(selectedMonth)}. Each ${unitWord} is sized by sqft and coloured by per-sqft intensity for that month's reading. Click any building for detail.`
+    ? `Slice of campus ELECTRICITY for ${formatMonthLabel(selectedMonth)}. Each ${unitWord} is sized by sqft and coloured by per-sqft intensity for that month's reading. Click any building for detail.`
     : `Where the ${totalMtShown} mtCO₂e of campus electricity emissions come from — one ${unitWord} per building, sized by square footage and coloured by per-sqft intensity. Estimated for a full year from the months actually metered. Click any building for detail.`;
 
   return (
-    <ModulePage title="Campus map — emissions distribution" subtitle={subtitle}>
+    <ModulePage title="Campus map — electricity distribution" subtitle={subtitle}>
       <ModuleSection
         title={LAYOUT_COPY[layoutMode]?.title ?? 'Campus map'}
         hint={`${LAYOUT_COPY[layoutMode]?.hint ?? ''} Colour shows kg CO₂e per square foot per year, so a small intense building stands out as much as a large efficient one. Built from ${monthsObserved} month${monthsObserved === 1 ? '' : 's'} of BMS data${mode === 'monthly' ? ', currently viewing one' : ', each building scaled to a year from the months it actually has'} — individual buildings may rest on fewer, so open one to see how many.`}
@@ -314,7 +315,7 @@ export default function CampusMap() {
           viewBox={`0 0 ${W} ${layoutMode === 'geographic' ? GEO_H : totalHeight}`}
           style={styles.svg}
           role="img"
-          aria-label="KUA campus map showing per-building emissions intensity"
+          aria-label="KUA campus map showing per-building electricity intensity"
         >
           <defs>
             {/* Diagonal hatch for buildings with no measured data — visually
@@ -390,7 +391,7 @@ export default function CampusMap() {
               ) : (
                 <DetailStat label="Annual electricity" value={`${formatModelledKwh(selected.annualKwh, selected.yearFraction)} kWh`} />
               )}
-              <DetailStat label={mode === 'monthly' ? 'Annualized emissions' : 'Annual emissions'} value={`${formatModelledMt(selected.mtCO2e, selected.yearFraction)} mtCO₂e`} />
+              <DetailStat label={mode === 'monthly' ? 'Annualized electricity emissions' : 'Annual electricity emissions'} value={`${formatModelledMt(selected.mtCO2e, selected.yearFraction)} mtCO₂e`} />
               <DetailStat label="Share of campus"   value={`${selected.sharePercent}%`} />
               <DetailStat label="Square feet"       value={selected.sqft.toLocaleString()} />
               <DetailStat label="Daily occupants"   value={selected.occupants.toLocaleString()} />
@@ -418,7 +419,10 @@ export default function CampusMap() {
         )}
       </ModuleSection>
 
-      <ModuleSection title="Top 5 by total emissions" hint="Where the absolute most carbon comes from. Usually correlates with sqft.">
+      <ModuleSection
+        title="Top 5 by electricity emissions"
+        hint={`Electricity only. Heating fuel is not metered per building, and modelled at the NH-CZ6 intensities it is about ${CAMPUS_HEAT_SHARE_PCT}% of the campus building footprint — so this is not a ranking of where the most carbon comes from. Because heating intensity differs by category, counting it reorders this list: ${TOP5_DISAGREEMENT.withHeat.join(', ')} would enter and ${TOP5_DISAGREEMENT.electricityOnly.join(', ')} would drop out.`}
+      >
         <Ranking rows={top5} valueKey="mtCO2e" suffix=" mt" />
       </ModuleSection>
 
