@@ -142,6 +142,9 @@ export default function AdminBmsExport() {
   // Headline counts.
   const mappedCount = bmsExportMeters.filter((m) => map[m.id]).length;
   const stuckCount = bmsExportMeters.filter((m) => m.direction === 'stuck').length;
+  // Distinct from stuck: the kWh channel was not selected when this export
+  // was pulled, so the meter is not broken and has no reading either.
+  const unmeasuredCount = bmsExportMeters.filter((m) => m.direction === 'unmeasured').length;
   const generationCount = bmsExportMeters.filter((m) => m.direction === 'generation').length;
   // Sum only consumption-direction meters for the headline total.
   // Generation-direction (solar / suspect-CT) meters would either be
@@ -168,8 +171,20 @@ export default function AdminBmsExport() {
           { label: 'Mapped → building', value: `${mappedCount} / ${BMS_EXPORT_META.meterCount}`,            accent: mappedCount === BMS_EXPORT_META.meterCount ? '#22c55e' : '#f59e0b' },
           { label: 'Total consumption kWh', value: Math.round(totalConsumptionKwh).toLocaleString(),       accent: '#a855f7', note: 'consumption-direction meters only' },
           { label: 'Stuck / not reporting',   value: stuckCount,                                            accent: stuckCount === 0 ? '#22c55e' : '#fbbf24' },
+          { label: 'No kWh channel',         value: unmeasuredCount,                                       accent: unmeasuredCount === 0 ? '#22c55e' : '#f59e0b', note: 'not trended in this export' },
           { label: 'Generation / suspect-CT', value: generationCount,                                       accent: generationCount === 0 ? '#22c55e' : '#fbbf24', note: 'real solar + backwards CTs' },
         ]} />
+        {activeExport.coverageWarning && (
+          <div style={{
+            padding: '10px 12px', background: '#3a0d12', border: '1px solid #7f1d1d',
+            borderRadius: 6, margin: '0 0 14px', fontSize: 12, color: '#fca5a5', lineHeight: 1.6,
+          }}>
+            <strong style={{ color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 }}>
+              Coverage dropped
+            </strong>
+            {' — '}{activeExport.coverageWarning}
+          </div>
+        )}
         <div style={styles.metaRow}>
           <ProvenancePill provenance="measured" />
           <span style={styles.metaText}>Source: <code>{BMS_EXPORT_META.sourceFile}</code> · parsed {BMS_EXPORT_META.generatedAt.slice(0, 10)}</span>

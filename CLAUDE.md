@@ -3715,3 +3715,43 @@ readings) through Sep 30 or later, with all 35 campus feeds selected — then
 `node scripts/sumMonthlyFeeds.mjs <export.csv>`.
 
 Suite 2,059 → 2,062; 155 files.
+
+## Phase 497 — two ingestion defects a partial export exposed
+
+Both found by feeding the parser a real partial file
+(`MeterTrends_20261002`: hourly, 12 meters, Sep 3 – Oct 2).
+
+**1. "Not exported" was recorded as "consumed nothing."** `parseBmsExport`
+emitted `totalKwh: 0` whether a meter's kWh channel was absent from the CSV or
+present-but-unusable. Comparing two exports, `PM_17_HP03Feed` went 2,695 kWh →
+0 and **I told the user that meter had "stopped reporting". It had not** — that
+export carries only its peak-demand column. A column nobody ticked, reported as
+a dead meter.
+
+The two now carry different flags — `direction: 'stuck'` (a meter or CT to
+investigate) vs `'unmeasured'` (re-pull the trend with that channel selected) —
+and `/scope-2`'s Whittemore panel reports them separately instead of counting
+both as "not reporting".
+
+*`totalKwh` stays `0`, not `null`.* I wrote `null` first, as the honest
+representation of "no reading", and caught it before it shipped: three render
+paths call `m.totalKwh.toLocaleString()` directly, including the admin page. A
+truer data model that crashes the page is not truer. The distinction lives in
+the flags; the number stays safe to render.
+
+**2. A narrow upload silently replaced a campus capture.** `useBmsExport` takes
+the newest stored window, full stop. Uploading this 12-meter file would have
+displaced the committed **104**-meter export and collapsed every per-building
+figure to the dozen feeds in it, with nothing on screen saying so.
+
+`coverageWarning()` now fires when an upload carries under half the committed
+meter count, and `/admin/bms-export` shows it. It does **not** block the
+upload — a narrower capture can be deliberate, and refusing would be its own
+failure. It makes the loss visible rather than silent. A "No kWh channel" count
+sits beside "Stuck / not reporting" on the same page.
+
+*Why this file could never have updated the dashboard anyway:* the monthly
+ledger sums the 35 campus service-entrance feeds from a **daily** export; this
+one is hourly and carries 2 of those 35.
+
+Suite 2,062 → 2,071; 156 files.

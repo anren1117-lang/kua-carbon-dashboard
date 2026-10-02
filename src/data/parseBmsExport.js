@@ -87,7 +87,29 @@ export function parseMeterTrendsHourly(text, sourceFile = 'upload.csv') {
       samples.push({ t: ts[i], cumulativeKwh: cumulative, peakKw: peak });
     }
     if (samples.length < 2) {
-      summary.push({ id: meterId, totalKwh: 0, peakKw: 0, avgKw: 0, hourly: Array(24).fill(0), daily: [], sampleCount: 0 });
+      // Two different facts were both recorded as a flat 0 kWh, and they have
+      // different fixes. A meter whose kWh CHANNEL IS ABSENT from this export
+      // was never trended — nothing is wrong with the meter, the trend
+      // selection just did not include it. A meter whose channel is present
+      // but unusable is a meter or CT problem. Reporting both as 0 made "not
+      // exported" indistinguishable from "consumed nothing", and a reader
+      // comparing two exports would see a meter "stop reporting" when all that
+      // changed was which columns someone ticked.
+      // totalKwh stays 0 rather than null: three render paths call
+      // m.totalKwh.toLocaleString() directly, including the admin export page,
+      // and a null there is a crash. The distinction lives in the flags.
+      const hasChannel = cols.kwhCol !== undefined;
+      summary.push({
+        id: meterId,
+        totalKwh: 0,
+        peakKw: 0,
+        avgKw: 0,
+        hourly: Array(24).fill(0),
+        daily: [],
+        sampleCount: 0,
+        kwhChannel: hasChannel,
+        direction: hasChannel ? 'stuck' : 'unmeasured',
+      });
       continue;
     }
 
@@ -167,6 +189,7 @@ export function parseMeterTrendsHourly(text, sourceFile = 'upload.csv') {
 
     summary.push({
       id: meterId,
+      kwhChannel: true,
       totalKwh,
       totalKwhCumulative: totalFromCumulative,
       totalKwhIntegrated: totalFromIntegration,

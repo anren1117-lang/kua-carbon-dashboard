@@ -35,11 +35,38 @@ export function rowToExport(row) {
 const seedExport = () => ({ meta: SEED_META, meters: SEED_METERS, fromUpload: false });
 
 /**
+ * An upload wins on recency alone, which is almost always right and is
+ * catastrophic in one case: a Meter Trends export can be pulled with any subset
+ * of channels ticked. A 12-meter trend selection uploaded after a 104-meter
+ * campus capture replaces it silently, and every per-building figure on the
+ * dashboard collapses to the handful of feeds that happened to be in it.
+ *
+ * This does NOT override the admin — they may legitimately be uploading a
+ * narrower capture, and refusing would be its own failure. It makes the loss
+ * visible instead, so a surface can say so rather than quietly showing a
+ * campus with twelve meters in it.
+ */
+export const COVERAGE_WARN_RATIO = 0.5;
+
+export function coverageWarning(chosenMeters, seedMeters = SEED_METERS) {
+  const got = Array.isArray(chosenMeters) ? chosenMeters.length : 0;
+  const seed = Array.isArray(seedMeters) ? seedMeters.length : 0;
+  if (seed === 0 || got === 0) return null;
+  if (got >= seed * COVERAGE_WARN_RATIO) return null;
+  return `This upload carries ${got} meters; the export committed in the repo carries ${seed}. `
+    + 'A Meter Trends export includes only the channels ticked when it was pulled, so this is '
+    + 'probably a partial trend selection rather than a campus capture. Per-building figures '
+    + 'will cover only the feeds present.';
+}
+
+/**
  * @returns {{ meta: object, meters: object[], fromUpload: boolean,
- *   loading: boolean, error: string|null }}
+ *   loading: boolean, error: string|null, coverageWarning: string|null }}
  */
 export function useBmsExport() {
-  const [state, setState] = useState(() => ({ ...seedExport(), loading: true, error: null }));
+  const [state, setState] = useState(() => ({
+    ...seedExport(), loading: true, error: null, coverageWarning: null,
+  }));
 
   useEffect(() => {
     let cancelled = false;
@@ -56,16 +83,22 @@ export function useBmsExport() {
         if (cancelled) return;
         if (res?.error) {
           // Missing table or a real error: keep the committed export.
-          setState({ ...seedExport(), loading: false, error: res.error.message || 'Supabase error' });
+          setState({ ...seedExport(), loading: false, error: res.error.message || 'Supabase error', coverageWarning: null });
           return;
         }
         const uploaded = rowToExport((res?.data || [])[0]);
         setState(uploaded
-          ? { ...uploaded, fromUpload: true, loading: false, error: null }
-          : { ...seedExport(), loading: false, error: null });
+          ? {
+            ...uploaded,
+            fromUpload: true,
+            loading: false,
+            error: null,
+            coverageWarning: coverageWarning(uploaded.meters),
+          }
+          : { ...seedExport(), loading: false, error: null, coverageWarning: null });
       })
       .catch((err) => {
-        if (!cancelled) setState({ ...seedExport(), loading: false, error: err?.message || 'fetch failed' });
+        if (!cancelled) setState({ ...seedExport(), loading: false, error: err?.message || 'fetch failed', coverageWarning: null });
       });
     return () => { cancelled = true; };
   }, []);

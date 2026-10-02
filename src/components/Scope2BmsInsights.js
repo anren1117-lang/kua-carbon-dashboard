@@ -1027,8 +1027,12 @@ function WhittemoreClusterSection({ meters: bmsExportMeters }) {
     const others    = cluster.filter((m) => !heatPumps.includes(m) && !ahus.includes(m) && !boilers.includes(m) && m !== main);
     const totalCluster = main ? main.totalKwh : cluster.reduce((s, m) => s + m.totalKwh, 0);
     const groupTotal = (group) => group.reduce((s, m) => s + m.totalKwh, 0);
-    // Health audit: count which group members are stuck/working.
+    // Health audit. Two distinct failures, counted separately because the fix
+    // differs: 'stuck' is a meter or CT to investigate, 'unmeasured' means the
+    // kWh channel was never selected for this export — a trend-config gap, not
+    // a fault. Both make the cluster total incomplete, so both get reported.
     const stuckCount = (group) => group.filter((m) => m.direction === 'stuck').length;
+    const unmeasuredCount = (group) => group.filter((m) => m.direction === 'unmeasured').length;
     return {
       cluster, main,
       heatPumps, ahus, boilers, others,
@@ -1041,13 +1045,18 @@ function WhittemoreClusterSection({ meters: bmsExportMeters }) {
       ahuStuck:    stuckCount(ahus),
       boilerStuck: stuckCount(boilers),
       mainStuck:   main && main.direction === 'stuck',
+      hpUnmeasured:     unmeasuredCount(heatPumps),
+      ahuUnmeasured:    unmeasuredCount(ahus),
+      boilerUnmeasured: unmeasuredCount(boilers),
     };
   }, [bmsExportMeters]);
 
   if (!data || data.cluster.length === 0) return null;
-  const { main, heatPumps, ahus, boilers, others, totalCluster, hpTotal, ahuTotal, boilerTotal, otherTotal, hpStuck, ahuStuck, boilerStuck, mainStuck } = data;
+  const { main, heatPumps, ahus, boilers, others, totalCluster, hpTotal, ahuTotal, boilerTotal, otherTotal,
+    hpStuck, ahuStuck, boilerStuck, mainStuck, hpUnmeasured, ahuUnmeasured, boilerUnmeasured } = data;
   const pct = (n) => totalCluster > 0 ? (n / totalCluster * 100).toFixed(1) : '0';
   const totalStuck = hpStuck + ahuStuck + boilerStuck + (mainStuck ? 1 : 0);
+  const totalUnmeasured = hpUnmeasured + ahuUnmeasured + boilerUnmeasured;
 
   return (
     <section style={styles.card}>
@@ -1058,13 +1067,19 @@ function WhittemoreClusterSection({ meters: bmsExportMeters }) {
         {main ? ` (PM_17_MainFeed cumulative)` : ` (sum of submeters)`}.
       </p>
 
-      {totalStuck > 0 && (
+      {(totalStuck > 0 || totalUnmeasured > 0) && (
         <div style={{ padding: '10px 12px', background: '#3a0d12', border: '1px solid #7f1d1d', borderRadius: 6, marginBottom: 14, fontSize: 12, color: '#fca5a5', lineHeight: 1.6 }}>
           <strong style={{ color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 }}>Partial data</strong>
           {' — '}
           {hpStuck > 0 && <><strong>{hpStuck} of {heatPumps.length}</strong> heat pumps not reporting ({heatPumps.filter((m) => m.direction === 'stuck').map((m) => m.id.replace('PM_17_', '')).join(', ')}). </>}
           {ahuStuck > 0 && <><strong>{ahuStuck} of {ahus.length}</strong> AHUs not reporting. </>}
           {boilerStuck > 0 && <><strong>{boilerStuck} of {boilers.length}</strong> boiler feed{boilerStuck === 1 ? '' : 's'} not reporting ({boilers.filter((m) => m.direction === 'stuck').map((m) => m.id.replace('PM_17_', '')).join(', ')}). </>}
+          {totalUnmeasured > 0 && (
+            <><strong>{totalUnmeasured}</strong> feed{totalUnmeasured === 1 ? ' has' : 's have'} no kWh channel in this export
+            ({[...heatPumps, ...ahus, ...boilers].filter((m) => m.direction === 'unmeasured').map((m) => m.id.replace('PM_17_', '')).join(', ')})
+            — not a fault, just a column nobody ticked when the trend was pulled. Re-export with those kWh channels selected
+            and they come back. </>
+          )}
           The cluster total below is INCOMPLETE. Real Whittemore consumption is higher than what's shown here. Resolve before treating these splits as authoritative.
         </div>
       )}
