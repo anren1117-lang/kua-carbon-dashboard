@@ -26,6 +26,7 @@ create index if not exists teacher_lessons_created_idx on teacher_lessons (creat
 alter table teacher_lessons enable row level security;
 
 -- Anyone can read PUBLISHED lessons (so students can take them via URL).
-create policy if not exists "anon read published teacher lessons"
+drop policy if exists "anon read published teacher lessons" on teacher_lessons;
+create policy "anon read published teacher lessons"
   on teacher_lessons for select to anon
   using (status = 'published');

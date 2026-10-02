@@ -54,7 +54,9 @@ alter table admin_audit_log enable row level security;
 -- token. Anyone with the anon key (every browser session) can also
 -- write/read directly, but the anon key is already public, so this
 -- isn't a new attack surface — it's the same posture as fuel_bills.
-create policy if not exists "anon read admin_audit_log"
+drop policy if exists "anon read admin_audit_log" on admin_audit_log;
+create policy "anon read admin_audit_log"
   on admin_audit_log for select to anon using (true);
-create policy if not exists "anon insert admin_audit_log"
+drop policy if exists "anon insert admin_audit_log" on admin_audit_log;
+create policy "anon insert admin_audit_log"
   on admin_audit_log for insert to anon with check (true);

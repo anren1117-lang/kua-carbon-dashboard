@@ -55,11 +55,14 @@ alter table scope1_fleet_records enable row level security;
 -- Same RLS posture as fuel_bills: anon read+write so the admin portal
 -- (which uses the publishable key) can use it directly. Server-side
 -- writes through the service role key still work as well.
-create policy if not exists "anon read scope1_fleet_records"
+drop policy if exists "anon read scope1_fleet_records" on scope1_fleet_records;
+create policy "anon read scope1_fleet_records"
   on scope1_fleet_records for select to anon using (true);
-create policy if not exists "anon insert scope1_fleet_records"
+drop policy if exists "anon insert scope1_fleet_records" on scope1_fleet_records;
+create policy "anon insert scope1_fleet_records"
   on scope1_fleet_records for insert to anon with check (true);
-create policy if not exists "anon delete scope1_fleet_records"
+drop policy if exists "anon delete scope1_fleet_records" on scope1_fleet_records;
+create policy "anon delete scope1_fleet_records"
   on scope1_fleet_records for delete to anon using (true);
 
 -- ─── Refrigerant service logs ──────────────────────────────────────
@@ -91,9 +94,12 @@ create index if not exists scope1_refrigerant_logs_system_idx
 
 alter table scope1_refrigerant_logs enable row level security;
 
-create policy if not exists "anon read scope1_refrigerant_logs"
+drop policy if exists "anon read scope1_refrigerant_logs" on scope1_refrigerant_logs;
+create policy "anon read scope1_refrigerant_logs"
   on scope1_refrigerant_logs for select to anon using (true);
-create policy if not exists "anon insert scope1_refrigerant_logs"
+drop policy if exists "anon insert scope1_refrigerant_logs" on scope1_refrigerant_logs;
+create policy "anon insert scope1_refrigerant_logs"
   on scope1_refrigerant_logs for insert to anon with check (true);
-create policy if not exists "anon delete scope1_refrigerant_logs"
+drop policy if exists "anon delete scope1_refrigerant_logs" on scope1_refrigerant_logs;
+create policy "anon delete scope1_refrigerant_logs"
   on scope1_refrigerant_logs for delete to anon using (true);

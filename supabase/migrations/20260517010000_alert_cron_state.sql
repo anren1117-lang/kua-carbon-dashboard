@@ -22,4 +22,6 @@ alter table alert_cron_state enable row level security;
 -- browser client, but the server-side Supabase client (using the
 -- service-role key) bypasses RLS, which is what the cron handler
 -- uses via getSupabaseServer().
-create policy alert_cron_state_no_anon on alert_cron_state for all using (false);
+drop policy if exists alert_cron_state_no_anon on alert_cron_state;
+create policy alert_cron_state_no_anon
+  on alert_cron_state for all using (false);

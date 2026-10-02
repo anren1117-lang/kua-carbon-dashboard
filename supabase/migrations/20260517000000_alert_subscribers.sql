@@ -29,6 +29,12 @@ alter table alert_subscribers enable row level security;
 -- endpoints are the real auth boundary. RLS just blocks the cases
 -- where someone wired up the anon key directly to the browser
 -- without going through our endpoints.
-create policy alert_subscribers_anon_read   on alert_subscribers for select using (true);
-create policy alert_subscribers_anon_insert on alert_subscribers for insert with check (true);
-create policy alert_subscribers_anon_delete on alert_subscribers for delete using (true);
+drop policy if exists alert_subscribers_anon_read on alert_subscribers;
+create policy alert_subscribers_anon_read
+  on alert_subscribers for select using (true);
+drop policy if exists alert_subscribers_anon_insert on alert_subscribers;
+create policy alert_subscribers_anon_insert
+  on alert_subscribers for insert with check (true);
+drop policy if exists alert_subscribers_anon_delete on alert_subscribers;
+create policy alert_subscribers_anon_delete
+  on alert_subscribers for delete using (true);

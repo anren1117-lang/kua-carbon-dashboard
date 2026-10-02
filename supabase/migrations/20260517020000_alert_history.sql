@@ -25,4 +25,6 @@ alter table alert_history enable row level security;
 -- Same pattern as alert_cron_state — only the server-side cron +
 -- the admin-gated read endpoint should touch this. RLS blocks anon;
 -- the service-role key the cron uses bypasses RLS.
-create policy alert_history_no_anon on alert_history for all using (false);
+drop policy if exists alert_history_no_anon on alert_history;
+create policy alert_history_no_anon
+  on alert_history for all using (false);

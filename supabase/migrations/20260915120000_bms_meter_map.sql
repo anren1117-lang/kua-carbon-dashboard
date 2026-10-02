@@ -18,14 +18,18 @@ create table if not exists bms_meter_map (
 
 alter table bms_meter_map enable row level security;
 
-create policy if not exists "allow anon select on bms_meter_map"
+drop policy if exists "allow anon select on bms_meter_map" on bms_meter_map;
+create policy "allow anon select on bms_meter_map"
   on bms_meter_map for select to anon using (true);
 
-create policy if not exists "allow anon insert on bms_meter_map"
+drop policy if exists "allow anon insert on bms_meter_map" on bms_meter_map;
+create policy "allow anon insert on bms_meter_map"
   on bms_meter_map for insert to anon with check (true);
 
-create policy if not exists "allow anon update on bms_meter_map"
+drop policy if exists "allow anon update on bms_meter_map" on bms_meter_map;
+create policy "allow anon update on bms_meter_map"
   on bms_meter_map for update to anon using (true) with check (true);
 
-create policy if not exists "allow anon delete on bms_meter_map"
+drop policy if exists "allow anon delete on bms_meter_map" on bms_meter_map;
+create policy "allow anon delete on bms_meter_map"
   on bms_meter_map for delete to anon using (true);

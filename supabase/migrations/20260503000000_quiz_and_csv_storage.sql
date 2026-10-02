@@ -54,7 +54,9 @@ alter table meter_readings_csv   enable row level security;
 
 -- Allow the anon role to read (read-only dashboards). Writes go through
 -- the API handlers using the service key.
-create policy if not exists "allow anon select on quiz_attempts"
+drop policy if exists "allow anon select on quiz_attempts" on quiz_attempts;
+create policy "allow anon select on quiz_attempts"
   on quiz_attempts for select to anon using (true);
-create policy if not exists "allow anon select on meter_readings_csv"
+drop policy if exists "allow anon select on meter_readings_csv" on meter_readings_csv;
+create policy "allow anon select on meter_readings_csv"
   on meter_readings_csv for select to anon using (true);

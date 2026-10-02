@@ -51,9 +51,12 @@ create index if not exists forest_stand_actuals_surveyed_idx
 
 alter table forest_stand_actuals enable row level security;
 
-create policy if not exists "anon read forest_stand_actuals"
+drop policy if exists "anon read forest_stand_actuals" on forest_stand_actuals;
+create policy "anon read forest_stand_actuals"
   on forest_stand_actuals for select to anon using (true);
-create policy if not exists "anon insert forest_stand_actuals"
+drop policy if exists "anon insert forest_stand_actuals" on forest_stand_actuals;
+create policy "anon insert forest_stand_actuals"
   on forest_stand_actuals for insert to anon with check (true);
-create policy if not exists "anon delete forest_stand_actuals"
+drop policy if exists "anon delete forest_stand_actuals" on forest_stand_actuals;
+create policy "anon delete forest_stand_actuals"
   on forest_stand_actuals for delete to anon using (true);

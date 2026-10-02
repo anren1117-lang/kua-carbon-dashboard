@@ -36,11 +36,14 @@ create index if not exists bms_export_summaries_window_idx
 
 alter table bms_export_summaries enable row level security;
 
-create policy if not exists "allow anon select on bms_export_summaries"
+drop policy if exists "allow anon select on bms_export_summaries" on bms_export_summaries;
+create policy "allow anon select on bms_export_summaries"
   on bms_export_summaries for select to anon using (true);
 
-create policy if not exists "allow anon insert on bms_export_summaries"
+drop policy if exists "allow anon insert on bms_export_summaries" on bms_export_summaries;
+create policy "allow anon insert on bms_export_summaries"
   on bms_export_summaries for insert to anon with check (true);
 
-create policy if not exists "allow anon delete on bms_export_summaries"
+drop policy if exists "allow anon delete on bms_export_summaries" on bms_export_summaries;
+create policy "allow anon delete on bms_export_summaries"
   on bms_export_summaries for delete to anon using (true);
