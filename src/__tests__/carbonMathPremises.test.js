@@ -29,6 +29,7 @@ import { SCOPE2_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { KG_PER_KWH } from '../data/gridMix.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { FOOTPRINT_REFERENCE } from '../utils/personalFootprint.js';
+import { buildQuestions } from '../pages/CarbonMath.js';
 
 const src = readFileSync(resolve(process.cwd(), 'pages/CarbonMath.js'), 'utf8');
 const CANONICAL_KWH = Math.round((SCOPE2_TOTAL_MT * 1000) / KG_PER_KWH);
@@ -38,21 +39,36 @@ describe('Q1 uses KUA electricity, not a figure 3x too big', () => {
     expect(src).not.toMatch(/5,400,000 kWh/);
   });
 
+  // The premise is derived now, so assert on the question the page actually
+  // builds rather than on a literal in its source — the figure moves with
+  // Scope 2 and a regex over source text would only re-break.
   it('the stated kWh is within 10% of the canonical Scope 2 basis', () => {
-    const m = src.match(/KUA used about ([\d,]+) kWh/);
+    const q1 = buildQuestions()[0];
+    const m = q1.setup.match(/KUA used about ([\d,]+) kWh/);
     expect(m, 'Q1 premise not found').toBeTruthy();
     const stated = Number(m[1].replace(/,/g, ''));
     expect(Math.abs(stated - CANONICAL_KWH) / CANONICAL_KWH).toBeLessThan(0.1);
   });
 
   it('and its answer follows from that premise', () => {
-    const m = src.match(/KUA used about ([\d,]+) kWh/);
-    const stated = Number(m[1].replace(/,/g, ''));
+    const q1 = buildQuestions()[0];
+    const stated = Number(q1.setup.match(/KUA used about ([\d,]+) kWh/)[1].replace(/,/g, ''));
     const expected = (stated * KG_PER_KWH) / 1000;
-    // the answer field for Q1 must be within its own ±5% tolerance
-    const ans = src.match(/KUA used about [\d,]+ kWh[\s\S]{0,400}?answer:\s*(\d+)/);
-    expect(ans).toBeTruthy();
-    expect(Math.abs(Number(ans[1]) - expected) / expected).toBeLessThan(0.05);
+    expect(Math.abs(q1.answer - expected) / expected).toBeLessThan(0.05);
+    // and the printed work must multiply out to the answer it states
+    const work = q1.work.join(' ');
+    const product = Number((work.match(/=\s*([\d,]+) kg/) || [])[1]?.replace(/,/g, ''));
+    expect(product).toBeTruthy();
+    expect(Math.abs(stated * KG_PER_KWH - product)).toBeLessThan(1);
+    expect(Math.abs(product / 1000 - q1.answer)).toBeLessThan(1);
+  });
+
+  it('tracks the figure /scope-2 publishes, since it says so', () => {
+    const q1 = buildQuestions();
+    expect(Math.abs(q1[0].answer - SCOPE2_TOTAL_MT) / SCOPE2_TOTAL_MT).toBeLessThan(0.02);
+    // and it follows a moved Scope 2 rather than pinning last release's number
+    const moved = buildQuestions(SCOPE2_TOTAL_MT * 1.2)[0];
+    expect(moved.answer).toBeGreaterThan(q1[0].answer);
   });
 });
 

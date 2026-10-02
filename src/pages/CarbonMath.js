@@ -1,6 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
+import { SCOPE2_TOTAL_MT } from '../data/scopeTotals.js';
+import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
+
+// The Scope 2 worked example, derived. It used to state a factor of 0.246,
+// print the product of 0.234, and caption the result "the figure /scope-2
+// publishes" when /scope-2 published something 5% larger. A student doing
+// the multiplication got a different number than the page's own answer.
+// Built from whatever Scope 2 currently is, so the example tracks the page
+// it cites. An admin entering data moves /scope-2; this must move with it,
+// or it is stale again by the next reprice.
+export function scope2Premise(scope2Mt = SCOPE2_TOTAL_MT) {
+  const kwh = Math.round((scope2Mt * 1000) / KG_PER_KWH / 10000) * 10000;
+  const kg = Math.round(kwh * KG_PER_KWH);
+  return { kwh, kg, mt: Math.round(kg / 1000) };
+}
 import { Icon } from '../components/Icon.js';
 
 // /carbon-math — interactive carbon-arithmetic practice for
@@ -13,17 +29,19 @@ import { Icon } from '../components/Icon.js';
 // the reasoning. Difficulty range: middle-school arithmetic to
 // AP-statistics-friendly methodology + uncertainty problems.
 
-const QUESTIONS = [
+export function buildQuestions(scope2Mt = SCOPE2_TOTAL_MT) {
+  const S2 = scope2Premise(scope2Mt);
+  return [
   {
     id: 'q1',
     level: 'intro',
-    setup: 'KUA used about 1,660,000 kWh of grid electricity last year. ISO New England\'s emissions factor is 0.246 kg CO₂ per kWh. What is KUA\'s Scope 2 footprint in metric tons of CO₂?',
-    answer: 389,
+    setup: `KUA used about ${S2.kwh.toLocaleString()} kWh of grid electricity last year. The published grid emissions factor is ${KG_PER_KWH} kg CO₂ per kWh. What is KUA's Scope 2 footprint in metric tons of CO₂?`,
+    answer: S2.mt,
     unit: 'mtCO₂e',
     tolerance: 0.05, // ±5%
     work: [
-      '1,660,000 kWh × 0.246 kg/kWh = 388,440 kg CO₂',
-      '388,440 kg ÷ 1,000 ≈ 389 mtCO₂e — the figure /scope-2 publishes.',
+      `${S2.kwh.toLocaleString()} kWh × ${KG_PER_KWH} kg/kWh = ${S2.kg.toLocaleString()} kg CO₂`,
+      `${S2.kg.toLocaleString()} kg ÷ 1,000 ≈ ${S2.mt} mtCO₂e — the figure /scope-2 publishes.`,
       'Why divide: 1,000 kg = 1 metric ton. We always report institutional footprints in metric tons.',
     ],
   },
@@ -116,7 +134,8 @@ const QUESTIONS = [
       'Why this matters: the NET number has a wider uncertainty band than EITHER input — and here the SINK uncertainty swamps everything else. ±550 against ±200 means the forest estimate alone decides the answer, which is exactly why a real forest inventory is the highest-value measurement KUA could make. Net is 4,395 − 1,829 = 2,566, so "net 2,566 ± 585 mt" is honest; "net 2,566 mt" flat is not. The sink spread narrowed when the rates moved to a net basis in 2026; it ran 1,000–2,650 before that.',
     ],
   },
-];
+  ];
+}
 
 const LEVEL_COLORS = {
   intro: { bg: '#052e1a', fg: '#86efac', border: '#14532d' },
@@ -125,6 +144,10 @@ const LEVEL_COLORS = {
 };
 
 export default function CarbonMath() {
+  const s2 = useMeasuredScope2();
+  const QUESTIONS = buildQuestions(
+    Number.isFinite(s2?.annualMt) && s2.annualMt > 0 ? s2.annualMt : SCOPE2_TOTAL_MT,
+  );
   return (
     <ModulePage
       title="Carbon math practice"

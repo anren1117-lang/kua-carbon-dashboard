@@ -3630,3 +3630,53 @@ deliberately NOT among them: it reads daytime-only export, consistent with the
 8 kW array on that roof.
 
 Suite 2,046 → 2,053; 154 files.
+
+## Phase 495 — the reprice reached the arithmetic but not the worked examples
+
+The user said /scope-2 "looks like it is not updated". It is: the live chunk
+carries Phase 494, and the headline Scope 2 was never going to move — that
+figure comes from grid kWh × the eGRID factor and Phase 494 only touched the
+BMS-insights solar accounting. But looking for what they saw turned up five
+places where **Phase 485's reprice reached the computation and not the text**.
+
+Phase 485 moved the grid factor from the per-fuel reconstruction (~0.234) to
+EPA's published eGRID NEWE rate (0.246391), and Scope 2 from ~390 to 409.9 mt:
+
+| surface | said | computed at |
+|---|---|---|
+| `/campus-map` | "Emissions = kWh × **0.234** kg/kWh" | 0.246391 |
+| `/hotspots` | "× ISO-NE 2024 grid factor (**0.234** effective)" ×2 | 0.246391 |
+| `/admin/methodology` | "Grid electricity (ISO-NE, effective) **0.234**" | 0.246391 |
+
+A page describing its own arithmetic wrongly: the number on screen was produced
+with one factor and attributed to another.
+
+**The fifth is worse, because students do it by hand.** `/carbon-math` Q1:
+
+- setup stated the factor as **0.246**
+- the work line printed `1,660,000 × 0.246 = 388,440 kg` — but 388,440 is
+  1,660,000 × **0.234**. The identity on the page is false as printed.
+- the answer **389 mt** was captioned *"the figure /scope-2 publishes"*.
+  /scope-2 publishes **409.9**.
+
+Three different vintages in four lines, on a page whose subtitle promises
+"KUA-specific numbers", marking a student's correct multiplication wrong.
+
+Q1 now derives from `KG_PER_KWH` and `SCOPE2_TOTAL_MT` via `buildQuestions()`,
+and reads the **live** Scope 2 hook — because an example that cites /scope-2
+has to move when an admin enters data, or it is stale again by the next
+reprice. `liveDataWiring` caught that and it was right to: an exemption would
+have re-created the bug.
+
+*Three guards fired on my own work in sequence.* `gridFactorDisplayed` (new)
+found a second Hotspots caption my grep had truncated; the repo-wide sweep then
+found the methodology table; `carbonMathPremises` broke because it regexed a
+literal that is now derived — fixed by asserting on the question objects
+`buildQuestions()` returns, which is the surface that matters. **Third time a
+list of surfaces I enumerated has come up short of a grep.**
+
+The gate over-matched once too: `ScopeExplainer` mentions 0.234 *as the
+reconstruction beside the adopted rate*, which is correct and must not be
+"fixed". Scoped the rule and gave it both controls.
+
+Suite 2,053 → 2,059; 155 files.

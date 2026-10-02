@@ -14,7 +14,7 @@ import {
   SINKS_COMPONENT_RANGES,
 } from '../../data/geographicEstimates.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
-import { GRID_MIX_ANNUAL_MTCO2E } from '../../data/gridMix.js';
+import { GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH, RECONSTRUCTED_KG_PER_KWH } from '../../data/gridMix.js';
 import { useMeasuredScope2 } from '../../hooks/useMeasuredScope2.js';
 import { SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT } from '../../data/scopeTotals.js';
 
@@ -308,7 +308,7 @@ function AdminMethodology() {
           <tbody>
             <tr><td style={styles.td}>Heating oil</td><td style={styles.td}>10.21 kg CO₂/gal</td><td style={styles.td}>EPA GHG Hub</td></tr>
             <tr><td style={styles.td}>Propane</td><td style={styles.td}>5.72 kg CO₂/gal</td><td style={styles.td}>EPA GHG Hub</td></tr>
-            <tr><td style={styles.td}>Grid electricity (ISO-NE, effective)</td><td style={styles.td}>0.234 kg CO₂/kWh</td><td style={styles.td}>Per-fuel output factors × ISO-NE 2024 mix (gridMix.js)</td></tr>
+            <tr><td style={styles.td}>Grid electricity (adopted)</td><td style={styles.td}>{KG_PER_KWH} kg CO₂/kWh</td><td style={styles.td}>EPA published eGRID NEWE rate — what location-based Scope 2 asks for. The per-fuel reconstruction below cross-checks at ~{RECONSTRUCTED_KG_PER_KWH.toFixed(4)} and is reported as composition, not as the rate (gridMix.js).</td></tr>
             <tr><td style={styles.td}>— Combined-cycle natural gas</td><td style={styles.td}>0.40 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
             <tr><td style={styles.td}>— Oil generation</td><td style={styles.td}>0.78 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>
             <tr><td style={styles.td}>— Coal generation</td><td style={styles.td}>0.95 kg CO₂/kWh</td><td style={styles.td}>EPA eGRID NEWE</td></tr>

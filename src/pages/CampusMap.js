@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ModulePage, ModuleSection, Pill } from '../components/ModuleShell.js';
 import { CAMPUS_HEAT_SHARE_PCT, TOP5_DISAGREEMENT } from '../data/buildingEnergyBasis.js';
+import { KG_PER_KWH } from '../data/gridMix.js';
 import { computeBuildingEmissions } from '../utils/buildingEmissions.js';
 import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js';
 import { CampusMonthlyTrend } from '../components/CampusMonthlyTrend.js';
@@ -410,7 +411,7 @@ export default function CampusMap() {
               {mode === 'monthly'
                 ? `Reading is for ${formatMonthLabel(selectedMonth)} alone. The annualized equivalent divides it by that month's share of a normal year (about ${(selected.yearFraction * 100).toFixed(1)}%) rather than by a flat twelfth, so a winter month and a summer month scale differently and the colour scale stays comparable across views.`
                 : `Measured over ${selected.monthsCovered} month${selected.monthsCovered === 1 ? '' : 's'} of BMS data — about ${(selected.yearFraction * 100).toFixed(0)}% of a year once each month is weighted for season — then scaled to a full year.`}
-              {' '}Emissions = kWh × 0.234 kg/kWh (ISO-NE 2024 inventory rate).
+              {' '}Emissions = kWh × {KG_PER_KWH} kg/kWh (EPA published eGRID NEWE rate).
             </div>
             <a href={`/buildings/${selected.id}`} style={styles.detailLink}>
               Open {selected.name} detail →

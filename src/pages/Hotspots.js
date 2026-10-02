@@ -7,7 +7,7 @@ import { useBmsExport } from '../hooks/useBmsExport.js';
 import { buildings } from '../data/buildings.js';
 import { envysionSnapshot } from '../data/envysionSnapshot.js';
 import { reductionActions } from '../data/reductionActions.js';
-import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E } from '../data/gridMix.js';
+import { GRID_MIX_TOTAL_KWH, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH } from '../data/gridMix.js';
 import { monthlyPattern } from '../data/seasonalPatterns.js';
 import { campusMonthlyTotals } from '../data/monthlyConsumption.js';
 import { buildingHotspots, rankActions } from '../utils/hotspots.js';
@@ -19,7 +19,10 @@ import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 // magnitude rollup (per-building electricity) with a category-level summary
 // and overlays the top suggested actions from the AI advisor.
 
-const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH; // ≈ 0.234 (output basis)
+// Equals KG_PER_KWH by construction — GRID_MIX_TOTAL_MTCO2E is derived from
+// it. The comment here used to read "≈ 0.234", which stopped being true when
+// Phase 485 adopted the published eGRID rate.
+const KG_PER_KWH_ISO_NE = (GRID_MIX_TOTAL_MTCO2E * 1000) / GRID_MIX_TOTAL_KWH;
 
 // The April export covers its own ~30-day window — annualize it by that
 // window's seasonal share, not by the Jan → Sep YTD factor.
@@ -146,7 +149,7 @@ export default function Hotspots() {
             <ProvenancePill provenance="measured" />
             <span style={hsStyles.trendProvLabel}>Months {Object.keys(measuredMonths).map((k) => k.slice(5)).join(', ') || '(none yet)'}</span>
           </div>
-          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Today:</span> KUA Distech Eclypse BMS All Meters page, monthly displayed totals × ISO-NE 2024 grid factor (0.234 kg/kWh effective). One row per measured month at <code>src/data/monthlyConsumption.js</code>.</div>
+          <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Today:</span> KUA Distech Eclypse BMS All Meters page, monthly displayed totals × the published grid factor ({KG_PER_KWH} kg/kWh). One row per measured month at <code>src/data/monthlyConsumption.js</code>.</div>
           <div style={hsStyles.trendMethod}><span style={hsStyles.trendMethodLabel}>Target:</span> A measured row lands each month as Facilities enters that month's master-meter total in the admin portal. By Jan 2027 the full year is measured and the projected segment disappears.</div>
           <div style={{ ...hsStyles.trendProvRow, marginTop: 14, paddingTop: 14, borderTop: '1px solid #1f2937' }}>
             <ProvenancePill provenance="estimated" />
@@ -194,7 +197,7 @@ export default function Hotspots() {
               </div>
               <div style={hsStyles.trendMethod}>
                 <span style={hsStyles.trendMethodLabel}>Today:</span>
-                Daily kWh totals from the parsed BMS export ({PM_KEY} cumulative kWh diffs) × ISO-NE 2024 grid factor (~0.234 kg/kWh effective). Solid dots — every point is measured.
+                Daily kWh totals from the parsed BMS export ({PM_KEY} cumulative kWh diffs) × the published grid factor ({KG_PER_KWH} kg/kWh). Solid dots — every point is measured.
               </div>
               <div style={hsStyles.trendMethod}>
                 <span style={hsStyles.trendMethodLabel}>Target:</span>
