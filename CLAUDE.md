@@ -3577,3 +3577,56 @@ derives from `SOLAR_RECONCILIATION`, including the prose sentence describing the
 measured side.
 
 Suite 2,040 → 2,046; 153 files.
+
+## Phase 494 — a backwards CT counts down exactly like a solar array
+
+Prompted by a new Meter Trends CSV (`MeterTrends_20261002`, 2026-09-03 →
+10-02). **The finding was not in that file.** It was in the September export
+this repo already ships, and the new capture is what made me go and look.
+
+`parseBmsExport` flags a meter as `generation` when its cumulative counter
+DECREASES — correct for a bidirectional meter exporting, and equally true of
+every backwards-installed CT on an ordinary consumption panel.
+`Scope2BmsInsights` then counted any feed NAMED "Solar" and flagged generation
+as solar output. Two tests, both necessary, together still not enough:
+
+| feed | night kW | midday kW | ratio |
+|---|---|---|---|
+| `PM_15_RoofTopSolarFeed` | **0.00** | 8.26 | 0.00 |
+| `PM_15_FieldSolarFeed` | **8.09** | 10.52 | 0.77 |
+| `PM_19_SolarFeed` | 0.42 | 0.44 | 0.96 |
+
+The field feed runs at 2am about as hard as at noon. Counted solar falls
+**8,288 → 1,639 kWh** with a shape test added: it had been **5.1× overstated**,
+and since measured emissions are `(consumption − solar) × factor`, the campus
+read cleaner than it is. Three tests now: named solar, counter falling, **and
+output follows the sun**.
+
+**The near-miss is the point.** My first reading of the new CSV was that
+`PM_15_FieldSolarFeed` was producing 6,649 kWh where `renewables.js` — anchored
+on an *April* export — calls that feed dead, and that the dashboard therefore
+understated campus solar fourfold. That conclusion pointed straight at KUA's
+published 16% from Phase 493, which is exactly what made it feel right. The
+hour-of-day profile is the only thing that stopped it shipping.
+
+*A correction that moves a number toward an outside figure you already expect
+is the one to check hardest, not the one to wave through.*
+
+Two further results, both reassuring:
+
+- **The April anchor is sound.** Annualized from an independent September
+  window through a different seasonal factor, the rooftop array gives 16,970
+  kWh/yr against the shipped 16,777 — **1% apart**. So the gap to KUA's
+  published 16% is unmetered plant, as Phase 493 concluded, and not an artefact
+  of anchoring on one month.
+- **The new CSV must not replace the shipped export.** It carries 12 meters
+  against the existing export's **104** — a narrow trend selection, not a
+  campus capture. Adopting it would have dropped `PM_03_MainFeed` (30,724 kWh),
+  `PM_17_MainFeed` (24,856) and 90 others.
+
+`miswiredGenerationSuspects()` now names the four generation-flagged feeds that
+fail the shape test, each a facilities ticket. `PM_19_KurthDormMainFeed` is
+deliberately NOT among them: it reads daytime-only export, consistent with the
+8 kW array on that roof.
+
+Suite 2,046 → 2,053; 154 files.

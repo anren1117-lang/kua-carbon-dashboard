@@ -15,6 +15,7 @@ const AVERT_KG_PER_KWH = avertAvoidedKgPerKwh();
 import { CAMPUS_FEED_RE } from '../data/campusFeeds.js';
 import { MONTH_ABBR, ledgerSourceText, monthRangeLabel } from '../data/electricityLedger.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
+import { countsAsSolar, solarProfile } from '../data/meterProfile.js';
 
 // Eight measured Scope 2 features unlocked by the parsed BMS export:
 //
@@ -110,9 +111,13 @@ export function Scope2BmsInsights() {
     // whose counter increases is either a stuck meter or a backwards-
     // installed CT — counting its kWh as generation would inflate the
     // offset. Excluded feeds are surfaced separately for Facilities.
+    // THIRD TEST: shape. A backwards CT counts down exactly like an exporting
+    // array, so name + direction alone admitted PM_15_FieldSolarFeed — 6,649
+    // kWh of load that runs as hard at 2am as at noon — as solar. See
+    // data/meterProfile.js.
     const solarFeedsAll = bmsExportMeters.filter((m) => isSolarFeed(m.id));
-    const solarFeeds = solarFeedsAll.filter((m) => m.direction === 'generation');
-    const solarFeedsBroken = solarFeedsAll.filter((m) => m.direction !== 'generation');
+    const solarFeeds = solarFeedsAll.filter((m) => countsAsSolar(m));
+    const solarFeedsBroken = solarFeedsAll.filter((m) => !countsAsSolar(m));
     const solarKwh = solarFeeds.reduce((s, m) => s + m.totalKwh, 0);
     const solarPeakKw = solarFeeds.reduce((s, m) => Math.max(s, m.peakKw), 0);
     const solarOffsetPct = totalConsumptionKwh > 0 ? (solarKwh / totalConsumptionKwh) * 100 : 0;
