@@ -3680,3 +3680,38 @@ reconstruction beside the adopted rate*, which is correct and must not be
 "fixed". Scoped the rule and gave it both controls.
 
 Suite 2,053 → 2,059; 155 files.
+
+## Phase 496 — the Year 1 card credited the published figure to the retired method
+
+From a screenshot of /scope-2: the **Year 1 Scope 2 — 410 mtCO₂e** card was
+captioned *"× ISO-NE 2024 effective rate"*.
+
+That phrase is the **reconstruction's** name. Phase 485 adopted EPA's published
+eGRID NEWE rate (0.246391) and relabelled the per-fuel figure as composition
+only — so the card showed the published number and credited it to the method
+the dashboard had stopped using. Six occurrences across `/scope-2`, its BMS
+panel, and `NetEstimate`. Now "published eGRID NEWE rate", with the value on
+the headline card.
+
+The value needed `toFixed(3)`: `KG_PER_KWH` in that component is a local
+division (`GRID_MIX_TOTAL_MTCO2E × 1000 ÷ GRID_MIX_TOTAL_KWH`) and renders as
+`0.24639211545230552` raw.
+
+**Why the page genuinely cannot be more current than it is.** The measured
+window ends **2026-09-14** and September shows as half-measured, which is the
+short green Sep bar. The monthly figures come from a *daily* Meter Trends
+export summing the **35 campus service-entrance feeds** (`campusFeeds.js`),
+scaled ×0.874 to master-meter equivalent.
+
+The new `MeterTrends_20261002` export covers Sep 3 → Oct 2 — the right window
+to complete September — but carries **2 of those 35 feeds** (`PM_16_MainFeed`,
+`PM_18_KurthResidenceMainFeed`). `PM_03_MainFeed`, `PM_17_MainFeed`,
+`PM_15_MainFeed` and 30 others are absent. It is an hourly 12-meter trend
+selection, not the daily campus capture the ledger consumes, so no amount of
+ingestion work makes it advance the window.
+
+To move the measured window: a **daily** Meter Trends export (midnight
+readings) through Sep 30 or later, with all 35 campus feeds selected — then
+`node scripts/sumMonthlyFeeds.mjs <export.csv>`.
+
+Suite 2,059 → 2,062; 155 files.

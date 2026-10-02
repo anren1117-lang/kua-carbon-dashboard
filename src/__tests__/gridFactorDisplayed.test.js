@@ -89,3 +89,32 @@ describe('every displayed grid factor is the one actually used', () => {
     expect(bad).toContain('388,440');
   });
 });
+
+// A second naming problem, pointed out from a screenshot of /scope-2: the
+// "Year 1 Scope 2 — 410 mtCO₂e" card was captioned "× ISO-NE 2024 effective
+// rate". That phrase is the RECONSTRUCTION's name. Phase 485 adopted EPA's
+// published eGRID NEWE rate and relabelled the per-fuel figure as composition
+// only, so the card credited the published number to the retired method.
+// Six occurrences across /scope-2, its BMS panel, and the net estimate.
+describe('the adopted rate is called by its own name', () => {
+  const SURFACES = ['pages/Scope2.js', 'components/Scope2BmsInsights.js', 'components/NetEstimate.js'];
+
+  it('no surface still credits the figure to the reconstruction', () => {
+    for (const rel of SURFACES) {
+      expect(read(rel), rel).not.toMatch(/ISO-NE 2024 effective rate/);
+    }
+  });
+
+  it('they name the published rate instead', () => {
+    for (const rel of SURFACES) {
+      expect(read(rel), rel).toMatch(/published eGRID NEWE rate/);
+    }
+  });
+
+  it('the headline card shows a readable factor, not float noise', () => {
+    const src = read('components/Scope2BmsInsights.js');
+    // the local KG_PER_KWH is a division and prints 0.24639211545230552 raw
+    expect(src).toMatch(/KG_PER_KWH\.toFixed\(3\)\} kg\/kWh published eGRID NEWE rate/);
+    expect(((0.246391 * 1) ).toFixed(3)).toBe('0.246');
+  });
+});

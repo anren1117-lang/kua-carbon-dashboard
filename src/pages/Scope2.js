@@ -161,7 +161,7 @@ function Scope2() {
           },
           provenance: 'cited',
           note: `Recomputes automatically when new BMS data lands. kWh side: ${ledgerSourceText(s2.ledger)}. mtCO₂e side stays CITED via the ISO-NE 2024 per-fuel output factors.`,
-          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — ${ledgerSourceText(s2.ledger)}. Annualized × ${GRID_MIX_TOTAL_KWH > 0 ? (COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2) : '—'} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by ISO-NE 2024 effective rate (~${KG_PER_KWH} kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
+          currentMethod: `Composed YTD-through-${COMPOSED_YTD_AS_OF}: ${GRID_MIX_TOTAL_KWH.toLocaleString()} kWh measured — ${ledgerSourceText(s2.ledger)}. Annualized × ${GRID_MIX_TOTAL_KWH > 0 ? (COMPOSED_ANNUAL_KWH / GRID_MIX_TOTAL_KWH).toFixed(2) : '—'} = ${COMPOSED_ANNUAL_KWH.toLocaleString()} kWh/yr. Multiplied by published eGRID NEWE rate (~${KG_PER_KWH} kg/kWh, weighted from per-fuel output factors at the published generation mix) → ${GRID_MIX_ANNUAL_MTCO2E} mtCO₂e/yr. Per-student ${(GRID_MIX_ANNUAL_MTCO2E / TOTAL_STUDENTS).toFixed(2)} at ${TOTAL_STUDENTS} enrollment.`,
           futureMethod: 'Drop the annualization multiplier once a full calendar year of BMS data is captured (~Jan 2027) — kWh figure flips from "annualized estimate" to a true measured-year. Emission factor side refreshes when eGRID NEWE 2024 publishes (expected late 2026). Liberty Utilities tariff data could shift this to market-based methodology in parallel.',
         }}
         references={[
@@ -250,7 +250,7 @@ function Scope2() {
             impact: `−${Math.round(GRID_MIX_ANNUAL_MTCO2E)} mtCO₂e/yr (market-based)`,
             detail: 'NH has been deregulated since 1998. KUA can choose a competitive supplier sourcing from wind/hydro/solar without changing physical delivery. Reflected in the market-based view (GHG Protocol Scope 2 dual reporting) but not the location-based view, to avoid double-counting.',
             data: [
-              { input: 'Current Scope 2 emissions (location-based)', value: `~${Math.round(GRID_MIX_ANNUAL_MTCO2E)} mtCO₂e/yr`, source: 'Composed YTD × ISO-NE 2024 effective rate (live)' },
+              { input: 'Current Scope 2 emissions (location-based)', value: `~${Math.round(GRID_MIX_ANNUAL_MTCO2E)} mtCO₂e/yr`, source: 'Composed YTD × published eGRID NEWE rate (live)' },
               { input: 'Market-based factor for 100% renewable supply', value: '~0 kg CO₂e/kWh', source: 'GHG Protocol Scope 2 Guidance §6 (renewable supply contracts)' },
               { input: 'NH retail electricity competition', value: 'enabled since 1998', source: 'NH PUC Order 22,950' },
             ],

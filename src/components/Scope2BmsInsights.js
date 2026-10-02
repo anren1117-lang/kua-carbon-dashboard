@@ -229,7 +229,7 @@ export function Scope2BmsInsights() {
                 {s2.ytdKwh.toLocaleString()}
               </td>
               <td style={styles.ytdTdSrc}>
-                <strong>{s2.ytdMt} mtCO₂e</strong> via ISO-NE 2024 effective rate
+                <strong>{s2.ytdMt} mtCO₂e</strong> via published eGRID NEWE rate
               </td>
             </tr>
             <tr style={styles.ytdAnnual}>
@@ -493,7 +493,7 @@ function Year1ProjectionSection({ s2 }) {
 
       <div style={styles.summaryGrid}>
         <Stat label="Year 1 total"             value={COMPOSED_YEAR1_KWH.toLocaleString()}                                  unit="kWh" accent="#86efac" note={`${(measuredPct).toFixed(0)}% measured, ${(100 - measuredPct).toFixed(0)}% projected`} />
-        <Stat label="Year 1 Scope 2"           value={Math.round(COMPOSED_ANNUAL_MTCO2E)}                       unit="mtCO₂e" accent="#fbbf24" note="× ISO-NE 2024 effective rate" />
+        <Stat label="Year 1 Scope 2"           value={Math.round(COMPOSED_ANNUAL_MTCO2E)}                       unit="mtCO₂e" accent="#fbbf24" note={`× ${KG_PER_KWH.toFixed(3)} kg/kWh published eGRID NEWE rate`} />
         <Stat label="vs naive linear"           value={`${seasonalSavings > 0 ? '−' : '+'}${Math.abs(seasonalSavings).toLocaleString()}`}                               unit="kWh" accent="#22d3ee" note={`${Math.abs(seasonalSavingsPct).toFixed(1)}% ${seasonalSavings > 0 ? 'lower' : 'higher'} than ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)} extrapolation`} />
         <Stat label="Effective annualize"       value={`×${COMPOSED_ANNUALIZE_FACTOR.toFixed(2)}`}                            unit=""    accent="#a855f7" note={`(linear would be ×${COMPOSED_LINEAR_ANNUALIZE_FACTOR.toFixed(2)})`} />
       </div>
