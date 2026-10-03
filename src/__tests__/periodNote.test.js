@@ -12,6 +12,7 @@
 // dependency but no setup file registers it, as App.test.js notes.
 
 import { describe, it, expect, afterEach } from 'vitest';
+import { REPORTING_SCHOOL_YEAR } from '../data/academicCalendar.js';
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { PeriodNote } from '../pages/admin/scope3/PeriodNote';
@@ -36,8 +37,12 @@ describe('PeriodNote', () => {
 
   it('the year it warns about really is out of period', () => {
     // Ties the warning to the rule that causes it, rather than to a string.
-    expect(periodStatusOf({ school_year: '2026-2027' })).toBe('out');
-    expect(periodStatusOf({ school_year: '2025-2026' })).toBe('in');
+    // Stated against the PUBLISHED period so rolling it forward (Phase 500)
+    // does not turn this test into the thing that has to be edited: the
+    // published year is in, and any other year is out.
+    expect(periodStatusOf({ school_year: REPORTING_SCHOOL_YEAR })).toBe('in');
+    const other = REPORTING_SCHOOL_YEAR === '2025-2026' ? '2026-2027' : '2025-2026';
+    expect(periodStatusOf({ school_year: other })).toBe('out');
   });
 
   it('survives missing values instead of rendering a half sentence', () => {

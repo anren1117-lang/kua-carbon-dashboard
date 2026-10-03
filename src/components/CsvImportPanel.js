@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { parseCsv } from '../utils/csv.js';
 import { logAdminWrite } from '../utils/adminAudit.js';
+// A CSV row with no school_year used to be stamped with a frozen '2025-2026'.
+// The moment the published period rolled, every such import landed out of
+// period and was dropped — the same failure the admin forms had before
+// Phase 439, reintroduced through the importer.
+import { REPORTING_SCHOOL_YEAR } from '../data/academicCalendar.js';
 
 // Reusable CSV bulk-import panel for the admin portal. Each canonical
 // admin table (fuel_bills, waste, day_students, …) embeds one of
@@ -183,7 +188,7 @@ export function validateWasteRow(raw, idx) {
   const amount = (raw.amount || '').trim();
   const unit = (raw.unit || 'tons').trim();
   const notes = (raw.notes || '').trim();
-  const school_year = (raw.school_year || raw['school year'] || '2025-2026').trim();
+  const school_year = (raw.school_year || raw['school year'] || REPORTING_SCHOOL_YEAR).trim();
   if (!d) return { ok: false, message: `row ${idx + 2}: missing date` };
   if (!dateOk(d)) return { ok: false, message: `row ${idx + 2}: date must be YYYY-MM-DD (got "${d}")` };
   if (!['Landfill', 'Recycling', 'Composting', 'Hazardous', 'E-Waste'].includes(waste_type)) {
@@ -204,7 +209,7 @@ export function validateWasteRow(raw, idx) {
 export function validateDayStudentRow(raw, idx) {
   const zip_code = (raw.zip_code || raw['zip code'] || '').trim();
   const graduation_year = (raw.graduation_year || raw['graduation year'] || '').trim();
-  const school_year = (raw.school_year || raw['school year'] || '2025-2026').trim();
+  const school_year = (raw.school_year || raw['school year'] || REPORTING_SCHOOL_YEAR).trim();
   if (!zip_code) return { ok: false, message: `row ${idx + 2}: missing zip_code` };
   if (!/^\d{5}(-\d{4})?$/.test(zip_code)) return { ok: false, message: `row ${idx + 2}: zip_code must be 5 digits (got "${zip_code}")` };
   if (!/^\d{4}$/.test(graduation_year)) return { ok: false, message: `row ${idx + 2}: graduation_year must be 4 digits (got "${graduation_year}")` };
@@ -215,7 +220,7 @@ export function validateUSStudentRow(raw, idx) {
   const zip_code = (raw.zip_code || raw['zip code'] || '').trim();
   const state = (raw.state || '').trim().toUpperCase();
   const graduation_year = (raw.graduation_year || raw['graduation year'] || '').trim();
-  const school_year = (raw.school_year || raw['school year'] || '2025-2026').trim();
+  const school_year = (raw.school_year || raw['school year'] || REPORTING_SCHOOL_YEAR).trim();
   if (!zip_code) return { ok: false, message: `row ${idx + 2}: missing zip_code` };
   if (!/^\d{5}(-\d{4})?$/.test(zip_code)) return { ok: false, message: `row ${idx + 2}: zip_code must be 5 digits (got "${zip_code}")` };
   if (state && !/^[A-Z]{2}$/.test(state)) return { ok: false, message: `row ${idx + 2}: state must be a 2-letter abbrev (got "${state}")` };
@@ -226,7 +231,7 @@ export function validateUSStudentRow(raw, idx) {
 export function validateIntlStudentRow(raw, idx) {
   const country = (raw.country || '').trim();
   const graduation_year = (raw.graduation_year || raw['graduation year'] || '').trim();
-  const school_year = (raw.school_year || raw['school year'] || '2025-2026').trim();
+  const school_year = (raw.school_year || raw['school year'] || REPORTING_SCHOOL_YEAR).trim();
   if (!country) return { ok: false, message: `row ${idx + 2}: missing country` };
   if (!/^\d{4}$/.test(graduation_year)) return { ok: false, message: `row ${idx + 2}: graduation_year must be 4 digits (got "${graduation_year}")` };
   return { ok: true, row: { country, graduation_year, school_year } };
@@ -237,7 +242,7 @@ export function validateStudyAbroadRow(raw, idx) {
   const destination_city = (raw.destination_city || raw['destination city'] || '').trim();
   const departure_date = (raw.departure_date || raw['departure date'] || '').trim();
   const return_date = (raw.return_date || raw['return date'] || '').trim();
-  const school_year = (raw.school_year || raw['school year'] || '2025-2026').trim();
+  const school_year = (raw.school_year || raw['school year'] || REPORTING_SCHOOL_YEAR).trim();
   if (!destination_country) return { ok: false, message: `row ${idx + 2}: missing destination_country` };
   if (departure_date && !dateOk(departure_date)) return { ok: false, message: `row ${idx + 2}: departure_date must be YYYY-MM-DD (got "${departure_date}")` };
   if (return_date && !dateOk(return_date)) return { ok: false, message: `row ${idx + 2}: return_date must be YYYY-MM-DD (got "${return_date}")` };

@@ -15,6 +15,7 @@
 //      `error` field, the rest of the state stays sensible.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { REPORTING_SCHOOL_YEAR } from '../data/academicCalendar.js';
 import { renderHook, waitFor } from '@testing-library/react';
 
 // We control what `supabase.from(...)` returns from inside each test.
@@ -365,7 +366,7 @@ describe('useMeasuredScopeTotals — scope3CohortDetail passthrough', () => {
 
   it('passes through cohortDetail when measured scope 3 lands', async () => {
     setNextResponses({
-      day_students: { data: [{ zip_code: '03777', school_year: '2025-2026' }, { zip_code: '03777', school_year: '2025-2026' }], error: null },
+      day_students: { data: [{ zip_code: '03777', school_year: REPORTING_SCHOOL_YEAR }, { zip_code: '03777', school_year: REPORTING_SCHOOL_YEAR }], error: null },
       us_boarding_students: { data: [], error: null },
       international_students: { data: [], error: null },
       study_abroad: { data: [], error: null },

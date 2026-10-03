@@ -3841,3 +3841,49 @@ project owner can apply the migrations — no CLI, no access token, and the
 pooler URL in `supabase/.temp` carries no password.
 
 Suite 2,084 → 2,090; 159 files.
+
+## Phase 500 — rolled the reporting period to 2026-2027
+
+The published period was the **2025-2026** school year while the clock said
+2026-2027, so the Scope 1 forms' `delivery_date: today()` default landed
+outside it and every row entered now was silently discarded (Phase 499).
+Rolled forward at the user's instruction:
+
+```
+2025-07-01 → 2026-06-30   becomes   2026-07-01 → 2027-06-30
+```
+
+**Verified end to end against production, twice.** A 10,000-gal delivery dated
+**today** now composes: heating 1,290 estimated → **102 measured**, Scope 1
+1,350 → **163 mt**. Test rows deleted; tables back to 0.
+
+**The same frozen-literal bug was one layer up.** `CsvImportPanel` stamped
+`'2025-2026'` on any imported row lacking a `school_year`, in five places — so
+every CSV import would have landed out of period the moment the roll happened.
+It reads `REPORTING_SCHOOL_YEAR` now, which is what Phase 439 did for the admin
+forms. The importer had been missed.
+
+**Three test fixtures had frozen the year too**, and one was worse than stale:
+`Goals.test.js` carried a day-student row commented *"flips
+composeScope3FromRecords to measured"*. After the roll that row was out of
+period and no longer flipped anything — and the test still passed. A fixture
+whose stated purpose had quietly stopped working. `Executive`,
+`useMeasuredScope` and `Goals` now use `REPORTING_SCHOOL_YEAR`.
+
+*And the pinned assertion was itself the problem.* `dataLayer.test.js` asserted
+`REPORTING_PERIOD.schoolYear === '2025-2026'`, which made the test the thing
+that must be edited whenever the period rolls — backwards. It now asserts the
+shape and the invariants (`^\d{4}-\d{4}$`, July-to-June, start < end), so a
+roll is a one-line data change.
+
+*What the gate got wrong, twice.* It flagged six hits that were all correct —
+`dataLayer` passes an explicit period fixture under test, and the `csvValidators`
+tests never consult the period. Opening each one beat tuning the regex, which is
+the rule I keep having to re-learn. Final rule skips files that pass an explicit
+period and files that never filter by it.
+
+**Note for next July:** this will break again the moment the clock passes
+2027-06-30, and `RowPeriodNote` is what will say so out loud. Rolling a period
+once data exists RESTATES the inventory — archive the prior year first.
+
+Suite 2,090 → 2,091; 159 files.

@@ -6,6 +6,7 @@
 // "Measured" and "Estimated" based on which scopes are live.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { REPORTING_SCHOOL_YEAR } from '../data/academicCalendar.js';
 import React from 'react';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -84,7 +85,7 @@ describe('Goals page (provenance pills, Phase 52)', () => {
       scope1_fleet: { data: [], error: null },
       scope1_refrigerants: { data: [], error: null },
       // Scope 3: a single day-student row flips composeScope3FromRecords to measured
-      day_students: { data: [{ zip_code: '03777', school_year: '2025-2026' }], error: null },
+      day_students: { data: [{ zip_code: '03777', school_year: REPORTING_SCHOOL_YEAR }], error: null },
       us_boarding_students: { data: [], error: null },
       international_students: { data: [], error: null },
       study_abroad: { data: [], error: null },

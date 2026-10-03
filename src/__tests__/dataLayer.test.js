@@ -1451,8 +1451,16 @@ describe('reporting-period boundary', () => {
 
   it('the default period is wired, and Scope 2 is published as NOT aligned', async () => {
     const { REPORTING_PERIOD, PERIOD_RECONCILIATION } = await import('../data/academicCalendar.js');
-    expect(REPORTING_PERIOD.schoolYear).toBe('2025-2026');
+    // Pinning the literal made this test the thing that had to be edited
+    // whenever the period rolled, which is backwards: assert the shape and
+    // the invariants instead, and let the roll be a one-line data change.
+    expect(REPORTING_PERIOD.schoolYear).toMatch(/^\d{4}-\d{4}$/);
+    expect(REPORTING_PERIOD.label).toContain(REPORTING_PERIOD.schoolYear);
     expect(REPORTING_PERIOD.startIso < REPORTING_PERIOD.endIso).toBe(true);
+    // the window must be one school year, July to June
+    const [y1, y2] = REPORTING_PERIOD.schoolYear.split('-');
+    expect(REPORTING_PERIOD.startIso).toBe(`${y1}-07-01`);
+    expect(REPORTING_PERIOD.endIso).toBe(`${y2}-06-30`);
     // The mismatch is stated rather than silently resolved, like
     // FACTOR_RECONCILIATION and SINKS_RECONCILIATION.
     expect(PERIOD_RECONCILIATION.aligned).toBe(false);

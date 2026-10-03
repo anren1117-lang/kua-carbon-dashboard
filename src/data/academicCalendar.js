@@ -113,11 +113,20 @@ export const STUDENT_WEEKS_ON_CAMPUS_UNRESOLVED = true;
  * INSTRUCTIONAL_DAYS and STUDENT_RESIDENCY_WEEKS above, for the same reason
  * this module keeps two day-counts instead of one.
  */
+// ROLLED FORWARD 2026-10-03, from 2025-2026. The old window had become the
+// reason entered data vanished: the Scope 1 forms default delivery_date to
+// today(), and every such row was classified 'out' and dropped by
+// withinPeriod(), so a fuel delivery saved cleanly and the dashboard kept
+// showing the bottom-up placeholder.
+//
+// Rolling this moves which rows count. Nothing is lost here because every
+// live table is empty, but once data exists a roll RESTATES the inventory
+// and should be a deliberate act with the prior year archived first.
 export const REPORTING_PERIOD = {
-  schoolYear: '2025-2026',
-  startIso:   '2025-07-01',
-  endIso:     '2026-06-30',
-  label:      '2025-2026 school year',
+  schoolYear: '2026-2027',
+  startIso:   '2026-07-01',
+  endIso:     '2027-06-30',
+  label:      '2026-2027 school year',
   provenance: 'estimated',
   note: 'Bounds Scope 1 and Scope 3 live rows. Rows with no date at all are counted IN and reported separately — excluding them would silently zero every row entered before the date columns were fetched.',
 };
@@ -157,7 +166,7 @@ export function schoolYearOn(date = new Date()) {
  * Restating either one moves published figures, so it is a decision, not a fix.
  */
 export const PERIOD_RECONCILIATION = {
-  scope1And3: '2025-2026 school year (2025-07-01 to 2026-06-30)',
+  scope1And3: '2026-2027 school year (2026-07-01 to 2027-06-30)',
   scope2:     'calendar 2026, YTD to 2026-09-14 (257 days), seasonally annualized',
   aligned:    false,
   note: 'Scope 2 comes from monthly BMS captures keyed to the calendar year; Scope 1 and 3 from admin forms keyed to the school year. Until one is restated the inventory spans two different windows.',
