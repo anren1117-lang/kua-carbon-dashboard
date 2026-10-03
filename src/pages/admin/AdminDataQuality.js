@@ -6,6 +6,7 @@ import { GROSS_MT, SCOPE2_TOTAL_MT } from '../../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../../data/sinks.js';
 import { freshnessBucket, daysSince, FRESHNESS_PILL_STYLES } from '../../utils/freshness.js';
 import { ADMIN_TABLE_SOURCES as TABLE_SOURCES } from '../../data/adminTableSources.js';
+import { classifyTableError, missingTableReport, MISSING_TABLE_REMEDY } from '../../data/schemaHealth.js';
 
 // /admin/data-quality
 //
@@ -50,14 +51,27 @@ export default function AdminDataQuality() {
       const results = await Promise.all(
         TABLE_SOURCES.map(async ({ table, tsCol }) => {
           try {
-            const [{ count }, { data }] = await Promise.all([
+            const [countRes, rowRes] = await Promise.all([
               supabase.from(table).select('*', { count: 'exact', head: true }),
               supabase.from(table).select(tsCol).order(tsCol, { ascending: false }).limit(1),
             ]);
+            // A table that does not exist resolves with an error, not a throw.
+            // Reading only `count` rendered it as 0 rows — indistinguishable
+            // from a table awaiting its first entry, which is how twelve
+            // missing tables stayed invisible on the page that exists to
+            // report data completeness.
+            const status = classifyTableError(countRes.error || rowRes.error);
+            const data = rowRes.data;
             const lastUpdated = Array.isArray(data) && data.length > 0 ? data[0][tsCol] : null;
-            return [table, { count: count ?? 0, lastUpdated, error: null }];
+            return [table, {
+              count: countRes.count ?? 0,
+              lastUpdated,
+              missing: status === 'missing',
+              denied: status === 'denied',
+              error: status === 'error' ? (countRes.error || rowRes.error)?.message || 'fetch failed' : null,
+            }];
           } catch (err) {
-            return [table, { count: 0, lastUpdated: null, error: err?.message || 'fetch failed' }];
+            return [table, { count: 0, lastUpdated: null, missing: false, denied: false, error: err?.message || 'fetch failed' }];
           }
         })
       );
@@ -76,6 +90,8 @@ export default function AdminDataQuality() {
   const measuredSinksMt = live.sinksMeasured ? live.sinkMt : 0;
   const measuredGrossMt = measuredScope1Mt + measuredScope2Mt + measuredScope3Mt;
   const pctMeasured = grossTotal > 0 ? Math.round((measuredGrossMt / grossTotal) * 100) : 0;
+
+  const missingTables = missingTableReport(tableStats);
 
   const scopeRows = [
     {
@@ -118,6 +134,32 @@ export default function AdminDataQuality() {
         bottom-up published-method cross-check placeholder. AASHE STARS reviewers can use this
         page as a single-glance audit trail.
       </p>
+
+      {missingTables.length > 0 && (
+        <div style={{
+          background: '#3a0d12', border: '1px solid #7f1d1d', borderRadius: 8,
+          padding: '14px 16px', marginBottom: 18, color: '#fca5a5', fontSize: 13, lineHeight: 1.65,
+        }}>
+          <div style={{
+            color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase',
+            letterSpacing: 0.6, fontSize: 11, marginBottom: 8,
+          }}>
+            {missingTables.length} table{missingTables.length === 1 ? '' : 's'} missing from the database
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            These are not empty — they do not exist. Anything written to them fails, and most of
+            the write paths fall back silently, so the page keeps showing its committed defaults.
+          </div>
+          <ul style={{ margin: '0 0 10px', paddingLeft: 18 }}>
+            {missingTables.map((m) => (
+              <li key={m.table} style={{ marginBottom: 4 }}>
+                <code style={{ color: '#fecaca' }}>{m.table}</code> — blocks {m.blocks}
+              </li>
+            ))}
+          </ul>
+          <div style={{ color: '#94a3b8' }}>{MISSING_TABLE_REMEDY}</div>
+        </div>
+      )}
 
       <div style={styles.headline}>
         <div style={styles.headlineLabel}>Gross emissions composed from measured records</div>

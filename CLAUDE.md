@@ -3755,3 +3755,45 @@ ledger sums the 35 campus service-entrance feeds from a **daily** export; this
 one is hourly and carries 2 of those 35.
 
 Suite 2,062 → 2,071; 156 files.
+
+## Phase 498 — a missing table looked exactly like an empty one
+
+Twelve of this project's 28 Supabase tables did not exist, and every surface
+reported them as *empty*. Including `/admin/data-quality`, the page whose whole
+job is to answer "how complete is our data?".
+
+The cause is one line. supabase-js resolves with `{ data, error }` rather than
+throwing, and the fetch destructured only `count`:
+
+```js
+const [{ count }, { data }] = await Promise.all([...]);
+return [table, { count: count ?? 0, ... }];   // missing table → 0 rows
+```
+
+`PGRST205` went into a variable nobody read.
+
+**What it cost.** `bms_export_summaries` is the table `/admin/bms-export`
+writes to. Uploading a Meter Trends CSV could not persist; `useBmsExport` fell
+back to the committed export exactly as designed, silently and correctly. The
+same file could be uploaded repeatedly with no change and no error anywhere.
+
+`/admin/data-quality` now distinguishes the two and names the consequence per
+table — "blocks Meter Trends CSV upload", not just a table name — with the
+remedy, including the branch warning below.
+
+**The second trap, which cost most of a session.** On a Supabase **database
+branch** the SQL editor applies to the branch, never to the project the
+deployed app reads. Both carry the same tables and the same seeded row counts,
+so `select count(*) from emission_factors` returns 30 on each and *"I ran it"*
+and *"it did not apply"* are simultaneously true. Four theories died before the
+right test: **write one row to a table the API can already see.** It returned 1
+in the editor and 0 through the API — same project ref, two databases.
+
+*The general error, twice in this session.* I kept testing through the one
+layer that could not answer the question — first grepping a bundle to decide
+whether a page renders, now querying an API to decide whether a table exists.
+`PGRST205` means "not in the schema cache", which is produced by *both* a
+missing table and a stale cache; no number of retries through that API
+distinguishes them. The distinguishing probe was always available and cheap.
+
+Suite 2,076 → 2,084; 158 files.
