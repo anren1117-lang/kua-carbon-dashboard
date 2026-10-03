@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, LB_TO_KG } from '../_shared';
+import { RowPeriodNote } from '../scope3/RowPeriodNote';
 
 // Map UI selection -> factor key in emission_factors. Add new GWPs to the seed
 // migration and they automatically appear here.
@@ -120,6 +121,7 @@ function Refrigerants() {
           <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} label="Net leakage emissions" />
+        <RowPeriodNote row={form} />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
           <button type="submit" style={s.submit}>{editingId ? 'Save changes' : 'Add service entry'}</button>
           {editingId && <button type="button" onClick={reset} style={{ ...s.submit, background: 'transparent', color: '#cbd5e1', border: '1px solid #334155' }}>Cancel</button>}

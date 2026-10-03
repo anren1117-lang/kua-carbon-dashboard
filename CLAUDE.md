@@ -3797,3 +3797,47 @@ missing table and a stale cache; no number of retries through that API
 distinguishes them. The distinguishing probe was always available and cheap.
 
 Suite 2,076 → 2,084; 158 files.
+
+## Phase 499 — a fuel delivery entered today saves cleanly and never counts
+
+Asked to make sure data can be imported properly, I tested the path end to end
+against the live database rather than checking that inserts return 200. The
+insert was never the problem.
+
+The published reporting period is the **2025-2026 school year**
+(2025-07-01 → 2026-06-30). The Scope 1 forms default `delivery_date` to
+`today()`. On 2026-10-03 that default is **outside the period**, so
+`withinPeriod()` drops the row and `composeScope1FromBills` falls back to the
+1,290 mt bottom-up placeholder:
+
+| row date | heating | provenance |
+|---|---|---|
+| 2026-03-01 (in period) | 102 mt | **measured** |
+| **2026-10-03 — the form's own default** | 1,290 mt | **estimated** |
+| no date at all | 102 mt | measured |
+
+The admin sees a green "saved" beside an unchanged number, which is
+indistinguishable from the app being broken — the exact loop this session has
+been stuck in, one layer further down.
+
+`PeriodNote` already warned about the school-year **label** on the Scope 3
+forms (Phase 439). Nothing covered the **date** fields, and Scope 1 is the
+largest line in the inventory. `RowPeriodNote` now warns before the save, on
+all four Scope 1 forms. It calls `periodStatusOf()` — the same function
+`withinPeriod()` filters with — so the warning cannot drift from the behaviour
+it describes, and the test asserts they agree row-for-row.
+
+Deliberately **not** wired into `scope2/MeterReading`: the electricity ledger
+does not filter on period, so a warning there would be a false alarm. The test
+asserts that restraint too.
+
+**End-to-end, proven against production.** Inserted a real 10,000-gal delivery
+dated inside the period, read it back with the hook's own select, ran the
+composer: heating went 1,290 estimated → **102 measured**, Scope 1
+1,350 → **163 mt**. Row deleted; both tables back to 0.
+
+Still true and still blocking: 12 of 28 tables are missing, and only the
+project owner can apply the migrations — no CLI, no access token, and the
+pooler URL in `supabase/.temp` carries no password.
+
+Suite 2,084 → 2,090; 159 files.
