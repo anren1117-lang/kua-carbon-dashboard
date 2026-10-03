@@ -946,8 +946,13 @@ export function composeScope3FromRecords(records = {}) {
   const commuteMeasured = commute.length > 0;
 
   // ─── Components without records: keep placeholder rows ──────────
+  // startsWith, not includes. 'Purchased goods (non-dining)' CONTAINS the
+  // substring "dining", so placeholderRow('dining') matched it first and
+  // handed the dining row the purchased-goods figure — 1,315 mt instead of
+  // 235, a 1,080 mt overstatement of Scope 3 that appeared the moment any
+  // Scope 3 record existed and the composer ran at all.
   const placeholderRow = (sourceMatch) =>
-    SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes(sourceMatch.toLowerCase()));
+    SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().startsWith(sourceMatch.toLowerCase()));
   const goodsMt    = goodsMeasured   ? goodsLiveMt   : (placeholderRow('purchased goods')?.mt ?? 0);
   const diningMt   = placeholderRow('dining')?.mt            ?? 0;
   const upstreamMt = placeholderRow('upstream fuel')?.mt     ?? 0;
@@ -992,7 +997,11 @@ export function composeScope3FromRecords(records = {}) {
     },
     {
       source: 'Waste',
-      mt: Math.round(wasteMt),
+      // Fall back to the placeholder like every other component. This row
+      // alone used the live sum unconditionally, so with no waste rows it
+      // reported 0 mt while quoting the placeholder's 5 mt method text — the
+      // number and its stated method disagreeing inside one row.
+      mt: wasteMeasured ? Math.round(wasteMt) : (placeholderRow('waste')?.mt ?? 0),
       provenance: wasteMeasured ? 'measured' : 'estimated',
       method: wasteMeasured
         ? `${waste.length} waste row${waste.length === 1 ? '' : 's'} × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors${wasteSkipNote}.`

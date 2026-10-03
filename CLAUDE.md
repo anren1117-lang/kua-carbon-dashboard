@@ -3887,3 +3887,50 @@ period and files that never filter by it.
 once data exists RESTATES the inventory — archive the prior year first.
 
 Suite 2,090 → 2,091; 159 files.
+
+## Phase 501 — two composer bugs that only appear once real data arrives
+
+Told to fix the import path and not stop, I verified every admin form against
+the live schema: **21 tables, every form column present**; only
+`forest_stand_actuals` fails, and only because the table is missing. Then I
+entered a single day-student row into the live database and read the Scope 3
+breakdown back. Two bugs, both invisible until data exists.
+
+**1. Dining was handed the purchased-goods figure.** The placeholder lookup was
+
+```js
+SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().includes(match))
+```
+
+and `'Purchased goods (non-dining)'` **contains** the substring `dining`.
+`.find()` returns the first hit, purchased goods is first in the array, so
+`placeholderRow('dining')` resolved to the 1,315 mt row. Dining reported
+**1,315 instead of 235 — a 1,080 mt overstatement of Scope 3** — from the
+moment *any* Scope 3 record existed, because only then does the composer run
+instead of the straight placeholder path.
+
+A dashboard that is correct until you enter data and wrong afterwards. Fixed
+with `startsWith`, which is anchored; the misleading label stays, because
+renaming it would hide the trap rather than fix it.
+
+**2. Waste reported 0 mt while quoting the 5 mt method.** Every component does
+`measured ? live : placeholder`. The waste row used the live sum
+unconditionally for `mt` but still fell back to the placeholder for `method` —
+so with no waste rows it rendered **0 mt beside the placeholder's own
+description of how 5 mt was derived**. The number and its stated method
+disagreed inside a single row.
+
+Both are one shape: a fallback applied to one field of a row and not another,
+or resolved to the wrong row entirely.
+
+*My own test error is worth recording too.* I first passed `waste:` to the
+composer where the parameter is `wasteRecords:`, got 0 mt, and nearly filed it
+as a pricing bug. The pricing was fine — and chasing it is what exposed the
+real fallback defect underneath. Also inserted `'landfill'` where
+`WASTE_FACTORS_MT_PER_TON` is keyed `'Landfill'`; the admin form writes the
+correct casing, so that one was mine alone.
+
+All test rows deleted; `waste`, `day_students` and `scope1_heating_oil` back to
+0 rows.
+
+Suite 2,091 → 2,097; 160 files.
