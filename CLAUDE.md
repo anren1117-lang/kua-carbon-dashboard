@@ -3934,3 +3934,44 @@ All test rows deleted; `waste`, `day_students` and `scope1_heating_oil` back to
 0 rows.
 
 Suite 2,091 → 2,097; 160 files.
+
+## Phase 502 — one row in one table deleted 760 mt from another
+
+Found while proving the live loop for the deploy check: a single 1-ton waste
+row in the database moved Scope 3 from 2,635 to **1,871**. Waste going 5 → 1
+accounts for 4 of that. The other **760 mt was student travel**, reported as
+zero on the strength of data about something else entirely.
+
+Third instance of the Phase 501 shape. `studentTravelMt` was
+`cohortTravelMt + tripMt` with no placeholder fallback, so any row in ANY
+Scope 3 table ran the composer and silently deleted the second-largest line in
+the inventory.
+
+The audit that should have come first — every row in the breakdown, checked for
+`measured ? live : placeholder`:
+
+| component | had a fallback |
+|---|---|
+| purchased goods, dining, upstream, commuting | yes |
+| waste | no — fixed in 501 |
+| **student travel** | **no — fixed here** |
+
+Fixing it exposed a temporal dead zone: `placeholderRow` was declared *below*
+the travel computation, so the first attempt threw `Cannot access
+'placeholderRow' before initialization`. Hoisted above its first use.
+
+The gate is now the general statement rather than three specific cases: feed
+each Scope 3 table one row in turn, and **no component still marked `estimated`
+may change its value**. That catches the next instance without my having to
+think of it.
+
+Behaviour now:
+
+```
+component          none   1 waste row   1 day student
+Student travel      760           760              1
+Waste                 5             1              5
+TOTAL              2,635         2,631          1,876
+```
+
+Suite 2,097 → 2,099; 160 files.

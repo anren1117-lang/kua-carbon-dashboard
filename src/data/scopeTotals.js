@@ -908,6 +908,14 @@ export function composeScope3FromRecords(records = {}) {
   const haveAnyRecords = day.length + usBoard.length + intl.length + sa.length + fac.length + waste.length + goods.length + commute.length > 0;
   if (!haveAnyRecords) return composeScope3();
 
+  // startsWith, not includes. 'Purchased goods (non-dining)' CONTAINS the
+  // substring "dining", so placeholderRow('dining') matched it first and
+  // handed the dining row the purchased-goods figure — 1,315 mt instead of
+  // 235, a 1,080 mt overstatement of Scope 3 that appeared the moment any
+  // Scope 3 record existed and the composer ran at all.
+  const placeholderRow = (sourceMatch) =>
+    SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().startsWith(sourceMatch.toLowerCase()));
+
   // ─── Student travel: cohort row counts × cited per-student factor ──
   const dayMt    = day.length     * SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.day;
   const usMt     = usBoard.length * SCOPE3_COHORT_FACTORS_MT_PER_STUDENT.usBoarder;
@@ -923,8 +931,17 @@ export function composeScope3FromRecords(records = {}) {
 
   // Combine cohort + trip travel into the single breakdown row
   // (matches placeholder shape so downstream consumers don't branch).
-  const studentTravelMt = cohortTravelMt + tripMt;
+  const studentTravelLiveMt = cohortTravelMt + tripMt;
   const studentTravelMeasured = cohortRowCount > 0 || sa.length + fac.length > 0;
+  // Fall back to the placeholder when there are no travel rows, like every
+  // other component. Without this, entering a single row in ANY other Scope 3
+  // table (one waste haul, say) ran the composer and reported student travel
+  // as 0 — silently deleting the largest-but-one line in the inventory, 760 mt,
+  // on the strength of data about something else entirely.
+  const studentTravelMt = studentTravelMeasured
+    ? studentTravelLiveMt
+    : (placeholderRow('student travel')?.mt ?? 0);
+
 
   // ─── Waste (EPA WARM net factors) ────────────────────────────────
   let wasteMt = 0;
@@ -946,13 +963,6 @@ export function composeScope3FromRecords(records = {}) {
   const commuteMeasured = commute.length > 0;
 
   // ─── Components without records: keep placeholder rows ──────────
-  // startsWith, not includes. 'Purchased goods (non-dining)' CONTAINS the
-  // substring "dining", so placeholderRow('dining') matched it first and
-  // handed the dining row the purchased-goods figure — 1,315 mt instead of
-  // 235, a 1,080 mt overstatement of Scope 3 that appeared the moment any
-  // Scope 3 record existed and the composer ran at all.
-  const placeholderRow = (sourceMatch) =>
-    SCOPE3_PLACEHOLDER_BREAKDOWN.find((r) => r.source.toLowerCase().startsWith(sourceMatch.toLowerCase()));
   const goodsMt    = goodsMeasured   ? goodsLiveMt   : (placeholderRow('purchased goods')?.mt ?? 0);
   const diningMt   = placeholderRow('dining')?.mt            ?? 0;
   const upstreamMt = placeholderRow('upstream fuel')?.mt     ?? 0;

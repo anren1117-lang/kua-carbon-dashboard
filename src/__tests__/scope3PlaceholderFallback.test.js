@@ -69,6 +69,28 @@ describe('placeholder components survive the arrival of unrelated data', () => {
     expect(w.mt).toBe(Math.round(12 * WASTE_FACTORS_MT_PER_TON.Landfill));   // ~7
   });
 
+  it('student travel holds its placeholder when only waste arrives', () => {
+    // The third instance of the same bug, found by proving the live loop with
+    // a single 1-ton waste row: Scope 3 fell 2,635 -> 1,871, and 760 of that
+    // was student travel being reported as 0 on the strength of data about
+    // something else entirely.
+    const live = composeScope3FromRecords({
+      wasteRecords: [{ waste_type: 'Landfill', amount: 1, unit: 'tons' }],
+    });
+    const travel = row(live, 'Student travel');
+    expect(travel.mt).toBe(760);
+    expect(travel.provenance).toBe('estimated');
+  });
+
+  it('one row in one table moves one line, not the whole inventory', () => {
+    const base = composeScope3FromRecords({});
+    const oneWaste = composeScope3FromRecords({
+      wasteRecords: [{ waste_type: 'Landfill', amount: 1, unit: 'tons' }],
+    });
+    // waste 5 -> 1 is the only change, so the total moves by exactly 4
+    expect(base.totalMt - oneWaste.totalMt).toBe(4);
+  });
+
   it('only the component with data moves; the rest hold their placeholders', () => {
     const base = composeScope3FromRecords({});
     const live = composeScope3FromRecords({ dayStudents: DAY });
