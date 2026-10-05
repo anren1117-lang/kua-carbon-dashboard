@@ -3975,3 +3975,37 @@ TOTAL              2,635         2,631          1,876
 ```
 
 Suite 2,097 → 2,099; 160 files.
+
+## Data load, 2026-10-05 — the four real BMS captures moved into Supabase
+
+Asked to put data in. What went in, and what deliberately did not:
+
+**Loaded** into `scope2_meter_readings` — 4 campus-wide rows, source
+`bms_master_monthly`:
+
+| month | kWh |
+|---|---|
+| 2026-01 | 180,323 |
+| 2026-02 | 185,478 |
+| 2026-03 | 136,576 |
+| 2026-04 | 128,895 |
+
+These are real KUA Eclypse BMS "All Meters" master-meter totals, captured
+2026-05-03 from 10.1.1.27, and until now they lived only in
+`monthlyConsumption.js`. Simulated before writing: the rows reproduce the seed
+ledger **exactly** — same `asOf` 2026-09-14, same months, 0 rejected — so this
+moves measured data into the database it belongs in without changing a single
+published figure. The ledger now reports them as "Admin entry · BMS All Meters
+total".
+
+**NOT loaded, on purpose.** Everything else the dashboard shows for Scope 1 and
+Scope 3 is an *estimate*: the 1,290 mt heating line is sqft × NH-CZ6 intensity,
+the 1,315 mt goods line is spend × EEIO, travel is a cohort model, dining is
+meals × Poore & Nemecek. Writing those into the measured tables would flip them
+to `provenance: 'measured'` on an inventory going to a school board and to a
+buyer. The distinction between measured and estimated is most of what this
+dashboard is for; fabricating the former is the one change that would make it
+worthless.
+
+Those tables fill from real documents — fuel delivery invoices, hauler tickets,
+the travel office's records, Business Office spend — and nothing else.
