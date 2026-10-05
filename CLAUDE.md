@@ -4009,3 +4009,35 @@ worthless.
 
 Those tables fill from real documents — fuel delivery invoices, hauler tickets,
 the travel office's records, Business Office spend — and nothing else.
+
+## Data load 2 — every measured month now lives in the database
+
+Asked for data "until October 3rd". Loaded everything that exists:
+`scope2_meter_readings` now holds **13 rows covering 2026-01-01 → 2026-09-14** —
+4 master-meter months (Jan–Apr) and 9 daily feed-sum months (Jan–Sep), the
+latter from the 35 campus service-entrance feeds.
+
+Composed from the database it reproduces the seed exactly: `asOf` 2026-09-14,
+YTD **1,105,149 kWh**, feed→master scale **0.874**, Scope 2 YTD **272.3 mt**,
+0 rows rejected. Same numbers, now sourced from Supabase rather than a
+committed file.
+
+*The simulation earned its keep twice.* First attempt put `asOf` at 2026-04-30
+and YTD at 631,272 — the feed months were being accepted and then ignored,
+because `rowsToLedgerInputs` derives `calibrationEligible` as
+`data_quality === 'measured' && days === calendarDays`, and my rows carried no
+`data_quality` at all. Without it no scale can be derived and feed-only months
+never convert. **This affects the admin upload path too**: a Meter Trends
+upload saved without `data_quality: 'measured'` is stored, accepted, and then
+silently excluded from the ledger.
+
+January is loaded as `estimated` on purpose — it carries the documented
+8-feed gap Jan 1–19, and the seed excludes it from calibration. Marking it
+measured would have changed the scale.
+
+**October 3rd is not reachable and no amount of work here changes that.** The
+ledger needs the 35 campus feeds; `MeterTrends_20261002` carries **2** of them.
+Two other exports on disk — `MeterTrends_20260915_1309248` (July) and
+`_1309634` (May) — are exactly the right shape: daily midnight readings, 104
+meters, all 35 campus feeds, one calendar month each. Re-running *that* export
+for September and October closes the gap in one step.
