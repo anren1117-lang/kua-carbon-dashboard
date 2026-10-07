@@ -4041,3 +4041,40 @@ Two other exports on disk — `MeterTrends_20260915_1309248` (July) and
 `_1309634` (May) — are exactly the right shape: daily midnight readings, 104
 meters, all 35 campus feeds, one calendar month each. Re-running *that* export
 for September and October closes the gap in one step.
+
+## Data load 3 — September completed to 30 days (2026-10-07)
+
+The measured window ran to **Sep 14** because that is where the last full
+campus export stops. Extended it to **Sep 30**:
+
+| | before | now |
+|---|---|---|
+| measured through | 2026-09-14 | **2026-09-30** |
+| year-to-date | 1,105,149 kWh | **1,181,326 kWh** |
+| Scope 2 YTD | 272.3 mt | **291.07 mt** |
+| feed→master scale | 0.874 | **0.874 (unchanged)** |
+
+September is now 75,896 kWh measured (Sep 1–14, all 35 campus feeds) plus
+**87,159 kWh extrapolated** (Sep 15–30). The extrapolation scales the only two
+campus feeds present in `MeterTrends_20261002` — `PM_16_MainFeed` and
+`PM_18_KurthResidenceMainFeed`, 1,331 kWh over those 16 days — by the share
+those same two feeds held of campus load during Sep 1–14 (**1.527%**).
+
+Two checks before loading:
+
+- the daily and hourly exports agree within **3.5%** on those feeds over
+  Sep 3–14, so the extrapolation base is real
+- a constant-daily-rate estimate gives 86,738 kWh, **0.5%** from the scaled
+  figure
+
+**Those checks are not independent** — both are anchored on Sep 1–14, so they
+confirm the two feeds held their rate, not that the other 33 did. The
+extrapolated portion carries roughly ±15%. The row is stored
+`data_quality: 'estimated'`, which keeps it out of the calibration set: the
+scale and its months (Feb–Apr) are unchanged, verified.
+
+**October 1–3 was not loaded.** Oct 1 is the only further full day in any
+export, and scaling a single day by 65× is noise, not measurement — it would
+also render as a ~7,000 kWh "October" bar beside ~150,000 kWh months. Oct 2–3
+is in no file at all. Closing that gap needs one daily export, all meters
+selected, 2026-09-01 → 2026-10-03.
