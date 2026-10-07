@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTable, useFactor, RecordsTable, PreviewBanner, formStyles as s, today, firstOfMonth } from '../_shared';
+import { LedgerDestinationNote } from './LedgerDestinationNote';
 
 const empty = () => ({
   period_start: firstOfMonth(),
@@ -88,6 +89,7 @@ function MeterReading() {
           <label style={{ ...s.field, ...s.full }}><span style={s.label}>Notes</span><input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} style={s.input} /></label>
         </div>
         <PreviewBanner kgCo2e={preview} citation={factor?.source_citation} />
+        <LedgerDestinationNote row={form} />
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
           <button type="submit" style={s.submit}>{editingId ? 'Save changes' : 'Add reading'}</button>
           {editingId && <button type="button" onClick={reset} style={{ ...s.submit, background: 'transparent', color: '#cbd5e1', border: '1px solid #334155' }}>Cancel</button>}

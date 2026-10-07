@@ -4078,3 +4078,41 @@ export, and scaling a single day by 65× is noise, not measurement — it would
 also render as a ~7,000 kWh "October" bar beside ~150,000 kWh months. Oct 2–3
 is in no file at all. Closing that gap needs one daily export, all meters
 selected, 2026-09-01 → 2026-10-03.
+
+## Phase 503 — the manual Scope 2 form wrote rows that reached nothing
+
+A `scope2_meter_readings` row has three possible destinations:
+
+| destination | requires |
+|---|---|
+| campus ledger | `bms_master_monthly` or `meter_trends_feed_sum`, no building |
+| per-building history | `building_monthly`, with a building, whole month |
+| **nowhere** | anything else |
+
+`/admin/scope-2/meter` seeds **`source: 'campus_meter'`** — a free-text field
+whose own placeholder suggests that string. `rowsToLedgerInputs` rejects it as
+*"not a ledger source"*. The row saves, appears in the admin records table,
+counts in `/admin/data-quality`'s row count, and **never reaches Scope 2**.
+
+Verified against the real function, not inferred: `masterMonths` 0,
+`feedMonths` 0, `ignored[0].reason = 'not a ledger source'`.
+
+This is the same silent-failure family as Phases 498–502 — a write that
+succeeds, a figure that doesn't move, nothing on screen connecting the two.
+Six rejection rules exist (source, building, period shape, kWh numeric, kWh
+positive, whole-month for a master total) and an admin could trip any of them
+with no feedback.
+
+`LedgerDestinationNote` now runs **both** real filters on the in-progress row
+and names the destination it will actually reach, or the exact reason it
+reaches none. Same posture as `RowPeriodNote`: call the function that decides,
+never re-derive the decision — the test asserts it contains no hand-rolled
+source comparison.
+
+*A correction to the Phase "data load 2" note.* I wrote there that the Meter
+Trends **upload** path shared this defect. It does not — `MeterTrendsUpload.js`
+sets `data_quality` correctly at line 57. I had inferred that from my own
+loading mistake instead of reading the form. The manual form is the one with
+the problem.
+
+Suite 2,099 → 2,108; 161 files.
