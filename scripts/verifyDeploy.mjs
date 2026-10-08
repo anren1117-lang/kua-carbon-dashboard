@@ -73,15 +73,26 @@ export function checkLocalMarkers(present, readDir = DIST) {
   return { ok: missing.length === 0, missing, scanned: files.length };
 }
 
+// Every network call returns null on failure rather than throwing. A verifier
+// that dies on a transient DNS blip reports nothing and looks like a failed
+// deploy; it should simply retry. (Learned immediately: the first real run of
+// this script crashed on getaddrinfo instead of waiting 20s and trying again.)
 async function fetchText(url) {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) return null;
-  const text = await res.text();
-  return looksLikeShell(text) ? null : text;   // rule 1
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const text = await res.text();
+    return looksLikeShell(text) ? null : text;   // rule 1
+  } catch {
+    return null;
+  }
 }
 
 async function fetchDeployedJs() {
-  const indexHtml = await fetch(`${PROD}/?cb=${Math.random()}`).then((r) => r.text());
+  const indexHtml = await fetch(`${PROD}/?cb=${Math.random()}`)
+    .then((r) => r.text())
+    .catch(() => null);
+  if (!indexHtml) return null;
   const entry = (indexHtml.match(/\/assets\/index-[A-Za-z0-9._-]+\.js/) || [])[0];
   if (!entry) return null;
   const entryJs = await fetchText(`${PROD}${entry}`);
@@ -117,8 +128,8 @@ async function main() {
   console.log(`local build: all ${present.length} present-marker(s) found across ${local.scanned} chunks`);
 
   for (let i = 1; i <= attempts; i++) {
-    const got = await fetchDeployedJs();
-    if (!got) { console.log(`attempt ${i}: production served the shell or no entry bundle`); await sleep(waitMs); continue; }
+    const got = await fetchDeployedJs().catch(() => null);
+    if (!got) { console.log(`attempt ${i}: unreachable, shell response, or no entry bundle — retrying`); await sleep(waitMs); continue; }
     const hits = present.map((m) => [m, got.blob.includes(m)]);
     const stale = absent.map((m) => [m, got.blob.includes(m)]);
     const allPresent = hits.every(([, v]) => v);
