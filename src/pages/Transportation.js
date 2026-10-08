@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid } from '../components/ModuleShell.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
+import { athleticTrips, ATHLETIC_WEEK_MILES, ATHLETIC_TRIPS_BASIS } from '../data/athleticTrips.js';
 import { fleetVehicles, fleetFuelLogs, carpoolTrips, schoolTrips, airTravelRecords } from '../data/transportation.js';
 import { staff } from '../data/staff.js';
 import { getFactor } from '../data/emissionFactors.js';
@@ -60,8 +61,59 @@ export default function Transportation() {
         { label: 'Fleet emissions', value: fleetMt.toFixed(1), unit: 'mtCO₂e/yr', accent: '#3b82f6', note: `${Math.round(fleetGallons).toLocaleString()} gal · ${Math.round(fleetMiles).toLocaleString()} mi` },
         { label: 'Carpool avoided', value: carpoolSavedMt.toFixed(2), unit: 'mtCO₂e', accent: '#86efac', note: `${carpoolTripsCount} trips · ${carpoolPeopleCount} unique people` },
         { label: 'Air travel', value: airMt.toFixed(1), unit: 'mtCO₂e', accent: '#ef4444', note: `${airTravelRecords.length} flight records` },
-        { label: 'School trips (ground)', value: schoolTripMt.toFixed(2), unit: 'mtCO₂e', accent: '#fbbf24' },
+        // Ground school trips are driven BY the fleet, so this is a SUBSET of
+        // the fleet figure beside it, not an addition to it. Presented side by
+        // side with nothing saying so, the two read as separate sources and a
+        // reader adds them.
+        { label: 'School trips (ground)', value: schoolTripMt.toFixed(2), unit: 'mtCO₂e', accent: '#fbbf24', note: 'already inside fleet emissions — detail, not an addition' },
       ]} />
+
+      <ModuleSection
+        title="Athletic away travel — one real week"
+        hint={`${ATHLETIC_TRIPS_BASIS.source}. ${ATHLETIC_TRIPS_BASIS.scope} These are KUA-owned buses and vans, so the fuel is direct combustion and already sits in the fleet line above — entering it as Scope 3 would count it twice.`}
+      >
+        <div style={{ overflowX: 'auto' }}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Date</th>
+                <th style={styles.th}>Team</th>
+                <th style={styles.th}>Host</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>Round trip</th>
+                <th style={styles.th}>Depart → return</th>
+              </tr>
+            </thead>
+            <tbody>
+              {athleticTrips.map((t) => (
+                <tr key={`${t.date}-${t.team}`}>
+                  <td style={styles.td}>{t.date}</td>
+                  <td style={styles.td}>{t.team}</td>
+                  <td style={styles.td}>{t.destination}{t.longHaul ? ' *' : ''}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{t.roundTripMi} mi</td>
+                  <td style={styles.td}>{t.departure} → {t.ret}</td>
+                </tr>
+              ))}
+              <tr>
+                <td style={styles.td} colSpan={3}><strong>{athleticTrips.length} away trips, {ATHLETIC_TRIPS_BASIS.homeGames} home games</strong></td>
+                <td style={{ ...styles.td, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}><strong>{ATHLETIC_WEEK_MILES} mi</strong></td>
+                <td style={styles.td} />
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginTop: 10 }}>
+          Mileage is estimated road distance from Meriden, round trip — the schedule gives
+          times and destinations, not miles, vehicles or headcounts, so those three are not
+          modelled here. <strong>{ATHLETIC_WEEK_MILES} miles in a single week</strong> is the
+          useful part: across 20–32 competition weeks that is {(ATHLETIC_WEEK_MILES * 20).toLocaleString()}–
+          {(ATHLETIC_WEEK_MILES * 32).toLocaleString()} miles a year of athletics alone, against{' '}
+          {Math.round(fleetMiles).toLocaleString()} modelled for the whole fleet. Athletics
+          plausibly accounts for most of it, which leaves little room for field trips,
+          admissions travel and maintenance runs — so the fleet mileage assumption is more
+          likely low than high. * Wilbraham is the one trip long enough that a charter is
+          plausible; a chartered coach would be Scope 3, and the schedule does not say.
+        </p>
+      </ModuleSection>
 
       <ModuleSection
         title="Carpool savings — last 60 days"

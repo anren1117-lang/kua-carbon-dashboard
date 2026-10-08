@@ -4208,3 +4208,44 @@ by printing it rather than trusting the expression. Now rounds to the nearest
 roster says are different questions, and the disagreement is worth showing.
 
 Suite 2,115; 162 files.
+
+## Phase 506 — athletics week entered, and it is Scope 1, not Scope 3
+
+The athletics schedule for the week of 2026-09-28 — the first **real
+team-travel activity data** this repo has had. Eight away trips, three
+contest days, **1,070 round-trip miles**.
+
+**It was asked for as Scope 3; it is Scope 1.** KUA owns its buses and vans
+(`fleetVehicles`), so that fuel is direct combustion and already sits in the
+"Fleet vehicles" Scope 1 line. Entering it as Scope 3 would count the same
+diesel twice. Scope 3 would be right only for a **chartered** coach — someone
+else's vehicle and fuel — and the schedule does not say which trips were
+chartered. Wilbraham is the one long enough to make a charter plausible and is
+flagged rather than assumed.
+
+***/transportation already had the same error in miniature.*** "Fleet
+emissions" and "School trips (ground)" were rendered side by side as peers,
+but ground school trips are *driven by the fleet* — the second is a subset of
+the first. Nothing said so, so the two read as separate sources to be added.
+Now labelled "already inside fleet emissions — detail, not an addition".
+
+**The payoff is a cross-check on an assumption nobody had tested.**
+
+| | miles |
+|---|---|
+| this week, athletics only | **1,070** |
+| whole fleet, whole year (modelled) | 43,700 |
+| athletics at 20–32 competition weeks | **21,400 – 34,240** |
+
+So athletics alone plausibly accounts for **49–78%** of the entire modelled
+fleet mileage, leaving little room for field trips, admissions travel and
+maintenance runs. **The fleet assumption is more likely low than high** — the
+first evidence in either direction.
+
+*What was deliberately not invented.* The schedule gives team, host, game
+time, departure and return. It does **not** give mileage, vehicle assignment
+or headcount. Distances are estimated road miles (±10%, marked); the other two
+are recorded as unknown. Eight rows of "28 passengers" would have looked like
+data. The test asserts no row carries a fabricated `passengerCount` or `mode`.
+
+Suite 2,115 → 2,122; 163 files.
