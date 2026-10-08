@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
-import { dorms } from '../data/dorms.js';
+import { dorms, DORM_REGISTRY_BASIS } from '../data/dorms.js';
 import { DORM_HEAT_SHARE_PCT } from '../data/dormEnergyBasis.js';
 import { students } from '../data/students.js';
 import { buildings } from '../data/buildings.js';
@@ -71,6 +71,13 @@ export default function StudentChallenges() {
     });
   }, [meterMap, bmsExportMeters, EXPORT_ANNUALIZE_FACTOR]);
 
+  // Coverage of the boarding population, derived — a leaderboard that ranks
+  // part of the school should say which part.
+  const rankedDorms = dorms.filter((d) => d.modeled !== false);
+  const unrankedDorms = dorms.filter((d) => d.modeled === false);
+  const rankedResidents = rankedDorms.reduce((t, d) => t + (d.population || 0), 0);
+  const boarderCoveragePct = Math.round((rankedResidents / DORM_REGISTRY_BASIS.boarders) * 100);
+
   const sortedByPoints = [...dormRows].sort((a, b) => b.carbonPoints - a.carbonPoints);
   const sortedByEfficiency = [...dormRows]
     .filter((r) => r.kgPerStudent > 0)
@@ -83,8 +90,16 @@ export default function StudentChallenges() {
       title="Student Challenges"
       subtitle="Dorm-level competition. Personal identifiers are never shown — every leaderboard aggregates at dorm level. Individual progress is opt-in only and viewable behind a private student account."
     >
+      {/* Two of KUA's eleven residences have no building, meter or published
+          headcount in this repo, so they cannot be ranked — and the page used
+          to drop them in a filter with nothing on screen saying so. On a
+          COMPETITIVE surface that is the worst place to be silent: a student
+          in Hall Farm or Frost sees a leaderboard their dorm is missing from
+          and no reason given. The ranked dorms also house only part of the
+          boarding population, which the headline "Active dorms" count hid by
+          showing 11 above a list of 9. */}
       <MetricGrid metrics={[
-        { label: 'Active dorms', value: dorms.length, accent: '#22d3ee' },
+        { label: 'Dorms ranked', value: `${rankedDorms.length} of ${dorms.length}`, accent: '#22d3ee', note: unrankedDorms.length > 0 ? `${unrankedDorms.map((d) => d.name).join(' and ')} not ranked` : undefined },
         { label: 'Students enrolled', value: totalStudents, accent: '#22c55e' },
         { label: 'Opted into leaderboard', value: `${totalOptedIn} (${Math.round((totalOptedIn / totalStudents) * 100)}%)`, accent: '#fbbf24', note: 'Default = opt out' },
         { label: 'Carbon points awarded', value: totalPoints.toLocaleString(), accent: '#86efac' },
@@ -111,6 +126,17 @@ export default function StudentChallenges() {
             </div>
           ))}
         </div>
+        {unrankedDorms.length > 0 && (
+          <p style={{ fontSize: 12, color: '#fca5a5', lineHeight: 1.6, marginTop: 10 }}>
+            <strong>{unrankedDorms.map((d) => d.name).join(' and ')}</strong>{' '}
+            {unrankedDorms.length === 1 ? 'is' : 'are'} not ranked: KUA lists{' '}
+            {unrankedDorms.length === 1 ? 'it' : 'them'} as student residences, but this
+            dashboard has no meter, floor area or headcount for{' '}
+            {unrankedDorms.length === 1 ? 'it' : 'them'} yet. The dorms shown house{' '}
+            {rankedResidents} of KUA&apos;s {DORM_REGISTRY_BASIS.boarders} boarders
+            ({boarderCoveragePct}%), so this is a ranking of most of the school, not all of it.
+          </p>
+        )}
       </ModuleSection>
 
       <ModuleSection

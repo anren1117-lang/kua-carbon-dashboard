@@ -4286,3 +4286,34 @@ slowest at 30 mph, and the email itself flags its 11:00 early dismissal. The
 check constrains the estimate; it does not promote it.
 
 Suite 2,122 → 2,125; 163 files.
+
+## Phase 508 — the dorm leaderboard ranked 9 of 11 residences and said nothing
+
+Phase 490 correctly excluded Hall Farm and Frost from per-resident rankings:
+a dorm with no meter would otherwise rank at 0 kWh and read as the greenest
+house on campus. **The exclusion was right. The silence was not.**
+
+On a competitive surface that is the worst place to be silent. A student in
+Hall Farm or Frost opens `/student-challenges`, finds no dorm of theirs on
+either leaderboard, and is given no reason. The page even contradicted itself
+in the headline — **"Active dorms: 11" sat directly above a list of 9**.
+
+And the ranked dorms house **169 of 247 boarders — 68%**. Ranking two thirds
+of the boarding population is fine; presenting it as the whole school is not.
+
+Both leaderboards now name the absent dorms and state the coverage:
+
+> *Hall Farm Dorm and Frost Dorm are not ranked: KUA lists them as student
+> residences, but this dashboard has no meter, floor area or headcount for them
+> yet. The dorms shown house 169 of KUA's 247 boarders (68%), so this is a
+> ranking of most of the school, not all of it.*
+
+Headline metric is now "Dorms ranked — 9 of 11" with the missing two named.
+Every figure derives from the registry; the test asserts none of `169`, `247`
+or `68%` appears as a literal in the prose.
+
+*The fix is disclosure, not inclusion.* The test also asserts the unranked
+dorms still carry `population: null` and `buildingId: null` — so a future
+"fix" that ranks them at zero fails, which is the error Phase 490 removed.
+
+Suite 2,125 → 2,132; 164 files.
