@@ -13,7 +13,7 @@ import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
 // displaced generation understates solar by about half. Phase 410.
 const AVERT_KG_PER_KWH = avertAvoidedKgPerKwh();
 import { CAMPUS_FEED_RE } from '../data/campusFeeds.js';
-import { MONTH_ABBR, ledgerSourceText, monthRangeLabel } from '../data/electricityLedger.js';
+import { MONTH_ABBR, ledgerSourceText, ledgerHasEstimatedMonths, monthRangeLabel } from '../data/electricityLedger.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { countsAsSolar, solarProfile } from '../data/meterProfile.js';
 
@@ -184,9 +184,12 @@ export function Scope2BmsInsights() {
 
       {/* YTD composition — every kWh in the YTD figure traces to a measured source */}
       <section style={styles.card}>
-        <h3 style={styles.cardTitle}>Year-to-date electricity, composed from measured sources</h3>
+        <h3 style={styles.cardTitle}>
+          Year-to-date electricity, composed from
+          {ledgerHasEstimatedMonths(ledger) ? ' measured and estimated sources' : ' measured sources'}
+        </h3>
         <p style={styles.cardHint}>
-          The YTD figure is built from each measured input: {ledgerSourceText(ledger)}.
+          The YTD figure is built from each input: {ledgerSourceText(ledger)}.
           {scaledInUse && (
             <>
               {' '}The building feeds in that export sum about {Math.abs(feedVsMasterPct)}%{' '}
@@ -485,7 +488,7 @@ function Year1ProjectionSection({ s2 }) {
     <section style={styles.card}>
       <h3 style={styles.cardTitle}>Year 1 estimate (anchored on the months captured so far)</h3>
       <p style={styles.cardHint}>
-        Built from the measured months already in the dashboard — {ledgerSourceText(s2.ledger)}.
+        Built from the months already in the dashboard — {ledgerSourceText(s2.ledger)}.{ledgerHasEstimatedMonths(s2.ledger) ? ' An estimated month is not a meter reading: read the Year 1 figure accordingly.' : ''}
         Those months anchor a calibrated annual baseline
         that the rest of the year is projected against using NH's heating-driven seasonal shape,
         rather than naive linear annualization, which ignores where in the year the data falls.

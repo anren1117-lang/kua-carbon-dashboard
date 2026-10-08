@@ -4116,3 +4116,41 @@ loading mistake instead of reading the form. The manual form is the one with
 the problem.
 
 Suite 2,099 → 2,108; 161 files.
+
+## Phase 504 — I put an estimate in the data, and four surfaces called it measured
+
+Three days ago I extrapolated Sep 15–30 and loaded it. The row is stored
+`data_quality: 'estimated'` and the per-month pill renders **"Estimated ·
+scaled"** correctly. The prose did not follow:
+
+| surface | said |
+|---|---|
+| `ledgerSourceText` | "…from the daily Meter Trends export for **May–Sep**" — false for Sep; it is not from that export at all |
+| `/scope-2` | "composed from **real measured** BMS data" |
+| Year 1 card | "Built from the **measured months** already in the dashboard" |
+| YTD heading | "composed from **measured sources**" |
+
+The Phase 488 shape exactly — the figure is right and the sentence about it is
+wrong. Worse here than usual: Scope 2 is the one line of this inventory that is
+genuinely metered, so an overclaim lands on the strongest number rather than
+the weakest, and I am the one who introduced it.
+
+`ledger.ranges` now carries **`scaledEstimated`** separately from `scaled`, so
+a month carried by an estimate is never folded into the daily-export range.
+`ledgerSourceText` gains a final clause:
+
+> master-meter totals for Jan–Apr, then building-feed totals from the daily
+> Meter Trends export for **May–Aug**, scaled to master-meter equivalent, **and
+> Sep estimated rather than metered**
+
+`ledgerHasEstimatedMonths(ledger)` is the single predicate the surfaces ask,
+rather than four places each deciding. The strong wording survives when nothing
+is estimated — the test asserts that too, so the fix cannot degrade into
+deleting the claim everywhere.
+
+*My fixture was wrong first.* The ledger counts a contiguous run from January,
+and I skipped Jun–Aug, so September fell out as uncounted and three assertions
+failed against a ledger that had no estimated month in it at all. The test was
+right; the fixture proved nothing until it was contiguous.
+
+Suite 2,108 → 2,115; 162 files.

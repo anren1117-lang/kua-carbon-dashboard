@@ -244,22 +244,43 @@ export function composeElectricityLedger({ masterMonths = [], feedMonths = [], y
     ytdDays: counted.reduce((s, m) => s + m.days, 0),
     ranges: {
       master: monthRangeLabel(counted.filter((m) => m.provenance === 'master').map((m) => m.month)),
-      scaled: monthRangeLabel(counted.filter((m) => m.provenance === 'scaled').map((m) => m.month)),
+      // Scaled months split by whether the underlying feed data was MEASURED.
+      // A scaled month whose row is marked estimated did not come off the
+      // daily export like the others, and lumping the two together made
+      // ledgerSourceText describe an extrapolation as a meter reading.
+      scaled: monthRangeLabel(counted.filter((m) => m.provenance === 'scaled' && m.estimated !== true).map((m) => m.month)),
+      scaledEstimated: monthRangeLabel(counted.filter((m) => m.provenance === 'scaled' && m.estimated === true).map((m) => m.month)),
     },
   };
 }
 
 /** Plain-language summary of where the counted months came from, e.g.
  *  "master-meter totals for Jan–Apr, then building-feed totals from the daily
- *  Meter Trends export for May–Sep, scaled to master-meter equivalent". */
+ *  Meter Trends export for May–Aug, scaled to master-meter equivalent, and Sep
+ *  estimated rather than metered".
+ *
+ *  The last clause is not decoration. A month can be scaled from a real daily
+ *  export or carried by an estimate, and this sentence is the only place a
+ *  reader is told which — the per-month pills say it row by row, but the
+ *  headline sentence was asserting "from the daily Meter Trends export" for
+ *  every scaled month, including one that was extrapolated from two feeds. */
+/** True when any counted month is carried by an estimate rather than a
+ *  meter reading. Surfaces use it to avoid leading with the word
+ *  "measured" when part of the window is not. */
+export function ledgerHasEstimatedMonths(ledger) {
+  return Boolean(ledger?.ranges?.scaledEstimated)
+    || (ledger?.months || []).some((m) => m.estimated === true);
+}
+
 export function ledgerSourceText(ledger) {
-  const { master, scaled } = ledger.ranges;
-  if (!master && !scaled) return 'no measured months yet';
+  const { master, scaled, scaledEstimated } = ledger.ranges;
+  if (!master && !scaled && !scaledEstimated) return 'no measured months yet';
   // "then" only reads right when the two sources don't interleave.
   const joiner = master ? (master.includes(',') || scaled.includes(',') ? 'with ' : 'then ') : '';
   return [
     master && `master-meter totals for ${master}`,
     scaled && `${joiner}building-feed totals from the daily Meter Trends export for ${scaled}, scaled to master-meter equivalent`,
+    scaledEstimated && `and ${scaledEstimated} estimated rather than metered`,
   ].filter(Boolean).join(', ');
 }
 

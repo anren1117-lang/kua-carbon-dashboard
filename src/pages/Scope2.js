@@ -6,7 +6,7 @@ import { ScopePageInfo } from '../components/ScopePageInfo';
 import { Scope2LiveDashboard } from '../components/Scope2LiveDashboard';
 import { Scope2BmsInsights } from '../components/Scope2BmsInsights';
 import { TOTAL_STUDENTS } from '../data/students.js';
-import { ledgerSourceText } from '../data/electricityLedger.js';
+import { ledgerHasEstimatedMonths, ledgerSourceText } from '../data/electricityLedger.js';
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import {
   effectiveKgPerKwh,
@@ -65,7 +65,9 @@ function Scope2() {
       <h1 style={styles.title}>Scope 2 — Purchased Electricity</h1>
       <p style={styles.subtitle}>
         Indirect emissions from electricity delivered by Liberty Utilities. The kWh figure is
-        {hasMonths ? `composed from real measured BMS data — ${ledgerSourceText(s2.ledger)}.` : 'not composed yet — no measured months are on the page.'} Emissions intensity is per-fuel output factors weighted by
+        {hasMonths
+          ? `${ledgerHasEstimatedMonths(s2.ledger) ? 'composed from BMS data' : 'composed from real measured BMS data'} — ${ledgerSourceText(s2.ledger)}.`
+          : 'not composed yet — no measured months are on the page.'} Emissions intensity is per-fuel output factors weighted by
         ISO-NE {GRID_MIX_YEAR} generation mix ({KG_PER_KWH} kg/kWh effective).
       </p>
       <div style={styles.card}>

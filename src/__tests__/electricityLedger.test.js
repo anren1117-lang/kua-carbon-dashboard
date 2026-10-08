@@ -32,7 +32,9 @@ describe('seed ledger reproduces the shipped Scope 2 numbers', () => {
     expect(seedLedger.scale.value).toBe(0.874);
     expect(seedLedger.scale.months).toEqual(['2026-02', '2026-03', '2026-04']);
     expect(seedLedger.scale.excluded.map((x) => x.month)).toEqual(['2026-01']);
-    expect(seedLedger.ranges).toEqual({ master: 'Jan–Apr', scaled: 'May–Sep' });
+    // scaledEstimated separates months carried by an estimate from months
+    // scaled off a real daily export — the seed has none of the former.
+    expect(seedLedger.ranges).toEqual({ master: 'Jan–Apr', scaled: 'May–Sep', scaledEstimated: '' });
   });
 
   it('composeScope2Mt matches the static grid-mix constants', () => {
@@ -48,7 +50,7 @@ describe('composeElectricityLedger', () => {
     const l = composeElectricityLedger(inputs);
     const may = l.months.find((m) => m.month === '2026-05');
     expect(may).toMatchObject({ provenance: 'master', kwh: 120000 });
-    expect(l.ranges).toEqual({ master: 'Jan–May', scaled: 'Jun–Sep' });
+    expect(l.ranges).toEqual({ master: 'Jan–May', scaled: 'Jun–Sep', scaledEstimated: '' });
     expect(l.scale.months).toContain('2026-05');
   });
 
