@@ -132,7 +132,7 @@ export default function PersonalFootprint() {
             label="vs KUA per-student average"
             yourMt={result.totalMt}
             refMt={FOOTPRINT_REFERENCE.kuaPerStudentNetMt}
-            note="Net (gross emissions minus campus-forest sequestration), divided by ~340 students."
+            note={`Net (gross emissions minus campus-forest sequestration), divided by ${TOTAL_STUDENTS} students.`}
           />
           <ComparisonRow
             label="vs US per-person average"

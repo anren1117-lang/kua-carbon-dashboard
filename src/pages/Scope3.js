@@ -255,12 +255,12 @@ function Scope3() {
             detail: 'Each ton of food waste diverted from landfill (0.58 mtCO₂e/ton) to composting (0.11 mtCO₂e/ton) saves ~0.47 mtCO₂e/ton. Composting still emits — a smaller emission, not a credit — but it avoids the fugitive methane landfilled food produces.',
             data: [
               { input: 'School food waste generation', value: '~80 – 150 lb/student/yr', source: 'Food Recovery Network surveys' },
-              { input: 'Student count', value: '340', source: 'KUA published enrollment' },
+              { input: 'Student count', value: String(TOTAL_STUDENTS), source: 'School roster, supplied 2026-10-08 (replaces the published 340)' },
               { input: 'WARM landfill factor', value: '+580 kg CO₂e/ton', source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Mixed MSW landfilled (0.58 mt/short ton)' },
               { input: 'WARM compost factor', value: '+110 kg CO₂e/ton', source: 'EPA GHG Emission Factors Hub 2025, Table 9 — Food waste composted (0.11 mt/short ton)' },
             ],
             math: [
-              'food_waste_tons = 340 students × 100 lb/yr / 2,000 lb/ton = 17 tons',
+              `food_waste_tons = ${TOTAL_STUDENTS} students × 100 lb/yr / 2,000 lb/ton = ${Math.round(TOTAL_STUDENTS * 100 / 2000)} tons`,
               'baseline_emissions = 17 tons × 580 kg/ton = 9,860 kg = 9.86 mtCO₂e',
               'compost_emissions  = 17 tons × 110 kg/ton = 1,870 kg = 1.87 mtCO₂e',
               'savings = 9.86 − 1.87 = 7.99 mtCO₂e/yr at 100% diversion',

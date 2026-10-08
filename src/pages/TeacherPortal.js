@@ -8,6 +8,7 @@ import { ExplainChart } from '../components/ExplainChart.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 
 // Teacher Portal — gated by VITE_TEACHER_PASSWORD (default "kua-teach"
 // in dev). Editorial dashboard: primary actions surfaced as a top
@@ -257,7 +258,7 @@ function PortalScopeChart() {
       { label: 'Gross total', value: gross },
       { label: 'Net total', value: net },
     ],
-    note: 'Scope 2 is measured; Scope 1 and 3 are current best estimates. ~340 students, Plainfield NH.',
+    note: `Scope 2 is measured; Scope 1 and 3 are current best estimates. ${TOTAL_STUDENTS} students, Plainfield NH.`,
   };
 
   return (

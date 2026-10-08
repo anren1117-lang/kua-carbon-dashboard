@@ -71,11 +71,15 @@ describe('the dorm registry matches KUA published campus map', () => {
     const modeledSum = dorms.filter((d) => d.modeled !== false)
       .reduce((t, d) => t + d.population, 0);
     expect(modeledSum).toBe(169);
+    // The roster the school supplied is the authority; the published figure is
+    // kept beside it because the two disagree and that is worth showing.
+    expect(DORM_REGISTRY_BASIS.boarders).toBe(247);
     expect(DORM_REGISTRY_BASIS.publishedBoarders).toBe(258);
-    // 228 - 258 was a 30-student gap; removing the dining hall and the admin
-    // building took it to 89. A correction that makes a disclosure look worse
-    // is the one most likely to be right.
-    expect(DORM_REGISTRY_BASIS.publishedBoarders - modeledSum).toBeGreaterThan(30);
+    // History: 228 against the published 258 was a 30-student gap; removing
+    // the dining hall and the admin building took it to 89; the roster the
+    // school supplied (247 boarding, not 258) brings it to 78. A correction
+    // that makes a disclosure look worse is the one most likely to be right.
+    expect(DORM_REGISTRY_BASIS.boarders - modeledSum).toBeGreaterThan(30);
   });
 
   it('no synthetic student is housed in a dorm we cannot model', () => {

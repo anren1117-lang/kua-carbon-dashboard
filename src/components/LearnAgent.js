@@ -67,6 +67,13 @@ const KUA = (() => {
     s3TopPct: SCOPE3_LARGEST_LINE.shareOfScope3,
     s3TravelPct: SCOPE3_LINES.find((r) => /student travel/i.test(r.source)).shareOfScope3,
     perStudent: perStudentMt(net, TOTAL_STUDENTS),
+    // Quiz distractors must be the ACTUAL wrong answers a student would
+    // get from the stated inputs — gross ÷ students, and sink ÷ students.
+    // Typed, they went stale the moment enrollment moved from 340 to 329.
+    students: TOTAL_STUDENTS,
+    grossPerStudent: perStudentMt(gross, TOTAL_STUDENTS),
+    sinkPerStudent: perStudentMt(sinks, TOTAL_STUDENTS),
+    grossNetRatio: (gross / net).toFixed(1),
   };
 })();
 
@@ -833,18 +840,18 @@ The GHG Protocol formally divides Scope 3 into **15 categories**: purchased good
       {
         type: 'math',
         heading: 'Math: per-student net footprint',
-        scenario: 'KUA gross: ~4,395 mtCO₂e. Sequestration: ~1,829 mtCO₂e. Enrollment: ~340 students.',
+        scenario: `KUA gross: ~${KUA.gross} mtCO₂e. Sequestration: ~${KUA.sinks} mtCO₂e. Enrollment: ${KUA.students} students.`,
         given: [
-          { label: 'Gross', value: '4,395 mtCO₂e/yr' },
-          { label: 'Sequestration', value: '1,829 mtCO₂e/yr' },
-          { label: 'Students', value: '340' },
+          { label: 'Gross', value: `${KUA.gross} mtCO₂e/yr` },
+          { label: 'Sequestration', value: `${KUA.sinks} mtCO₂e/yr` },
+          { label: 'Students', value: String(KUA.students) },
         ],
         question: 'Net per student:',
         options: [
-          { text: '~7.5 mtCO₂e/student', correct: true, explanation: 'Right. Net = 4,395 − 1,829 = 2,566. Per student = 2,566/340 = 7.55 mtCO₂e.' },
-          { text: '~12.9 mtCO₂e/student', correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
-          { text: '~5.4 mtCO₂e/student', correct: false, explanation: 'That\'s sequestration per student alone (1,829/340 = 5.4). The net is gross minus sinks, divided by enrollment.' },
-          { text: '~3.4 mtCO₂e/student', correct: false, explanation: 'Older value from a previous methodology iteration. Current canonical is ~7.5 mt/student.' },
+          { text: `~${KUA.perStudent} mtCO₂e/student`, correct: true, explanation: `Right. Net = ${KUA.gross} − ${KUA.sinks} = ${KUA.net}. Per student = ${KUA.net}/${KUA.students} = ${KUA.perStudent} mtCO₂e.` },
+          { text: `~${KUA.grossPerStudent} mtCO₂e/student`, correct: false, explanation: 'You divided GROSS by students. Net subtracts sinks first.' },
+          { text: `~${KUA.sinkPerStudent} mtCO₂e/student`, correct: false, explanation: `That's sequestration per student alone (${KUA.sinks}/${KUA.students} = ${KUA.sinkPerStudent}). The net is gross minus sinks, divided by enrollment.` },
+          { text: '~3.4 mtCO₂e/student', correct: false, explanation: `Older value from a previous methodology iteration. Current canonical is ~${KUA.perStudent} mt/student.` },
         ],
       },
       {
@@ -877,7 +884,7 @@ The GHG Protocol formally divides Scope 3 into **15 categories**: purchased good
       },
       {
         type: 'quiz',
-        question: 'KUA reports ~7.5 mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?',
+        question: `KUA reports ~${KUA.perStudent} mtCO₂e per student net. If the school added 200 more students without changing anything else, what would happen to the per-student figure?`,
         options: [
           { text: 'It would drop, because more students share the same fixed emissions', correct: true, explanation: 'Right. **Most KUA emissions are roughly fixed costs of operating the campus** — heating buildings, generating administrative emissions, maintaining facilities. Adding students adds some marginal emissions (more food, more travel) but proportionally less. Per-student would drop because the denominator grows faster than the numerator. This is why "per-student" can be a deceptive metric on its own — it rewards growth without necessarily reducing total impact.' },
           { text: 'It would stay exactly the same', correct: false, explanation: 'Per-student divides total by enrollment. Both numbers change with growth, but not proportionally. Per-student typically falls.' },
@@ -888,7 +895,7 @@ The GHG Protocol formally divides Scope 3 into **15 categories**: purchased good
       {
         type: 'finish',
         heading: 'You can verify the dashboard yourself',
-        body: 'Net ~2,566 mt/yr (composite cross-check range 1,007–5,064). 60% of gross from Scope 3. Per student ~7.5 mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.',
+        body: `Net ~${KUA.net} mt/yr (composite cross-check range 1,007–5,064). 60% of gross from Scope 3. Per student ~${KUA.perStudent} mt. Every claim is reproducible from primary inputs and basic arithmetic — and you now know how to combine the uncertainties on those inputs into a defensible total.`,
       },
     ],
   },
@@ -1226,18 +1233,18 @@ The GHG Protocol formally divides Scope 3 into **15 categories**: purchased good
       {
         type: 'math',
         heading: 'Math: same school, different methodology',
-        scenario: 'Two schools have IDENTICAL physical operations: 340 students, 4,395 mtCO₂e gross, 1,829 mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.',
+        scenario: `Two schools have IDENTICAL physical operations: ${KUA.students} students, ${KUA.gross} mtCO₂e gross, ${KUA.sinks} mtCO₂e of forest sequestration. School A reports the net (subtracts sinks). School B reports gross only.`,
         given: [
-          { label: 'Gross (both)', value: '4,395 mtCO₂e' },
-          { label: 'Sequestration (real)', value: '1,829 mtCO₂e' },
-          { label: 'Students (both)', value: '340' },
+          { label: 'Gross (both)', value: `${KUA.gross} mtCO₂e` },
+          { label: 'Sequestration (real)', value: `${KUA.sinks} mtCO₂e` },
+          { label: 'Students (both)', value: String(KUA.students) },
         ],
         question: 'Difference in published per-student footprint:',
         options: [
-          { text: 'Both publish ~7.5 mt/student', correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
-          { text: 'A: ~7.5 mt; B: ~12.9 mt — same campus, very different number', correct: true, explanation: 'Right. A: (4,395 − 1,829) / 340 = 7.55. B: 4,395 / 340 = 12.93. Same physical campus, 1.7× higher because Sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.' },
+          { text: `Both publish ~${KUA.perStudent} mt/student`, correct: false, explanation: 'Only A subtracts sinks. B reports gross only and would publish a higher number.' },
+          { text: `A: ~${KUA.perStudent} mt; B: ~${KUA.grossPerStudent} mt — same campus, very different number`, correct: true, explanation: `Right. A: (${KUA.gross} − ${KUA.sinks}) / ${KUA.students} = ${KUA.perStudent}. B: ${KUA.gross} / ${KUA.students} = ${KUA.grossPerStudent}. Same physical campus, ${KUA.grossNetRatio}× higher because sinks are excluded. This is the Valls-Val & Bovea (2021) finding in one example.` },
           { text: 'Both publish ~9.0 mt', correct: false, explanation: 'A subtracted sinks first, so its published number is lower than B\'s.' },
-          { text: 'A: ~7.5 mt; B: ~7.5 mt', correct: false, explanation: 'You may have used the sequestration per student. The actual reported numbers are 7.5 (A) and 12.9 (B).' },
+          { text: `A: ~${KUA.perStudent} mt; B: ~${KUA.perStudent} mt`, correct: false, explanation: `You may have used the sequestration per student. The actual reported numbers are ${KUA.perStudent} (A) and ${KUA.grossPerStudent} (B).` },
         ],
       },
       {

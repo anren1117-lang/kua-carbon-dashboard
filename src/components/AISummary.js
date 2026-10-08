@@ -5,6 +5,7 @@ import { useSpotlight } from '../hooks/useSpotlight.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT, SCOPE3_LARGEST_LABEL, SCOPE3_LARGEST_LINE } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 
 // Generates a plain-language summary of the dashboard state. Currently rule-based;
 // the same I/O shape (database values in, grounded sentences out) can be swapped
@@ -14,7 +15,9 @@ import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 //   2. A "Show calculation" control exposes the math behind every claim.
 //   3. The output is visually distinct from measured values via the AI badge.
 
-const STUDENTS = 340;
+// Was a hardcoded 340 sitting beside imported scope totals — the one figure
+// in this block that could not follow the roster.
+const STUDENTS = TOTAL_STUDENTS;
 const PRELIM = {
   scope1: Math.round(SCOPE1_TOTAL_MT),
   scope2: Math.round(SCOPE2_TOTAL_MT),

@@ -27,19 +27,24 @@ function makeHash(seed) {
   return ('00000000' + ((h >>> 0).toString(16))).slice(-8);
 }
 
-// KUA enrollment = 340. VERIFIED (Phase 414) against both sources this file
-// cites: the school's own about page ("340 Unique and kind students live and
-// learn at KUA") and the Wikipedia infobox ("approx. 340"). Third-party
-// aggregators list 345; the school's own figure wins.
+// KUA enrollment = 329, of whom 247 board. Supplied directly by the school
+// (2026-10-08) and adopted over every published figure, because a roster count
+// beats a marketing page and a Wikipedia infobox.
 //
-// The boarding/day split was wrong. This said "roughly 70% boarding / 30%
-// day"; KUA publishes "76 Percent of students board". At 76/24 that is ~258
-// boarders and ~82 day students, not 240/100 — see COHORTS in
-// geographicEstimates.js, which the correction moved with it.
+// What it replaced, and why the old numbers looked solid: kua.org's about page
+// says "340 Unique and kind students" and "76 Percent of students board", and
+// the Wikipedia infobox agreed at ~340. Phase 414 verified 340 against both
+// and derived 258 boarders from the 76%. Both are published; neither is the
+// roster. The actual split is 247/329 = 75.1% boarding — the published
+// percentage was close, the headcount was 11 students high.
+//
+// Day students land at 329 - 247 = 82, which is exactly what the 76% figure
+// implied, so that cohort does not move. The change falls entirely on
+// boarders. See COHORTS in geographicEstimates.js.
 //
 // Every per-student figure on the dashboard divides by this number, so update
 // it once a year as the actual roster arrives via SIS export.
-const TOTAL_ENROLLMENT = 340;
+const TOTAL_ENROLLMENT = 329;
 
 /** @type {StudentProfile[]} */
 export const students = Array.from({ length: TOTAL_ENROLLMENT }, (_, i) => ({

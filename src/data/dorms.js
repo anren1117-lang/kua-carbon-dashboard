@@ -56,9 +56,18 @@
 // ceiling, not a census.
 export const DORM_REGISTRY_BASIS = {
   source: "KUA campus map (src/public/kua-campus-map.png), STUDENT RESIDENTIAL legend",
+  // The school supplied the roster on 2026-10-08: 329 students, 247 boarding.
+  // Both sets are kept because they answer different questions — what KUA
+  // tells the public, and what the roster says. The published percentage was
+  // close (76% against an actual 75.1%); the headcount was 11 high.
+  boarders: 247,
+  totalStudents: 329,
+  boardingPct: 75.1,
+  rosterSuppliedOn: '2026-10-08',
   publishedBoarders: 258,
   publishedBoardingPct: 76,
   publishedTotalStudents: 340,
+  publishedSource: 'kua.org/about — "340 Unique and kind students", "76 Percent of students board"',
   bedCountSource: 'kua.org news, 22 Nov 2024 — Kilton 14 -> 32 beds, Welch 18 student beds',
   reclassified: [
     { id: 'b_barrette', wasPopulation: 48, actual: 'Barrette Campus Center / Doe Dining Common (map #9, ACADEMIC)' },

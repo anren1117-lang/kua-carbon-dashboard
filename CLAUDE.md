@@ -4154,3 +4154,57 @@ failed against a ledger that had no estimated month in it at all. The test was
 right; the fixture proved nothing until it was contiguous.
 
 Suite 2,108 → 2,115; 162 files.
+
+## Phase 505 — enrollment 340 → 329, boarding 258 → 247 (school roster)
+
+The school supplied the roster on 2026-10-08: **329 students, 247 boarding**.
+Adopted over every published figure, because a roster beats a marketing page.
+
+What it replaced, and why the old numbers looked solid: kua.org says *"340
+Unique and kind students"* and *"76 Percent of students board"*, the Wikipedia
+infobox agreed at ~340, and Phase 414 verified 340 against both. Both are
+published; neither is the roster. Actual split is **75.1%** boarding — the
+percentage was close, the headcount was **11 students high**.
+
+**Day students do not move.** 329 − 247 = 82, exactly what the published 76%
+implied. The whole correction lands on boarders, and because the international
+count is an assumption (50, unpublished) with US boarders as the remainder, the
+11-student drop falls on `usBoarder` 208 → **197** — where the uncertainty
+already was.
+
+What moved, and what did not:
+
+| | before | now |
+|---|---|---|
+| net per student | 7.55 | **7.80** |
+| gross per student | 12.93 | **13.36** |
+| sink per student | 5.38 | **5.56** |
+| gross / sink / Scope 3 totals | — | unchanged |
+| unmodelled boarder gap | 89 | **78** |
+
+Eight display surfaces stated enrollment as a literal and now derive it:
+`AISummary` (a hardcoded `const STUDENTS = 340` sitting beside imported scope
+totals), `DailyTip`, `NetEstimate`, `ScopeDonut`, `TeacherPortal`,
+`PersonalFootprint`, `/scope-3` (student count input **and** the food-waste
+worked example), plus six `LearnAgent` quiz blocks whose distractors are the
+actual wrong answers a student computes — gross ÷ students and sink ÷ students
+— so they had to move with it.
+
+*Two literal-pinning tests were the real maintenance bug.*
+`perStudentGrossVsNet` opens by saying it is "pinned as an ORDERING, not as
+literals" and then pinned 12.93 / 7.55; it has been edited for Scope 2, the
+sink basis, and now enrollment. Both it and `eastAsiaFlightFigure` now assert
+the relationships that must hold at any figures — gross > net, their difference
+equals sink ÷ students, both inside a plausible band — so a reprice moves data,
+not tests.
+
+*And one of my own derivations rendered garbage.* The shower tip became
+`~${Math.round(T*2.5*365/1000)}0,000 gallons` → **"~3000,000 gallons"**. Caught
+by printing it rather than trusting the expression. Now rounds to the nearest
+10,000 and reads "~300,000".
+
+`DORM_REGISTRY_BASIS` keeps both sets — `boarders: 247` beside
+`publishedBoarders: 258` — because what KUA tells the public and what the
+roster says are different questions, and the disagreement is worth showing.
+
+Suite 2,115; 162 files.

@@ -4,6 +4,7 @@ import { heatingSetbackSaving, MT_PER_STUDENT_HEATING_BASELINE } from '../utils/
 import { MT_PER_TRANSAT_ROUND_TRIP } from '../utils/equivalents.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { SCOPE3_LARGEST_LABEL, SCOPE3_LARGEST_LINE } from '../data/scopeTotals.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 
 // Daily-rotating "tip of the day" card. Picks a tip based on day
 // of year so it changes every day without persistence. 30 tips =
@@ -37,7 +38,7 @@ const TIPS = [
   {
     icon: '🚿',
     title: 'Shorter showers',
-    body: 'Cutting one minute off a daily shower saves ~2.5 gallons of hot water. Across 340 students that\'s ~310,000 gallons of water-heating energy avoided per year.',
+    body: `Cutting one minute off a daily shower saves ~2.5 gallons of hot water. Across ${TOTAL_STUDENTS} students that's ~${(Math.round(TOTAL_STUDENTS * 2.5 * 365 / 10000) * 10000).toLocaleString()} gallons of water-heating energy avoided per year.`,
     link: '/your-footprint',
     linkText: 'Try the calculator',
   },

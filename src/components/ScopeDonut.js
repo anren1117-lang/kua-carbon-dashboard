@@ -6,6 +6,7 @@ import { useAnimatedNumber } from './AnimatedNumber.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { ExplainChart } from './ExplainChart.js';
+import { TOTAL_STUDENTS } from '../data/students.js';
 
 // Same color palette as PeerComparison so the two charts read as one story.
 // Values flow through the centralized scopeTotals chain so the donut
@@ -184,7 +185,7 @@ export function ScopeDonut() {
               { label: 'Gross total', value: grossTotal },
               { label: 'Net total', value: netTotal },
             ],
-            note: 'Scope 2 is measured; Scope 1 and 3 are current best estimates. ~340 students, Plainfield NH.',
+            note: `Scope 2 is measured; Scope 1 and 3 are current best estimates. ${TOTAL_STUDENTS} students, Plainfield NH.`,
           }}
         />
       </section>

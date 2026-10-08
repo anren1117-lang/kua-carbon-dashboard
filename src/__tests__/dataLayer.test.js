@@ -94,7 +94,9 @@ describe('data layer integrity', () => {
     // correcting the classification made the disclosure problem bigger, which
     // is the honest direction. Pinned so closing it takes a roster, not drift.
     expect(registrySum).toBe(169);
-    expect(DORM_REGISTRY_BASIS.publishedBoarders - registrySum).toBe(89);
+    // Against the roster the school supplied (247), not the published 258:
+    // the unmodelled remainder is 78 students.
+    expect(DORM_REGISTRY_BASIS.boarders - registrySum).toBe(78);
   });
 
   it('every student profile points to a known dorm', () => {

@@ -374,7 +374,7 @@ export function NetEstimate() {
                     <ProvenancePill provenance="cited" />
                   </div>
                   <div style={styles.methodLine}>
-                    <span style={styles.methodLabel}>Today:</span> 340 students from KUA "By the Numbers" + Wikipedia.
+                    <span style={styles.methodLabel}>Today:</span> {TOTAL_STUDENTS} students, supplied by the school (2026-10-08). Replaced the published 340 from KUA &quot;By the Numbers&quot; + Wikipedia.
                   </div>
                 </li>
                 <li>

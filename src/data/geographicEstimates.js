@@ -343,22 +343,25 @@ export const SCOPE1_BOTTOM_UP_MT = SCOPE1_RANGE.central;
 // see the spread across reasonable assumptions. The published range
 // is [low, central, high] across methods.
 
-// Cohort split of the 340-student body. Corrected in Phase 414: this read
-// 100 day / 190 US boarding, a 70/30 boarding mix, but KUA publishes "76
-// Percent of students board" — so ~258 board and ~82 are day students. The
-// day count was 22% too high, and it drives the day-travel estimate.
+// Cohort split of the 329-student body, 247 of whom board — supplied by the
+// school 2026-10-08, replacing the 340/258 derived from kua.org's published
+// "340 students" and "76 Percent of students board".
 //
-// The international count is an ASSUMPTION, not a published figure. KUA
+// Day students are unchanged at 82: 329 - 247 is exactly what the published
+// 76% implied, so the correction falls entirely on boarders.
+//
+// The international count remains an ASSUMPTION, not a published figure. KUA
 // publishes "23 Countries represented", which is countries and not students;
 // no international headcount is public. 50 is a working estimate and the
-// US-boarder count is the remainder.
+// US-boarder count is the remainder — so the 11-student drop lands there,
+// which is where the uncertainty already was.
 //
 // Exported so a test can hold day + usBoarder + international to
 // TOTAL_STUDENTS. They were two independent definitions of the same student
 // body with nothing tying them together.
 export const COHORTS = {
   day:           { count:  82, label: 'Day students' },
-  usBoarder:     { count: 208, label: 'US boarders' },
+  usBoarder:     { count: 197, label: 'US boarders' },
   international: { count:  50, label: 'International' },
 };
 

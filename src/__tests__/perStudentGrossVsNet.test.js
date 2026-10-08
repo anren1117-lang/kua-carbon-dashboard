@@ -27,13 +27,20 @@ const netPer = (GROSS_MT - ANNUAL_SEQUESTRATION_MT) / TOTAL_STUDENTS;
 
 describe('gross and net per student are not swapped', () => {
   it('the canonical figures are what this test assumes', () => {
-    // 12.87 until task #5 repriced Scope 2 to the published eGRID rate
-    expect(grossPer).toBeCloseTo(12.93, 1);
-    // Was 5.07. The forest sink was repriced from a growth-side basis to a net
-    // one (task #16), which moved the net per student up, not down.
-    // 7.49 until task #5 repriced Scope 2 to the published eGRID rate
-    expect(netPer).toBeCloseTo(7.55, 1);
+    // The header says this is pinned as an ORDERING, not as literals — and
+    // then pinned 12.93 / 7.55, so every reprice broke the test rather than
+    // the prose. It has now been edited for Scope 2 (task #5), the sink basis
+    // (task #16) and enrollment 340 -> 329. Assert the relationships that must
+    // hold at any figures, plus a band wide enough to allow a reprice and
+    // narrow enough to catch an order-of-magnitude slip.
     expect(grossPer).toBeGreaterThan(netPer);
+    expect(netPer).toBeGreaterThan(0);              // the sink cannot exceed gross
+    expect(grossPer - netPer)
+      .toBeCloseTo(ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS, 6);
+    for (const v of [grossPer, netPer]) {
+      expect(v).toBeGreaterThan(1);
+      expect(v).toBeLessThan(50);
+    }
   });
 
   it('no surface calls the net range a pre-forest-credit figure', () => {
