@@ -4317,3 +4317,41 @@ dorms still carry `population: null` and `buildingId: null` — so a future
 "fix" that ranks them at zero fails, which is the error Phase 490 removed.
 
 Suite 2,125 → 2,132; 164 files.
+
+## Phase 509 — the deploy check as a script, because remembering it failed
+
+I broke my own deploy rule twice in one session. Both times the verifier
+printed `LOCAL MISS` — the marker did not exist in my own build — and both
+times I started the production poll anyway: **24 wasted attempts, then 18**.
+The rule was in the project notes and in memory. It was advice, and advice
+gets skipped.
+
+`scripts/verifyDeploy.mjs` makes it a gate:
+
+```
+npm run verify:deploy -- --present "new string" --absent "retired string"
+```
+
+It exits **non-zero before the first fetch** if any `--present` marker is
+missing from `src/dist`. Demonstrated both ways: a nonsense marker is refused
+without touching the network, and a real one confirmed live in one attempt.
+
+Both of my misses had the same cause, which the script catches because it
+reads the **built chunks** rather than the source: the marker was a sentence
+split by a JSX interpolation. `{n} tables missing from the database` and
+`${TOTAL_STUDENTS} students, Plainfield NH` never exist as literals however
+plainly they read in the source.
+
+The other four rules are encoded alongside it, each one learned the hard way:
+
+| rule | why |
+|---|---|
+| reject HTML-looking responses | the SPA catch-all returns `index.html` with a **200** for any `/assets/*.js`, so a 200 proves nothing |
+| discover lazy chunks from the entry bundle | `index.html` names 3 of ~240 files; every lazy route is invisible to a shell-only check |
+| require present **and** absent | a new marker can already exist in the old build; for a literal→interpolation change, absence is often the only half that works |
+| never compare filename hashes | Vercel builds independently, so content hashes legitimately differ |
+
+The test covers the gate itself, including the interpolation case and the
+no-build case — a missing `dist` must fail rather than pass vacuously.
+
+Suite 2,132 → 2,138; 165 files.
