@@ -29,6 +29,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   athleticTrips, ATHLETIC_WEEK_MILES, ATHLETIC_TRIPS_BASIS, ATHLETIC_WEEK_DAYS,
+  tripSpeedCheck, SPEED_CHECK_PASSES, PLAUSIBLE_MPH,
 } from '../data/athleticTrips.js';
 import { fleetVehicles } from '../data/transportation.js';
 
@@ -90,6 +91,28 @@ describe('the athletics week is recorded as what it is', () => {
     expect(src).toContain('athleticTrips');
     // and the page states the scope rather than leaving it to be assumed
     expect(src).toMatch(/counting it twice|count it twice/i);
+  });
+
+  it('the estimated distances survive the schedule own timing', () => {
+    // The distances are mine; departure and game time are the school's. A
+    // badly wrong distance produces an absurd implied road speed.
+    expect(SPEED_CHECK_PASSES).toBe(true);
+    tripSpeedCheck.forEach((t) => {
+      expect(t.impliedMph, `${t.team} -> ${t.destination}`).toBeGreaterThanOrEqual(PLAUSIBLE_MPH.min);
+      expect(t.impliedMph, `${t.team} -> ${t.destination}`).toBeLessThanOrEqual(PLAUSIBLE_MPH.max);
+    });
+  });
+
+  it('the check would catch a distance that is wrong', () => {
+    const inBand = (mph) => mph >= PLAUSIBLE_MPH.min && mph <= PLAUSIBLE_MPH.max;
+    expect(inBand(95)).toBe(false);     // mileage far too high
+    expect(inBand(12)).toBe(false);     // mileage far too low
+    expect(inBand(45)).toBe(true);
+  });
+
+  it('a passing speed check is still not a measurement', () => {
+    expect(ATHLETIC_TRIPS_BASIS.milesAreEstimated).toBe(true);
+    expect(ATHLETIC_TRIPS_BASIS.distancesSpeedChecked).toBe(true);
   });
 
   it('the long trip is flagged rather than assumed chartered', () => {

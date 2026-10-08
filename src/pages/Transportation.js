@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { ModulePage, ModuleSection, MetricGrid } from '../components/ModuleShell.js';
 import { TimeSeriesChart } from '../components/TimeSeriesChart.js';
-import { athleticTrips, ATHLETIC_WEEK_MILES, ATHLETIC_TRIPS_BASIS } from '../data/athleticTrips.js';
+import { athleticTrips, ATHLETIC_WEEK_MILES, ATHLETIC_TRIPS_BASIS, tripSpeedCheck, PLAUSIBLE_MPH } from '../data/athleticTrips.js';
 import { fleetVehicles, fleetFuelLogs, carpoolTrips, schoolTrips, airTravelRecords } from '../data/transportation.js';
 import { staff } from '../data/staff.js';
 import { getFactor } from '../data/emissionFactors.js';
@@ -107,7 +107,10 @@ export default function Transportation() {
           modelled here. <strong>{ATHLETIC_WEEK_MILES} miles in a single week</strong> is the
           useful part: across 20–32 competition weeks that is {(ATHLETIC_WEEK_MILES * 20).toLocaleString()}–
           {(ATHLETIC_WEEK_MILES * 32).toLocaleString()} miles a year of athletics alone, against{' '}
-          {Math.round(fleetMiles).toLocaleString()} modelled for the whole fleet. Athletics
+          {Math.round(fleetMiles).toLocaleString()} modelled for the whole fleet. The distances are
+          estimates but not unchecked: the schedule gives departure and game time, so each implies
+          a road speed — {Math.min(...tripSpeedCheck.map((t) => t.impliedMph))}–{Math.max(...tripSpeedCheck.map((t) => t.impliedMph))} mph here,
+          all inside the {PLAUSIBLE_MPH.min}–{PLAUSIBLE_MPH.max} mph band a wrong mileage would break. Athletics
           plausibly accounts for most of it, which leaves little room for field trips,
           admissions travel and maintenance runs — so the fleet mileage assumption is more
           likely low than high. * Wilbraham is the one trip long enough that a charter is

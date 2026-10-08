@@ -4249,3 +4249,40 @@ are recorded as unknown. Eight rows of "28 passengers" would have looked like
 data. The test asserts no row carries a fabricated `passengerCount` or `mode`.
 
 Suite 2,115 → 2,122; 163 files.
+
+## Phase 507 — testing my own distances against the school's own clock
+
+The user has no access to vehicle assignment, headcount, or which trips were
+chartered. Those stay unknown, which is the honest state and blocks nothing.
+
+But the one number I *did* estimate — road mileage — can be tested with what
+the schedule already contains. It gives **departure and game time** for every
+away trip, so outbound travel is roughly `game − departure − warm-up`, and the
+estimated one-way miles divided by that yields an implied road speed:
+
+| trip | one-way | implied |
+|---|---|---|
+| Boys Varsity Soccer → Wilbraham | 130 mi | 58 mph |
+| Boys JV2 Soccer → St. Paul's | 55 mi | 55 mph |
+| Boys JV1 Soccer → Vermont Academy | 50 mi | 50 mph |
+| Girls JV Soccer → New Hampton | 50 mi | 50 mph |
+| Varsity Field Hockey → Holderness | 60 mi | 48 mph |
+| Girls Varsity Soccer → Tilton | 55 mi | 44 mph |
+| Mountain Biking → New Hampton | 50 mi | 40 mph |
+| Cross Country → Brewster | 85 mi | 30 mph |
+
+All eight land between **30 and 58 mph** — what New Hampshire two-lanes and
+I-91 actually produce. A distance guessed badly fails loudly: 95 mph means the
+mileage is too high, 12 mph too low. The test asserts the band rejects both.
+
+**The distances are mine, so they get tested.** The timings are the school's,
+which makes this a genuine outside check rather than my arithmetic agreeing
+with itself — the one thing a self-consistent estimate can never do for itself.
+
+*It does not make them measured,* and the basis block still says
+`milesAreEstimated: true`. Warm-up is assumed at an hour, and a team that left
+early for an unrelated reason reads as a slow drive — Cross Country is the
+slowest at 30 mph, and the email itself flags its 11:00 early dismissal. The
+check constrains the estimate; it does not promote it.
+
+Suite 2,122 → 2,125; 163 files.
