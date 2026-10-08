@@ -4355,3 +4355,40 @@ The test covers the gate itself, including the interpolation case and the
 no-build case — a missing `dist` must fail rather than pass vacuously.
 
 Suite 2,132 → 2,138; 165 files.
+
+## Phase 510 — the board-facing report compared our net to their gross
+
+`/annual-report` is the one document that goes to a board, and its peer
+paragraph read:
+
+> *"roughly 7.8 per enrolled student. Peer residential schools **that report
+> figures publicly** cluster between **6 and 10** mtCO₂e/student/year; **KUA's
+> lower number** is largely a function of measuring our forest."*
+
+Three errors, in rising order of seriousness:
+
+1. **The band.** This repo's four boarding-secondary peers span **8.0–10.0**,
+   not 6–10.
+2. **The provenance.** None of them "reports figures publicly". Every peer row
+   carries `provenance: 'estimated'` and a note beginning *"ESTIMATED SHAPE,
+   not a published figure"* — these schools publish targets and plans, not
+   per-student inventories. `/scope-3` already says so; the board document
+   contradicted it.
+3. **The direction**, which is the real problem. KUA's **net** per student
+   (7.8) was set against peer **gross** (8.0–10.0, every one with `sinks: 0`).
+   Like for like, KUA is **13.4 mtCO₂e/student — above all four.** The entire
+   "lower number" is KUA subtracting a forest sink nobody else counts. That is
+   a boundary difference, not performance.
+
+**`LearnAgent` teaches this exact error** as the Valls-Val & Bovea finding,
+with a quiz whose correct answer is that two identical campuses publish 7.8 and
+13.4 depending only on whether sinks are subtracted. The annual report then
+committed the error the lesson warns about — and it is the error that flatters.
+
+The paragraph now leads with the gross comparison, states that not one peer
+quantifies a sink, and says plainly that reading the net as better performance
+is a mistake. `BOARDING_PEER_BAND` is derived once in `PeerComparison` so the
+chart and the report cannot quote different bands, and the test asserts no
+per-student value appears as a literal in that paragraph.
+
+Suite 2,138 → 2,145; 166 files.

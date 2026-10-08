@@ -15,6 +15,7 @@ import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js'
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { Icon } from '../components/Icon.js';
+import { BOARDING_PEER_BAND } from '../components/PeerComparison.js';
 
 // Trustee / parent-facing annual summary. Designed to print cleanly:
 // no nav, no flashy interactions, every section uses 11pt body type
@@ -92,10 +93,24 @@ export default function AnnualReport() {
           The campus's roughly {TOTAL_FOREST_ACRES.toLocaleString()} acres of forest sequester an
           estimated <strong>{Math.round(SINKS).toLocaleString()} mtCO₂e/yr</strong>, leaving a
           net annual figure of <strong>{Math.round(NET).toLocaleString()} mtCO₂e</strong> — roughly
-          <strong> {(NET / TOTAL_STUDENTS).toFixed(1)} per enrolled student</strong>. Peer
-          residential schools that report figures publicly cluster between 6 and 10
-          mtCO₂e/student/year; KUA's lower number is largely a function of measuring our
-          forest, which most peers don't.
+          <strong> {(NET / TOTAL_STUDENTS).toFixed(1)} per enrolled student</strong>.
+        </p>
+        <p style={styles.lede}>
+          That net figure sits below the {BOARDING_PEER_BAND.minGrossPerStudent}–
+          {BOARDING_PEER_BAND.maxGrossPerStudent} mtCO₂e/student of the{' '}
+          {BOARDING_PEER_BAND.count} comparable boarding schools on this dashboard, and it
+          would be a mistake to read that as KUA performing better.{' '}
+          <strong>
+            On the like-for-like measure — gross, before any sink —
+            KUA is {(GROSS / TOTAL_STUDENTS).toFixed(1)} mtCO₂e/student, above every one of them.
+          </strong>{' '}
+          The whole of the difference is that KUA subtracts a forest sink and{' '}
+          {BOARDING_PEER_BAND.anyQuantifySinks ? 'some peers do too' : 'not one of those peers quantifies one'}.
+          Comparing our net against their gross is the boundary error this report exists to
+          avoid making. Note also that{' '}
+          {BOARDING_PEER_BAND.anyPublishPerStudent
+            ? 'those peer figures are published inventories'
+            : 'none of those schools publishes a per-student inventory — their figures here are estimated shapes drawn from published targets, not reported results, and should be read as context rather than a ranking'}.
         </p>
       </Section>
 

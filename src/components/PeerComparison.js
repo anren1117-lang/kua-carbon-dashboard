@@ -119,6 +119,22 @@ const axisMin = -Math.max(maxDrawdown, 0.5);
 const axisRange = axisMax - axisMin;
 const zeroPct = (-axisMin / axisRange) * 100;
 
+// The boarding-secondary comparison set, derived once so the annual report and
+// this chart cannot quote different bands. Every one of these is an ESTIMATED
+// SHAPE — none of these schools publishes a per-student inventory, and none
+// quantifies a sink, which is the fact that makes a net-vs-gross comparison
+// against them misleading.
+const BOARDING_PEERS = peers.filter((p) => p.type === 'boarding-secondary' && !p.isUs);
+const peerGross = BOARDING_PEERS.map((p) => p.scope1 + p.scope2 + p.scope3);
+
+export const BOARDING_PEER_BAND = {
+  count: BOARDING_PEERS.length,
+  minGrossPerStudent: Math.min(...peerGross),
+  maxGrossPerStudent: Math.max(...peerGross),
+  anyPublishPerStudent: BOARDING_PEERS.some((p) => p.provenance === 'cited'),
+  anyQuantifySinks: BOARDING_PEERS.some((p) => p.sinksQuantified),
+};
+
 const styles = {
   wrap: { maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' },
   card: { padding: '24px 28px', background: '#0f172a', border: '1px solid #1f2937', borderRadius: 14 },
