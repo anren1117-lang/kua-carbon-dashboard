@@ -153,16 +153,32 @@ describe('live data wiring', () => {
     //
     // Asserting aligned === false would have passed the whole time. The claim
     // is REACHABILITY, so that is what this asserts: some page must import it.
+    // The line-prefix scan this used to do was WRONG, and the estimate register
+    // exposed it: a multi-line
+    //     import {
+    //       REGISTER_RECONCILIATION,
+    //     } from '../data/estimateRegister.js';
+    // has only its FIRST line starting with `import `, so every named import
+    // after the brace was invisible and a genuinely-imported object was
+    // reported as an orphan. Match whole import statements instead.
+    const importBlocks = (text) =>
+      (text.match(/import\s[\s\S]*?from\s*['"][^'"]+['"]/g) || []).join('\n');
     const pageImports = (name) => {
       for (const dir of ['components', 'pages']) {
         for (const file of walk(path.join(SRC, dir))) {
           const text = fs.readFileSync(file, 'utf8');
-          const imports = text.split('\n').filter((l) => l.startsWith('import ')).join('\n');
-          if (new RegExp(`\\b${name}\\b`).test(imports)) return path.relative(SRC, file);
+          if (new RegExp(`\\b${name}\\b`).test(importBlocks(text))) return path.relative(SRC, file);
         }
       }
       return null;
     };
+    // Control: the old scan missed this shape, the new one must not.
+    const MULTILINE = "import {\n  A_RECONCILIATION,\n} from './x.js';";
+    expect(importBlocks(MULTILINE)).toContain('A_RECONCILIATION');
+    expect(MULTILINE.split('\n').filter((l) => l.startsWith('import ')).join('\n'))
+      .not.toContain('A_RECONCILIATION');
+    // ...and it must not start matching things that are not imports
+    expect(importBlocks("const x = 1; // B_RECONCILIATION from './y.js'")).toBe('');
     //
     // Phase 448: DISCOVERED, not listed. This was three hardcoded assertions,
     // so a fourth reconciliation object could still be exported, believed

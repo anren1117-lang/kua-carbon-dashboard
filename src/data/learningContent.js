@@ -67,7 +67,7 @@ export const knowledgeArticles = [
     topic: 'food',
     readingLevel: 'intermediate',
     keywords: ['beef', 'chicken', 'food', 'meat'],
-    body: 'Cattle are ruminants that produce methane during digestion (a greenhouse gas 28× as potent as CO2 over 100 years). They also need more land, feed, and water per pound of meat than chickens. The result: beef averages around 99.5 kg CO2e per kg, while chicken averages around 9.9 — about 10× lower.',
+    body: 'Cattle are ruminants that produce methane during digestion (a greenhouse gas 27× as potent as CO2 over 100 years on the IPCC AR6 assessment — 28 is the older AR5 figure). They also need more land, feed, and water per pound of meat than chickens. The result: beef averages around 99.5 kg CO2e per kg, while chicken averages around 9.9 — about 10× lower.',
     sourceDoc: 'Poore & Nemecek 2018',
   },
   {
@@ -84,7 +84,7 @@ export const knowledgeArticles = [
     topic: 'kua_specific',
     readingLevel: 'intermediate',
     keywords: ['kua', 'kimball union', 'school', 'footprint'],
-    body: `KUA's preliminary estimate is about ${fmt(grossMt)} mtCO2e gross emissions per year — roughly ${fmt(SCOPE1_TOTAL_MT)} from heating fuel (Scope 1), ${fmt(SCOPE2_TOTAL_MT)} from purchased electricity (Scope 2), and ${fmt(SCOPE3_TOTAL_MT)} from indirect sources like student travel and food (Scope 3). The campus forest sequesters around ${fmt(sinksMt)} mtCO2e/year, leaving a net footprint near ${fmt(netMt)} mtCO2e/year. Per student that's about ${perStud} mtCO2e/year — lower than peer boarding schools largely because we measure our forest.`,
+    body: `KUA's preliminary estimate is about ${fmt(grossMt)} mtCO2e gross emissions per year — roughly ${fmt(SCOPE1_TOTAL_MT)} from heating fuel (Scope 1), ${fmt(SCOPE2_TOTAL_MT)} from purchased electricity (Scope 2), and ${fmt(SCOPE3_TOTAL_MT)} from indirect sources like student travel and food (Scope 3). The campus forest sequesters around ${fmt(sinksMt)} mtCO2e/year, leaving a net footprint near ${fmt(netMt)} mtCO2e/year. Per student that's about ${perStud} mtCO2e/year — below the illustrative peer shapes on the peer chart — but those are gross figures with no sink subtracted, so that is a difference in what gets counted, not in what gets emitted.`,
   },
   {
     id: 'ka_carpool_math',

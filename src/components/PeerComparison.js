@@ -34,38 +34,10 @@ import { SCOPE1_TOTAL_MT as KUA_SCOPE1_TOTAL_MT, SCOPE3_TOTAL_MT as KUA_SCOPE3_T
 // Use the canonical annualized scope-2 export so the comparison
 // against peers' annual scope-2 figures is apples-to-apples.
 const KUA_SCOPE2_ANNUAL_MT = GRID_MIX_ANNUAL_MTCO2E;
+export { peers, BOARDING_PEER_BAND, PEER_USE_CAVEAT } from '../data/peerSchools.js';
+import { peers, BOARDING_PEER_BAND, PEER_USE_CAVEAT } from '../data/peerSchools.js';
 const round1 = (n) => Math.round(n * 10) / 10;
 
-export const peers = [
-  { name: 'KUA',                          type: 'boarding-secondary', isUs: true, provenance: 'cited', sinksQuantified: true,
-    scope1:  round1(KUA_SCOPE1_TOTAL_MT / TOTAL_STUDENTS),
-    scope2:  round1(KUA_SCOPE2_ANNUAL_MT / TOTAL_STUDENTS),
-    scope3:  round1(KUA_SCOPE3_TOTAL_MT / TOTAL_STUDENTS),
-    sinks:   round1(-ANNUAL_SEQUESTRATION_MT / TOTAL_STUDENTS),
-    offsets: 0,
-    note: `Preliminary per-student figures from KUA gross/sinks ÷ ${TOTAL_STUDENTS} enrolled students (Wikipedia + KUA "By the Numbers"). Scope 1 = ${KUA_SCOPE1_TOTAL_MT.toLocaleString()} mt heating fuel + refrigerants + fleet. Scope 2 = ${Math.round(KUA_SCOPE2_ANNUAL_MT).toLocaleString()} mt — Year 1 projection from BMS-measured kWh × ISO-NE 2024 per-fuel factors (${GRID_MIX_TOTAL_MTCO2E.toFixed(1)} mt YTD seasonally extrapolated). Scope 3 = ${KUA_SCOPE3_TOTAL_MT.toLocaleString()} mt — led by ${SCOPE3_LARGEST_LABEL} (${SCOPE3_LARGEST_LINE.shareOfScope3}% of Scope 3), then international and US-boarder term-break travel. Sinks = ${Math.round(ANNUAL_SEQUESTRATION_MT).toLocaleString()} mt from ~1,000 acres of campus forest (campus is 1,300 acres total; ~1,000 forested) on a net basis, inside a ${SINKS_RECONCILIATION.methodCount}-method range (${SINKS_RECONCILIATION.lowMt.toLocaleString()}–${SINKS_RECONCILIATION.highMt.toLocaleString()}) and above its central of ${SINKS_RECONCILIATION.centralMt.toLocaleString()}, because the other methods average in harvested acres and KUA does not harvest — which matters here, because the sink is what puts KUA ahead of its peers.` },
-  { name: 'Phillips Exeter Academy (NH)', type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
-    scope1: 4.0, scope2: 1.5, scope3: 4.5, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE, not a published figure. Exeter publishes a 2023 plan ("Building from Strength Toward a Zero Carbon Future") with targets — 75% cut in Scope 1+2 from a 2005 baseline by 2031, zero by 2050, and roughly 60% achieved since 2005 — but no per-student inventory and no Scope 3 breakdown we could locate. The split above is an order-of-magnitude sketch for a larger boarding cohort in older buildings on heating oil. Sinks: not quantified in their reporting, which is not the same as zero.' },
-  { name: 'Phillips Academy Andover (MA)',type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
-    scope1: 3.5, scope2: 1.5, scope3: 4.0, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE, not a published figure. Andover publishes a Climate Action Plan 2019–2030 (adopted 2018) with a 30% mtCO₂e reduction target plus water and 90%-diversion waste goals, and annual FY tracking — but no per-student inventory we could locate. Sinks: not quantified, which is not the same as zero.' },
-  { name: 'Lawrenceville School (NJ)',    type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
-    scope1: 3.0, scope2: 2.0, scope3: 4.0, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE. We did not locate a published inventory for Lawrenceville and did not research it directly — treat this row as an illustrative boarding-school profile only. Sinks: not quantified.' },
-  { name: 'Choate Rosemary Hall (CT)',    type: 'boarding-secondary', provenance: 'estimated', sinksQuantified: false,
-    scope1: 3.0, scope2: 1.5, scope3: 3.5, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE. We did not locate a published inventory for Choate and did not research it directly — illustrative peer profile only. Sinks: not quantified.' },
-  { name: 'Middlebury College',           type: 'college', provenance: 'estimated', sinksQuantified: false,
-    scope1: 2.0, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE for the scope split. The neutrality story, however, is documented and was previously described incorrectly here: Middlebury reached carbon neutrality in 2016 mostly through REAL REDUCTIONS — a $12M biomass plant cut No. 6 fuel oil by 91% (2M → ~185,000 gal), three solar arrays totalling 1,150 kW supply ~8% of electricity, and 87 Efficiency Vermont projects saved 4.52M kWh. The residual was closed with carbon credits quantified from their OWN 2,100 acres of Bread Loaf forestland, preserved in perpetuity under a Vermont Land Trust easement. The old drawdown figure of −5.5 was unsourced and is removed rather than guessed at.' },
-  { name: 'Williams College',             type: 'college', provenance: 'estimated', sinksQuantified: false,
-    scope1: 2.5, scope2: 1.0, scope3: 2.5, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE. We did not locate a published inventory for Williams and did not research it directly — illustrative cold-climate residential-college profile. Sinks: not quantified.' },
-  { name: 'Yale University',              type: 'university', provenance: 'estimated', sinksQuantified: false,
-    scope1: 1.5, scope2: 1.0, scope3: 1.5, sinks: 0, offsets: 0,
-    note: 'ESTIMATED SHAPE, not a published per-capita figure. Yale publishes progress in PERCENTAGES (Scope 1+2 down ~28% against a 2015 baseline; a 2005 baseline of 263,119 mtCO₂e; Scope 3 category trends against 2020) rather than a per-FTE number we could cite. Sinks: not quantified.' },
-];
 
 const segColors = {
   scope1:  '#ef4444', // red — direct combustion
@@ -119,21 +91,6 @@ const axisMin = -Math.max(maxDrawdown, 0.5);
 const axisRange = axisMax - axisMin;
 const zeroPct = (-axisMin / axisRange) * 100;
 
-// The boarding-secondary comparison set, derived once so the annual report and
-// this chart cannot quote different bands. Every one of these is an ESTIMATED
-// SHAPE — none of these schools publishes a per-student inventory, and none
-// quantifies a sink, which is the fact that makes a net-vs-gross comparison
-// against them misleading.
-const BOARDING_PEERS = peers.filter((p) => p.type === 'boarding-secondary' && !p.isUs);
-const peerGross = BOARDING_PEERS.map((p) => p.scope1 + p.scope2 + p.scope3);
-
-export const BOARDING_PEER_BAND = {
-  count: BOARDING_PEERS.length,
-  minGrossPerStudent: Math.min(...peerGross),
-  maxGrossPerStudent: Math.max(...peerGross),
-  anyPublishPerStudent: BOARDING_PEERS.some((p) => p.provenance === 'cited'),
-  anyQuantifySinks: BOARDING_PEERS.some((p) => p.sinksQuantified),
-};
 
 const styles = {
   wrap: { maxWidth: 1100, margin: '24px auto 0', padding: '0 16px' },

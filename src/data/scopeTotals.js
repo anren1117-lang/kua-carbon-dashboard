@@ -23,7 +23,9 @@ import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT, REPORTING_PERIOD 
 // actual fuel delivery records (fuel_bills Supabase table) and
 // refrigerant service logs — flips estimated → measured at that point.
 const SCOPE1_PLACEHOLDER_MT = 1350;
-const SCOPE1_PLACEHOLDER_BREAKDOWN = [
+// Exported so the estimate register on /methodology can publish each row's
+// own `method` string rather than a second, driftable description of it.
+export const SCOPE1_PLACEHOLDER_BREAKDOWN = [
   { source: 'Heating oil + propane', mt: 1290, provenance: 'estimated', method: '290K sqft × NH-CZ6 intensity (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Real KUA delivery invoices not yet integrated.' },
   { source: 'Fleet vehicles',         mt:   54, provenance: 'estimated', method: 'KUA fleet registry: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans + 1 truck × actual annualMiles ÷ mpg × EPA Mobile Combustion. Real fuel-card records not yet integrated.' },
   { source: 'Refrigerant leakage',    mt:    7, provenance: 'estimated', method: '~80 lb HVAC charge × 5–15%/yr leak rate × IPCC AR6 GWP100. Real service-report mass balance not yet integrated.' },
@@ -603,7 +605,7 @@ export const SCOPE1_TOTAL_MT = composeScope1().totalMt;
 // Student travel + dining (Cat 1 purchased goods) + waste + procurement +
 // commuting + upstream fuel.
 const SCOPE3_PLACEHOLDER_MT = 2635;
-const SCOPE3_PLACEHOLDER_BREAKDOWN = [
+export const SCOPE3_PLACEHOLDER_BREAKDOWN = [
   { source: 'Purchased goods (non-dining)',              mt: 1315, provenance: 'estimated', method: 'EPA Supply Chain GHG Emission Factors v1.3 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors.' },
   { source: 'Student travel (international + boarder)', mt:  760, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 82 day commuters local Upper Valley + 208 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA 2024 factors including the indirect effects of non-CO₂ emissions. Travel office records not yet integrated.' },
   { source: 'Dining (food production)',                  mt:  235, provenance: 'estimated', method: 'Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated.' },

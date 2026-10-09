@@ -1,6 +1,7 @@
 import React from 'react';
 import { MethodBreakdown } from '../components/MethodBreakdown.js';
 import { BOTTOM_UP_TOTALS } from '../data/geographicEstimates.js';
+import { EstimateRegister } from '../components/EstimateRegister.js';
 
 const sources = [
   { domain: 'Framework', source: 'GHG Protocol — Scope 1 / 2 / 3', use: 'Inventory boundaries and dual-reporting (location- vs market-based)' },
@@ -20,10 +21,14 @@ const sources = [
 ];
 
 const principles = [
-  'Every numeric value links back to its source record (real-time meter, invoice, sample, survey).',
-  'Measured values are visually distinguished from estimates throughout the UI.',
+  // These two read as descriptions and were specifications. Neither was true
+  // when written: most values rest on a published intensity rather than a
+  // source record, and nothing in the UI distinguished a modelled figure from
+  // a metered one. The register below is the first half of the fix.
+  'Every figure behind the footprint is listed in the estimate register above, with the method it was built from and the document that would replace it.',
+  'NOT YET TRUE — measured and modelled values are not consistently distinguished outside the register. Treat any figure not listed there as modelled until it says otherwise.',
   'Emission factors are versioned in the database so historical numbers remain reproducible when factors are updated.',
-  'AI-generated text is constrained at the prompt level to reference values present in the database, exposes a “show calculation” control, and is visually distinct from measured data.',
+  'AI-generated text is constrained at the prompt level to reference values present in the database, and is labelled as generated.',
   'Scope 3 categories not applicable to a school (Cat 9, Cat 12) are explicitly excluded rather than silently dropped.',
   'Where measured data is not yet integrated, headline numbers carry a multi-method range (3-4 published methodologies per component) so the spread of reasonable interpretations is visible — not just a single point. The full per-method breakdown is published below.',
 ];
@@ -57,6 +62,11 @@ function Methodology() {
         Every emission factor, framework choice, and data boundary used by this dashboard,
         with citations. Updated whenever a factor or methodology is added or revised.
       </p>
+
+      <section style={styles.section}>
+        <h2 style={styles.h2}>What is estimated, and how</h2>
+        <EstimateRegister />
+      </section>
 
       <section style={styles.section}>
         <h2 style={styles.h2}>Data sources & emission factors</h2>

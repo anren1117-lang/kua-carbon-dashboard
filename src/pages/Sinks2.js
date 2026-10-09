@@ -59,7 +59,7 @@ export default function Sinks() {
   return (
     <ModulePage
       title="Carbon Sinks"
-      subtitle={`On-campus carbon drawdown — what the roughly 1,000 acres of KUA forest and the soil under it pull out of the air every year. Most peer schools do not measure their sinks at all, which is why the KUA net reads lower than theirs. It does not read near zero: the forest offsets about ${Math.round((ANNUAL_SEQUESTRATION_MT / GROSS_MT) * 100)}% of gross, so the majority of the footprint is still there after it.`}
+      subtitle={`On-campus carbon drawdown — what the roughly 1,000 acres of KUA forest and the soil under it pull out of the air every year. Most peer schools do not measure their sinks at all, so a KUA net figure and a peer gross figure are not the same measurement and should not be ranked against each other. It does not read near zero: the forest offsets about ${Math.round((ANNUAL_SEQUESTRATION_MT / GROSS_MT) * 100)}% of gross, so the majority of the footprint is still there after it.`}
     >
       <LiveDataNotice error={live.error} fallbackLabel="the stand-weighted placeholder inventory" />
       <MetricGrid metrics={[

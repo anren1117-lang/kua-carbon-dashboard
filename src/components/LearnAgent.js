@@ -13,6 +13,7 @@ import {
   MT_PER_DOMESTIC_FLIGHT,
   KG_PER_MILE_CAR,
 } from '../utils/personalFootprint.js';
+import { BOARDING_PEER_BAND } from '../data/peerSchools.js';
 
 // Reactive headline figures — composed from the same canonical sources the
 // rest of the dashboard imports, so the lesson narrative cannot drift from
@@ -166,12 +167,22 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'Methane (CH₄) has a much higher GWP100 per molecule than CO₂. So why does CO₂ get more attention in climate policy?',
+        question: 'One tonne of methane traps far more heat over a century than one tonne of CO₂ — IPCC AR6 puts it at 27× for biogenic methane and 30× for fossil. So why does CO₂ still account for the larger share of warming from current emissions?',
         options: [
-          { text: 'CO₂ is more potent in the long run', correct: false, explanation: 'Per molecule, CH₄ is 28× more potent than CO₂ over 100 years. CO₂ doesn\'t win on potency; it wins on TOTAL MASS.' },
-          { text: 'There\'s vastly more CO₂ being emitted by mass than methane', correct: true, explanation: 'Right. Annual global CO₂ emissions: ~37 Gt. Annual global methane: ~0.4 Gt. Even with methane\'s 28× GWP, total CH₄-equivalent is only ~11 Gt vs CO₂ at 37 Gt. **CO₂ dominates because we emit so much more of it**, even though it\'s weaker per molecule. Policy attention follows total impact, which is concentration × potency.' },
-          { text: 'Methane is natural and CO₂ isn\'t', correct: false, explanation: 'Both are natural gases that humans emit in addition to natural sources. Both contribute to anthropogenic warming.' },
-          { text: 'CO₂ stays in the atmosphere longer', correct: false, explanation: 'True (centuries vs ~12 years for CH₄), but this is REFLECTED in GWP100 already. The relevant fact is that we emit so much more CO₂ by mass.' },
+          { text: 'Because we emit vastly more CO₂ by mass', correct: true, explanation: 'Right. Annual anthropogenic CO₂ is about **42 Gt** (Global Carbon Budget 2025: 38 Gt fossil plus ~4 Gt land-use change). Anthropogenic methane is about **0.37 Gt** (Global Methane Budget 2025: 369 Tg/yr, range 350–391). Even at ~28×, that is roughly **10 Gt CO₂e** — about a quarter of CO₂. **CO₂ dominates on mass, not on potency.**' },
+          { text: 'Because CO₂ is more potent per tonne', correct: false, explanation: 'The question says the opposite, and AR6 Table 7.15 gives methane 27.0 (biogenic) to 29.8 (fossil) against CO₂\'s 1. CO₂ does not win on potency.' },
+          { text: 'Because methane is natural and CO₂ is man-made', correct: false, explanation: 'Both have large natural and human sources. Of ~575 Tg of total annual methane, about 65% is directly anthropogenic — mostly agriculture, waste and fossil-fuel operations.' },
+          { text: 'Because methane breaks down too fast to matter', correct: false, explanation: 'It breaks down — a ~12-year perturbation lifetime against CO₂\'s centuries — but a *steady* methane emission rate sustains a steady warming contribution, on the order of 0.5 °C at today\'s rates. Short-lived is not harmless.' },
+        ],
+      },
+      {
+        type: 'quiz',
+        question: 'About 15–40% of a CO₂ pulse is still in the atmosphere after a thousand years. Methane\'s perturbation lifetime is about 12 years. What does that difference mean for targets?',
+        options: [
+          { text: 'Stopping CO₂-driven warming requires net-zero CO₂; methane requires strong, sustained cuts', correct: true, explanation: 'Right, and AR6 is explicit on both halves. **CO₂:** "reaching net zero anthropogenic CO₂ emissions is a requirement to stabilize human-induced global temperature increase at any level" (WG1 SPM D.1.1). **Methane:** "strong, rapid and sustained reductions in CH₄ emissions" (SPM D.1) — which pull warming *down* rather than merely stopping its growth. CO₂ behaves as a stock, methane as a flow.' },
+          { text: 'Both gases must reach net zero for temperatures to stabilise', correct: false, explanation: 'AR6 attaches the net-zero requirement specifically to CO₂. Halting human-induced warming needs net-zero CO₂ **together with declining** non-CO₂ forcing (WG1 §7.6.2) — declining, not zero.' },
+          { text: 'Methane needs no reduction, since it decays on its own', correct: false, explanation: 'The common misreading of exactly this fact. Constant methane emissions hold warming at a constant elevated level, not at zero — roughly 0.5 °C at current rates. Decay means cuts work fast, not that cuts are optional.' },
+          { text: 'Nothing — GWP100 already accounts for it', correct: false, explanation: 'GWP100 **is** calculated from methane\'s ~12-year lifetime, so this is a reasonable guess. But it compares one-off *pulses*, and a pulse-equivalence does not carry over to an emission *rate*. AR6 §7.6.1.4 finds that totting up CO₂e this way "overstates the effect of constant methane emissions on global surface temperature by a factor of 3–4, while understating the effect of any new methane emission source by a factor of 4–5 over the 20 years following" its introduction.' },
         ],
       },
       {
@@ -258,7 +269,7 @@ const paths = [
       {
         type: 'concept',
         heading: 'KUA\'s situation',
-        body: `Here are the **headline numbers** for KUA's footprint, in plain language:\n\n**Gross emissions: ~${KUA.gross} tons CO₂e per year.** That's the total released by KUA's operations and indirect activities. About ${KUA.scope1} tons from heating fuel (Scope 1), ${KUA.scope2} tons from purchased electricity (Scope 2), and ${KUA.scope3} tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~${KUA.sinks} tons CO₂e per year drawdown.** KUA publishes a **1,300-acre** campus in New Hampshire; roughly **1,000 acres** of it are treated as forest here — that 1,000 is our own working figure, not one KUA publishes. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools **don't even measure this** — KUA does, which is unusual.\n\n**Net carbon balance: ~${KUA.net} tons CO₂e per year.** That's gross minus sequestration. Per student: about **${KUA.perStudent} mtCO₂e/year**. For comparison, peer boarding schools are typically **6–10 mtCO₂e/student/year** — KUA looks lower largely because we count our forest, but also because the New England grid is fairly clean.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.\n\n*(The worked-math quiz scenarios that follow use rounded baseline inputs so each scenario's arithmetic lines up cleanly with its answer choices — small differences from the headline above are expected.)*`,
+        body: `Here are the **headline numbers** for KUA's footprint, in plain language:\n\n**Gross emissions: ~${KUA.gross} tons CO₂e per year.** That's the total released by KUA's operations and indirect activities. About ${KUA.scope1} tons from heating fuel (Scope 1), ${KUA.scope2} tons from purchased electricity (Scope 2), and ${KUA.scope3} tons from indirect sources like student travel, food supply, and waste (Scope 3).\n\n**Sequestration: ~${KUA.sinks} tons CO₂e per year drawdown.** KUA publishes a **1,300-acre** campus in New Hampshire; roughly **1,000 acres** of it are treated as forest here — that 1,000 is our own working figure, not one KUA publishes. Through photosynthesis, those trees pull CO₂ out of the atmosphere and lock it into wood, leaves, roots, and soil organic carbon. Most peer schools do not measure sequestration at all. KUA does — which is why its net figure cannot be set against theirs without care.\n\n**Net carbon balance: ~${KUA.net} tons CO₂e per year.** That's gross minus sequestration. Per student: about **${KUA.perStudent} mtCO₂e/year**. For comparison, the ${BOARDING_PEER_BAND.count} peer boarding schools on this dashboard sit at **${BOARDING_PEER_BAND.minGrossPerStudent}–${BOARDING_PEER_BAND.maxGrossPerStudent} mtCO₂e/student** — but those are **gross** figures with no sink subtracted, and nobody published them; they are illustrative shapes. Set like against like and KUA's gross is **${KUA.grossPerStudent}**. Two boundary choices explain the difference, not one: KUA subtracts a forest sink, and KUA counts a fuller Scope 3 (**${BOARDING_PEER_BAND.kuaScope3PerStudent}** per student against their **${BOARDING_PEER_BAND.minScope3PerStudent}–${BOARDING_PEER_BAND.maxScope3PerStudent}**). On Scope 1 and 2 the schools are close: **${BOARDING_PEER_BAND.kuaScope12PerStudent}** against **${BOARDING_PEER_BAND.minScope12PerStudent}–${BOARDING_PEER_BAND.maxScope12PerStudent}**.\n\n**Important honesty:** these numbers are **preliminary estimates** until measured data is fully loaded. As fuel-delivery records, travel data, and tree-inventory measurements land, the range tightens.\n\n*(The worked-math quiz scenarios that follow use rounded baseline inputs so each scenario's arithmetic lines up cleanly with its answer choices — small differences from the headline above are expected.)*`,
       },
       {
         type: 'quiz',
@@ -874,12 +885,12 @@ The GHG Protocol formally divides Scope 3 into **15 categories**: purchased good
       },
       {
         type: 'quiz',
-        question: 'KUA\'s ~5.0 mtCO₂e/student. How does that compare to peer boarding schools?',
+        question: `KUA is ~${KUA.perStudent} mtCO₂e/student net and ~${KUA.grossPerStudent} gross. The ${BOARDING_PEER_BAND.count} peer boarding schools on this dashboard show ${BOARDING_PEER_BAND.minGrossPerStudent}–${BOARDING_PEER_BAND.maxGrossPerStudent}. How does KUA compare?`,
         options: [
-          { text: 'About the same', correct: false, explanation: 'Most peer boarding schools are 6–10 mt/student because they don\'t count sinks.' },
-          { text: 'Lower than peers', correct: true, explanation: 'Right — on the figures this dashboard shows. Treat the peer numbers (Exeter ~10, Andover ~9 gross per student) as illustrative estimates: neither school publishes a per-student inventory. KUA reads lower mainly because it subtracts on-campus sequestration that peers never measure — a difference in what gets counted more than in what gets emitted.' },
-          { text: 'Higher than peers', correct: false, explanation: 'Boarding schools have similar gross emissions; the difference is whether sinks are measured.' },
-          { text: 'It depends on how you count', correct: false, explanation: 'True in general — methodology choices matter — but for the apples-to-apples comparison shown on the peer chart, KUA\'s reported figure is lower because it includes sequestration that peer schools don\'t measure.' },
+          { text: 'About the same', correct: false, explanation: `Neither figure lands in that range: ${KUA.perStudent} net sits below it, ${KUA.grossPerStudent} gross sits above it.` },
+          { text: 'Lower, because KUA subtracts a forest sink', correct: false, explanation: `That sets KUA's **net** against their **gross** — no peer figure here has a sink subtracted. On the same basis KUA is **${KUA.grossPerStudent}**.` },
+          { text: 'Higher, because KUA emits more', correct: false, explanation: `KUA's gross is higher (**${KUA.grossPerStudent}** against **${BOARDING_PEER_BAND.minGrossPerStudent}–${BOARDING_PEER_BAND.maxGrossPerStudent}**), but not because of emissions: on Scope 1 and 2 the schools are close (**${BOARDING_PEER_BAND.kuaScope12PerStudent}** against **${BOARDING_PEER_BAND.minScope12PerStudent}–${BOARDING_PEER_BAND.maxScope12PerStudent}**). The gap is Scope 3 coverage.` },
+          { text: 'It depends on the boundary — which sinks and which Scope 3 categories each school counts', correct: true, explanation: `Right, and two boundary choices move it, not one. **Sinks:** KUA reports ${KUA.grossPerStudent} gross and ${KUA.perStudent} net. **Scope 3:** KUA counts purchased goods, dining, waste and commuting — ${BOARDING_PEER_BAND.kuaScope3PerStudent} per student — where these shapes carry ${BOARDING_PEER_BAND.minScope3PerStudent}–${BOARDING_PEER_BAND.maxScope3PerStudent} and no published Scope 3 breakdown. That is the finding of Valls-Val & Bovea's 2021 review of 35 university footprints. And none of these schools publishes a per-student inventory, so treat their bars as shapes, not scores.` },
         ],
       },
       {

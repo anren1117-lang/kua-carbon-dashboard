@@ -15,7 +15,7 @@ import { COMPOSED_ANNUAL_KWH, COMPOSED_YTD_AS_OF } from '../data/composedYtd.js'
 import { useMeasuredScope2 } from '../hooks/useMeasuredScope2.js';
 import { useMeasuredScopeTotals } from '../hooks/useMeasuredScopeTotals.js';
 import { Icon } from '../components/Icon.js';
-import { BOARDING_PEER_BAND } from '../components/PeerComparison.js';
+import { BOARDING_PEER_BAND, PEER_USE_CAVEAT } from '../data/peerSchools.js';
 
 // Trustee / parent-facing annual summary. Designed to print cleanly:
 // no nav, no flashy interactions, every section uses 11pt body type
@@ -96,21 +96,25 @@ export default function AnnualReport() {
           <strong> {(NET / TOTAL_STUDENTS).toFixed(1)} per enrolled student</strong>.
         </p>
         <p style={styles.lede}>
-          That net figure sits below the {BOARDING_PEER_BAND.minGrossPerStudent}–
-          {BOARDING_PEER_BAND.maxGrossPerStudent} mtCO₂e/student of the{' '}
-          {BOARDING_PEER_BAND.count} comparable boarding schools on this dashboard, and it
-          would be a mistake to read that as KUA performing better.{' '}
-          <strong>
-            On the like-for-like measure — gross, before any sink —
-            KUA is {(GROSS / TOTAL_STUDENTS).toFixed(1)} mtCO₂e/student, above every one of them.
-          </strong>{' '}
-          The whole of the difference is that KUA subtracts a forest sink and{' '}
-          {BOARDING_PEER_BAND.anyQuantifySinks ? 'some peers do too' : 'not one of those peers quantifies one'}.
-          Comparing our net against their gross is the boundary error this report exists to
-          avoid making. Note also that{' '}
-          {BOARDING_PEER_BAND.anyPublishPerStudent
-            ? 'those peer figures are published inventories'
-            : 'none of those schools publishes a per-student inventory — their figures here are estimated shapes drawn from published targets, not reported results, and should be read as context rather than a ranking'}.
+          That net figure is not evidence that KUA emits less than comparable boarding
+          schools, and this report does not claim it. The gross figure —{' '}
+          <strong>{(GROSS / TOTAL_STUDENTS).toFixed(1)} mtCO₂e/student, before any sink</strong>{' '}
+          — is the only one that could be compared like for like, and there is nothing
+          here to compare it against: {PEER_USE_CAVEAT.charAt(0).toLowerCase() + PEER_USE_CAVEAT.slice(1)}
+        </p>
+        <p style={styles.lede}>
+          Two boundary choices separate KUA&apos;s number from those shapes, and only one is
+          the forest. KUA counts a full Scope 3 —{' '}
+          {BOARDING_PEER_BAND.kuaScope3PerStudent} mtCO₂e/student, half of it purchased
+          goods priced from procurement spend — where the peer shapes carry{' '}
+          {BOARDING_PEER_BAND.minScope3PerStudent}–{BOARDING_PEER_BAND.maxScope3PerStudent}{' '}
+          and no published Scope 3 breakdown at all. On Scope 1 and 2, where the comparison
+          is closest to real, KUA is {BOARDING_PEER_BAND.kuaScope12PerStudent} against their{' '}
+          {BOARDING_PEER_BAND.minScope12PerStudent}–{BOARDING_PEER_BAND.maxScope12PerStudent}.
+          What the forest changes is KUA&apos;s own figure, from{' '}
+          {(GROSS / TOTAL_STUDENTS).toFixed(1)} to {(NET / TOTAL_STUDENTS).toFixed(1)} per
+          student. It does not say where KUA sits among its peers, and neither does this
+          dashboard.
         </p>
       </Section>
 

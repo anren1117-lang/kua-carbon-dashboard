@@ -307,7 +307,7 @@ The hydroxyl radical is sometimes called the atmosphere's "cleaning agent" — i
 
 The short methane lifetime has two huge implications:
 (1) Cutting methane emissions reduces atmospheric concentration on a decade timescale. If we stopped emitting methane tomorrow, the atmospheric concentration would fall by roughly half within ~12 years (one e-folding). This is the fastest available climate lever.
-(2) Methane is much more potent per molecule than CO₂, but only for a limited time. The "global warming potential" (GWP) compares cumulative warming over a time horizon. CH₄ has GWP-100 = 28 (one tonne CH₄ = 28 tonnes CO₂eq over 100 years). GWP-20 = 82 (over 20 years).
+(2) Methane is much more potent per molecule than CO₂, but only for a limited time. The "global warming potential" (GWP) compares cumulative warming over a time horizon. CH₄ has GWP-100 = 28 on the AR5 assessment, which is what most exam materials and corporate inventories still use (one tonne CH₄ = 28 tonnes CO₂eq over 100 years). GWP-20 = 82. **IPCC AR6 (2021) revised this** and split it by origin: **27.0 for biogenic methane, 29.8 for fossil methane**, because fossil methane oxidises to CO₂ that is new to the active carbon cycle. Use one vintage throughout an inventory and say which — mixing AR5 and AR6 figures in one total is a common and invisible error.
 
 The choice of time horizon matters for policy framing. If we want to slow warming in the next 30 years, methane reduction is the highest-leverage move available. If we want to address long-term warming, CO₂ matters more.
 
@@ -1023,7 +1023,7 @@ Approaches include:
       name: 'Global Warming Potential',
       equation: 'GWP(gas, t) = ∫₀ᵗ RF_gas / ∫₀ᵗ RF_CO₂',
       meaning: 'Cumulative warming of a gas relative to CO₂ over time horizon t.',
-      example: 'CH₄ GWP-100 = 28. 1 tonne CH₄ = 28 tonnes CO₂eq over 100 years. CH₄ GWP-20 = 82. N₂O GWP-100 = 273. SF₆ = 23,500.',
+      example: 'CH₄ GWP-100 = 28 (AR5; AR6 gives 27.0 biogenic / 29.8 fossil). 1 tonne CH₄ = 28 tonnes CO₂eq over 100 years. CH₄ GWP-20 = 82. N₂O GWP-100 = 273. SF₆ = 23,500.',
     },
     {
       name: 'pH and H⁺ concentration',

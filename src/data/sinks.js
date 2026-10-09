@@ -1,8 +1,10 @@
 // On-campus carbon sinks — forest sequestration + soil organic carbon.
 // KUA's roughly 1,000 acres of forest are the single biggest reason the
 // school's net footprint approaches zero. Most peer boarding schools
-// don't measure their forest at all, so the KUA number reads lower than
-// competitors largely because of the inventory below.
+// don't measure their forest at all, so a KUA net figure and a peer gross
+// figure are different measurements — not a ranking. See data/peerSchools.js:
+// those peer numbers are illustrative shapes nobody published, and the gross
+// gap they appear to show is Scope 3 coverage, not the forest.
 //
 // Numbers are preliminary estimates derived from public foresty rates;
 // replace stand-level acres + dominant species with a real walk-through

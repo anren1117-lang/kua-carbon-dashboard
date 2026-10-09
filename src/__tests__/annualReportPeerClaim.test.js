@@ -1,37 +1,33 @@
-// The annual report — the one document that goes to a board — said KUA
-// compares well, and the comparison was backwards.
+// The annual report goes to a board, and it has now been wrong about peers
+// twice — in opposite directions.
 //
-// It read: "roughly 7.8 per enrolled student. Peer residential schools that
-// report figures publicly cluster between 6 and 10 mtCO2e/student/year; KUA's
-// lower number is largely a function of measuring our forest, which most peers
-// don't."
+//   v1  "Peer residential schools that report figures publicly cluster between
+//        6 and 10 ... KUA's lower number is largely a function of measuring our
+//        forest." Compared KUA's NET to peer GROSS, and called peers published.
 //
-// Three things wrong, in rising order of seriousness:
+//   v2  "On the like-for-like measure KUA is 13.4, ABOVE every one of them."
+//        Correct about the boundary, but it read a STRICTER ranking off the
+//        SAME four numbers, two of which carry the note "ESTIMATED SHAPE. We
+//        did not locate a published inventory ... and did not research it
+//        directly." A ranking is not available from figures nobody researched,
+//        in either direction. v2 was the more confident error.
 //
-//  1. The band. This repo's four boarding-secondary peers span 8.0-10.0, not
-//     6-10.
+// v3 states the boundary arithmetic, which needs no peer at all, and declines
+// to rank.
 //
-//  2. The provenance. "that report figures publicly" — none of them does.
-//     Every peer row carries provenance 'estimated' and a note beginning
-//     "ESTIMATED SHAPE, not a published figure", because these schools publish
-//     targets and plans, not per-student inventories. /scope-3 already says
-//     so; the board-facing document contradicted it.
-//
-//  3. The direction, which is the real problem. KUA's NET per student (7.8) was
-//     set against peer GROSS (8.0-10.0, every one with sinks: 0). On the
-//     like-for-like measure KUA is 13.4 mtCO2e/student — ABOVE all four. The
-//     entire "lower number" is KUA subtracting a forest sink that no peer
-//     counts, which is a boundary difference and not performance.
-//
-// LearnAgent teaches exactly this error as the Valls-Val & Bovea finding, with
-// a quiz whose correct answer is that two identical campuses publish 7.8 and
-// 13.4 depending only on whether sinks are subtracted. The annual report then
-// made the error the lesson warns about.
+// AND THIS TEST WAS ITSELF THE PROBLEM. The v2 commit claimed "the test asserts
+// no per-student literal survives in the paragraph". It did not. A critic
+// reinjected the original defect twice and all seven assertions passed:
+//   - the literal regex required a decimal point, and the real defect was
+//     integer-valued ("between 6 and 10");
+//   - the paragraph was located with indexOf and sliced without checking for
+//     -1, so any reword made the slice empty and the assertion vacuous.
+// Both are fixed below, and both have a control that fails on the old text.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { BOARDING_PEER_BAND } from '../components/PeerComparison.js';
+import { BOARDING_PEER_BAND, PEER_USE_CAVEAT } from '../data/peerSchools.js';
 import { GROSS_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { TOTAL_STUDENTS } from '../data/students.js';
@@ -40,42 +36,75 @@ const src = readFileSync(resolve(process.cwd(), 'pages/AnnualReport.js'), 'utf8'
 const grossPer = GROSS_MT / TOTAL_STUDENTS;
 const netPer = (GROSS_MT - ANNUAL_SEQUESTRATION_MT) / TOTAL_STUDENTS;
 
-describe('the annual report compares like with like', () => {
-  it('the situation it describes is real: net below, gross above', () => {
-    expect(netPer).toBeLessThan(BOARDING_PEER_BAND.minGrossPerStudent);
-    expect(grossPer).toBeGreaterThan(BOARDING_PEER_BAND.maxGrossPerStudent);
+// Any per-student quantity, integer OR decimal. The v1 defect was "6 and 10".
+const PER_STUDENT_LITERAL = /\b\d{1,2}(\.\d)?\s*mtCO₂e\s*\/\s*student/i;
+// Ranking vocabulary of any kind, in either direction.
+const RANKING_CLAIM = /above every|below every|lower than (its |our )?peers|ahead of (its|our) peers|outperform|cluster between|(lower|higher) (number|figure) is/i;
+
+/** Slice a paragraph, refusing to return an empty string on a missed anchor. */
+function paragraphFrom(text, anchor) {
+  const i = text.indexOf(anchor);
+  expect(i, `anchor not found — the test would otherwise pass vacuously: ${anchor}`).toBeGreaterThan(-1);
+  const j = text.indexOf('</p>', i);
+  expect(j).toBeGreaterThan(i);
+  return text.slice(i, j);
+}
+
+describe('the annual report states the boundary and declines to rank', () => {
+  it('the underlying situation is real', () => {
+    // net below the band, gross above it — both true, which is exactly why
+    // quoting either one alone is a choice rather than a finding
+    expect(netPer).toBeLessThan(Number(BOARDING_PEER_BAND.minGrossPerStudent));
+    expect(grossPer).toBeGreaterThan(Number(BOARDING_PEER_BAND.maxGrossPerStudent));
   });
 
-  it('the peers quantify no sinks, which is what makes the comparison unequal', () => {
+  it('the peer figures cannot support a ranking, and the data says so', () => {
+    expect(BOARDING_PEER_BAND.anyPublishPerStudent).toBe(false);
     expect(BOARDING_PEER_BAND.anyQuantifySinks).toBe(false);
-    expect(BOARDING_PEER_BAND.count).toBeGreaterThanOrEqual(4);
+    expect(PEER_USE_CAVEAT).toMatch(/cannot rank/i);
   });
 
-  it('the report states the gross comparison, not only the flattering one', () => {
-    expect(src).toMatch(/above every one of them/i);
-    expect(src).toMatch(/like-for-like/i);
-    expect(src).toContain('GROSS / TOTAL_STUDENTS');
-  });
-
-  it('it no longer claims the peers publish what they do not', () => {
-    expect(src).not.toMatch(/report figures publicly/);
-    expect(src).toMatch(/estimated shapes|publishes a per-student inventory/i);
-  });
-
-  it('the band is derived, not typed — 6 to 10 was never the data', () => {
-    expect(src).not.toMatch(/between 6 and 10/);
-    expect(src).toContain('BOARDING_PEER_BAND.minGrossPerStudent');
-    expect(src).toContain('BOARDING_PEER_BAND.maxGrossPerStudent');
-  });
-
-  it('it does not read as KUA performing better', () => {
+  it('so the report makes no ranking claim, in either direction', () => {
+    const para = paragraphFrom(src, 'That net figure is not evidence');
+    expect(para).not.toMatch(RANKING_CLAIM);
+    expect(src).not.toMatch(/above every one of them/i);
     expect(src).not.toMatch(/KUA's lower number/);
-    expect(src).toMatch(/mistake to read that as KUA performing better/i);
   });
 
-  it('the claim survives a reprice, because every figure is derived', () => {
-    // nothing in the paragraph may hardcode a per-student value
-    const para = src.slice(src.indexOf('That net figure sits below'), src.indexOf('</p>', src.indexOf('That net figure sits below')));
-    expect(para).not.toMatch(/\b\d{1,2}\.\d\s*mtCO₂e\/student/);
+  it('it names the SECOND boundary, which the sink framing hid', () => {
+    // the gross gap is Scope 3 coverage, not the forest: KUA 8.0 against
+    // peer shapes of 3.5-4.5, while Scope 1+2 is comparable
+    expect(src).toContain('kuaScope3PerStudent');
+    expect(src).toContain('kuaScope12PerStudent');
+    expect(Number(BOARDING_PEER_BAND.kuaScope12PerStudent))
+      .toBeLessThan(Number(BOARDING_PEER_BAND.maxScope12PerStudent) + 0.5);
+  });
+
+  it('no per-student figure is typed — integer or decimal', () => {
+    const para = paragraphFrom(src, 'That net figure is not evidence');
+    expect(para).not.toMatch(PER_STUDENT_LITERAL);
+  });
+
+  it('the literal guard catches BOTH defects it missed before', () => {
+    // 1a: the original was integer-valued and slipped a decimal-only regex
+    expect(PER_STUDENT_LITERAL.test('cluster between 6 and 10 mtCO₂e/student/year')).toBe(true);
+    expect(PER_STUDENT_LITERAL.test('KUA is 13.4 mtCO₂e/student')).toBe(true);
+    expect(PER_STUDENT_LITERAL.test('{(GROSS / TOTAL_STUDENTS).toFixed(1)} mtCO₂e/student')).toBe(false);
+    // 1b: a missed anchor must fail, not slice to ''
+    expect(() => paragraphFrom('no such text here', 'That net figure is not evidence')).toThrow();
+  });
+
+  it('the ranking guard catches the wording of both previous versions', () => {
+    expect(RANKING_CLAIM.test("KUA's lower number is largely a function of measuring our forest")).toBe(true);
+    expect(RANKING_CLAIM.test('KUA is 13.4 mtCO₂e/student, above every one of them')).toBe(true);
+    expect(RANKING_CLAIM.test('Peer schools cluster between 6 and 10')).toBe(true);
+    expect(RANKING_CLAIM.test('What the forest changes is KUA’s own figure')).toBe(false);
+  });
+
+  it('the band renders at one decimal, like the chart', () => {
+    // "7.8 sits below 8" read as a rounding artefact next to a 13.4
+    for (const k of ['minGrossPerStudent', 'maxGrossPerStudent', 'kuaScope3PerStudent']) {
+      expect(BOARDING_PEER_BAND[k], k).toMatch(/^\d+\.\d$/);
+    }
   });
 });

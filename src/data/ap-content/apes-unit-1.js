@@ -394,7 +394,7 @@ Together these might draw down a few Gt C/year — useful but not at the scale o
 **Key facts:**
 - Four pools: atmosphere (875 Gt C), ocean (38,000), biosphere (2,000), fossil (5,000)
 - Photosynthesis and respiration each move ~120-170 Gt C/yr (largely balanced)
-- Human net emissions: ~12 Gt C/yr (37 Gt CO₂/yr)
+- Human net emissions: ~11.5 Gt C/yr (42 Gt CO₂/yr) — 38 fossil + ~4 land-use change (Global Carbon Budget 2025). Check the unit: 1 Gt C = 44/12 = 3.67 Gt CO₂, so 11.5 Gt C cannot be 37 Gt CO₂.
 - Airborne fraction: 45% (25% in oceans, 30% in biosphere)
 - CO₂ rose 280 → 425 ppm; 309 Gt C added to atmosphere
 - Each ppm CO₂ ≈ 2.13 Gt C
