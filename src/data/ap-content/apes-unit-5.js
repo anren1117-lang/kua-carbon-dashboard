@@ -383,7 +383,7 @@ Pros: highest feed efficiency, lowest land area per animal, cheapest meat per kg
 | Plant proteins (legumes, tofu) | 1-3 |
 
 Beef is by far the most carbon-intensive food. The reasons:
-- **Methane.** Cows are ruminants — their digestive system produces methane via methanogens. Each cow emits 80-100 kg CH₄/yr. Methane has GWP-100 of 28.
+- **Methane.** Cows are ruminants — their digestive system produces methane via methanogens. Each cow emits 80-100 kg CH₄/yr. Methane's GWP-100 is 27 on the IPCC AR6 assessment for BIOGENIC methane — 28 is the older AR5 single value, still used by most exam materials and corporate inventories.
 - **Slow growth.** Cows take 18-30 months to reach slaughter weight (vs ~6 weeks for chickens). All that time they're eating and emitting.
 - **Low feed efficiency.** Cows convert ~7 kg of feed into 1 kg of beef (vs ~2 kg feed per 1 kg chicken).
 - **Land use.** Beef requires 25× the land of an equivalent protein from legumes.

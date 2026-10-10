@@ -199,6 +199,61 @@ describe('live data wiring', () => {
     expect(orphans).toEqual([]);
   });
 
+  it('a data module claiming to be a SOURCE OF TRUTH must be reachable', () => {
+    // The *_RECONCILIATION sweep above discovers exports. It cannot see a whole
+    // MODULE going unimported, which is how data/globalCarbonFigures.js shipped
+    // as a self-described "one source of truth" that nothing imported: Rollup
+    // dropped it, and the pairing rule it enforces was enforced nowhere. A code
+    // critic found it by grepping the built bundle for the module's own strings
+    // and getting no hits.
+    //
+    // So the claim is what triggers the check. Say "source of truth" in a
+    // module header and you owe the repo an importer.
+    // ONLY the exact phrase, and only on a COMMENT line. The first version also
+    // matched /single source|one source/, which caught two files writing ordinary
+    // English: an AP Seminar unit teaching "goes beyond what any single source
+    // says", and a benchmark header reading "each entry represents one source
+    // document". Neither claims anything about canonical data. A guard that
+    // cries wolf on prose is a guard you stop reading.
+    const CLAIMS_TRUTH = /source of truth/i;
+    const claimsInComment = (text) => text
+      .split('\n')
+      .slice(0, 60)
+      .some((l) => /^\s*(\/\/|\*|\/\*)/.test(l) && CLAIMS_TRUTH.test(l));
+    const importBlocks = (text) =>
+      (text.match(/import\s[\s\S]*?from\s*['"][^'"]+['"]/g) || []).join('\n');
+    const consumers = [];
+    for (const dir of ['components', 'pages', 'utils', 'hooks']) {
+      const full = path.join(SRC, dir);
+      if (!fs.existsSync(full)) continue;
+      for (const file of walk(full)) {
+        consumers.push(importBlocks(fs.readFileSync(file, 'utf8')));
+      }
+    }
+    const blob = consumers.join('\n');
+
+    const claimants = [];
+    for (const file of walk(path.join(SRC, 'data'))) {
+      const text = fs.readFileSync(file, 'utf8');
+      // only a HEADER COMMENT counts — not prose, not a string, not a mention
+      // deeper down the file
+      if (!claimsInComment(text)) continue;
+      claimants.push(path.relative(SRC, file));
+    }
+    // an empty sweep would make this vacuous
+    expect(claimants.length).toBeGreaterThanOrEqual(2);
+
+    const reaches = (rel) => new RegExp(`/${path.basename(rel, '.js')}\\.js['"]`).test(blob);
+    expect(claimants.filter((rel) => !reaches(rel))).toEqual([]);
+
+    // and the sweep really is finding the modules it should
+    expect(claimants).toContain('data/globalCarbonFigures.js');
+    // a name nothing imports must be reported unreachable, or this is vacuous
+    expect(reaches('data/zzz-not-a-real-module.js')).toBe(false);
+    // while prose saying "single source" must not have been swept in at all
+    expect(claimants.some((c) => c.includes('apseminar'))).toBe(false);
+  });
+
   it('every scope page states which twelve months it covers', () => {
     // Scope 1, 2, 3 and Sinks each had ZERO mentions of a reporting period
     // before Phase 431. A total without its period is not a reportable figure.

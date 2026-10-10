@@ -6,7 +6,7 @@
 // reduction. The Goals page computes a linear trajectory between the
 // two and plots the current measured value against it.
 
-import { GROSS_MT, SCOPE2_TOTAL_MT } from './scopeTotals.js';
+import { GROSS_MT, SCOPE2_TOTAL_MT, SCOPE3_LINES } from './scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
 import { REPORTING_PERIOD } from './academicCalendar.js';
 
@@ -46,6 +46,17 @@ const NET_BASELINE_MT = Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT);
 // emission factor being corrected. Presenting a methodology revision as a
 // performance regression is worse than showing no number.
 const SCOPE2_BASELINE_MT = Math.round(SCOPE2_TOTAL_MT);
+// Likewise derived. This was a literal 235 carrying the comment "matches
+// scopeTotals.js Scope 3 dining placeholder row" — which was true when written
+// and is exactly how the Scope 2 baseline went stale: a number that matches
+// another number today, with nothing holding them together tomorrow. The
+// comment was also what let it past the literal guard, which exempted any
+// baseline annotated `// matches`.
+const DINING_BASELINE_MT = (() => {
+  const row = SCOPE3_LINES.find((l) => /dining/i.test(l.source));
+  if (!row) throw new Error('targets: no dining row in SCOPE3_LINES to baseline against');
+  return Math.round(row.mt);
+})();
 
 /**
  * @typedef {Object} ReductionTarget
@@ -92,7 +103,7 @@ export const reductionTargets = [
     title: 'Dining-related emissions down 25% by 2028',
     scope: 'scope3',
     baselineYear: BASELINE_YEAR,
-    baselineValue: 235, // matches scopeTotals.js Scope 3 dining placeholder row
+    baselineValue: DINING_BASELINE_MT,
     targetYear: 2028,
     percentReduction: 25,
     description: 'Reduce dining-driven Scope 3 by ~60 mtCO₂e via beef-frequency reductions, increased local sourcing, and food-waste diversion.',
@@ -128,9 +139,25 @@ export function targetTrajectoryAt(target, year) {
 
 /**
  * Are we on track? Compares an actual value to the linear trajectory at the same year.
- * Returns 'on_track' (≤ trajectory), 'lagging' (≤ 10% over), 'off_track' (> 10% over).
+ * Returns 'no_reading' (no elapsed period to judge), 'on_track' (≤ trajectory),
+ * 'lagging' (≤ 10% over), 'off_track' (> 10% over).
+ *
+ * THE 'no_reading' BRANCH IS THE POINT, and leaving it out shipped a flattering
+ * lie. At or before the baseline year, targetTrajectoryAt returns the baseline
+ * itself, and the actual IS the baseline — so every target compared equal and
+ * this function answered 'on_track' for all four. /goals rendered "On track
+ * today 4 / 4" in green, plus an "On track" pill on every card.
+ *
+ * Phase 516 removed the pessimistic half of that same identity ("0.0% reduced",
+ * "Behind pace") and left the optimistic half standing on three other surfaces.
+ * Sign-flipped, it is the worse error: "0% reduced" at least reads as a null
+ * result, while "On track 4/4" reads as success the school has not earned.
+ *
+ * A pace judgement needs two inventories. Before that there is no reading, and
+ * saying so is not the same as saying things are fine.
  */
 export function trajectoryStatus(target, actualValue, year) {
+  if (year <= target.baselineYear) return 'no_reading';
   const expected = targetTrajectoryAt(target, year);
   if (actualValue <= expected) return 'on_track';
   if (actualValue <= expected * 1.1) return 'lagging';

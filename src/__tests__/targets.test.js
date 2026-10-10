@@ -88,8 +88,35 @@ describe('trajectoryStatus', () => {
     expect(trajectoryStatus(target(), 900, 2027)).toBe('off_track');
   });
 
-  it('reports "on_track" pre-baseline since the trajectory is the baseline itself', () => {
-    expect(trajectoryStatus(target(), 999, 2020)).toBe('on_track');
+  // THIS TEST USED TO PIN THE BUG AS INTENDED BEHAVIOUR. It read:
+  //
+  //   it('reports "on_track" pre-baseline since the trajectory is the baseline
+  //      itself', () => expect(trajectoryStatus(target(), 999, 2020))
+  //      .toBe('on_track'));
+  //
+  // The reasoning is sound and the conclusion is wrong. At or before the
+  // baseline year the trajectory IS the baseline, so any actual at or under it
+  // compares equal — and calling that "on track" is a performance verdict
+  // manufactured from an identity. /goals rendered it as "On track today 4 / 4"
+  // in green across every target.
+  //
+  // A pace judgement needs an elapsed period. Before one exists there is no
+  // reading, which is not the same as things being fine.
+  it('reports "no_reading" at or before the baseline year, not "on_track"', () => {
+    expect(trajectoryStatus(target(), 999, 2020)).toBe('no_reading');
+    expect(trajectoryStatus(target(), 999, target().baselineYear)).toBe('no_reading');
+    // and it does not depend on the actual at all, which is the tell
+    expect(trajectoryStatus(target(), 0, 2020)).toBe('no_reading');
+    expect(trajectoryStatus(target(), 1e9, 2020)).toBe('no_reading');
+  });
+
+  it('still buckets correctly once a period HAS elapsed', () => {
+    const t = target();
+    const y = t.baselineYear + 1;
+    const expected = targetTrajectoryAt(t, y);
+    expect(trajectoryStatus(t, expected, y)).toBe('on_track');
+    expect(trajectoryStatus(t, expected * 1.05, y)).toBe('lagging');
+    expect(trajectoryStatus(t, expected * 1.5, y)).toBe('off_track');
   });
 });
 

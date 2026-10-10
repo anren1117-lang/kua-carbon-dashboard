@@ -74,8 +74,11 @@ const STATUS_GLOW = {
   off_track: { glow: 'rgba(252, 165, 165, 0.20)', border: 'rgba(252, 165, 165, 0.40)' },
 };
 
-const STATUS_KIND  = { on_track: 'good', lagging: 'warn', off_track: 'bad' };
-const STATUS_LABEL = { on_track: 'On track', lagging: 'Lagging', off_track: 'Off track' };
+// 'no_reading' is NEUTRAL, deliberately. It is not a good outcome and not a bad
+// one; it is the absence of a measurement, and colouring it green was the bug.
+const STATUS_KIND  = { no_reading: 'neutral', on_track: 'good', lagging: 'warn', off_track: 'bad' };
+const STATUS_LABEL = { no_reading: 'No reading yet', on_track: 'On track', lagging: 'Lagging', off_track: 'Off track' };
+const STATUS_COLOR = { no_reading: '#cbd5e1', on_track: '#86efac', lagging: '#fbbf24', off_track: '#fca5a5' };
 
 export default function Goals() {
   const live = useMeasuredScopeTotals();
@@ -104,6 +107,12 @@ export default function Goals() {
     const a = actualForTarget(t, ACTUAL_BY_SCOPE);
     return trajectoryStatus(t, a, CURRENT_YEAR) === 'on_track' ? n + 1 : n;
   }, 0);
+  // Every target returns 'no_reading' until a second inventory exists, so the
+  // count is 0 of 4 — and "0 / 4 on track" would be as misleading as "4 / 4".
+  // Neither is a reading. The stat reports what is actually known instead.
+  const anyReading = reductionTargets.some(
+    (t) => trajectoryStatus(t, actualForTarget(t, ACTUAL_BY_SCOPE), CURRENT_YEAR) !== 'no_reading',
+  );
   const earliestDeadline = Math.min(...reductionTargets.map((t) => t.targetYear));
 
   return (
@@ -130,7 +139,9 @@ export default function Goals() {
 
       <div style={styles.summaryRow}>
         <SummaryStat label="Active targets" value={reductionTargets.length} accent="#22d3ee" />
-        <SummaryStat label="On track today" value={`${onTrackCount} / ${reductionTargets.length}`} accent={onTrackCount === reductionTargets.length ? '#86efac' : '#fbbf24'} />
+        {anyReading
+          ? <SummaryStat label="On track today" value={`${onTrackCount} / ${reductionTargets.length}`} accent={onTrackCount === reductionTargets.length ? '#86efac' : '#fbbf24'} />
+          : <SummaryStat label="Pace" value="No reading" accent="#94a3b8" note="needs a second inventory to compare" />}
         <SummaryStat label="Approved" value={`${approved} / ${reductionTargets.length}`} accent="#86efac" note={approved === 0 ? 'Board ratification pending' : 'Board-ratified'} />
         <SummaryStat label="Earliest deadline" value={earliestDeadline} accent="#fbbf24" note={`${Math.max(0, earliestDeadline - CURRENT_YEAR)} yrs out`} />
       </div>
@@ -264,7 +275,13 @@ export default function Goals() {
                 <div style={styles.chartFoot}>
                   Trajectory at {CURRENT_YEAR}: <strong style={{ color: '#cbd5e1' }}>{Math.round(expectedNow).toLocaleString()}</strong> {unitLabel}
                   {' · '}
-                  Actual: <strong style={{ color: status === 'on_track' ? '#86efac' : status === 'lagging' ? '#fbbf24' : '#fca5a5' }}>
+                  {/*
+                    'no_reading' must be GREY here. The ternary chain had no branch
+                    for it, so it fell through to #fca5a5 — alarm red — which is the
+                    same mistake as the green pill with the sign flipped. The absence
+                    of a measurement is neither good news nor bad news.
+                  */}
+                  Actual: <strong style={{ color: STATUS_COLOR[status] || '#cbd5e1' }}>
                     {Math.round(actual).toLocaleString()}
                   </strong>
                 </div>

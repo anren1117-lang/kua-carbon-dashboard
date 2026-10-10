@@ -465,13 +465,18 @@ describe('Reduction targets', () => {
 
   it('trajectoryStatus picks the right bucket', () => {
     const t = reductionTargets[0];
-    // At baseline year, expected = baseline. So actual === baseline → on track.
-    expect(trajectoryStatus(t, t.baselineValue, t.baselineYear)).toBe('on_track');
+    // At the baseline year there is no elapsed period, so there is no reading.
+    // This used to assert 'on_track' on the reasoning that expected === baseline
+    // and actual === baseline — true, and a verdict read off an identity.
+    expect(trajectoryStatus(t, t.baselineValue, t.baselineYear)).toBe('no_reading');
+    // Buckets are judged from a year that HAS elapsed against the baseline.
+    const y = t.baselineYear + 2;
+    const expectedY = targetTrajectoryAt(t, y);
+    expect(trajectoryStatus(t, expectedY, y)).toBe('on_track');
     // 50% over expected → off track
-    const expected2026 = targetTrajectoryAt(t, 2026);
-    expect(trajectoryStatus(t, expected2026 * 1.5, 2026)).toBe('off_track');
+    expect(trajectoryStatus(t, expectedY * 1.5, y)).toBe('off_track');
     // 5% over → lagging
-    expect(trajectoryStatus(t, expected2026 * 1.05, 2026)).toBe('lagging');
+    expect(trajectoryStatus(t, expectedY * 1.05, y)).toBe('lagging');
   });
 
   it('rolls up building energy summary', async () => {

@@ -22,12 +22,18 @@
 // against, so the honest thing is to say that and show the distance still to
 // travel instead of a fabricated pace judgement.
 
+// @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
+import React from 'react';
+import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { ROUTER_FUTURE } from './routerFuture.js';
+import Goals from '../pages/Goals.js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   reductionTargets, BASELINE_YEAR, BASELINE_IS_FIRST_INVENTORY, BASELINE_NOTE,
-  targetTrajectoryAt,
+  targetTrajectoryAt, trajectoryStatus,
 } from '../data/targets.js';
 import { GROSS_MT, SCOPE2_TOTAL_MT } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
@@ -66,10 +72,11 @@ describe('the baseline is honest about what it is', () => {
     const live = src.split('\n').filter((l) => !l.trim().startsWith('//'));
     expect(live.join('\n')).not.toMatch(/baselineValue:\s*390\b/);
     // and no baselineValue is a bare number at all; every one is derived
+    // THIS WAS BYPASSABLE: it exempted any literal carrying a `// matches`
+    // comment, so `baselineValue: 500, // matches anything` passed. Only the
+    // exact 390 was pattern-blocked. Every baseline must now be an identifier.
     const literals = live.filter((l) => /baselineValue:\s*\d/.test(l));
-    expect(literals.map((l) => l.trim())).toEqual(
-      literals.filter((l) => /\/\/ matches/.test(l)).map((l) => l.trim()),
-    );
+    expect(literals.map((l) => l.trim())).toEqual([]);
   });
 });
 
@@ -112,12 +119,77 @@ describe('the trajectory maths still behaves', () => {
     });
   });
 
-  it('progress off a first-inventory baseline really is zero — the reason for all this', () => {
-    // not a complaint about the arithmetic; proof that the arithmetic cannot
-    // say anything, which is why the UI must not pretend it did
+  it('every target returns no_reading — the reason the UI must not show a verdict', () => {
+    // WHAT THIS REPLACED was a tautology: expect((baseline - actual)/baseline)
+    // .toBe(0) with actual = baseline. (x-x)/x is 0 for every finite nonzero x,
+    // so it constrained no data and could never fail.
+    //
+    // Worse, it was the only test touching the identity, while the actual bug
+    // lived one step further on: trajectoryStatus compared actual to a
+    // trajectory that equals the baseline, answered 'on_track' for all four
+    // targets, and /goals rendered "On track today 4 / 4" in green. A test
+    // asserting on the string 'Behind pace' passed the whole time — the bug it
+    // guarded was live on three other surfaces.
+    //
+    // So assert the function, which is where the verdict comes from.
     reductionTargets.forEach((t) => {
-      const actual = t.baselineValue;
-      expect((t.baselineValue - actual) / t.baselineValue, t.id).toBe(0);
+      expect(trajectoryStatus(t, t.baselineValue, t.baselineYear), t.id).toBe('no_reading');
+      // and it does not depend on the actual, which is what makes any verdict
+      // read off it meaningless
+      expect(trajectoryStatus(t, 0, t.baselineYear), t.id).toBe('no_reading');
+      expect(trajectoryStatus(t, t.baselineValue * 10, t.baselineYear), t.id).toBe('no_reading');
     });
+  });
+
+  it('the no_reading status is rendered neutral, not green and not red', () => {
+    // colouring the absence of a measurement green was the bug; colouring it
+    // red is the same mistake sign-flipped
+    expect(goalsSrc).toMatch(/no_reading:\s*'neutral'/);
+    expect(goalsSrc).toMatch(/no_reading:\s*'No reading yet'/);
+    expect(goalsSrc).toMatch(/STATUS_COLOR/);
+    // the summary stat must not claim a count when nothing can be counted
+    expect(goalsSrc).toMatch(/anyReading/);
+    expect(goalsSrc).toMatch(/value="No reading"/);
+  });
+});
+
+// ─── what /goals actually RENDERS ───────────────────────────────────────
+//
+// Every test above reads source text, and that is how the bug survived the
+// first attempt: a test asserting on the string 'Behind pace' passed while
+// "On track today 4 / 4" rendered in green on the same page. Source assertions
+// prove a branch EXISTS; only a render proves which one the reader sees.
+//
+// Both branches are legitimately in the bundle — `anyReading` is a runtime
+// value, so Rollup keeps the verdict branch for when a second inventory lands.
+// A residual grep therefore finds "On track today" and is right to. The
+// question is what renders, and that is this.
+
+describe('/goals renders no verdict while there is nothing to compare', () => {
+  const body = () => {
+    const { container } = render(
+      React.createElement(MemoryRouter, { future: ROUTER_FUTURE }, React.createElement(Goals)),
+    );
+    return container.textContent;
+  };
+
+  it('shows no pace verdict, in either direction', () => {
+    const text = body();
+    expect(text).not.toContain('On track today');
+    expect(text).not.toContain('Behind pace');
+    expect(text).not.toContain('Ahead of pace');
+    // 'On track' must not appear even as a pill
+    expect(text).not.toMatch(/On track(?! today)/);
+  });
+
+  it('says so explicitly instead of staying silent', () => {
+    const text = body();
+    expect(text).toContain('No reading');
+    expect(text).toContain('needs a second inventory to compare');
+    expect(text).toContain('No reading yet');
+  });
+
+  it('and does not show a fabricated progress percentage', () => {
+    expect(body()).not.toMatch(/0\.0% reduced/);
   });
 });

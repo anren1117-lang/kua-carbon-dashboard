@@ -30,7 +30,8 @@ import path from 'node:path';
 import {
   CO2_PPM, CO2_PPM_EXACT, CO2_PPM_2024, CO2_PREINDUSTRIAL_PPM,
   CO2_PERCENT_ABOVE_PREINDUSTRIAL, CO2_PERCENT_ABOVE_PREINDUSTRIAL_2024,
-  FOSSIL_GTCO2, TOTAL_GTCO2, FOSSIL_SHARES_2024, CEMENT_IS_INSIDE_FOSSIL,
+  FOSSIL_GTCO2, LAND_USE_GTCO2, TOTAL_GTCO2, FOSSIL_SHARES_2024, CEMENT_IS_INSIDE_FOSSIL,
+  FOSSIL_GTC_2025, LAND_USE_GTC_2025,
   SINK_SHARES_RECENT_DECADE, LARGER_SINK, CUMULATIVE_1850_2024,
   CARBON_BUDGETS, TOTAL_GTC_2025, C_TO_CO2,
   CH4_GWP100_BIOGENIC, CH4_GWP100_FOSSIL, CH4_PERTURBATION_LIFETIME_YR,
@@ -51,7 +52,15 @@ import {
  */
 const SUPERSEDED_GLOBAL_FIGURES = [
   '425 ppm', '420 ppm', '415 ppm', '410 ppm',
-  '51% above', '51% increase', '50% increase',
+  // SPECIFIC ENOUGH NOT TO COLLIDE. The first spelling here was the bare
+  // '51% above', '51% increase', '50% increase' — and the glob immediately hit
+  // apstats-unit-1.js, which says "A 50% increase in cancer risk sounds scary"
+  // in a lesson about choosing percentage baselines. Nothing to do with CO₂.
+  // A marker short enough to collide trains you to skim the guard's output,
+  // which is how the guard stops working. Each of these now carries the
+  // context that makes it a claim about atmospheric CO₂.
+  '51% above pre-industrial', '51% increase since pre-industrial',
+  '+51%)', '50% increase in the gas', '51% increase since 1850',
   '~37 Gt', '37 Gt CO₂', '36 Gt CO₂',
   // SPECIFIC, not generic. '315 Gt' was the first spelling here and it
   // false-positived immediately on a CORRECT new figure: the stale value was
@@ -65,18 +74,31 @@ const SUPERSEDED_GLOBAL_FIGURES = [
 
 const SRC = path.resolve(new URL('../', import.meta.url).pathname);
 
-/** Every file that teaches a global figure. */
-const GLOBAL_PROSE = [
+/**
+ * Every file that teaches a global figure — DISCOVERED, not typed.
+ *
+ * The first version of this list named ten files and asserted `length > 8`,
+ * which made ten feel like enough. Five more files in the repo state global
+ * figures and were not on it, and two of them were shipping the AR5 value to
+ * students TODAY — "Methane has GWP-100 of 28" in the cattle unit and the
+ * natural-gas unit, while this very file asserts CH4_GWP100_BIOGENIC !== 28.
+ * The module refused the figure while the course taught it.
+ *
+ * Same asymmetry as the residual gate versus the test: a typed list is bounded
+ * by what I already knew, a glob is bounded only by the repo. So glob the
+ * content directory, and keep the hand list only for prose outside it.
+ */
+const HAND_LISTED = [
   'components/LearnAgent.js',
   'data/learningContent.js',
-  'data/ap-content/apes-unit-1.js',
-  'data/ap-content/apes-unit-4.js',
-  'data/ap-content/apes-unit-7.js',
-  'data/ap-content/apes-unit-8.js',
-  'data/ap-content/apes-unit-9.js',
-  'data/ap-content/apes-figures.js',
-  'data/ap-content/apbio-unit-3.js',
-  'data/ap-content/apbio-unit-8.js',
+  'data/apUnitMap.js',
+];
+const AP_CONTENT_DIR = path.join(SRC, 'data/ap-content');
+const GLOBAL_PROSE = [
+  ...HAND_LISTED,
+  ...fs.readdirSync(AP_CONTENT_DIR)
+    .filter((f) => f.endsWith('.js'))
+    .map((f) => `data/ap-content/${f}`),
 ];
 
 // A line may name an old figure in order to retire it, or to explain why
@@ -116,9 +138,29 @@ function staleGlobalsIn(relPath) {
 
 describe('the global carbon figures are internally consistent', () => {
   it('the percentage above pre-industrial is derived, not typed', () => {
-    expect(CO2_PERCENT_ABOVE_PREINDUSTRIAL)
-      .toBe(Math.round(((CO2_PPM_EXACT - CO2_PREINDUSTRIAL_PPM) / CO2_PREINDUSTRIAL_PPM) * 100));
+    // THIS TEST WAS VACUOUS. It compared the export against
+    // Math.round(((CO2_PPM_EXACT - PREINDUSTRIAL) / PREINDUSTRIAL) * 100) —
+    // the expected side recomputing the actual side's own formula, which is a
+    // tautology — and then anchored .toBe(53), which a hardcoded 53 satisfies
+    // perfectly. Replacing the derivation with `= 53` left all 23 tests and the
+    // whole 2,229-test suite green.
+    //
+    // "Derived" is a property of the SOURCE TEXT. No comparison of values can
+    // see it, so this reads the file.
+    const src = fs.readFileSync(path.join(SRC, 'data/globalCarbonFigures.js'), 'utf8');
+    expect(src).toMatch(/CO2_PERCENT_ABOVE_PREINDUSTRIAL\s*=\s*\n?\s*Math\.round\(/);
+    expect(src).not.toMatch(/CO2_PERCENT_ABOVE_PREINDUSTRIAL\s*=\s*\d/);
+    // the value is still correct, which is a separate claim
     expect(CO2_PERCENT_ABOVE_PREINDUSTRIAL).toBe(53);
+  });
+
+  it('that source guard is not vacuous either', () => {
+    // a hardcoded form must fail the pattern, a derived form must pass it
+    const DERIVED = /([A-Z_0-9]+)\s*=\s*\n?\s*Math\.round\(/;
+    const TYPED = /CO2_PERCENT_ABOVE_PREINDUSTRIAL\s*=\s*\d/;
+    expect(DERIVED.test('export const CO2_PERCENT_ABOVE_PREINDUSTRIAL =\n  Math.round(x);')).toBe(true);
+    expect(TYPED.test('export const CO2_PERCENT_ABOVE_PREINDUSTRIAL = 53;')).toBe(true);
+    expect(TYPED.test('export const CO2_PERCENT_ABOVE_PREINDUSTRIAL =\n  Math.round(x);')).toBe(false);
   });
 
   it('THE PAIRING RULE: each year pairs with its own percentage', () => {
@@ -142,6 +184,11 @@ describe('the global carbon figures are internally consistent', () => {
     expect(TOTAL_GTCO2).toBe(Math.round(TOTAL_GTC_2025 * C_TO_CO2));
     expect(TOTAL_GTCO2).toBe(42);
     expect(FOSSIL_GTCO2).toBe(38);
+    // nothing asserted that the PARTS make the whole, so a divergence in the
+    // double-rounding inside toCO2 could have published 38 + 4 = 43
+    expect(FOSSIL_GTCO2 + LAND_USE_GTCO2).toBe(TOTAL_GTCO2);
+    // and the fossil/land-use split is the GCB one, not invented here
+    expect(FOSSIL_GTC_2025 + LAND_USE_GTC_2025).toBeCloseTo(TOTAL_GTC_2025, 1);
     // the unit error found in apes-unit-1: 11.5 GtC cannot be 37 GtCO2
     expect(Math.round(11.5 * C_TO_CO2)).not.toBe(37);
   });
@@ -213,6 +260,27 @@ describe('no teaching surface states a superseded global figure', () => {
     }
   });
 
+  it('the narrowed percentage markers still catch CO₂ claims, and spare others', () => {
+    const tmp = path.join(SRC, '__tests__/.globals-pct.js');
+    fs.writeFileSync(tmp,
+      "const a = 'The increase: 51% above pre-industrial.';\n"
+      + "const b = '- CO2: 280 to 425 ppm (51% increase since pre-industrial)';\n", 'utf8');
+    try {
+      expect(staleGlobalsIn('__tests__/.globals-pct.js').length).toBeGreaterThanOrEqual(2);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+    // and the statistics lesson that collided with the bare marker is spared
+    const tmp2 = path.join(SRC, '__tests__/.globals-stats.js');
+    fs.writeFileSync(tmp2,
+      "const a = 'A 50% increase in cancer risk sounds scary; if the baseline risk is tiny...';\n", 'utf8');
+    try {
+      expect(staleGlobalsIn('__tests__/.globals-stats.js')).toEqual([]);
+    } finally {
+      fs.unlinkSync(tmp2);
+    }
+  });
+
   it('spares a Mauna Loa figure, where 425 ppm is the CORRECT value', () => {
     const tmp = path.join(SRC, '__tests__/.globals-mlo.js');
     fs.writeFileSync(tmp, "const a = '425 ppm (2024, Mauna Loa)';\n", 'utf8');
@@ -247,6 +315,11 @@ describe('no teaching surface states a superseded global figure', () => {
     GLOBAL_PROSE.forEach((f) => {
       expect(fs.existsSync(path.join(SRC, f)), f).toBe(true);
     });
-    expect(GLOBAL_PROSE.length).toBeGreaterThan(8);
+    // the glob must actually find the content directory; `length > 8` was
+    // satisfied by the ten hand-typed files that MISSED five others
+    expect(GLOBAL_PROSE.length).toBeGreaterThan(20);
+    expect(GLOBAL_PROSE).toContain('data/ap-content/apes-unit-5.js');
+    expect(GLOBAL_PROSE).toContain('data/ap-content/apes-unit-6.js');
+    expect(GLOBAL_PROSE).toContain('data/ap-content/apchem-unit-1.js');
   });
 });

@@ -158,8 +158,15 @@ export const CARBON_BUDGETS = [
 ];
 export const CARBON_BUDGET_AR6_BASIS_GTCO2 = 250;
 
-/** Years left at current emissions — derived, so it moves with the total. */
-export const budgetYears = (gtCO2) => Math.round(gtCO2 / TOTAL_GTCO2);
+/**
+ * Years left at current emissions — derived, so it moves with the total.
+ *
+ * FLOOR, not round. For a REMAINING budget, rounding up overstates the time
+ * available: 190 GtCO₂ at 42/yr is 4.52 years, and reporting that as 5 gives
+ * away half a year the budget does not contain. Floor is the honest operator
+ * for a quantity you are running out of.
+ */
+export const budgetYears = (gtCO2) => Math.floor(gtCO2 / TOTAL_GTCO2);
 
 export const BUDGET_1_5_YEARS = budgetYears(CARBON_BUDGETS[0].gtCO2);
 
@@ -175,8 +182,15 @@ export const CH4_ANTHRO_GT = 0.369;
 export const CH4_TOTAL_TG = 575;
 export const CH4_ANTHRO_SHARE_PERCENT = 65;
 
-// The list of SUPERSEDED figures deliberately does NOT live here. This module
-// ships in the bundle, so a list of stale strings inside it puts every one of
-// them back into production — where the residual gate then finds them and
-// reports a residual against itself. It lives in __tests__/globalFigures.test.js
-// instead, which ships nowhere.
+// The list of SUPERSEDED figures deliberately does NOT live here — it lives in
+// __tests__/globalFigures.test.js, which ships nowhere, so a list of stale
+// strings cannot put them back into production.
+//
+// The first version of this comment justified that by saying "this module ships
+// in the bundle". At the time that was FALSE: nothing imported this module, so
+// Rollup dropped it entirely and a grep of the built bundle for its own strings
+// returned nothing. A "single source of truth" that owns nothing is the same
+// defect as a figure that lives only in a comment, restated with an export
+// keyword. components/LearnAgent.js now imports it, and
+// __tests__/liveDataWiring.test.js fails if any module claiming to be a source
+// of truth stops being reachable.

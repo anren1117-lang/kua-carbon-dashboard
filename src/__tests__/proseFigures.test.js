@@ -180,7 +180,13 @@ const SUPERSEDED = [
   // published ranges that moved with them
   '895–1,875', '1,802–3,779',
   // sink, before the net-basis reprice
-  '2,650', '2,100 mtCO₂e/year',
+  '2,650',
+  // NOT '2,100 mtCO₂e/year'. That was on this list as "sink, before the
+  // net-basis reprice" and it is STILL CANONICAL — SINKS_RANGE.high is 2,100,
+  // the published top of the spread, which LearnAgent states as current. The
+  // guard only avoided firing on it because that one line happens to contain
+  // "rather than", which RETIRING exempts. A canonical value on a superseded
+  // list is a false positive waiting for an unrelated reword.
 ];
 
 // A line may legitimately NAME a superseded figure in order to retire it —
@@ -190,7 +196,21 @@ const SUPERSEDED = [
 // sinks", which is a live claim, so the past-tense constructions are named
 // individually: "it ran 1,000-2,650 before that" is history, "X before sinks"
 // is not.
-const RETIRING = /was |were |until Phase|earlier version|used to |previously|superseded|no longer|instead of|rather than|not the |before that|\bran \d|narrowed|—\s*\d|Phase \d/i;
+// NARROWED, back-porting what the sibling guard in globalFigures.test.js
+// learned. Probing the previous version with live stale claims found five
+// holes, every one of them a figure asserted in the present tense:
+//
+//   "KUA was founded in 1813 and its net footprint is 1,725 today"   bare `was `
+//   "There were many changes; the gross is 4,395 mtCO2e"             bare `were `
+//   "Net balance — 1,725 mtCO2e per year"                            `—\s*\d`
+//   "Phase 2 of the plan targets a net of 2,566 mtCO2e"              `Phase \d`
+//   "We report net rather than gross: 2,566 mtCO2e"                  `rather than`
+//
+// The em-dash one matters most, because "— 1,725" is this project's house style
+// for presenting a figure, so the exemption covered the commonest spelling of
+// the thing being guarded. Each construction is now required to be doing actual
+// retiring work: a past-tense verb attached to a figure, or an explicit marker.
+const RETIRING = /\b(was|were)\s+(?:about\s+|roughly\s+|~)?[\d(]|until Phase \d|earlier version|used to (?:say|read|be)|previously|superseded|no longer|before that|\bran \d|narrowed|revised|removed Phase \d|\(was [\d-]/i;
 
 function supersededIn(relPath) {
   const text = fs.readFileSync(path.join(SRC, relPath), 'utf8');
@@ -217,14 +237,66 @@ describe('no surface states a figure that used to be canonical', () => {
     }
   });
 
-  it('the list is live — every entry really is superseded', () => {
-    const current = [
-      Math.round(GROSS_MT).toLocaleString(),
-      Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toLocaleString(),
+  it('the list is live — no entry is still canonical', () => {
+    // This only checked gross and net, which is how '2,100 mtCO₂e/year' sat on
+    // the list while remaining the published top of the sink spread. Every
+    // canonical figure the repo quotes has to be checked against it.
+    const canonical = [
+      Math.round(GROSS_MT),
+      Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT),
+      Math.round(SCOPE2_TOTAL_MT),
+      Math.round(SINKS_RANGE.high),
+      Math.round(SINKS_RANGE.low),
+      Math.round(ANNUAL_SEQUESTRATION_MT),
     ];
-    // a value cannot be both canonical and superseded
-    current.forEach((c) => expect(SUPERSEDED).not.toContain(c));
+    canonical.forEach((n) => {
+      const asText = n.toLocaleString();
+      expect(SUPERSEDED, `${asText} is canonical`).not.toContain(asText);
+      // and no entry may merely CONTAIN a canonical figure either, which is
+      // what '2,100 mtCO₂e/year' did
+      SUPERSEDED.forEach((sup) => {
+        expect(sup.includes(asText), `"${sup}" contains canonical ${asText}`).toBe(false);
+      });
+    });
     expect(SUPERSEDED.length).toBeGreaterThan(8);
+  });
+
+  it('the narrowed RETIRING no longer exempts a live claim', () => {
+    const probes = [
+      'KUA was founded in 1813 and its net footprint is 1,725 mtCO2e today',
+      'There were many changes; the gross is 4,395 mtCO2e',
+      'Net balance — 1,725 mtCO2e per year',
+      'Phase 2 of the plan targets a net of 2,566 mtCO2e',
+      'We report net rather than gross: 2,566 mtCO2e',
+    ];
+    const tmp = path.join(SRC, '__tests__/.retiring-probe.js');
+    probes.forEach((p, n) => {
+      fs.writeFileSync(tmp, `const a = ${JSON.stringify(p)};\n`, 'utf8');
+      try {
+        expect(supersededIn('__tests__/.retiring-probe.js'), `probe ${n}: ${p}`)
+          .not.toEqual([]);
+      } finally {
+        fs.unlinkSync(tmp);
+      }
+    });
+  });
+
+  it('...while still sparing genuine retiring prose', () => {
+    const spared = [
+      'the net was 2,566 before the bottom-up collapse',
+      'an earlier version read 4,395 mtCO2e',
+      'the sink figure was revised to a net basis',
+      'it ran 1,000–2,650 before that',
+    ];
+    const tmp = path.join(SRC, '__tests__/.retiring-spare.js');
+    spared.forEach((p) => {
+      fs.writeFileSync(tmp, `const a = ${JSON.stringify(p)};\n`, 'utf8');
+      try {
+        expect(supersededIn('__tests__/.retiring-spare.js'), p).toEqual([]);
+      } finally {
+        fs.unlinkSync(tmp);
+      }
+    });
   });
 
   it('catches the phrasings the CLAIMS patterns miss', () => {

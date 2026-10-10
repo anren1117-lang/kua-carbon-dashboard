@@ -135,7 +135,7 @@ Main uses: electricity generation (~35% of US gas use), heating (~30%), industry
 
 Largest reserves: Russia, Iran, Qatar, Turkmenistan, US, Saudi Arabia.
 
-CO₂ emissions per unit energy: ~55 kg CO₂/GJ — lowest of fossil fuels. Plus methane leakage: about 2-4% of extracted gas leaks before combustion (recent satellite measurements suggest higher than 2% IPCC default). CH₄ has GWP-100 of 28, so leakage substantially reduces gas's climate advantage.
+CO₂ emissions per unit energy: ~55 kg CO₂/GJ — lowest of fossil fuels. Plus methane leakage: about 2-4% of extracted gas leaks before combustion (recent satellite measurements suggest higher than 2% IPCC default). CH₄ has a GWP-100 of 29.8 on the IPCC AR6 assessment — this is FOSSIL methane, which AR6 scores higher than biogenic (27) because its carbon is new to the active cycle when it oxidises. So leakage substantially reduces gas's climate advantage. (AR5 gave a single 28 for both, which is what older material prints.)
 
 **Comparing fuels: CO₂ per kWh of electricity.**
 - Coal: ~820-1050 g CO₂

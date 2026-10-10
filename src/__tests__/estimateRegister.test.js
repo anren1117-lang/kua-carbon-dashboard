@@ -24,6 +24,17 @@ const methodologySrc = readFileSync(resolve(process.cwd(), 'pages/Methodology.js
 
 describe('the estimate register is complete', () => {
   it('accounts for the whole gross figure, within per-row rounding', () => {
+    // The flag must FOLLOW the arithmetic. Hardcoding `reconciles: true` would
+    // silently suppress the red warning banner the component renders when the
+    // register does not add up.
+    //
+    // And comparing it to `Math.abs(unaccountedMt) <= 25` DOES NOT CATCH THAT —
+    // a control proved it: when the computed answer is also true, true === true
+    // either way. Agreement cannot distinguish derived from typed, so the
+    // derivation is asserted on the source, as for MODELLED_SHARE_OF_GROSS.
+    const regSrc = readFileSync(resolve(process.cwd(), 'data/estimateRegister.js'), 'utf8');
+    expect(regSrc).toMatch(/reconciles:\s*Math\.abs\(/);
+    expect(regSrc).not.toMatch(/reconciles:\s*(true|false)\b/);
     expect(REGISTER_RECONCILIATION.reconciles).toBe(true);
     expect(Math.abs(REGISTER_RECONCILIATION.unaccountedMt)).toBeLessThanOrEqual(25);
     // and it is reconciling against the real scope sum, not a copy of itself
@@ -59,6 +70,15 @@ describe('the estimate register is complete', () => {
 
 describe('the register is derived, not transcribed', () => {
   it('the modelled share is computed from the current gross', () => {
+    // VACUOUS AS FIRST WRITTEN, the same way its sibling in globalFigures was:
+    // it rebuilt the sumOf filter and divided by GROSS_MT, so both sides ran the
+    // same formula. Replacing the export with a literal 91 left all 16 tests and
+    // the full suite green. The source text is what carries the claim.
+    const src = readFileSync(resolve(process.cwd(), 'data/estimateRegister.js'), 'utf8');
+    expect(src).toMatch(/MODELLED_SHARE_OF_GROSS\s*=\s*\n?\s*GROSS_MT\s*>\s*0/);
+    expect(src).toMatch(/Math\.round\(\(MODELLED_MT \/ GROSS_MT\)/);
+    expect(src).not.toMatch(/MODELLED_SHARE_OF_GROSS\s*=\s*\d/);
+    // and the value agrees with the data
     const modelled = ESTIMATE_REGISTER
       .filter((e) => e.tier === 'modelled' && e.mt > 0)
       .reduce((s, e) => s + e.mt, 0);

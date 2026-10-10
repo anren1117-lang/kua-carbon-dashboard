@@ -14,6 +14,18 @@ import {
   KG_PER_MILE_CAR,
 } from '../utils/personalFootprint.js';
 import { BOARDING_PEER_BAND } from '../data/peerSchools.js';
+// The global figures module was a "single source of truth" that NOTHING
+// imported — every teaching surface typed its own ppm, so the pairing rule it
+// enforces (a year, a concentration and a percentage must move together) was
+// enforced in a module that shipped nowhere. A code critic found it by grepping
+// the built bundle for the module's own strings and getting no hits. These are
+// the dashboard's own learn surfaces; the AP content is plain strings with no
+// interpolation and stays guarded by the string sweep in globalFigures.test.js.
+import {
+  CO2_PPM,
+  CO2_PREINDUSTRIAL_PPM,
+  CO2_PERCENT_ABOVE_PREINDUSTRIAL,
+} from '../data/globalCarbonFigures.js';
 
 // Reactive headline figures — composed from the same canonical sources the
 // rest of the dashboard imports, so the lesson narrative cannot drift from
@@ -137,12 +149,12 @@ const paths = [
       },
       {
         type: 'quiz',
-        question: 'Atmospheric CO₂ has risen from about 278 ppm pre-industrial to what today?',
+        question: `Atmospheric CO₂ has risen from about ${CO2_PREINDUSTRIAL_PPM} ppm pre-industrial to what today?`,
         options: [
           { text: '~310 ppm', correct: false, explanation: 'Higher than that. We crossed 310 ppm in the 1950s, decades ago.' },
-          { text: '~426 ppm', correct: true, explanation: 'Right. ~278 ppm pre-industrial → ~426 ppm today is a **53% increase** in the gas that drives the greenhouse effect. Ice cores show this is the highest CO₂ concentration in **at least 3 million years** — long before modern humans existed. The Keeling Curve at Mauna Loa has been tracking this rise continuously since 1958.' },
+          { text: `~${CO2_PPM} ppm`, correct: true, explanation: `Right. ~${CO2_PREINDUSTRIAL_PPM} ppm pre-industrial → ~${CO2_PPM} ppm today is a **${CO2_PERCENT_ABOVE_PREINDUSTRIAL}% increase** in the gas that drives the greenhouse effect. Ice cores show this is the highest CO₂ concentration in **at least 3 million years** — long before modern humans existed. The Keeling Curve at Mauna Loa has been tracking this rise continuously since 1958.` },
           { text: '~600 ppm', correct: false, explanation: 'We\'re not there yet. ~600 ppm is what business-as-usual scenarios project by 2100 if emissions don\'t decline. Some lower-emission pathways keep us under 500 ppm; some higher-emission pathways push past 700.' },
-          { text: '~250 ppm', correct: false, explanation: 'That\'s lower than pre-industrial. Atmospheric CO₂ has only risen since the late 1700s — never decreased on a sustained basis. The recent 426 ppm figure is the highest in 3 million years.' },
+          { text: '~250 ppm', correct: false, explanation: `That's lower than pre-industrial. Atmospheric CO₂ has only risen since the late 1700s — never decreased on a sustained basis. The recent ${CO2_PPM} ppm figure is the highest in 3 million years.` },
         ],
       },
       {
