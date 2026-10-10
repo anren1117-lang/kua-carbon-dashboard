@@ -22,6 +22,8 @@
 // back, and pin the headcount gap so that closing it requires a roster.
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { buildings } from '../data/buildings.js';
 import { dorms, DORM_REGISTRY_BASIS } from '../data/dorms.js';
 import { students } from '../data/students.js';
@@ -99,5 +101,62 @@ describe('the dorm registry matches KUA published campus map', () => {
       expect(d.population).toBeNull();
       expect(d.population > 0).toBe(false);
     });
+  });
+});
+
+// ─── the headcount gap, disclosed where it matters ──────────────────────
+//
+// /dorm-leaderboard ranks dorms by kWh PER STUDENT and never mentioned that
+// its populations account for 169 of the roster's 247 boarders. The registry
+// names two unmodelled dorms, and it is tempting to leave the gap there — but
+// the arithmetic refuses: 78 boarders over two farmhouse dorms is 39 each,
+// which would make both LARGER than the biggest dorm on campus. So the gap is
+// not two missing buildings, it is populations that are themselves low, and a
+// population that is too low makes that dorm's per-student figure too HIGH.
+//
+// The page says so now, with every number derived. This holds it that way.
+
+describe('the dorm headcount gap is disclosed where it matters', () => {
+  const page = readFileSync(resolve(process.cwd(), 'pages/DormLeaderboard.js'), 'utf8');
+  const modelled = dorms.reduce((t, d) => t + d.population, 0);
+  const gap = DORM_REGISTRY_BASIS.boarders - modelled;
+
+  it('the gap is real and large enough to matter', () => {
+    expect(gap).toBeGreaterThan(50);
+    expect(modelled).toBeLessThan(DORM_REGISTRY_BASIS.boarders);
+  });
+
+  it('the two unmodelled dorms genuinely cannot hold it', () => {
+    // the claim the disclosure rests on. Assert the arithmetic, not the
+    // sentence, so that if it ever stops being true this fails rather than
+    // leaving the prose asserting something false.
+    const perUnmodelled = gap / DORM_REGISTRY_BASIS.unmodeledDorms.length;
+    const largest = Math.max(...dorms.map((d) => d.population));
+    expect(perUnmodelled).toBeGreaterThan(largest);
+  });
+
+  it('the leaderboard discloses it, derived rather than typed', () => {
+    expect(page).toContain('Headcounts are not published per dorm');
+    expect(page).toContain('modelledBoarders');
+    expect(page).toContain('headcountGap');
+    expect(page).toContain('largestDormName');
+  });
+
+  it('no figure in the disclosure is a literal', () => {
+    for (const n of [String(modelled), String(gap), String(DORM_REGISTRY_BASIS.boarders)]) {
+      expect(page, `${n} appears as a literal in the disclosure`)
+        .not.toMatch(new RegExp(`sum to ${n}\\b|difference: ${n}\\b`));
+    }
+  });
+
+  it('names the consequence for the per-student column, not just the gap', () => {
+    // a disclosure that states a discrepancy without saying which way it bends
+    // the published figure leaves the reader no better off
+    expect(page.replace(/\s+/g, ' ')).toMatch(/too low makes a dorm's kWh per student too high/);
+    expect(page.replace(/\s+/g, ' ')).toMatch(/comparison between dorms rather than a figure to quote/);
+  });
+
+  it('and says what would settle it', () => {
+    expect(page).toMatch(/Per-dorm rosters would settle it/);
   });
 });

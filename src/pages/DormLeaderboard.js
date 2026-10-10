@@ -6,6 +6,7 @@ import { useBuildingMonthlyHistory } from '../hooks/useBuildingMonthlyHistory.js
 import { monthlyReports } from '../data/monthlyConsumption.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { energyEquivalents } from '../utils/equivalents.js';
+import { dorms, DORM_REGISTRY_BASIS } from '../data/dorms.js';
 import { weatherContextText } from '../data/degreeDays.js';
 
 // /dorm-leaderboard — apples-to-apples kWh-per-resident ranking
@@ -18,6 +19,13 @@ import { weatherContextText } from '../data/degreeDays.js';
 // per-resident, so a small dorm can show real improvement.
 
 export default function DormLeaderboard() {
+  // Derived from the registry, never typed — see the disclosure below.
+  const modelledBoarders = dorms.reduce((t, d) => t + d.population, 0);
+  const headcountGap = DORM_REGISTRY_BASIS.boarders - modelledBoarders;
+  const perUnmodelled = (headcountGap / DORM_REGISTRY_BASIS.unmodeledDorms.length).toFixed(0);
+  const largestDormRec = dorms.reduce((a, b) => (b.population > a.population ? b : a));
+  const largestDorm = largestDormRec.population;
+  const largestDormName = largestDormRec.name;
   const isNarrow = useIsNarrow();
   // Per-building months include anything entered through the admin portal.
   const { history: monthlyHistory } = useBuildingMonthlyHistory();
@@ -249,6 +257,31 @@ export default function DormLeaderboard() {
             remembering before reading a small gap between two dorms as effort.
           </p>
         )}
+        {/*
+          THE HEADCOUNT GAP, which this page never disclosed while dividing by
+          the very numbers it concerns. The modelled dorm populations account
+          for 169 of the roster's 247 boarders. The registry names two
+          unmodelled dorms, and it is tempting to leave the gap there — but the
+          arithmetic refuses: 78 boarders across two farmhouse dorms is 39
+          each, which would make both of them LARGER than Kilton Hall, the
+          biggest dorm on campus. So the gap is not two missing buildings; the
+          per-dorm populations are themselves low, and this page ranks dorms by
+          kWh PER STUDENT. Every figure is derived, so the sentence cannot
+          outlive the data.
+        */}
+        <p style={styles.fineprint}>
+          <strong>Headcounts are not published per dorm.</strong> The populations behind the
+          per-student column come from bed counts in school news items, not a roster, and they
+          sum to {modelledBoarders} of the {DORM_REGISTRY_BASIS.boarders} boarders the school
+          supplied. The registry names {DORM_REGISTRY_BASIS.unmodeledDorms.length} unmodelled
+          dorms, but they cannot hold the difference: {headcountGap} boarders across{' '}
+          {DORM_REGISTRY_BASIS.unmodeledDorms.length} farmhouse dorms would be{' '}
+          {perUnmodelled} each, against {largestDorm} in {largestDormName} — the largest dorm on
+          campus. The likelier reading is that the listed populations are low. That matters
+          here specifically, because a population that is too low makes a dorm's kWh per
+          student too high, so the per-student column should be read as a comparison between
+          dorms rather than a figure to quote on its own. Per-dorm rosters would settle it.
+        </p>
         {ranked.length > 0 && (
           <p style={styles.fineprint}>
             Dorms in this ranking currently rest on{' '}
