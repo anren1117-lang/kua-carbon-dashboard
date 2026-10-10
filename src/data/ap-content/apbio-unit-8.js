@@ -230,7 +230,7 @@ A continuum, not a strict dichotomy.
 `Human activity is altering ecosystems globally at unprecedented rates.
 
 **Climate change.**
-- CO₂ from 280 to 425 ppm (pre-industrial → 2024).
+- CO₂ from 278 to 426 ppm (pre-industrial → 2025).
 - Global temperature: ~1.2°C warmer than pre-industrial.
 - Effects: heat waves, drought, intense storms, sea-level rise, ocean acidification, species range shifts, phenological mismatches, coral bleaching, permafrost thaw.
 - Causes: fossil fuels (75% of emissions), land-use change (deforestation, ~15%), agriculture (~10%).

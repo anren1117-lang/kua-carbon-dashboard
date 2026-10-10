@@ -259,7 +259,7 @@ Pollution is one of HIPPO threats. Major impacts:
 
 **Atmospheric changes.**
 
-- CO₂ levels: +50% (280→425 ppm)
+- CO₂ levels: +53% (278→426 ppm)
 - Methane: +175% (700→1930 ppb)
 - N₂O: +24% (270→335 ppb)
 - Stratospheric ozone: depleted then recovering

@@ -281,7 +281,7 @@ Each order has distinct properties and uses.
 - Nitrogen (N₂): 78.1%
 - Oxygen (O₂): 20.9%
 - Argon (Ar): 0.93%
-- Carbon dioxide (CO₂): 0.04% (~425 ppm and rising)
+- Carbon dioxide (CO₂): 0.04% (~426 ppm and rising)
 - Variable water vapor: 0-4% by volume (depending on location)
 - Trace gases: methane (~1.93 ppm), nitrous oxide, ozone, neon, helium, krypton, etc.
 

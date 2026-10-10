@@ -356,10 +356,14 @@ This is small compared to natural fluxes (~150-200 Gt C/yr in photosynthesis-res
 
 So of the ~11.8 Gt C added each year, ~5.3 Gt C remains airborne, contributing to rising atmospheric concentration.
 
-**The math.** Atmospheric CO₂ has risen from 280 ppm (pre-industrial) to 425 ppm (2024). Each ppm of CO₂ equals about 2.13 Gt C. The increase is:
-(425 - 280) × 2.13 = 309 Gt C added to the atmosphere.
+**The math.** Atmospheric CO₂ has risen from 278 ppm (pre-industrial) to 426 ppm (2025). Each ppm of CO₂ equals about 2.13 Gt C. The increase is:
+(426 - 278) × 2.13 = 315 Gt C added to the atmosphere.
 
-Human emissions since 1850 total roughly 650 Gt C. About 50% (~310 Gt C) is now in the atmosphere; the rest is in oceans and biosphere.
+Now compare that estimate with the measured budget. The Global Carbon Budget 2025 puts emissions over 1850-2024 at **745 Gt C**, partitioned into the atmosphere (**290 Gt C, 39%**), the ocean (**200 Gt C, 27%**) and the land (**175 Gt C, 24%**). Three things in that worth noticing:
+
+- The ~315 Gt C above is close to, but not equal to, the measured 290. It starts a century earlier and 2.13 Gt C per ppm is a rounded conversion — reconciling an estimate against an inventory is most of real carbon accounting.
+- Those three shares sum to 90%, not 100%. The remaining 10% is the **budget imbalance** — the budget does not close, and GCB publishes the gap rather than distributing it. A carbon budget that balanced exactly would be a sign of fudging, not of precision.
+- **39% is the cumulative airborne fraction, and it is not the same as the ~50% of the most recent decade.** Earlier emissions were smaller, and the sinks took up a larger share of them. Quoting one where the other belongs is the single most common error in this subject.
 
 **Carbon residence times.** How long does carbon stay in each pool?
 - Atmosphere: ~5 years (one molecule) before being absorbed by a plant or ocean
@@ -1127,9 +1131,9 @@ Coral reef food webs are especially vulnerable — warming + acidification disru
       work: 'NPP = 8000 - 3000 = 5000. Primary consumers: ~500. Secondary: ~50. Tertiary: ~5.',
     },
     {
-      q: 'Atmospheric CO₂ rose from 280 ppm (1850) to 425 ppm (2024). If 1 ppm ≈ 2.13 Gt C, how many Gt of carbon were added to the atmosphere?',
-      a: '~309 Gt C',
-      work: '(425 - 280) × 2.13 = 145 × 2.13 ≈ 309.',
+      q: 'Atmospheric CO₂ rose from 278 ppm (1750) to 426 ppm (2025). If 1 ppm ≈ 2.13 Gt C, how many Gt of carbon were added to the atmosphere?',
+      a: '~315 Gt C',
+      work: '(426 - 278) × 2.13 = 148 × 2.13 ≈ 315. Worth comparing against the measured figure: the Global Carbon Budget puts the atmospheric gain over 1850-2024 at 290 Gt C. The ~25 Gt C gap is not an error in either number — this calculation starts a century earlier, and 2.13 Gt C per ppm is a rounded conversion. Reconciling an estimate with an inventory is most of real carbon accounting.',
     },
     {
       q: 'Why is the phosphorus cycle considered slower than the nitrogen cycle?',

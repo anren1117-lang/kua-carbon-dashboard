@@ -483,8 +483,8 @@ Examples: Cache Valley, Utah (Logan); Salt Lake Valley, Utah; many Colorado vall
 **Atmospheric CO₂.**
 
 Pre-industrial CO₂: 280 ppm.
-Current CO₂: ~425 ppm (2024).
-The increase: 51% above pre-industrial.
+Current CO₂: ~426 ppm (2025).
+The increase: 53% above pre-industrial (278 ppm).
 
 (See 1.4 for full carbon cycle.)
 
@@ -652,7 +652,7 @@ Quantified studies suggest health co-benefits often equal or exceed climate bene
 **Future trajectories.** Most climate scenarios that meet Paris goals (1.5-2°C) require dramatic PM2.5 reductions through fossil fuel reduction. Health benefits in the 100s of millions of premature deaths avoided over the century.
 
 **Key facts:**
-- CO₂: 280 → 425 ppm (51% increase since pre-industrial)
+- CO₂: 278 → 426 ppm (53% increase since pre-industrial)
 - Top emitters: China (30%), US (14%), India (7.5%), Russia (5%)
 - PM2.5 kills 3-4 million/year; IARC Group 1 carcinogen
 - PM2.5 sizes: smaller = more dangerous

@@ -433,8 +433,8 @@ const KeelingCurve = () => {
     <svg viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg" aria-label="Atmospheric CO2 1958-2024">
       <rect x="0" y="0" width={W} height={H} fill={COL.bgLight} />
       {/* Pre-industrial reference */}
-      <line x1={padL} y1={ys(280)} x2={W - padR} y2={ys(280)} stroke={COL.green} strokeDasharray="3 3" strokeWidth="1" opacity="0.7" />
-      <text x={W - padR - 4} y={ys(280) - 4} fill={COL.green} fontSize="10" textAnchor="end">Pre-industrial 280 ppm</text>
+      <line x1={padL} y1={ys(278)} x2={W - padR} y2={ys(278)} stroke={COL.green} strokeDasharray="3 3" strokeWidth="1" opacity="0.7" />
+      <text x={W - padR - 4} y={ys(278) - 4} fill={COL.green} fontSize="10" textAnchor="end">Pre-industrial 278 ppm</text>
       {/* Y axis ticks */}
       {[300, 350, 400].map((p) => (
         <g key={p}>
@@ -455,8 +455,8 @@ const KeelingCurve = () => {
       <path d={path} stroke={COL.red} strokeWidth="2.5" fill="none" />
       {data.map((d) => <circle key={d.year} cx={xs(d.year)} cy={ys(d.ppm)} r="3" fill={COL.red} />)}
       {/* Annotation */}
-      <text x={xs(2024) - 6} y={ys(425) - 8} fill={COL.red} fontSize="11" fontWeight="700" textAnchor="end">425 ppm (2024)</text>
-      <text x={padL + 10} y={padT + 14} fill={COL.amber} fontSize="11" fontWeight="700">Mauna Loa CO₂ · +51% since pre-industrial</text>
+      <text x={xs(2024) - 6} y={ys(425) - 8} fill={COL.red} fontSize="11" fontWeight="700" textAnchor="end">425 ppm (2024, Mauna Loa)</text>
+      <text x={padL + 10} y={padT + 14} fill={COL.amber} fontSize="11" fontWeight="700">Mauna Loa CO₂ · +53% since pre-industrial</text>
     </svg>
   );
 };

@@ -264,7 +264,7 @@ The Venus case is sometimes raised as a worst-case Earth scenario; it isn't phys
 
 **Carbon dioxide (CO₂): the master variable.** Pre-industrial concentration was 280 parts per million (ppm), as measured in ice cores from Greenland and Antarctica. The Mauna Loa Observatory in Hawaii has measured atmospheric CO₂ continuously since 1958, producing the famous Keeling Curve — a record showing both the seasonal sawtooth (Northern Hemisphere photosynthesis pulling CO₂ down in summer, releasing it in winter) and the steady upward trend.
 
-Today's concentration: ~425 ppm and rising at about 2.5 ppm per year. The 51% increase since 1850 is the single most important number in climate science.
+Today's concentration: ~426 ppm and rising at about 2.5 ppm per year. The 53% increase over the pre-industrial 278 ppm is the single most important number in climate science.
 
 Sources of anthropogenic CO₂:
 - Fossil-fuel combustion: ~75% of emissions. Coal (28% of energy), oil (32%), natural gas (24%) — all release CO₂ when burned. Coal releases the most CO₂ per joule of energy (~95 g CO₂/MJ); oil less (~70 g CO₂/MJ); natural gas least (~55 g CO₂/MJ).
@@ -356,7 +356,7 @@ Stratospheric water vapor (from CH₄ oxidation and aircraft emissions) does hav
 - Ice cores from Greenland (Camp Century, NEEM, GRIP) and Antarctica (Dome C, EPICA) for pre-industrial concentrations going back 800,000 years.
 - Satellite missions: OCO-2, OCO-3, GOSAT, MethaneSAT, TROPOMI for spatially-resolved measurements.
 
-Ice cores show CO₂ has never been above 300 ppm during the past 800,000 years. The 425 ppm of 2024 is unprecedented in the entire ice-core record. To find CO₂ levels comparable to current we need to look at the Pliocene (~3-5 million years ago) when CO₂ was ~400-450 ppm and sea level was 15-25 meters higher than today.
+Ice cores show CO₂ has never been above 300 ppm during the past 800,000 years. The 426 ppm of 2025 is unprecedented in the entire ice-core record. To find CO₂ levels comparable to current we need to look at the Pliocene (~3-5 million years ago) when CO₂ was ~400-450 ppm and sea level was 15-25 meters higher than today.
 
 **Why small concentrations matter.** A common skeptical argument: "CO₂ is only 0.04% of the atmosphere — how can it matter?" The answer: greenhouse gases work by absorbing specific IR wavelengths. The relevant question isn't the mass fraction but the absorption. At current concentrations, CO₂ absorbs essentially all of the IR in its 15 μm band over short atmospheric paths. The effect on the energy budget scales logarithmically with concentration — each doubling adds ~3.7 W/m² of forcing. So even small fractional increases at high concentrations continue to matter.
 
@@ -366,7 +366,7 @@ Ice cores show CO₂ has never been above 300 ppm during the past 800,000 years.
 - N₂O: 270 → 335 ppb (24%); ~10 Mt/yr emissions; 109-yr lifetime; GWP-100 = 273
 - HFC-134a: GWP-100 = 1,430. SF₆: 23,500. Kigali phasing them down.
 - Net current anthropogenic radiative forcing: ~+2.7 W/m²
-- Ice-core record: CO₂ has not been above 300 ppm in 800,000 years. Current 425 ppm is geological-scale anomaly.`,
+- Ice-core record: CO₂ has not been above 300 ppm in 800,000 years. Current 426 ppm is geological-scale anomaly.`,
     },
 
     // ============================================================
@@ -384,7 +384,7 @@ The record shows distinct periods. A relatively flat baseline from 1850 to 1910.
 
 **Pre-instrumental records.** Before 1850, temperatures must be reconstructed from proxies — natural archives that record temperature indirectly. Tree rings record growing-season temperature and precipitation (widths and density). Ice cores preserve air bubbles trapped at the time of snow accumulation, providing direct measurements of past atmospheric composition and indirect temperature via oxygen and deuterium isotopes. Speleothems (cave formations) record temperature through isotope ratios in their calcite layers. Coral skeletons record sea-surface temperature.
 
-The synthesis is famous: Michael Mann's "hockey stick" (1998, updated since by many groups including IPCC AR6). For the past 2,000 years, Northern Hemisphere temperatures show roughly flat variation of about ±0.3 °C (the Medieval Climate Anomaly and the Little Ice Age are real but small). Beginning in the 19th century, the curve turns sharply upward — the "blade" of the hockey stick. Reconstructions for the last 800,000 years from Antarctic ice cores show CO₂ has never exceeded ~300 ppm during interglacial peaks. Current 425 ppm is well above the entire ice-age record.
+The synthesis is famous: Michael Mann's "hockey stick" (1998, updated since by many groups including IPCC AR6). For the past 2,000 years, Northern Hemisphere temperatures show roughly flat variation of about ±0.3 °C (the Medieval Climate Anomaly and the Little Ice Age are real but small). Beginning in the 19th century, the curve turns sharply upward — the "blade" of the hockey stick. Reconstructions for the last 800,000 years from Antarctic ice cores show CO₂ has never exceeded ~300 ppm during interglacial peaks. Current 426 ppm is well above the entire ice-age record.
 
 **Spatial pattern of warming.** The warming is unevenly distributed across the Earth's surface, with implications for both attribution and impacts.
 
@@ -995,7 +995,7 @@ Approaches include:
     'Stratospheric O₃ protects from UV-B and UV-C. CFCs catalytically destroy it; one Cl atom destroys ~100,000 O₃ molecules.',
     'Montreal Protocol (1987) is the most successful environmental treaty. Universal ratification; ozone layer recovering by ~2066.',
     'Natural greenhouse: +33 °C warming. Effective T 255 K (–18 °C); actual ~288 K (+15 °C).',
-    'Three main human GHGs: CO₂ (280→425 ppm, +51%), CH₄ (700→1,930 ppb, +175%), N₂O (270→335 ppb, +24%). Half of CO₂ emissions stay airborne.',
+    'Three main human GHGs: CO₂ (278→426 ppm, +53%), CH₄ (700→1,930 ppb, +175%), N₂O (270→335 ppb, +24%). About half of recent CO₂ emissions stay airborne; the cumulative share since 1850 is 39%.',
     'Climate sensitivity ~3 °C per CO₂ doubling (IPCC AR6 central). Likely range 2.5–4 °C. Water vapor + ice-albedo + cloud feedbacks amplify the no-feedback 1.2 °C.',
     'Oceans absorb >90% of excess heat. Ocean heat content has gained 380 ZJ since 1971.',
     'Ocean pH fell from 8.18 to 8.05 — 35% more H⁺. Acidification independent of warming; threatens calcifying organisms.',
@@ -1016,13 +1016,13 @@ Approaches include:
       name: 'CO₂ radiative forcing',
       equation: 'ΔF = 5.35 × ln(C / C₀)  W/m²',
       meaning: 'Top-of-atmosphere radiative imbalance from CO₂ concentration C relative to baseline C₀.',
-      example: 'Doubling CO₂ (280 → 560 ppm): ΔF = 5.35 × ln(2) ≈ 3.7 W/m². Current 425 ppm: ΔF = 5.35 × ln(425/280) ≈ 2.23 W/m².',
+      example: 'Doubling CO₂ (278 → 556 ppm): ΔF = 5.35 × ln(2) ≈ 3.7 W/m² — the doubling case does not depend on the baseline. Current 426 ppm: ΔF = 5.35 × ln(426/278) ≈ 2.28 W/m².',
     },
     {
       name: 'Climate sensitivity',
       equation: 'ΔT = ΔF / λ_eff',
       meaning: 'Equilibrium temperature change for a given forcing. λ_eff = effective feedback parameter (~1.2 W/m²/K including all feedbacks; gives ECS ~3 K per CO₂ doubling).',
-      example: '425 ppm: equilibrium ΔT = 2.23/1.2 ≈ 1.86 °C above pre-industrial (equilibrium; transient is less because oceans absorbing).',
+      example: '426 ppm: equilibrium ΔT = 2.28/1.2 ≈ 1.90 °C above pre-industrial (equilibrium; transient is less because oceans absorbing).',
     },
     {
       name: 'Global Warming Potential',
