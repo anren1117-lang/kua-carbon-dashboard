@@ -35,17 +35,28 @@ Single-page React app routed in `src/index.js`. Two top-level surfaces:
 
 ### Canonical scope numbers (single source of truth)
 
-`src/data/scopeTotals.js` exports the headline numbers every page reads. As of the latest fork-collapse, the placeholder values match the bottom-up multi-method cross-check centrals from `src/data/geographicEstimates.js` — there is **one** number per scope, not two:
+`src/data/scopeTotals.js` exports the headline numbers every page reads. **The Scope 1 and Scope 3 rows are now IMPORTED from `src/data/geographicEstimates.js`** rather than hand-set to match it, and both totals are derived by reducing their own rows. Phase 514 did that after finding the two had drifted apart while each looked fine alone: /methodology printed Scope 1 + Scope 3 as 4,038 while every other surface printed 3,985. If you are tempted to type a scope figure into `scopeTotals.js`, that is the defect, not the fix.
 
 | Scope | Headline | Range (cross-check) |
 |---|---|---|
-| Scope 1 | **1,350 mt** (heating 1,290 + fleet 54 + refrigerants 7) | 891 – 1,867 across 3 methods × 3 components |
-| Scope 2 | **385 mt** (BMS-measured kWh × ISO-NE 2024) | ±5% measured band |
-| Scope 3 | **2,635 mt** | 1,726 – 3,720 across 3-4 methods × 8 components |
-| Sinks | **2,650 mt** (forest sequestration, 1,000 acres) | 2,100 – 2,650 across Birdsey / NH FIA / Nowak |
-| Gross | **4,370 mt** | composite 2,983 – 5,992 |
-| Net | **1,720 mt** | composite 333 – 3,892 |
-| Per-student net | **5.0 mt** | composite 1.0 – 11.4 |
+| Scope 1 | **1,342 mt** (heating 1,280 + fleet 54 + refrigerants 8) | 881 – 1,870 across 3 methods × 3 components |
+| Scope 2 | **410 mt** (BMS-measured kWh × ISO-NE 2024) | measured band |
+| Scope 3 | **2,696 mt** | 1,779 – 3,736 across 3-4 methods × 8 components |
+| Sinks | **1,829 mt** (forest sequestration, net basis, 1,000 acres) | 1,000 – 2,100 across published methods |
+| Gross | **4,448 mt** | 13.5 mt/student |
+| Net | **2,619 mt** | |
+| Per-student net | **8.0 mt** | 329 students, 247 boarding |
+
+**This table is not the source of truth — the modules are.** It has gone stale before, which is worse than having no table, because a later session reads it and "corrects" working code backwards. Derive the figures before quoting them:
+```
+cd src && CI=1 npx vitest run <a scratch test importing scopeTotals/sinks/students>
+```
+
+### Two more single sources of truth
+
+- **`src/data/globalCarbonFigures.js`** (Phase 515) — every figure about the WORLD rather than about KUA: atmospheric CO₂, annual global emissions, the sink split, remaining carbon budgets, methane GWPs. Guarded by `__tests__/globalFigures.test.js`, which also holds the **pairing rule**: the percentage above pre-industrial is a *function* of the concentration, so a year, a ppm and a percentage must move together. 422.8 ppm (2024) is 52%; 425.6 (2025) is 53%. ~20 sites had paired 2024 with 425 ppm and 51%, where all three disagreed.
+  - Note the trap it encodes: **Mauna Loa is not the global mean.** MLO 2024 is 424.61, the global marine-boundary-layer mean is 422.80. "425 ppm" is correct on a Keeling-curve figure and stale everywhere else.
+- **`src/data/estimateRegister.js`** (Phase 512) — collects the `provenance`/`method` metadata that already existed on 22 data rows and reached no reader. Rendered on /methodology. ~91% of gross is modelled, not measured; Scope 1 and Scope 3 carry no KUA-specific activity records. Its reconciliation check is what found the Phase 514 drift.
 
 When you change a placeholder, recheck: targets.js baselines, LearnAgent narrative, Teacher / TeacherPortal / chatbotMatch quizzes, all three API system prompts (`api/chat.js`, `api/admin/plan.js`, `api/admin/estimate-action.js`), Executive provenance row, AnnualReport methodology note, CarbonCredits trade-off section. The composite range arithmetic in `api/chat.js` line 95 is independent — only edit it if you change the underlying per-scope ranges in `geographicEstimates.js`.
 
