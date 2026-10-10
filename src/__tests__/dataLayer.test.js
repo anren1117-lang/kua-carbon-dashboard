@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { composeCommutingMt, composeFleetMt, composeGeothermalFromRecords, composePurchasedGoodsMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, composeSolarFromRecords, composeWindFromRecords, COMMUTE_FACTORS_KG_PER_KM, FLEET_FACTORS_KG_PER_GAL, FUEL_BTU_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GRID_FACTOR_KG_PER_KWH, GRID_FACTOR_LB_PER_MWH, GROSS_MT, PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
+import { composeCommutingMt, composeFleetMt, composeGeothermalFromRecords, composePurchasedGoodsMt, composeRefrigerantMt, composeScope1, composeScope1FromBills, composeScope3, composeScope3FromRecords, composeSinksFromActuals, composeSolarFromRecords, composeWindFromRecords, COMMUTE_FACTORS_KG_PER_KM, FLEET_FACTORS_KG_PER_GAL, FUEL_BTU_PER_GAL, FUEL_FACTORS_KG_PER_GAL, GRID_FACTOR_KG_PER_KWH, GRID_FACTOR_LB_PER_MWH, GROSS_MT, PURCHASED_GOODS_DEFAULT_EEIO_KG_PER_USD, REFRIGERANT_GWP100, SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_COHORT_FACTORS_MT_PER_STUDENT, SCOPE3_TOTAL_MT, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
 import { buildings, getBuilding, getBuildingByBmsNumber } from '../data/buildings.js';
+import { BOTTOM_UP_TOTALS } from '../data/geographicEstimates.js';
 import { meters, getMeter, listMetersForBuilding } from '../data/meters.js';
 import { gridMix, GRID_MIX_TOTAL_MTCO2E, GRID_MIX_TOTAL_KWH, KG_PER_KWH } from '../data/gridMix.js';
 import { avertAvoidedKgPerKwh } from '../data/gridMixHistory.js';
@@ -828,15 +829,37 @@ describe('composeSinksFromActuals (live forest_stand_actuals → measured sinks)
 });
 
 describe('canonical scope totals (post-fork-collapse)', () => {
-  it('Scope 1 placeholder = bottom-up cross-check central (1,350)', () => {
-    expect(SCOPE1_TOTAL_MT).toBe(1350);
+  // THESE TWO TESTS WERE NAMED AFTER A CHECK THEY DID NOT PERFORM.
+  //
+  // "Scope 1 placeholder = bottom-up cross-check central (1,350)" asserted the
+  // literal 1350, while the bottom-up central was 1,342. Scope 3 asserted 2,635
+  // against a bottom-up central of 2,696. Both passed for as long as nobody
+  // changed the transcribed constant — which is the one thing a cross-check is
+  // supposed to make impossible. The dashboard meanwhile printed Scope 1 +
+  // Scope 3 as 4,038 on /methodology and 3,985 everywhere else.
+  //
+  // Now they compare the two modules, which is what their names claim. Tight
+  // tolerance: these are the SAME model, so they should agree to rounding, and
+  // anything more is drift.
+  it('Scope 1 total really is the bottom-up cross-check central', () => {
+    expect(SCOPE1_TOTAL_MT).toBe(BOTTOM_UP_TOTALS.scope1);
   });
-  it('Scope 3 placeholder = bottom-up cross-check central (2,635)', () => {
-    expect(SCOPE3_TOTAL_MT).toBe(2635);
+  it('Scope 3 total really is the bottom-up cross-check central', () => {
+    expect(SCOPE3_TOTAL_MT).toBe(BOTTOM_UP_TOTALS.scope3);
   });
-  it('Gross = Scope 1 + Scope 2 + Scope 3 (≈4,375 with measured Scope 2 ≈ 390)', () => {
-    expect(GROSS_MT).toBeGreaterThanOrEqual(4350);
-    expect(GROSS_MT).toBeLessThanOrEqual(4400);
+  it('and the two modules cannot drift silently again', () => {
+    // the failure mode was non-uniform drift: heating -10, refrigerants +1,
+    // goods -2, upstream +2, travel -44. Per-component, not just the total.
+    expect(composeScope1().breakdown.reduce((t, r) => t + r.mt, 0)).toBe(BOTTOM_UP_TOTALS.scope1);
+    expect(composeScope3().breakdown.reduce((t, r) => t + r.mt, 0)).toBe(BOTTOM_UP_TOTALS.scope3);
+  });
+  it('Gross = Scope 1 + Scope 2 + Scope 3, with Scope 2 the measured series', () => {
+    // asserted from the parts rather than against a hardcoded window, so a
+    // legitimate reprice does not read as a regression
+    expect(GROSS_MT).toBeCloseTo(SCOPE1_TOTAL_MT + SCOPE2_TOTAL_MT + SCOPE3_TOTAL_MT, 5);
+    // sanity: still the right order of magnitude for a 329-student campus
+    expect(GROSS_MT).toBeGreaterThan(3000);
+    expect(GROSS_MT).toBeLessThan(6000);
   });
   it('composeScope1() breakdown rows sum within ±2 mt of headline (rounding)', () => {
     const out = composeScope1();

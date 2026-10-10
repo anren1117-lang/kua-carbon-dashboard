@@ -51,7 +51,7 @@ describe('every "dominant source" metric is read from the data', () => {
 
     const s3 = read('pages/Scope3.js');
     expect(s3).not.toMatch(/value: 'Purchased goods'/);
-    expect(s3).not.toMatch(/goods ~1,315 mt/);
+    expect(s3).not.toMatch(/goods ~1,315 mt/);   // the old transcribed figure
     expect(s3).toContain('SCOPE3_LARGEST_LINE');
 
     const s2 = read('components/Scope2LiveDashboard.js');
@@ -66,7 +66,18 @@ describe('every "dominant source" metric is read from the data', () => {
       .map((r) => `${r.source.replace(/\s*\(.*\)\s*$/, '').toLowerCase()} ~${r.mt.toLocaleString()} mt ≈ ${Math.round(r.shareOfScope3)}%`)
       .join('; ');
     // this is what /scope-3 now builds; assert it says what we think it says
-    expect(note).toMatch(/^purchased goods ~1,315 mt ≈ 50%; student travel ~760 mt ≈ 29%$/);
+    // Built from SCOPE3_LINES rather than transcribed. The literal version
+    // broke the moment the placeholder rows were repointed at the bottom-up
+    // model (1,315 -> 1,317, 760 -> 804) — a false failure that says nothing
+    // about whether the note names the right two lines in the right order.
+    const top2 = [...SCOPE3_LINES].sort((a, b) => b.mt - a.mt).slice(0, 2);
+    const label = (l) => l.source.replace(/\s*\(.*\)\s*$/, '').toLowerCase();
+    const want = top2
+      .map((l) => `${label(l)} ~${l.mt.toLocaleString()} mt ≈ ${Math.round(l.shareOfScope3)}%`)
+      .join('; ');
+    expect(note).toBe(want);
+    // and it really is naming two different lines, largest first
+    expect(top2[0].mt).toBeGreaterThan(top2[1].mt);
     expect(sorted[0]).toBe(SCOPE3_LARGEST_LINE);
   });
 });

@@ -146,6 +146,116 @@ function staleClaimsIn(relPath) {
   return stale;
 }
 
+// ─── SUPERSEDED FIGURES, by value rather than by context ────────────────
+//
+// The CLAIMS patterns above need the word "gross" or "net" sitting next to the
+// number. That is what keeps them off the Birdsey rate and KUA's founding year,
+// and it is also a hole you can drive a truck through. When Scope 1 and Scope 3
+// were repointed at the bottom-up model, FOURTEEN surfaces kept the old
+// figures and every CLAIMS pattern passed, because none of them says "gross"
+// or "net" in the required position:
+//
+//   "Annual emissions (~4,395 mtCO₂e/yr) are a FLOW"
+//   "KUA's headline number is ~2,566 mtCO₂e/year"
+//   "net balance would jump from ~2,566 ... up to ~4,395"
+//   "A point estimate (2,566) by itself is misleading"
+//   "Scope 1 ~1,350 mt central (range 895–1,875)"        <- the board report
+//
+// A residual grep over the built bundle found them; this suite did not. So the
+// guard is inverted here: instead of asking "is the number next to this label
+// correct", it asks "does any surface still state a figure that USED to be
+// canonical". That needs no context at all and no proximity heuristic, and it
+// cannot false-positive on an unrelated constant, because nothing goes on this
+// list unless it was once one of KUA's own headline numbers.
+//
+// WHEN A FIGURE MOVES: add the superseded value here. The list is the project's
+// memory of what it used to claim, which is exactly what goes stale silently.
+const SUPERSEDED = [
+  // gross
+  '4,375', '4,395',
+  // net
+  '1,725', '2,295', '2,546', '2,566',
+  // Scope 1 central, and Scope 3 central
+  '1,350', '2,635',
+  // published ranges that moved with them
+  '895–1,875', '1,802–3,779',
+  // sink, before the net-basis reprice
+  '2,650', '2,100 mtCO₂e/year',
+];
+
+// A line may legitimately NAME a superseded figure in order to retire it —
+// documentation of a fix, or prose that contrasts then with now. Same
+// construction the ASSERTIONS block uses, for the same reason.
+// Deliberately narrow. A blanket /before/ would excuse "net is 4,395 before
+// sinks", which is a live claim, so the past-tense constructions are named
+// individually: "it ran 1,000-2,650 before that" is history, "X before sinks"
+// is not.
+const RETIRING = /was |were |until Phase|earlier version|used to |previously|superseded|no longer|instead of|rather than|not the |before that|\bran \d|narrowed|—\s*\d|Phase \d/i;
+
+function supersededIn(relPath) {
+  const text = fs.readFileSync(path.join(SRC, relPath), 'utf8');
+  const out = [];
+  text.split('\n').forEach((line, i) => {
+    const code = line.trim();
+    if (code.startsWith('//') || code.startsWith('*')) return;   // comments don't ship
+    if (RETIRING.test(line)) return;
+    for (const fig of SUPERSEDED) {
+      if (line.includes(fig)) out.push(`${relPath}:${i + 1} — states superseded figure ${fig}`);
+    }
+  });
+  return out;
+}
+
+describe('no surface states a figure that used to be canonical', () => {
+  it.each(PROSE_FILES)('%s carries no superseded figure', (relPath) => {
+    expect(supersededIn(relPath)).toEqual([]);
+  });
+
+  it('also covers the board report and the pages CLAIMS never listed', () => {
+    for (const f of ['pages/AnnualReport.js', 'pages/Executive.js', 'pages/Scope1.js', 'pages/Scope3.js']) {
+      expect(supersededIn(f), f).toEqual([]);
+    }
+  });
+
+  it('the list is live — every entry really is superseded', () => {
+    const current = [
+      Math.round(GROSS_MT).toLocaleString(),
+      Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toLocaleString(),
+    ];
+    // a value cannot be both canonical and superseded
+    current.forEach((c) => expect(SUPERSEDED).not.toContain(c));
+    expect(SUPERSEDED.length).toBeGreaterThan(8);
+  });
+
+  it('catches the phrasings the CLAIMS patterns miss', () => {
+    const tmp = path.join(SRC, '__tests__/.superseded-fixture.js');
+    fs.writeFileSync(tmp,
+      "const a = 'Annual emissions (~4,395 mtCO₂e/yr) are a FLOW';\n"
+      + "const b = \"KUA's headline number is ~2,566 mtCO₂e/year\";\n"
+      + "const c = 'A point estimate (2,566) by itself is misleading';\n", 'utf8');
+    try {
+      // three lines, and the third names 2,566 once
+      expect(supersededIn('__tests__/.superseded-fixture.js').length).toBeGreaterThanOrEqual(3);
+      // and CLAIMS — the old guard — catches NONE of them, which is the point
+      expect(staleClaimsIn('__tests__/.superseded-fixture.js')).toEqual([]);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
+  it('spares a line that names an old figure in order to retire it', () => {
+    const tmp = path.join(SRC, '__tests__/.superseded-ok.js');
+    fs.writeFileSync(tmp,
+      "const a = 'the net was 2,566 before the bottom-up collapse';\n"
+      + "// the headline used to read 4,395\n", 'utf8');
+    try {
+      expect(supersededIn('__tests__/.superseded-ok.js')).toEqual([]);
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+});
+
 describe('teaching prose matches the canonical totals', () => {
   it.each(PROSE_FILES)('%s states the current headline figures', (relPath) => {
     expect(staleClaimsIn(relPath)).toEqual([]);

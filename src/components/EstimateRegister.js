@@ -51,21 +51,35 @@ function Row({ e }) {
       <td style={styles.td}>
         <div style={{ fontWeight: 600, color: '#e5e7eb' }}>{e.label}</div>
         <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{e.scope}</div>
-        <button type="button" style={styles.methodBtn} onClick={() => setOpen(!open)} aria-expanded={open}>
+        <button
+          type="button"
+          className="no-print est-toggle"
+          style={styles.methodBtn}
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label={`${open ? 'Hide' : 'Show'} the method behind ${e.label}`}
+        >
           {open ? 'Hide method' : 'How this is estimated'}
         </button>
-        {open && (
-          <>
-            <div style={styles.method}>{e.method}</div>
-            <div style={styles.retired}>
-              <strong style={{ color: '#e5e7eb' }}>What would replace it:</strong> {e.retiredBy}
-            </div>
-          </>
-        )}
+        {/*
+          ALWAYS RENDERED, hidden with the `hidden` attribute rather than
+          `{open && ...}`. This page carries a "Print / Save PDF" button and a
+          board packet is how the document actually travels. Under conditional
+          rendering every method string is absent from that PDF — a disclosure
+          feature disclosing nothing, in the one format where the reader cannot
+          click. No stylesheet can recover a node React never rendered.
+          App.css reveals these under @media print.
+        */}
+        <div className="est-detail" hidden={!open}>
+          <div style={styles.method}>{e.method}</div>
+          <div style={styles.retired}>
+            <strong style={{ color: '#e5e7eb' }}>What would replace it:</strong> {e.retiredBy}
+          </div>
+        </div>
       </td>
       <td style={styles.tdNum}>{amount}</td>
       <td style={styles.td}>
-        <span style={{ ...styles.pill, ...TIER_STYLE[e.tier] }}>{TIER_LABEL[e.tier]}</span>
+        <span className="est-pill" style={{ ...styles.pill, ...TIER_STYLE[e.tier] }}>{TIER_LABEL[e.tier]}</span>
       </td>
     </tr>
   );
@@ -73,7 +87,7 @@ function Row({ e }) {
 
 export function EstimateRegister() {
   return (
-    <div>
+    <div className="est-register">
       <p style={styles.lede}>
         <strong style={{ color: '#fcd34d' }}>
           About {MODELLED_SHARE_OF_GROSS}% of the gross figure on this dashboard is modelled, not measured.
@@ -95,7 +109,7 @@ export function EstimateRegister() {
         around a central {MODELLED_SPREAD_EXAMPLE.central.toLocaleString()}. {MODELLED_SPREAD_EXAMPLE.note}
       </p>
 
-      <table style={styles.table}>
+      <table className="est-table" style={styles.table}>
         <caption style={{ captionSide: 'top', textAlign: 'left', padding: '0 0 8px', fontSize: 13, color: '#94a3b8' }}>
           All {REGISTER_COUNTS.total} figures behind the footprint: {REGISTER_COUNTS.modelled} modelled,{' '}
           {REGISTER_COUNTS.partlyMeasured} partly measured, {REGISTER_COUNTS.measured} measured outright.

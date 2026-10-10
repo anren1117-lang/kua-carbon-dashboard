@@ -204,6 +204,32 @@ a[href="#admin-main"]:focus {
   /* Restore some semantic colors on print so red/green/amber pills + section
      accents stay readable + recognizable. */
   .plan-print .no-print { display: none !important; }
+
+  /* THE ESTIMATE REGISTER IN PRINT.
+     This page carries a "Print / Save PDF" button, and a board packet is the
+     format the document actually travels in. The register's method strings sit
+     behind per-row disclosures, so a printed PDF would show a table of figures
+     with none of the methods — a disclosure feature disclosing nothing, in the
+     one format where a reader cannot click. So: reveal every detail, drop the
+     toggles, flatten the dark theme to ink.
+     The tier pill cannot rely on its background colour here, since greyscale
+     printing collapses amber / blue / green to near-identical greys. In print
+     it becomes bordered dark text and the WORD carries the meaning. */
+  .est-register .est-detail[hidden] { display: block !important; }
+  .est-register .est-toggle { display: none !important; }
+  .est-register, .est-register * {
+    color: #1f2937 !important;
+    background: #ffffff !important;
+  }
+  .est-register strong { color: #0b1220 !important; }
+  .est-table { border: 1px solid #94a3b8 !important; }
+  .est-table td, .est-table th { border-bottom: 1px solid #cbd5e1 !important; }
+  .est-table tr { page-break-inside: avoid; }
+  .est-pill {
+    border: 1px solid #475569 !important;
+    color: #0b1220 !important;
+    font-weight: 700 !important;
+  }
 }
 
 

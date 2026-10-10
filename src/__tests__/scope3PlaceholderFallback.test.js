@@ -23,6 +23,9 @@
 
 import { describe, it, expect } from 'vitest';
 import { composeScope3FromRecords, WASTE_FACTORS_MT_PER_TON } from '../data/scopeTotals.js';
+// The placeholder figures are now derived from the bottom-up model rather than
+// typed here. Transcribing them into the assertion is what let the two drift.
+import { SCOPE3_WASTE_BOTTOM_UP_MT, SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT } from '../data/geographicEstimates.js';
 
 const row = (c, name) => c.breakdown.find((b) => b.source.includes(name));
 const DAY = [{ zip_code: '03753', school_year: '2026-2027' }];
@@ -53,7 +56,7 @@ describe('placeholder components survive the arrival of unrelated data', () => {
   it('waste keeps its placeholder figure when no waste rows exist', () => {
     const live = composeScope3FromRecords({ dayStudents: DAY });
     const w = row(live, 'Waste');
-    expect(w.mt).toBe(5);                                 // was 0
+    expect(w.mt).toBe(SCOPE3_WASTE_BOTTOM_UP_MT);         // was 0, then a stale 5
     expect(w.provenance).toBe('estimated');
     // and the number no longer contradicts the method text beside it
     expect(w.method).toMatch(/420 people/);
@@ -78,7 +81,7 @@ describe('placeholder components survive the arrival of unrelated data', () => {
       wasteRecords: [{ waste_type: 'Landfill', amount: 1, unit: 'tons' }],
     });
     const travel = row(live, 'Student travel');
-    expect(travel.mt).toBe(760);
+    expect(travel.mt).toBe(SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT);
     expect(travel.provenance).toBe('estimated');
   });
 
@@ -87,8 +90,11 @@ describe('placeholder components survive the arrival of unrelated data', () => {
     const oneWaste = composeScope3FromRecords({
       wasteRecords: [{ waste_type: 'Landfill', amount: 1, unit: 'tons' }],
     });
-    // waste 5 -> 1 is the only change, so the total moves by exactly 4
-    expect(base.totalMt - oneWaste.totalMt).toBe(4);
+    // one landfill short ton replaces the whole modelled waste line, so the
+    // total moves by exactly the difference — derived, so a reprice of the
+    // waste model does not turn this into a false failure
+    const oneTonMt = WASTE_FACTORS_MT_PER_TON.Landfill;
+    expect(base.totalMt - oneWaste.totalMt).toBe(Math.round(SCOPE3_WASTE_BOTTOM_UP_MT - oneTonMt));
   });
 
   it('only the component with data moves; the rest hold their placeholders', () => {

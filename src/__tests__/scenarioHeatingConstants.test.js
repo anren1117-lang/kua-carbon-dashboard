@@ -28,11 +28,17 @@ import {
   SCOPE1_HEATING_MT, HEATING_SHARE_OF_SCOPE1, HEATING_KG_PER_MMBTU, HEATING_OIL_FRACTION,
 } from '../data/scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
+import { SCOPE1_HEATING_BOTTOM_UP_MT } from '../data/geographicEstimates.js';
+import { SCOPE1_PLACEHOLDER_BREAKDOWN } from '../data/scopeTotals.js';
 
 describe('the heating constants come from the factor table', () => {
   it('heating share matches the Scope 1 rows, not 0.80', () => {
-    expect(SCOPE1_HEATING_MT).toBe(1290);
-    expect(HEATING_SHARE_OF_SCOPE1).toBeCloseTo(1290 / 1351, 4);
+    // was a transcribed 1290; the Scope 1 rows now come from the bottom-up
+    // model, so this reads the row it is about
+    expect(SCOPE1_HEATING_MT).toBe(SCOPE1_HEATING_BOTTOM_UP_MT);
+    // was 1290/1351, two literals for one ratio; both rows moved
+    const s1Sum = SCOPE1_PLACEHOLDER_BREAKDOWN.reduce((t, r) => t + r.mt, 0);
+    expect(HEATING_SHARE_OF_SCOPE1).toBeCloseTo(SCOPE1_HEATING_BOTTOM_UP_MT / s1Sum, 4);
     expect(HEATING_SHARE_OF_SCOPE1).toBeGreaterThan(0.9);
   });
 

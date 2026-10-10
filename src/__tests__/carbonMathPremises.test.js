@@ -99,11 +99,26 @@ describe('Q5 states a net that follows from its own answer', () => {
       // from — otherwise the subtraction does not reproduce.
       expect(block).toMatch(new RegExp(adopted));
     }
-    // Derived: gross moved when Scope 2 was repriced to the published eGRID
-    // rate (task #5), and this subtraction should follow it.
-    expect(GROSS_MT - 2100).toBeCloseTo(GROSS_MT - 2100, 1);
-    expect(Math.round(GROSS_MT - 2100)).toBe(2295);
-    // 2,546 until task #5; Scope 2 moved to the published eGRID rate
-    expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBeCloseTo(2566, 0);
+    // WHAT USED TO BE HERE, four lines after a comment saying "derive both
+    // rather than pinning literals that go stale":
+    //
+    //   expect(GROSS_MT - 2100).toBeCloseTo(GROSS_MT - 2100, 1);   // tautology
+    //   expect(Math.round(GROSS_MT - 2100)).toBe(2295);            // pinned
+    //   expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBeCloseTo(2566, 0); // pinned
+    //
+    // The first compares a value to itself and can never fail. The other two
+    // pinned the exact figures the comment warned about, and both went stale
+    // the next time gross moved. The check that carries meaning is the one
+    // above: a net quoted in the block must be reproducible from the sink the
+    // block states. The rest is arithmetic, asserted as arithmetic.
+    const highEndSink = 2100;
+    expect(Math.round(GROSS_MT - highEndSink))
+      .toBe(Math.round(GROSS_MT) - highEndSink);
+    // even the most generous published drawdown leaves KUA net positive —
+    // which is the premise Q5 rests on, and the thing worth guarding
+    expect(GROSS_MT - highEndSink).toBeGreaterThan(0);
+    expect(GROSS_MT - ANNUAL_SEQUESTRATION_MT).toBeGreaterThan(0);
+    // and the canonical net is the adopted sink subtracted, nothing else
+    expect(Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT)).toBe(Number(net.replace(/,/g, '')));
   });
 });

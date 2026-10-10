@@ -15,6 +15,33 @@ import { GRID_MIX_ANNUAL_MTCO2E, KG_PER_KWH } from './gridMix.js';
 import { getFactorByKey } from './emissionFactors.js';
 import { avertAvoidedKgPerKwh, AVERT_SOURCE } from './gridMixHistory.js';
 import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT, REPORTING_PERIOD } from './academicCalendar.js';
+// THE PLACEHOLDER FIGURES NOW COME FROM THE BOTTOM-UP MODEL.
+//
+// Scope 1 and Scope 3 were hand-set constants here AND independently computed
+// in geographicEstimates.js, which is the module that carries the documented
+// method, the published sources and a three-method range for each component.
+// The two drifted, and the dashboard shipped the result: /methodology printed
+// Scope 1 + Scope 3 = 4,038 from the bottom-up model while every other surface
+// printed 4,002 from these constants. Two answers to one question, on one site.
+//
+// The drift was not uniform, which is why nobody caught it by eye — heating
+// 1,290 against 1,280, refrigerants 7 against 8, goods 1,315 against 1,317,
+// upstream 230 against 228, and student travel 760 against 804. Only waste
+// disagreed by enough to notice, and it took the estimate register's
+// reconciliation check to surface even that.
+//
+// geographicEstimates does not import this module, so this direction is safe.
+import {
+  SCOPE1_HEATING_BOTTOM_UP_MT,
+  SCOPE1_FLEET_BOTTOM_UP_MT,
+  SCOPE1_REFRIGERANTS_BOTTOM_UP_MT,
+  SCOPE3_GOODS_BOTTOM_UP_MT,
+  SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT,
+  SCOPE3_DINING_BOTTOM_UP_MT,
+  SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT,
+  SCOPE3_COMMUTING_BOTTOM_UP_MT,
+  SCOPE3_WASTE_BOTTOM_UP_MT,
+} from './geographicEstimates.js';
 
 // ─── Scope 1 ──────────────────────────────────────────────────────
 // Heating fuel (heating oil + propane) + refrigerant leakage + fleet.
@@ -22,14 +49,18 @@ import { COMMUTE_DAYS_PER_WEEK_DEFAULT, COMMUTE_WEEKS_DEFAULT, REPORTING_PERIOD 
 // from src/data/geographicEstimates.js (rounded). Replace by importing
 // actual fuel delivery records (fuel_bills Supabase table) and
 // refrigerant service logs — flips estimated → measured at that point.
-const SCOPE1_PLACEHOLDER_MT = 1350;
 // Exported so the estimate register on /methodology can publish each row's
 // own `method` string rather than a second, driftable description of it.
 export const SCOPE1_PLACEHOLDER_BREAKDOWN = [
-  { source: 'Heating oil + propane', mt: 1290, provenance: 'estimated', method: '290K sqft × NH-CZ6 intensity (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Real KUA delivery invoices not yet integrated.' },
-  { source: 'Fleet vehicles',         mt:   54, provenance: 'estimated', method: 'KUA fleet registry: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans + 1 truck × actual annualMiles ÷ mpg × EPA Mobile Combustion. Real fuel-card records not yet integrated.' },
-  { source: 'Refrigerant leakage',    mt:    7, provenance: 'estimated', method: '~80 lb HVAC charge × 5–15%/yr leak rate × IPCC AR6 GWP100. Real service-report mass balance not yet integrated.' },
+  { source: 'Heating oil + propane', mt: SCOPE1_HEATING_BOTTOM_UP_MT, provenance: 'estimated', method: '290K sqft × NH-CZ6 intensity (Dorm 75 / Academic 55 / Athletic 45 / Other 55 kBtu/sqft/yr) × 90% oil + 10% propane × EPA Stationary Combustion factors. Real KUA delivery invoices not yet integrated.' },
+  { source: 'Fleet vehicles',         mt: SCOPE1_FLEET_BOTTOM_UP_MT, provenance: 'estimated', method: 'KUA fleet registry: 2 diesel buses (6.5 mpg, ~26K mi/yr) + 2 gasoline vans + 1 truck × actual annualMiles ÷ mpg × EPA Mobile Combustion. Real fuel-card records not yet integrated.' },
+  { source: 'Refrigerant leakage',    mt: SCOPE1_REFRIGERANTS_BOTTOM_UP_MT, provenance: 'estimated', method: '~80 lb HVAC charge × 5–15%/yr leak rate × IPCC AR6 GWP100. Real service-report mass balance not yet integrated.' },
 ];
+
+// Derived from the rows, which are themselves the bottom-up components. Was a
+// hardcoded 1350 against rows summing to 1351, and against a bottom-up central
+// of 1342 — three values for one quantity in one file.
+const SCOPE1_PLACEHOLDER_MT = SCOPE1_PLACEHOLDER_BREAKDOWN.reduce((t, r) => t + r.mt, 0);
 
 /** Compute Scope 1 from the underlying components. Today this is the
  *  bottom-up cross-check central; once data wiring ships it composes
@@ -604,15 +635,30 @@ export const SCOPE1_TOTAL_MT = composeScope1().totalMt;
 // ─── Scope 3 ──────────────────────────────────────────────────────
 // Student travel + dining (Cat 1 purchased goods) + waste + procurement +
 // commuting + upstream fuel.
-const SCOPE3_PLACEHOLDER_MT = 2635;
 export const SCOPE3_PLACEHOLDER_BREAKDOWN = [
-  { source: 'Purchased goods (non-dining)',              mt: 1315, provenance: 'estimated', method: 'EPA Supply Chain GHG Emission Factors v1.3 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors.' },
-  { source: 'Student travel (international + boarder)', mt:  760, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 82 day commuters local Upper Valley + 208 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA 2024 factors including the indirect effects of non-CO₂ emissions. Travel office records not yet integrated.' },
-  { source: 'Dining (food production)',                  mt:  235, provenance: 'estimated', method: 'Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated.' },
-  { source: 'Upstream fuel',                             mt:  230, provenance: 'estimated', method: '~17% upstream uplift on bottom-up Scope 1 (refinery + transport for heating oil + propane + fleet fuels).' },
-  { source: 'Commuting',                                 mt:   90, provenance: 'estimated', method: '52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated.' },
-  { source: 'Waste',                                     mt:    5, provenance: 'estimated', method: '420 people × per-day generation × diversion-split scenarios × EPA Hub 2025 Table 9 (Scope 3 Cat 5) factors. NOTE: this 5 mt row was derived under the old credit-taking factors; on the corrected Cat 5 basis the same activity is ~22 mt. Not moved here because this row sums into SCOPE3_PLACEHOLDER_MT — see the waste range in geographicEstimates.js for the corrected figure. Hauler invoices (tons by stream) not yet integrated.' },
+  { source: 'Purchased goods (non-dining)',              mt: SCOPE3_GOODS_BOTTOM_UP_MT, provenance: 'estimated', method: 'EPA Supply Chain GHG Emission Factors v1.3 spend-based: ~$3M non-energy procurement × ~0.40 kg CO2e/$ KUA-typical weighted average across paper / IT / cleaning / apparel sectors. KUA Business Office annual spend not yet mapped to USEEIO sectors.' },
+  { source: 'Student travel (international + boarder)', mt: SCOPE3_STUDENT_TRAVEL_BOTTOM_UP_MT, provenance: 'estimated', method: 'Yale-style cohort method × KUA fingerprint: 82 day commuters local Upper Valley + 208 US boarders Northeast-skewed × 3-4 RTs/yr + 50 international East-Asia heavy × 1-2 RTs/yr. ICAO + DEFRA 2024 factors including the indirect effects of non-CO₂ emissions. Travel office records not yet integrated.' },
+  { source: 'Dining (food production)',                  mt: SCOPE3_DINING_BOTTOM_UP_MT, provenance: 'estimated', method: 'Poore & Nemecek 2018: ~217K student meals (boarders 3×7×36 + day 10×36) + 50K faculty/staff × meal-class kg CO2e. Sodexo/SAGE invoices not yet integrated.' },
+  { source: 'Upstream fuel',                             mt: SCOPE3_UPSTREAM_FUEL_BOTTOM_UP_MT, provenance: 'estimated', method: '~17% upstream uplift on bottom-up Scope 1 (refinery + transport for heating oil + propane + fleet fuels).' },
+  { source: 'Commuting',                                 mt: SCOPE3_COMMUTING_BOTTOM_UP_MT, provenance: 'estimated', method: '52 staff × Upper Valley ACS commute distribution × ICCT effective fleet fuel-economy. HR commute survey not yet integrated.' },
+  // This row read 5 mt under a note conceding that the corrected EPA Cat 5
+  // basis gives ~22, and that it had not been moved "because this row sums
+  // into SCOPE3_PLACEHOLDER_MT". That is a reason of convenience, not of
+  // correctness, and it became indefensible the moment this breakdown began
+  // feeding an estimate register whose whole purpose is honest disclosure:
+  // publishing 5 under a footnote reading "actually 22" is worse than either
+  // number alone. Now imported from the module that computes it.
+  { source: 'Waste',                                     mt: SCOPE3_WASTE_BOTTOM_UP_MT, provenance: 'estimated', method: '420 people × per-day generation (0.4 / 0.5 / 0.7 kg per person-day) × diversion-split scenarios × EPA GHG Emission Factors Hub 2025 Table 9 (Scope 3 Category 5). Avoided-emission credits are excluded per EPA\'s own note, so recycling and composting are smaller emissions rather than credits — an earlier version of this row took those credits and read 5 mt. Hauler invoices (tons by stream) not yet integrated.' },
 ];
+/**
+ * The Scope 3 total was a hardcoded `2635` sitting ABOVE the breakdown it was
+ * supposed to total — two independent sources of truth for one number. Fixing
+ * the waste row moved the breakdown to 2,652 and left the headline at 2,635,
+ * and only the estimate register's reconciliation check noticed. Derived now,
+ * so a corrected row cannot silently disagree with the total again.
+ */
+const SCOPE3_PLACEHOLDER_MT = SCOPE3_PLACEHOLDER_BREAKDOWN.reduce((s, r) => s + r.mt, 0);
+
 /**
  * The Scope 3 ordering, derived and exported once.
  *

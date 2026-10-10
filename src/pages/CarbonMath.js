@@ -91,7 +91,7 @@ export function buildQuestions(scope2Mt = SCOPE2_TOTAL_MT) {
     tolerance: 0.05,
     work: [
       '1,000 acres × 2.1 mt/acre/yr = 2,100 mtCO₂e/yr',
-      'Why this matters: at this flat rate the forest offsets a large share of KUA\'s ~4,395 mt gross — but not all of it: 4,395 − 2,100 = 2,275 mt net. The dashboard does not use the flat rate; it adopts the per-stand inventory of 1,829 mt, which gives the ~2,566 mt it publishes. Either way KUA is NOT net-negative — the sink makes the number much smaller, not negative.',
+      'Why this matters: at this flat rate the forest offsets a large share of KUA\'s ~4,448 mt gross — but not all of it: 4,448 − 2,100 = 2,348 mt net. The dashboard does not use the flat rate; it adopts the per-stand inventory of 1,829 mt, which gives the ~2,619 mt it publishes. Either way KUA is NOT net-negative — the sink makes the number much smaller, not negative.',
     ],
   },
   {
@@ -122,7 +122,7 @@ export function buildQuestions(scope2Mt = SCOPE2_TOTAL_MT) {
   {
     id: 'q8',
     level: 'ap',
-    setup: 'KUA\'s gross emissions are reported as 4,395 ± 200 mtCO₂e (one standard deviation). Sinks are adopted at 1,829 mtCO₂e, but the four published methods span 1,000–2,100 — treat the half-range, ±550, as one standard deviation. What is the standard deviation of the net (gross − sinks), assuming independent errors?',
+    setup: 'KUA\'s gross emissions are reported as 4,448 ± 200 mtCO₂e (one standard deviation). Sinks are adopted at 1,829 mtCO₂e, but the four published methods span 1,000–2,100 — treat the half-range, ±550, as one standard deviation. What is the standard deviation of the net (gross − sinks), assuming independent errors?',
     answer: 849,
     unit: 'mtCO₂e',
     tolerance: 0.05,
@@ -131,7 +131,7 @@ export function buildQuestions(scope2Mt = SCOPE2_TOTAL_MT) {
       'σ_gross² = 200² = 40,000',
       'σ_sinks² = 825² = 680,625',
       'σ_net² = 720,625 → σ_net = √720,625 ≈ 849 mtCO₂e',
-      'Why this matters: the NET number has a wider uncertainty band than EITHER input — and here the SINK uncertainty swamps everything else. ±550 against ±200 means the forest estimate alone decides the answer, which is exactly why a real forest inventory is the highest-value measurement KUA could make. Net is 4,395 − 1,829 = 2,566, so "net 2,566 ± 585 mt" is honest; "net 2,566 mt" flat is not. The sink spread narrowed when the rates moved to a net basis in 2026; it ran 1,000–2,650 before that.',
+      'Why this matters: the NET number has a wider uncertainty band than EITHER input — and here the SINK uncertainty swamps everything else. ±550 against ±200 means the forest estimate alone decides the answer, which is exactly why a real forest inventory is the highest-value measurement KUA could make. Net is 4,448 − 1,829 = 2,619, so "net 2,619 ± 585 mt" is honest; "net 2,619 mt" flat is not. The sink spread narrowed when the rates moved to a net basis in 2026; it ran 1,000–2,650 before that.',
     ],
   },
   ];

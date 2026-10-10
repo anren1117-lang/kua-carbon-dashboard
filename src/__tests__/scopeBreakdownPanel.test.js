@@ -34,6 +34,7 @@ vi.mock('../supabaseClient.js', () => ({ supabase: makeQueryHarness() }));
 import Scope1 from '../pages/Scope1.js';
 import Scope3 from '../pages/Scope3.js';
 import { ScopeBreakdownPanel } from '../components/ScopeBreakdownPanel.js';
+import { SCOPE1_PLACEHOLDER_BREAKDOWN, SCOPE3_LINES } from '../data/scopeTotals.js';
 
 const mount = (C) => render(<MemoryRouter future={ROUTER_FUTURE}><C /></MemoryRouter>);
 beforeEach(cleanup);
@@ -51,19 +52,26 @@ describe('per-component breakdown is visible', () => {
     expect(within(panel).getByText(/Heating oil \+ propane/i)).toBeTruthy();
     expect(within(panel).getByText(/Fleet vehicles/i)).toBeTruthy();
     expect(within(panel).getByText(/Refrigerant leakage/i)).toBeTruthy();
-    expect(within(panel).getByText('1,290')).toBeTruthy();   // heating, the dominant line
+    // read from the data: these rows now derive from the bottom-up model, so
+    // a transcribed '1,290' is a false failure rather than a caught defect
+    const heating = SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => /heating/i.test(r.source));
+    expect(within(panel).getByText(heating.mt.toLocaleString())).toBeTruthy();
     expect(within(panel).getByText('54')).toBeTruthy();
-    expect(within(panel).getByText('7')).toBeTruthy();
+    const refrig = SCOPE1_PLACEHOLDER_BREAKDOWN.find((r) => /refrigerant/i.test(r.source));
+    expect(within(panel).getByText(refrig.mt.toLocaleString())).toBeTruthy();
   });
 
   it('Scope 3 shows purchased goods — the biggest line in the inventory', () => {
     mount(Scope3);
     const panel = screen.getByRole('region', { name: /Where Scope 3 comes from/i });
     expect(within(panel).getByText(/Purchased goods/i)).toBeTruthy();
-    expect(within(panel).getByText('1,315')).toBeTruthy();
-    expect(within(panel).getByText('760')).toBeTruthy();     // student travel
-    // 1,315 of 2,635 is ~50% — the share column must agree with the figures.
-    expect(within(panel).getByText('50%')).toBeTruthy();
+    const goods = SCOPE3_LINES.reduce((a, b) => (b.mt > a.mt ? b : a));
+    expect(within(panel).getByText(goods.mt.toLocaleString())).toBeTruthy();
+    const travel = SCOPE3_LINES.find((r) => /travel/i.test(r.source));
+    expect(within(panel).getByText(travel.mt.toLocaleString())).toBeTruthy();
+    // the share column must agree with the figures it sits beside — read the
+    // share off the data rather than transcribing last quarter's percentage
+    expect(within(panel).getByText(`${Math.round(goods.shareOfScope3)}%`)).toBeTruthy();
   });
 
   it('shares are computed from the rows, so they sum to 100%', () => {

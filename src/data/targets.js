@@ -37,7 +37,7 @@ export const reductionTargets = [
     title: '50% gross-emissions reduction by 2030',
     scope: 'gross',
     baselineYear: 2024,
-    baselineValue: GROSS_BASELINE_MT, // bottom-up cross-check central: Scope 1 1,350 + Scope 2 390 + Scope 3 2,635
+    baselineValue: GROSS_BASELINE_MT, // bottom-up cross-check central: Scope 1 1,342 + Scope 2 410 + Scope 3 2,696
     targetYear: 2030,
     percentReduction: 50,
     description: 'Halve KUA\'s gross annual emissions vs the 2024 preliminary baseline. Achievable largely through dorm thermostat adjustments, beef-portion reductions, and the planned Whittemore + Miller solar arrays.',
