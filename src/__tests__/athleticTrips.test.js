@@ -124,3 +124,58 @@ describe('the athletics week is recorded as what it is', () => {
     expect(long[0].roundTripMi).toBeGreaterThan(Math.max(...others) * 1.5);
   });
 });
+
+// ─── the long-haul footnote ─────────────────────────────────────────────
+//
+// The table marks long-haul rows with a `*`, and the footnote explaining it
+// was buried in the last sentence of a dense 12px paragraph — the marker
+// pointed at nothing a reader could find. Worse, it asserted "Wilbraham is
+// the one trip long enough that a charter is plausible", which is a COUNT
+// claim hardcoded in prose: add a second long-haul fixture and the sentence
+// silently becomes false while every test still passes.
+//
+// It is derived now, and this is what holds it derived.
+
+describe('the long-haul charter footnote', () => {
+  const src = readFileSync(resolve(process.cwd(), 'pages/Transportation.js'), 'utf8');
+
+  it('names no destination as a literal — it reads them from the data', () => {
+    const longHaul = athleticTrips.filter((t) => t.longHaul);
+    expect(longHaul.length).toBeGreaterThan(0);
+    longHaul.forEach((t) => {
+      // the destination may appear in the DATA, never typed into the page
+      expect(src, `${t.destination} is hardcoded in Transportation.js`)
+        .not.toContain(`${t.destination} is the one trip`);
+    });
+    expect(src).toContain('longHaulTrips');
+  });
+
+  it('the singular and plural forms are both present, chosen by count', () => {
+    expect(src).toMatch(/longHaulTrips\.length === 1/);
+    expect(src).toMatch(/is the one trip long enough/);
+    expect(src).toMatch(/are long enough that a charter is plausible/);
+  });
+
+  it('the footnote is its own element, not the tail of a paragraph', () => {
+    // tied to the table's `*` marker, with a visual rule
+    const i = src.indexOf('A chartered coach would be');
+    expect(i).toBeGreaterThan(-1);
+    const block = src.slice(Math.max(0, i - 900), i);
+    expect(block).toContain('borderLeft');
+    expect(block).toMatch(/longHaulTrips\.length > 0/);
+  });
+
+  it('names the boundary the asterisk exists to flag', () => {
+    // a charter is Scope 3, an owned bus is Scope 1 — the whole point
+    expect(src).toMatch(/Scope 3/);
+    expect(src).toMatch(/Counted here as owned-fleet Scope 1/);
+  });
+
+  it('body text is not 12px — this renders on classroom Chromebooks', () => {
+    const i = src.indexOf('Mileage is estimated road distance');
+    expect(i).toBeGreaterThan(-1);
+    const style = src.slice(Math.max(0, i - 220), i);
+    expect(style).not.toMatch(/fontSize: 12\b/);
+    expect(style).toMatch(/fontSize: 13/);
+  });
+});

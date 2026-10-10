@@ -19,6 +19,7 @@ export default function Transportation() {
     return mt;
   }, []);
   const fleetGallons = fleetFuelLogs.reduce((s, l) => s + l.fuelGallons, 0);
+  const longHaulTrips = athleticTrips.filter((t) => t.longHaul);
   const fleetMiles = fleetFuelLogs.reduce((s, l) => s + l.miles, 0);
 
   // Carpool savings
@@ -101,21 +102,39 @@ export default function Transportation() {
             </tbody>
           </table>
         </div>
-        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginTop: 10 }}>
+        {/*
+          12px was too small for a block this dense on a classroom Chromebook,
+          and the asterisk footnote was buried in its last sentence — the `*`
+          markers in the table above pointed at nothing a reader could find.
+          The footnote is now its own element, and the "one trip" claim is
+          DERIVED: name the long-haul destinations from the data, so adding a
+          second one cannot leave the prose asserting there is only one.
+        */}
+        <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.65, marginTop: 10 }}>
           Mileage is estimated road distance from Meriden, round trip — the schedule gives
           times and destinations, not miles, vehicles or headcounts, so those three are not
           modelled here. <strong>{ATHLETIC_WEEK_MILES} miles in a single week</strong> is the
           useful part: across 20–32 competition weeks that is {(ATHLETIC_WEEK_MILES * 20).toLocaleString()}–
           {(ATHLETIC_WEEK_MILES * 32).toLocaleString()} miles a year of athletics alone, against{' '}
-          {Math.round(fleetMiles).toLocaleString()} modelled for the whole fleet. The distances are
-          estimates but not unchecked: the schedule gives departure and game time, so each implies
-          a road speed — {Math.min(...tripSpeedCheck.map((t) => t.impliedMph))}–{Math.max(...tripSpeedCheck.map((t) => t.impliedMph))} mph here,
+          {Math.round(fleetMiles).toLocaleString()} modelled for the whole fleet. Estimated is not
+          unchecked: the schedule gives departure and game time, so each trip implies a road
+          speed — {Math.min(...tripSpeedCheck.map((t) => t.impliedMph))}–{Math.max(...tripSpeedCheck.map((t) => t.impliedMph))} mph here,
           all inside the {PLAUSIBLE_MPH.min}–{PLAUSIBLE_MPH.max} mph band a wrong mileage would break. Athletics
-          plausibly accounts for most of it, which leaves little room for field trips,
+          plausibly accounts for most of the fleet total, which leaves little room for field trips,
           admissions travel and maintenance runs — so the fleet mileage assumption is more
-          likely low than high. * Wilbraham is the one trip long enough that a charter is
-          plausible; a chartered coach would be Scope 3, and the schedule does not say.
+          likely low than high.
         </p>
+        {longHaulTrips.length > 0 && (
+          <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.65, marginTop: 8, paddingLeft: 14, borderLeft: '2px solid #334155' }}>
+            <strong style={{ color: '#e5e7eb' }}>*</strong>{' '}
+            {longHaulTrips.length === 1
+              ? `${longHaulTrips[0].destination} is the one trip long enough that a charter is plausible.`
+              : `${longHaulTrips.map((t) => t.destination).join(', ')} are long enough that a charter is plausible.`}{' '}
+            A chartered coach would be <strong style={{ color: '#e5e7eb' }}>Scope 3</strong>, not Scope 1 —
+            the school would be buying the service rather than burning the fuel — and the schedule
+            does not say which was used. Counted here as owned-fleet Scope 1.
+          </p>
+        )}
       </ModuleSection>
 
       <ModuleSection
