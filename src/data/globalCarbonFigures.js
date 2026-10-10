@@ -182,6 +182,35 @@ export const CH4_ANTHRO_GT = 0.369;
 export const CH4_TOTAL_TG = 575;
 export const CH4_ANTHRO_SHARE_PERCENT = 65;
 
+// HOW MUCH HAS IT WARMED — two numbers, two questions, and the gap between
+// them is wider than the drift this file was built to catch.
+//
+// The content said "about 1.2 °C of warming since the late 1800s" in one place
+// and "~1.1°C since pre-industrial" in another, while the carbon-budget section
+// of the SAME file said 1.36 °C. All three were defensible readings of
+// different quantities, which is exactly why nothing flagged them.
+//
+//   HUMAN-ATTRIBUTED warming is the one that pairs with a carbon budget. GCB
+//   2025 reports 1.36 °C in 2024, and reports it precisely BECAUSE the budget
+//   arithmetic is conditioned on it: the remaining budget is "consistent with
+//   the warming of the planet attributed to human activities, which reached
+//   1.36 °C in 2024". Quote a budget beside a different warming figure and the
+//   two no longer describe the same world.
+//
+//   OBSERVED warming in a single year includes natural variability. 2024 ran
+//   hotter than its human-attributed component because of El Nino. Using an
+//   observed single-year value to anchor a budget imports that El Nino into
+//   the arithmetic.
+//
+// Same trap as inventory-vs-consequential and Mauna-Loa-vs-global, a third
+// time: identical units, different question. So the quantity is named in the
+// constant, not just the number — a bare WARMING_C would have been swapped
+// between the two meanings by the next person to update it.
+export const WARMING_HUMAN_ATTRIBUTED_C = 1.36;
+export const WARMING_HUMAN_ATTRIBUTED_YEAR = 2024;
+export const WARMING_BASIS =
+  'warming attributed to human activities, Global Carbon Budget 2025 (the figure its remaining-budget estimate is conditioned on)';
+
 // The list of SUPERSEDED figures deliberately does NOT live here — it lives in
 // __tests__/globalFigures.test.js, which ships nowhere, so a list of stale
 // strings cannot put them back into production.

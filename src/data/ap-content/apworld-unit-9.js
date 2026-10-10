@@ -62,7 +62,7 @@ export const APWORLD_UNIT_9 = {
 
 **Climate change.**
 - Greenhouse gas emissions tripled since 1960s.
-- Warming ~1.1°C since pre-industrial.
+- Human-caused warming ~1.36 °C by 2024 (Global Carbon Budget 2025).
 - More extreme weather, sea level rise, ecosystem damage.
 - **Paris Agreement (2015)**: countries pledge cuts.
 - Renewables (solar, wind) becoming cheapest electricity in many places.

@@ -70,6 +70,14 @@ const SUPERSEDED_GLOBAL_FIGURES = [
   '250 GtCO₂ left', '315 Gt CO₂', '315 GtCO₂',
   'GWP-100 of 28', 'GWP100 of 28',
   '114 yr', '114-year',
+  // CARRY THE NOUN, not just the number. The bare '1.2 °C' and '1.1°C' would
+  // have hit a religions table (~1.2B adherents), a Somme casualty count
+  // (~1.2M), an air-density constant (1.2 kg/m³) and two fertility rates —
+  // five false positives in subjects with no CO₂ in them, for the same reason
+  // '51% increase' hit a cancer-risk lesson. The warming claim is the one that
+  // names warming.
+  '1.2 °C of warming', '1.2°C of warming', '~1.1°C since pre-industrial',
+  '1.1 °C since pre-industrial', '1.1°C since pre-industrial',
 ];
 
 const SRC = path.resolve(new URL('../', import.meta.url).pathname);
@@ -121,6 +129,32 @@ const RETIRING = /older source|earlier version|previously|used to (say|read)|sup
 // surface that was accurate.
 const OTHER_SERIES = /Mauna Loa|MLO\b|Scripps|station mean|northern hemisphere/i;
 
+// EXEMPTIONS ARE SCOPED TO THE CLAIM, NOT TO THE LINE — and the line-scoped
+// version of this function is why this guard passed while a stale figure was
+// live in production.
+//
+// Lesson bodies are single-quoted template strings that run to thousands of
+// characters. components/LearnAgent.js:133 is 3,650 characters long and states
+// MANY figures. It mentions Mauna Loa once, legitimately, 98 characters from a
+// "425 ppm" that really is the Mauna Loa reading. Under a line-scoped
+// exemption that one mention immunised the whole line — including a stale
+// "1.2 °C of warming" sitting 1,573 characters away, which the guard therefore
+// skipped and reported as current.
+//
+// So the exemption now has to be NEAR the figure it excuses. 200 characters
+// keeps both real carve-outs (98 and 15 characters) and recovers the claim at
+// 1,573. The general rule: an exemption's blast radius must be the size of the
+// claim it is about, or the longest line in the repo sets your coverage.
+const EXEMPTION_CHARS = 200;
+
+function exemptNear(line, idx, len) {
+  const window = line.slice(
+    Math.max(0, idx - EXEMPTION_CHARS),
+    Math.min(line.length, idx + len + EXEMPTION_CHARS),
+  );
+  return RETIRING.test(window) || OTHER_SERIES.test(window);
+}
+
 function staleGlobalsIn(relPath) {
   const full = path.join(SRC, relPath);
   if (!fs.existsSync(full)) return [`${relPath} — MISSING, so this guard covers nothing`];
@@ -128,9 +162,15 @@ function staleGlobalsIn(relPath) {
   fs.readFileSync(full, 'utf8').split('\n').forEach((line, i) => {
     const code = line.trim();
     if (code.startsWith('//') || code.startsWith('*')) return;
-    if (RETIRING.test(line) || OTHER_SERIES.test(line)) return;
     for (const fig of SUPERSEDED_GLOBAL_FIGURES) {
-      if (line.includes(fig)) out.push(`${relPath}:${i + 1} — superseded global figure "${fig}"`);
+      let idx = line.indexOf(fig);
+      while (idx !== -1) {
+        if (!exemptNear(line, idx, fig.length)) {
+          out.push(`${relPath}:${i + 1} — superseded global figure "${fig}"`);
+          break;
+        }
+        idx = line.indexOf(fig, idx + 1);
+      }
     }
   });
   return out;

@@ -71,7 +71,15 @@ describe('the travel-lever block agrees with the estimator beside it', () => {
   // the same two stale flight factors feeding a worked estimation exercise.
   // The residual gate caught it; a test keeps it caught.
   it('the carbon-budget block states the same figures as the lever block', () => {
-    const budget = blocks.find((b) => /carbon budget/i.test(b.body));
+    // SELECT ON THE HEADING, like the lever block above does. This matched
+    // /carbon budget/ against the BODY, and `.find` returns the first hit — so
+    // when an earlier lesson block gained the phrase "a carbon budget is
+    // conditioned on" in ordinary prose, this test silently retargeted onto
+    // the climate-science intro and failed demanding a flight factor from a
+    // block about Tyndall and Arrhenius. A body-phrase selector picks whichever
+    // block mentions the words first, which is not the same thing as the block
+    // the test is about.
+    const budget = blocks.find((b) => /personal carbon budget/i.test(b.heading || ''));
     expect(budget).toBeTruthy();
     expect(budget.body).not.toMatch(/5[–-]8\s*mtCO/);
     expect(budget.body).toContain(String(MT_PER_INTL_FLIGHT));
