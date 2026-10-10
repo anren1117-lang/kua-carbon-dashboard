@@ -289,8 +289,8 @@ A continuum, not a strict dichotomy.
 **Carbon cycle.**
 - Reservoirs: atmosphere (~875 Gt C), ocean (~38,000 Gt C — largest fast pool), terrestrial biomass (~2,000 Gt C), fossil fuels (~5,000 Gt C in reserves).
 - Fluxes: photosynthesis (~170 Gt C/yr fixed), respiration (returns most), combustion.
-- Human impact: ~12 Gt C/yr from fossil fuels + ~1.5 Gt from land-use change. ~45% accumulates in atmosphere (rest absorbed by oceans and biosphere).
-- Result: atmospheric CO₂ 280 → 425 ppm; climate change.
+- Human impact: ~10.4 Gt C/yr from fossil fuels and cement + ~1.1 Gt from land-use change, ~11.5 Gt C/yr total. About 50% accumulates in the atmosphere; the ocean takes ~29% and the land ~21% (Global Carbon Budget 2025).
+- Result: atmospheric CO₂ 278 → 426 ppm; climate change.
 
 **Nitrogen cycle.**
 - Reservoir: atmosphere (78% N₂) — but most life can't use N₂ directly.

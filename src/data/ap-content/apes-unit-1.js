@@ -341,10 +341,11 @@ The ocean is by far the largest fast-exchange pool. Surface oceans equilibrate w
 (8) **Combustion.** Burning of organic material (wood, fossil fuels) releases CO₂. This is normally a balanced part of the cycle for biological materials (the carbon was recently atmospheric anyway). For fossil fuels (formed over hundreds of millions of years), combustion releases ancient carbon to the atmosphere on a timescale of decades — the major human disruption.
 
 **Human disruption.** The major anthropogenic perturbation:
-- Fossil fuel combustion: ~10 Gt C/year (~37 Gt CO₂/yr)
-- Cement production: ~0.6 Gt C/year
-- Land-use change (deforestation, soil disturbance): ~1.2 Gt C/year
-- **Total**: ~11.8 Gt C/year of new CO₂ added to the atmosphere
+- Fossil fuels and cement: ~10.4 Gt C/year (~38 Gt CO₂/yr), of which cement is ~0.4 Gt C
+- Land-use change (deforestation, soil disturbance): ~1.1 Gt C/year (~4 Gt CO₂/yr)
+- **Total**: ~11.5 Gt C/year emitted (~42 Gt CO₂/yr), Global Carbon Budget 2025
+
+Watch the boundary: cement is counted *inside* the fossil total, not alongside it, so adding the two double-counts. And "emitted" is not "added to the atmosphere" — only about half stays airborne, the rest going to ocean and land sinks.
 
 This is small compared to natural fluxes (~150-200 Gt C/yr in photosynthesis-respiration), but those natural fluxes balance each other. The 11.8 Gt is a net addition.
 
@@ -394,9 +395,9 @@ Together these might draw down a few Gt C/year — useful but not at the scale o
 **Key facts:**
 - Four pools: atmosphere (875 Gt C), ocean (38,000), biosphere (2,000), fossil (5,000)
 - Photosynthesis and respiration each move ~120-170 Gt C/yr (largely balanced)
-- Human net emissions: ~11.5 Gt C/yr (42 Gt CO₂/yr) — 38 fossil + ~4 land-use change (Global Carbon Budget 2025). Check the unit: 1 Gt C = 44/12 = 3.67 Gt CO₂, so 11.5 Gt C cannot be 37 Gt CO₂.
-- Airborne fraction: 45% (25% in oceans, 30% in biosphere)
-- CO₂ rose 280 → 425 ppm; 309 Gt C added to atmosphere
+- Human net emissions: ~11.5 Gt C/yr (42 Gt CO₂/yr) — 38 fossil + ~4 land-use change (Global Carbon Budget 2025). Unit check: 1 Gt C = 44/12 = 3.67 Gt CO₂
+- Airborne fraction over 2015–2024: 50% stays airborne, 29% to oceans, 21% to land. The ocean now outranks the land — GCB 2025 revised ocean up and land down from the older ~25%/~30% split
+- CO₂ rose 278 ppm (1750) → 426 ppm (2025), 53% above pre-industrial. Over 1850–2024 humanity emitted 745 Gt C, of which the atmosphere gained 290 Gt C (39%), the ocean 200 Gt C (27%) and the land 175 Gt C (24%)
 - Each ppm CO₂ ≈ 2.13 Gt C
 - Perturbation lifetime: 50% gone in 30 yr; 20% remains 1000+ yr
 - Methane: 700 → 1,930 ppb; 12-year lifetime; oxidizes to CO₂`,
@@ -1090,7 +1091,7 @@ Coral reef food webs are especially vulnerable — warming + acidification disru
     'Levels: organism → population → community → ecosystem → biome → biosphere.',
     'Eight biomes determined by climate: tropical rainforest, savanna, desert, temperate grassland, Mediterranean, deciduous forest, boreal forest, tundra.',
     'Aquatic biomes: oceans (most of Earth, mostly low-productivity), coral reefs (highly productive), estuaries (highly productive).',
-    'Carbon cycle: 4 pools (atmosphere, ocean, biosphere, fossil); humans add ~12 Gt C/yr to atmosphere.',
+    'Carbon cycle: 4 pools (atmosphere, ocean, biosphere, fossil); humans emit ~11.5 Gt C/yr, about half of which stays airborne.',
     'Nitrogen cycle: N₂ fixation by bacteria, lightning, Haber-Bosch; humans doubled global N fixation.',
     'Phosphorus cycle: no atmospheric step; mined for fertilizer; eutrophication driver.',
     'Hydrologic cycle: solar-driven; 97.5% in oceans; atmosphere only 0.001%.',
@@ -1115,8 +1116,8 @@ Coral reef food webs are especially vulnerable — warming + acidification disru
     {
       name: 'Carbon balance',
       equation: 'Atmosphere = Pre-industrial + Human emissions − Sink uptake',
-      meaning: 'Of human emissions (~12 Gt C/yr), about 25% goes to ocean, 30% to terrestrial sinks, 45% accumulates in atmosphere.',
-      example: 'Atmospheric CO₂ has risen 280 → 425 ppm (~309 Gt C added). About 50% of all human emissions since 1850 are still airborne.',
+      meaning: 'Of human emissions (~11.5 Gt C/yr), over 2015–2024 about 29% went to the ocean, 21% to terrestrial sinks, and 50% accumulated in the atmosphere.',
+      example: 'Atmospheric CO₂ has risen 278 → 426 ppm. Cumulatively, of the 745 Gt C emitted over 1850–2024, 290 Gt C (39%) is still airborne — note the cumulative fraction (39%) is lower than the recent decadal one (50%), because the sinks absorbed a larger share of the smaller emissions of earlier decades.',
     },
   ],
   practice: [

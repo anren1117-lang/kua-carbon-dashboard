@@ -496,12 +496,13 @@ CO₂ is not directly toxic at current atmospheric concentrations — humans liv
 - Seasonal cycle: ~5-7 ppm amplitude (northern hemisphere photosynthesis)
 - Annual growth varies with weather (El Niño/La Niña), economic activity
 
-**Global emissions:**
-- Total: ~37 Gt CO₂/year (2023)
-- Coal: ~14 Gt
-- Oil: ~12 Gt
-- Natural gas: ~8 Gt
-- Cement and other industrial: ~3 Gt
+**Global emissions** (Global Carbon Budget 2025; fossil shares are 2024, applied to the 2025 total):
+- Total fossil CO₂: ~38 Gt CO₂/year (2025, a record high); ~42 Gt including land-use change
+- Coal: 41% — ~15.6 Gt
+- Oil: 32% — ~12.2 Gt
+- Natural gas: 21% — ~8.0 Gt
+- Cement: 4% — ~1.5 Gt
+- Flaring and other: ~2% — ~0.8 Gt
 
 (1 Gt CO₂ = 1 billion tonnes; 3.67 t CO₂ ≈ 1 t carbon.)
 

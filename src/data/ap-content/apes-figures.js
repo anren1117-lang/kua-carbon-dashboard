@@ -112,7 +112,7 @@ const CarbonCycle = () => (
     <line x1="505" y1="220" x2="450" y2="85" stroke={COL.red} strokeWidth="2.5" markerEnd="url(#arrowRed)" />
     <text x="510" y="155" fill={COL.red} fontSize="11" fontWeight="700">Human</text>
     <text x="510" y="170" fill={COL.red} fontSize="11" fontWeight="700">emissions</text>
-    <text x="510" y="185" fill={COL.red} fontSize="10">~12 Gt C/yr</text>
+    <text x="510" y="185" fill={COL.red} fontSize="10">~11.5 Gt C/yr</text>
 
     {/* Arrow markers */}
     <defs>
@@ -1533,7 +1533,7 @@ export const APES_FIGURES = {
   '9.6':  [{ id: 'sea-level',       Cmp: SeaLevel,          caption: 'Global mean sea level since 1900. Rate has roughly tripled — from ~1.4 mm/yr early 20th c. to ~4.5 mm/yr today.', source: 'NOAA Climate.gov; CSIRO tide gauges + altimetry' }],
   '9.10': [{ id: 'ozone',           Cmp: OzoneHole,         caption: 'Antarctic ozone hole peak area. After the 1987 Montreal Protocol froze CFC production, recovery is on track for ~2066.', source: 'NASA Ozone Watch' }],
   '1.4':  [
-    { id: 'carbon-cycle', Cmp: CarbonCycle, caption: 'Carbon pools and fluxes. Humans add ~12 Gt C/yr that natural processes can\'t fully absorb.', source: 'Pool/flux values: IPCC AR6, Global Carbon Project (2024)' },
+    { id: 'carbon-cycle', Cmp: CarbonCycle, caption: 'Carbon pools and fluxes. Humans emit ~11.5 Gt C/yr, about half of which natural sinks absorb.', source: 'Pool/flux values: IPCC AR6, Global Carbon Budget 2025' },
     { id: 'keeling',      Cmp: KeelingCurve, caption: 'Mauna Loa atmospheric CO₂ since continuous measurements began in 1958', source: 'Data: NOAA Global Monitoring Lab (Mauna Loa Observatory)' },
   ],
   '1.5':  [{ id: 'n-cycle',         Cmp: NitrogenCycle,     caption: 'Nitrogen cycle. Human Haber-Bosch (~150 Tg/yr) now exceeds all natural fixation combined.', source: 'Flux estimates: Galloway et al., AR6 Ch. 5' }],

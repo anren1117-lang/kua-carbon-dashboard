@@ -274,11 +274,14 @@ Sources of anthropogenic CO₂:
 Total annual global emissions: about 37 gigatonnes (Gt) of CO₂ per year (2024), or ~10 Gt of carbon equivalent.
 
 Sinks. Not all emitted CO₂ stays in the atmosphere. About half is absorbed by natural sinks each year:
-- Oceans take up roughly 25% — physical dissolution (Henry's Law) plus biological uptake by phytoplankton. The ocean sink is observable as ocean acidification (subunit 9.7).
-- Terrestrial sinks (forests, grasslands, soils, peatlands) absorb another ~30%. Northern temperate and boreal forests are net sinks; tropical forests are nearly balanced (sinks if not deforested; sources if cleared).
-- The remainder (~45%) stays in the atmosphere and accumulates. This "airborne fraction" has been roughly constant at 45% for decades — a remarkable feature given how much emissions have grown.
+Over the decade 2015–2024 (Global Carbon Budget 2025):
+- Oceans took up **29%** — physical dissolution (Henry's Law) plus biological uptake by phytoplankton. The ocean sink is observable as ocean acidification (subunit 9.7).
+- Terrestrial sinks (forests, grasslands, soils, peatlands) absorbed **21%**. Northern temperate and boreal forests are net sinks; tropical forests are nearly balanced (sinks if not deforested; sources if cleared).
+- The remaining **50%** stayed in the atmosphere and accumulates. This is the "airborne fraction," and it has hovered near half for decades — a notable feature given how much emissions have grown.
 
-The airborne fraction matters because it sets the relationship between emissions and atmospheric concentration. Of the ~37 Gt CO₂ emitted in 2023, about 16 Gt stayed in the atmosphere, raising concentration by ~2.5 ppm. If sinks weaken (as warming reduces ocean CO₂ solubility and stresses forests), the airborne fraction will rise.
+Note that the ocean now outranks the land as a sink. That is recent: GCB 2025 revised the ocean sink *upward* and the land sink *downward*, reversing the older textbook ordering of ~25% ocean / ~30% land. If you see those numbers in an older source, that is why.
+
+The airborne fraction matters because it sets the relationship between emissions and atmospheric concentration. Of the ~42 Gt CO₂ emitted in 2025, about 16 Gt stayed in the atmosphere, raising concentration by 2.1 ppm to 425.6 ppm. That single year is only ~38% airborne — well under the 50% decadal figure — because the land sink rebounded to 3.1 Gt C after the 2023–2024 El Niño suppressed it. Single years swing hard; use the decadal average. If sinks weaken over the long run (as warming reduces ocean CO₂ solubility and stresses forests), the airborne fraction will rise.
 
 **CO₂ atmospheric lifetime.** The most-misunderstood concept in climate science. CO₂ doesn't have a single lifetime like a radioactive isotope does. Instead, a CO₂ pulse has multi-timescale decay:
 - About 50% of the pulse is removed within ~30 years (rapid ocean uptake, fast biospheric absorption).
@@ -358,9 +361,9 @@ Ice cores show CO₂ has never been above 300 ppm during the past 800,000 years.
 **Why small concentrations matter.** A common skeptical argument: "CO₂ is only 0.04% of the atmosphere — how can it matter?" The answer: greenhouse gases work by absorbing specific IR wavelengths. The relevant question isn't the mass fraction but the absorption. At current concentrations, CO₂ absorbs essentially all of the IR in its 15 μm band over short atmospheric paths. The effect on the energy budget scales logarithmically with concentration — each doubling adds ~3.7 W/m² of forcing. So even small fractional increases at high concentrations continue to matter.
 
 **Summary numbers:**
-- CO₂: 280 → 425 ppm (51% increase); ~37 Gt/yr emissions; ~half absorbed by sinks
-- CH₄: 700 → 1,930 ppb (175%); ~570 Mt/yr emissions; 12-yr lifetime; GWP-100 = 28
-- N₂O: 270 → 335 ppb (24%); ~10 Mt/yr emissions; 114-yr lifetime; GWP-100 = 273
+- CO₂: 278 → 426 ppm (53% increase); ~42 Gt/yr emissions; ~half absorbed by sinks
+- CH₄: 729 → 1,930 ppb (165%); ~575 Mt/yr total emissions (~65% anthropogenic); 11.8-yr perturbation lifetime (9.1-yr atmospheric); GWP-100 = 27 biogenic / 30 fossil
+- N₂O: 270 → 335 ppb (24%); ~10 Mt/yr emissions; 109-yr lifetime; GWP-100 = 273
 - HFC-134a: GWP-100 = 1,430. SF₆: 23,500. Kigali phasing them down.
 - Net current anthropogenic radiative forcing: ~+2.7 W/m²
 - Ice-core record: CO₂ has not been above 300 ppm in 800,000 years. Current 425 ppm is geological-scale anomaly.`,
@@ -449,7 +452,9 @@ Health. Heatwave deaths rising. The 2003 European event and many since are docum
 
 Each country submits a Nationally Determined Contribution (NDC) — a pledge of emissions reductions. NDCs are not directly enforceable, but the treaty requires periodic update (every 5 years) and includes review mechanisms. The collective effect of current NDCs is well above what the temperature targets require.
 
-Carbon budget. The cumulative CO₂ emissions consistent with a given temperature limit. IPCC AR6 estimated the remaining global CO₂ budget for a 50% chance of staying below 1.5 °C at about 315 Gt CO₂ as of 2025 — about 8 years at current emission rates (37 Gt/yr). For a 67% chance, the budget is about 215 Gt — 6 years. For a 50% chance of 2.0 °C, the budget is about 1,150 Gt — 30 years.
+Carbon budget. The cumulative CO₂ emissions consistent with a given temperature limit. The Global Carbon Budget 2025 puts the remaining budget from the start of 2026, for a 50% chance, at about **170 Gt CO₂ for 1.5 °C** — roughly **4 years** at current emission rates (~42 Gt/yr) — **525 Gt for 1.7 °C** (~12 years) and **1,055 Gt for 2.0 °C** (~25 years). A useful rule of thumb from the same source: each additional ~180 Gt CO₂ adds about 0.1 °C.
+
+Two cautions worth carrying. First, budget estimates differ by method: on the IPCC AR6 basis updated to 2026 the 1.5 °C budget is ~250 Gt rather than 170, the gap coming mostly from a revised climate emulator for non-CO₂ warming. Quote the source, not just the number. Second, budgets shrink from two directions at once — emissions spend them, and reassessments have moved them down. Requiring a higher chance of success (67% rather than 50%) also shrinks them.
 
 **What different warming levels look like.** The differences across temperature targets are not linear. AR6 WGII synthesizes the differences:
 
@@ -469,8 +474,8 @@ These are AR6 WGII summaries; specific numbers vary by source. The key point: sm
 - Transient climate response (TCR): ~1.8 °C
 - Radiative forcing for CO₂ doubling: 3.7 W/m²
 - Sea level since 1900: ~24 cm rise; accelerating to ~3.7 mm/yr
-- Remaining 1.5 °C CO₂ budget (50% chance, AR6): ~315 GtCO₂ as of 2025
-- Current emissions: ~37 GtCO₂/year`,
+- Remaining 1.5 °C CO₂ budget (50% chance, Global Carbon Budget 2025): ~170 GtCO₂ from the start of 2026 — about 4 years
+- Current emissions: ~42 GtCO₂/year (38 fossil + ~4 land-use change)`,
     },
 
     // ============================================================
