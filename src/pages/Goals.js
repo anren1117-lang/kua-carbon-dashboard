@@ -10,7 +10,7 @@ import { useCardTilt } from '../hooks/useCardTilt.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { useIsNarrow } from '../hooks/useViewport.js';
 import { Icon } from '../components/Icon.js';
-import { reductionTargets, targetTrajectoryAt, trajectoryStatus, pathwayDescription } from '../data/targets.js';
+import { reductionTargets, targetTrajectoryAt, trajectoryStatus, pathwayDescription, BASELINE_IS_FIRST_INVENTORY, BASELINE_NOTE } from '../data/targets.js';
 import { RESOURCE_CATEGORIES, GOAL_RESOURCES } from '../data/goalsResources.js';
 import { ANNUAL_SEQUESTRATION_MT } from '../data/sinks.js';
 import { SCOPE1_TOTAL_MT, SCOPE2_TOTAL_MT, SCOPE3_TOTAL_MT, GROSS_MT } from '../data/scopeTotals.js';
@@ -109,7 +109,7 @@ export default function Goals() {
   return (
     <ModulePage
       title="Goals & Targets"
-      subtitle={`${pathwayDescription(reductionTargets)} Each target plots a linear trajectory from its baseline year to the deadline; the dashboard tracks our measured progress against it.`}
+      subtitle={`${pathwayDescription(reductionTargets)} Each target plots a linear trajectory from its baseline year to the deadline. ${BASELINE_NOTE}`}
       toolbar={
         <button
           type="button"
@@ -195,7 +195,19 @@ export default function Goals() {
 
                 <div style={styles.progressWrap}>
                   <div style={styles.progressLabel}>
-                    <span>Progress: {reductionAchieved.toFixed(1)}% reduced of {reductionNeeded}% needed</span>
+                    {/*
+                      When the baseline IS this inventory, reductionAchieved is
+                      (baseline - baseline) / baseline = 0 by construction. It
+                      used to render as "0.0% reduced", which a trustee reads as
+                      a result — the school tried and achieved nothing. It is not
+                      a result; it is an arithmetic identity, and saying so is the
+                      whole point.
+                    */}
+                    <span>
+                      {BASELINE_IS_FIRST_INVENTORY
+                        ? `Target: ${reductionNeeded}% reduction — no progress reading until a second inventory`
+                        : `Progress: ${reductionAchieved.toFixed(1)}% reduced of ${reductionNeeded}% needed`}
+                    </span>
                     <span style={{ display: 'flex', gap: 6 }}>
                       <Pill kind={dataProvenance === 'measured' ? 'good' : 'neutral'}>
                         {dataProvenance === 'measured' ? '✓ Measured' : 'Estimated'}
@@ -214,13 +226,22 @@ export default function Goals() {
                     />
                   </div>
                   <div style={styles.progressFootRow}>
-                    <span style={{ ...styles.progressFootBadge, color: aheadOfPace ? '#86efac' : '#fbbf24' }}>
-                      {aheadOfPace ? '✓ Ahead of pace' : '⚠ Behind pace'}
-                    </span>
-                    <span style={styles.progressFootText}>
-                      {progressPct.toFixed(0)}% achieved vs {expectedProgressPct.toFixed(0)}% expected by {CURRENT_YEAR}
-                      {' '}({yearsElapsed} of {yearsTotal} years elapsed)
-                    </span>
+                    {BASELINE_IS_FIRST_INVENTORY ? (
+                      <span style={styles.progressFootText}>
+                        Baseline year {target.baselineYear} · {yearsTotal} years to {target.targetYear}.
+                        A pace judgement needs two inventories to compare, so none is shown.
+                      </span>
+                    ) : (
+                      <>
+                        <span style={{ ...styles.progressFootBadge, color: aheadOfPace ? '#86efac' : '#fbbf24' }}>
+                          {aheadOfPace ? '✓ Ahead of pace' : '⚠ Behind pace'}
+                        </span>
+                        <span style={styles.progressFootText}>
+                          {progressPct.toFixed(0)}% achieved vs {expectedProgressPct.toFixed(0)}% expected by {CURRENT_YEAR}
+                          {' '}({yearsElapsed} of {yearsTotal} years elapsed)
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 

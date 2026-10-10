@@ -6,8 +6,32 @@
 // reduction. The Goals page computes a linear trajectory between the
 // two and plots the current measured value against it.
 
-import { GROSS_MT } from './scopeTotals.js';
+import { GROSS_MT, SCOPE2_TOTAL_MT } from './scopeTotals.js';
 import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
+import { REPORTING_PERIOD } from './academicCalendar.js';
+
+/**
+ * THE BASELINE IS THIS INVENTORY, AND THAT IS NOT A MEASUREMENT OF PROGRESS.
+ *
+ * Every target carried `baselineYear: 2024` while its baselineValue was
+ * derived from the CURRENT totals. There is no 2024 inventory — this is KUA's
+ * first. So the "2024 baseline" was the present-day figure wearing a date, and
+ * /goals computed `(baseline - actual) / baseline`, which is structurally
+ * ZERO: the progress bar read 0% and could never read anything else, however
+ * much the school reduced. A target whose progress cannot move is not a target.
+ *
+ * The honest statement is that progress against these targets becomes
+ * measurable from the NEXT inventory, and until then the bar is showing an
+ * arithmetic identity rather than a result. BASELINE_IS_FIRST_INVENTORY says
+ * so, and /goals renders it instead of a silent 0%.
+ */
+export const BASELINE_YEAR = Number(REPORTING_PERIOD.schoolYear.slice(0, 4));
+export const BASELINE_IS_FIRST_INVENTORY = true;
+export const BASELINE_NOTE =
+  `These baselines are the ${REPORTING_PERIOD.label} inventory itself — KUA's first. `
+  + 'Progress against a target is measured between two inventories, so the figures below show '
+  + 'the distance still to travel, not ground already covered. The first real progress reading '
+  + `comes with the ${BASELINE_YEAR + 1}-${BASELINE_YEAR + 2} inventory.`;
 
 // The gross and net baselines are DERIVED, not typed. The net one was a
 // literal 1,725 until the forest sink was repriced (task #16) and it silently
@@ -15,6 +39,13 @@ import { ANNUAL_SEQUESTRATION_MT } from './sinks.js';
 // the Goals trajectory anchored to whatever the canonical modules say.
 const GROSS_BASELINE_MT = Math.round(GROSS_MT);
 const NET_BASELINE_MT = Math.round(GROSS_MT - ANNUAL_SEQUESTRATION_MT);
+// Derived like the other two. This was a hardcoded 390 from before the eGRID
+// factor correction, against a current 410 — so /goals reported Scope 2 as
+// 5% ABOVE its baseline and flagged the target "behind pace", when nothing
+// about the school's electricity had changed. The whole delta was the
+// emission factor being corrected. Presenting a methodology revision as a
+// performance regression is worse than showing no number.
+const SCOPE2_BASELINE_MT = Math.round(SCOPE2_TOTAL_MT);
 
 /**
  * @typedef {Object} ReductionTarget
@@ -36,11 +67,11 @@ export const reductionTargets = [
     id: 'tg_gross_2030',
     title: '50% gross-emissions reduction by 2030',
     scope: 'gross',
-    baselineYear: 2024,
+    baselineYear: BASELINE_YEAR,
     baselineValue: GROSS_BASELINE_MT, // bottom-up cross-check central: Scope 1 1,342 + Scope 2 410 + Scope 3 2,696
     targetYear: 2030,
     percentReduction: 50,
-    description: 'Halve KUA\'s gross annual emissions vs the 2024 preliminary baseline. Achievable largely through dorm thermostat adjustments, beef-portion reductions, and the planned Whittemore + Miller solar arrays.',
+    description: 'Halve KUA\'s gross annual emissions vs the first-inventory baseline. Achievable largely through dorm thermostat adjustments, beef-portion reductions, and the planned Whittemore + Miller solar arrays.',
     owner: 'Head of School + Sustainability Office',
     approved: false,
   },
@@ -48,8 +79,8 @@ export const reductionTargets = [
     id: 'tg_scope2_2027',
     title: 'Scope 2 down 30% by 2027',
     scope: 'scope2',
-    baselineYear: 2024,
-    baselineValue: 390, // updated (was 222 pre-emission-factor-fix; 395 pre-projection-weighting-fix; 385 before the contiguous Jan–Sep meter export)
+    baselineYear: BASELINE_YEAR,
+    baselineValue: SCOPE2_BASELINE_MT, // derived; see SCOPE2_BASELINE_MT for why 390 was wrong
     targetYear: 2027,
     percentReduction: 30,
     description: 'Move 30% of campus electricity onto on-campus renewables (the planned 100 kW combined arrays) plus an LED retrofit and HVAC scheduling tightening.',
@@ -60,7 +91,7 @@ export const reductionTargets = [
     id: 'tg_dining_2028',
     title: 'Dining-related emissions down 25% by 2028',
     scope: 'scope3',
-    baselineYear: 2024,
+    baselineYear: BASELINE_YEAR,
     baselineValue: 235, // matches scopeTotals.js Scope 3 dining placeholder row
     targetYear: 2028,
     percentReduction: 25,
@@ -72,7 +103,7 @@ export const reductionTargets = [
     id: 'tg_net_2050',
     title: 'Net-zero net carbon by 2050',
     scope: 'net',
-    baselineYear: 2024,
+    baselineYear: BASELINE_YEAR,
     baselineValue: NET_BASELINE_MT, // gross minus the net-basis forest sink (task #16)
     targetYear: 2050,
     percentReduction: 100,
