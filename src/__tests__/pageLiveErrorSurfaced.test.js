@@ -21,17 +21,33 @@ import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ROUTER_FUTURE } from './routerFuture.js';
 
+// THIS HARNESS WAS FLAKY, and a flake in a guard suite is corrosive: it trains
+// you to re-run instead of investigate, which is how a real failure gets
+// waved through. Reported as "failed once in a full run, passed in isolation"
+// — and it passed 6/6 in isolation here, so the cause was cross-test, not this
+// file's logic.
+//
+// `responses` is module-level mutable state that the ORIGINAL harness read
+// inside `then()`, i.e. whenever the awaited promise happened to settle. The
+// next test's `beforeEach` resets it to `{}`, so a promise that settled a tick
+// late read the FOLLOWING test's data and resolved with no error — and the
+// `waitFor` for "Live data unavailable" then timed out on a page that was
+// never going to show it.
+//
+// Captured at `from(table)` time instead, so each query is bound to the
+// responses in force when the component actually issued it. Settling late can
+// no longer change the answer.
 const { setNextResponses, makeQueryHarness } = vi.hoisted(() => {
   let responses = {};
   const setNextResponses = (next) => { responses = next; };
   const makeQueryHarness = () => {
     function makeBuilder(table) {
+      // bound HERE, at query-construction time — not read at settle time
+      const bound = responses[table] ?? { data: [], error: null };
       const p = {
         select() { return p; }, order() { return p; },
         limit() { return p; }, eq() { return p; },
-        then(res, rej) {
-          return Promise.resolve(responses[table] ?? { data: [], error: null }).then(res, rej);
-        },
+        then(res, rej) { return Promise.resolve(bound).then(res, rej); },
       };
       return p;
     }
@@ -62,11 +78,39 @@ const mount = (C) => render(<MemoryRouter future={ROUTER_FUTURE}><C /></MemoryRo
 beforeEach(() => { cleanup(); _resetCacheForTests?.(); setNextResponses({}); });
 afterEach(() => { cleanup(); });
 
+// The harness fix, asserted. Without this the binding could be reverted to a
+// settle-time read by any refactor and the flake would come back silently —
+// which is exactly how a fix with no test behaves.
+describe('the query harness binds responses at query time', () => {
+  it('a query that settles LATE still sees its own test\'s response', async () => {
+    const { supabase } = await import('../supabaseClient.js');
+    setNextResponses({ fuel_bills: { data: null, error: { message: 'mine' } } });
+    const q = supabase.from('fuel_bills').select();      // issued now
+    setNextResponses({ fuel_bills: { data: [], error: null } });  // next test resets
+    const got = await q;                                  // settles after
+    expect(got.error, 'late settle read the next test\'s responses').toEqual({ message: 'mine' });
+  });
+
+  it('and an unrelated table still defaults cleanly', async () => {
+    const { supabase } = await import('../supabaseClient.js');
+    setNextResponses({ fuel_bills: { data: null, error: { message: 'x' } } });
+    const got = await supabase.from('some_other_table').select();
+    expect(got).toEqual({ data: [], error: null });
+  });
+});
+
 describe('every composer-reading public page reports a failed fetch', () => {
   it.each(PAGES)('%s surfaces the error', async (name, C) => {
     setNextResponses({ fuel_bills: { data: null, error: { message: 'rls denied' } } });
     mount(C);
-    await waitFor(() => expect(screen.getByText(/Live data unavailable/i)).toBeTruthy());
+    // Explicit, generous timeout. The default is 1000ms, and these five pages
+    // mount a lot of chart components under a parallel test runner — a timing
+    // budget that is adequate on an idle machine and marginal on a loaded one
+    // is the other half of the flake.
+    await waitFor(
+      () => expect(screen.getByText(/Live data unavailable/i)).toBeTruthy(),
+      { timeout: 5000 },
+    );
     // Scope the scope-label assertion to the NOTICE, never getAllByText: these
     // pages say "Scope 1" in their prose, so a loosened query would go green
     // against a notice that named no scope at all.
