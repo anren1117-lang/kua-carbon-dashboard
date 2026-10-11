@@ -339,6 +339,33 @@ describe('no teaching surface states a superseded global figure', () => {
     }
   });
 
+  it('scopes the exemption to the claim, not to the whole line', () => {
+    // THE REGRESSION THIS ENCODES. The exemption above is correct and was,
+    // for a while, unbounded: it skipped the whole LINE. Lesson bodies are
+    // single-quoted strings thousands of characters long —
+    // components/LearnAgent.js:133 is 3,650 — so one legitimate Mauna Loa
+    // mention immunised every other figure on the line, including a stale
+    // "1.2 °C of warming" 1,573 characters away. The guard reported it as
+    // current. Both halves are asserted here: the near figure stays spared,
+    // and the distant one is caught, ON THE SAME LINE.
+    const pad = '. '.repeat(200);  // 400 chars, no exemption words in it
+    const tmp = path.join(SRC, '__tests__/.globals-window.js');
+    fs.writeFileSync(
+      tmp,
+      `const a = '425 ppm at Mauna Loa today${pad}and 1.2 °C of warming since the late 1800s';\n`,
+      'utf8',
+    );
+    try {
+      const found = staleGlobalsIn('__tests__/.globals-window.js');
+      // exactly one: the warming claim. The 425 ppm beside "Mauna Loa" is right.
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain('1.2 °C of warming');
+      expect(found.join('\n')).not.toContain('425 ppm');
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  });
+
   it('spares a line that explains why older sources differ', () => {
     const tmp = path.join(SRC, '__tests__/.globals-ok.js');
     fs.writeFileSync(tmp,

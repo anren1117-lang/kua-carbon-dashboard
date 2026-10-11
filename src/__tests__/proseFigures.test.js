@@ -119,25 +119,48 @@ const ASSERTIONS = [
 // figure staying put. Those aren't claims about KUA, so they're out of scope.
 const HYPOTHETICAL = /\b(a school|two schools|school A|school B|suppose|imagine|hypothetical|another school|peer school)\b/i;
 
+// EXEMPTIONS ARE SCOPED TO THE CLAIM, not to the line. Back-ported from
+// globalFigures.test.js, where the line-scoped version of this let a stale
+// figure sit 1,573 characters behind an unrelated carve-out on a
+// 3,650-character lesson body — and the guard reported it as current.
+//
+// HONEST SCOPE: probing this file the same way found ZERO figures currently
+// hidden by either exemption here, so this is hardening and not a fix. It
+// still belongs, for two reasons. HYPOTHETICAL matches "a school" and "peer
+// school", which is unremarkable phrasing in prose about schools, so the
+// blast radius is wide. And RETIRING matches a bare past-tense verb next to
+// any numeral, which is even easier to trip by accident. Both exemptions are
+// one reword away from silently covering a live claim on a long line.
+const EXEMPTION_CHARS = 200;
+const nearby = (line, idx, len, re) => re.test(line.slice(
+  Math.max(0, idx - EXEMPTION_CHARS),
+  Math.min(line.length, idx + len + EXEMPTION_CHARS),
+));
+
 function staleClaimsIn(relPath) {
   const text = fs.readFileSync(path.join(SRC, relPath), 'utf8');
   const lines = text.split('\n');
   const stale = [];
   lines.forEach((line, i) => {
-    if (HYPOTHETICAL.test(line)) return;
     for (const { label, expected, re } of CLAIMS) {
       re.lastIndex = 0;
       let m;
       while ((m = re.exec(line)) !== null) {
         const found = num(m[1]);
-        if (Number.isFinite(found) && found !== expected) {
-          stale.push(`${relPath}:${i + 1} — says ${label} is ${m[1]}, canonical is ${expected.toLocaleString()}`);
-        }
+        if (!Number.isFinite(found) || found === expected) continue;
+        if (nearby(line, m.index, m[0].length, HYPOTHETICAL)) continue;
+        stale.push(`${relPath}:${i + 1} — says ${label} is ${m[1]}, canonical is ${expected.toLocaleString()}`);
       }
     }
     for (const a of ASSERTIONS) {
-      if (!a.re.test(line)) continue;
-      if (NEGATED.test(line) || COMPUTED.test(line) || QUOTING.test(line)) continue;
+      a.re.lastIndex = 0;
+      const m = a.re.exec(line);
+      if (!m) continue;
+      const len = m[0].length;
+      if (nearby(line, m.index, len, HYPOTHETICAL)) continue;
+      if (nearby(line, m.index, len, NEGATED)
+        || nearby(line, m.index, len, COMPUTED)
+        || nearby(line, m.index, len, QUOTING)) continue;
       if (!a.holds()) {
         stale.push(`${relPath}:${i + 1} — asserts "${a.label}", but ${a.why()}`);
       }
@@ -218,9 +241,15 @@ function supersededIn(relPath) {
   text.split('\n').forEach((line, i) => {
     const code = line.trim();
     if (code.startsWith('//') || code.startsWith('*')) return;   // comments don't ship
-    if (RETIRING.test(line)) return;
     for (const fig of SUPERSEDED) {
-      if (line.includes(fig)) out.push(`${relPath}:${i + 1} — states superseded figure ${fig}`);
+      let idx = line.indexOf(fig);
+      while (idx !== -1) {
+        if (!nearby(line, idx, fig.length, RETIRING)) {
+          out.push(`${relPath}:${i + 1} — states superseded figure ${fig}`);
+          break;
+        }
+        idx = line.indexOf(fig, idx + 1);
+      }
     }
   });
   return out;
@@ -279,6 +308,25 @@ describe('no surface states a figure that used to be canonical', () => {
         fs.unlinkSync(tmp);
       }
     });
+  });
+
+  it('scopes RETIRING to the figure, not to the whole line', () => {
+    // A long body may retire one figure and state another, 400 characters
+    // apart, and the line-scoped exemption excused BOTH. Assert both halves on
+    // one line: the retired figure beside its past-tense verb stays spared,
+    // and the distant live one is still caught.
+    const pad = '. '.repeat(200);
+    const tmp = path.join(SRC, '__tests__/.retiring-window.js');
+    const line = `the sink was 2,650 on the old basis${pad}and the gross is 4,395 mtCO2e`;
+    fs.writeFileSync(tmp, `const a = ${JSON.stringify(line)};\n`, 'utf8');
+    try {
+      const found = supersededIn('__tests__/.retiring-window.js');
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain('4,395');
+      expect(found.join('\n')).not.toContain('2,650');
+    } finally {
+      fs.unlinkSync(tmp);
+    }
   });
 
   it('...while still sparing genuine retiring prose', () => {
