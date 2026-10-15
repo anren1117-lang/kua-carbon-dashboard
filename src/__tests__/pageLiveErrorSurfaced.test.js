@@ -107,6 +107,16 @@ describe('every composer-reading public page reports a failed fetch', () => {
     // mount a lot of chart components under a parallel test runner — a timing
     // budget that is adequate on an idle machine and marginal on a loaded one
     // is the other half of the flake.
+    //
+    // AND THE TEST BUDGET HAS TO EXCEED THE waitFor BUDGET. This read
+    // `{ timeout: 5000 }` while vite.config.js sets no `test` block, so
+    // Vitest's default testTimeout of 5000ms applied — the wait was allowed
+    // exactly as long as the whole test, leaving nothing for mounting five
+    // pages of charts. Under full-suite parallel load the test hit Vitest's
+    // limit and failed before waitFor could even report, which is why it only
+    // ever flaked in a full run and passed 6/6 in isolation. The per-test
+    // timeout below is the headroom; raising only one of the two numbers
+    // reintroduces the flake.
     await waitFor(
       () => expect(screen.getByText(/Live data unavailable/i)).toBeTruthy(),
       { timeout: 5000 },
@@ -117,7 +127,7 @@ describe('every composer-reading public page reports a failed fetch', () => {
     const notice = screen.getByText(/Live data unavailable/i);
     expect(notice.textContent).toMatch(/Scope 1/);
     expect(notice.textContent).toMatch(/rls denied/);
-  });
+  }, 20000);
 
   it.each(PAGES)('%s says nothing when the tables are merely empty', async (name, C) => {
     // An empty table is not a failure. This is the regression the fix must not
@@ -134,7 +144,14 @@ describe('every composer-reading public page reports a failed fetch', () => {
     // on the chart rather than the page, a reader would see it repeated.
     setNextResponses({ fuel_bills: { data: null, error: { message: 'rls denied' } } });
     mount(Executive);
-    await waitFor(() => expect(screen.getByText(/Live data unavailable/i)).toBeTruthy());
+    // Same exposure as the sweep above and it still had the 1000ms default —
+    // the fix for the flake was applied to one of the two waits in this file
+    // and not the other. Executive is named here precisely BECAUSE it mounts
+    // several composer-reading charts, so it is the slowest mount in the file.
+    await waitFor(
+      () => expect(screen.getByText(/Live data unavailable/i)).toBeTruthy(),
+      { timeout: 5000 },
+    );
     expect(screen.getAllByText(/Live data unavailable/i)).toHaveLength(1);
-  });
+  }, 20000);
 });
