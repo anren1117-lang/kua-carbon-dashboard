@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Phase numbers: read them from git, don't increment locally
+
+Commits are phase-numbered, and **the sequence is currently broken**: Phases
+514, 515, 516, 517, 518 and 519 each exist TWICE, on unrelated work. Two agents
+worked this repo concurrently and each incremented from its own last number
+instead of from the repo's, so the numbers no longer order the history — the one
+job they had.
+
+Before writing a phase number, take it from the log rather than from memory:
+
+```bash
+git log --oneline -40 | grep -oE 'Phase [0-9]+' | sort -t' ' -k2 -n | tail -1
+```
+
+The duplicates are left as they are. Renumbering means rewriting pushed history
+for a cosmetic gain, and the commit bodies are distinct enough to tell the pairs
+apart. If a collision-free scheme is wanted instead, that is a decision for the
+repo owner, not something to adopt unilaterally mid-session.
+
 ## Commands
 
 All active development happens **inside `src/`** (see "Repo layout quirk" below). Run commands from there:
