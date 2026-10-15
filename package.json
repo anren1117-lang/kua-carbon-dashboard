@@ -3,37 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "react-router-dom": "^7.13.1",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
-  },
   "scripts": {
-    "_note": "All real scripts live in src/package.json. Run `cd src && npm <script>`. The CRA scripts that used to live here (start/build/test/eject) referenced /public/index.html which was deleted in Phase 26."
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "_note": "No scripts live here. All development runs from src/ — `cd src && npm <script>`, and `npm run verify` before pushing. See CLAUDE.md > Commands."
   }
 }
