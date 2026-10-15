@@ -27,14 +27,55 @@ All active development happens **inside `src/`** (see "Repo layout quirk" below)
 
 ```bash
 cd src
-npm install
+npm ci            # not `npm install` — see "Node and npm versions" below
 npm run dev       # Vite dev server on http://localhost:5173
 npm run build     # production build → src/dist/
 npm run preview   # serve the built bundle
-npm test          # vitest
+npm test          # NUL-byte guard + vitest run (single pass, like CI)
+npm run test:watch  # vitest in watch mode
+npm run verify    # ← RUN THIS BEFORE PUSHING. Everything CI runs.
 ```
 
-To run a single test: `npx vitest run path/to/file.test.js` (or `npx vitest path/to/file` for watch mode).
+To run a single test: `npx vitest run path/to/file.test.js` (or `npm run test:watch path/to/file`).
+
+### `npm run verify` — the one command that matches CI
+
+```bash
+cd src && npm run verify
+```
+
+It runs, in order, exactly the checks `.github/workflows/ci.yml` runs:
+
+1. `check:nul` — `scripts/check-no-nul-bytes.mjs`
+2. `vitest run` — the full suite, single pass
+3. `vite build`
+4. `check:bundle` — `scripts/check-bundle-size.mjs`, the 600 KB initial-bundle cap
+
+**Both guards are shared files, not copies.** CI invokes the same two scripts,
+so "it passed locally" and "it passed in CI" mean the same thing by
+construction. That matters because of Phase 524: the NUL guard was a CI-only
+step with no local equivalent, `npm test` was `vitest` in watch mode and never
+touched it, and main sat red for five commits while every local run was green.
+The bundle guardrail had the same shape — four lines of inline bash on the
+runner — until it was extracted to `scripts/check-bundle-size.mjs`.
+
+If you add a check to CI, add it to `verify`. If you can't, it isn't a gate.
+
+### Node and npm versions
+
+`.nvmrc` pins **Node 24.13.0**, and `src/package.json` records the same floor
+in `engines` (`node >=24 <25`, `npm >=11`). CI reads `.nvmrc` via
+`node-version-file`, so there is one recorded version rather than two.
+
+Use `nvm use` (or `fnm use`) in the repo root before working. `engines` is
+declarative — npm warns rather than refusing — so a mismatch shows as a
+warning, not a failure.
+
+Why this is pinned at all: CI ran `node-version: 20` until Phase 526. Node 20
+went **end-of-life on 2026-04-30**, so CI spent roughly six months validating
+the dashboard on an unsupported runtime, on a different major from every local
+run, which also meant npm 10.x resolving a lockfile written by npm 11.x. Node
+24 is LTS until 2028-04-30.
 
 ## Repo layout quirk (important)
 

@@ -21,7 +21,19 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # FROM .nvmrc, which is the one recorded version for this project.
+          #
+          # This said `node-version: 20`. Node 20 reached end of life on
+          # 2026-04-30, so CI was building and testing the dashboard on an
+          # unsupported runtime for ~6 months — and on a different major from
+          # every local run (this project develops on 24.x), which also meant
+          # a different bundled npm: CI resolved with npm 10.x against a
+          # lockfile written by npm 11.x.
+          #
+          # Node 24 is LTS until 2028-04-30 and is what local already runs, so
+          # aligning on it fixes the EOL problem and the local/CI split at
+          # once. src/package.json records the same floor in `engines`.
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: src/package-lock.json
 
@@ -42,14 +54,9 @@ jobs:
         run: npm run build
 
       - name: Bundle-size guardrail
-        run: |
-          INITIAL=$(ls -l dist/assets/index-*.js | awk '{print $5}')
-          echo "Initial bundle: $INITIAL bytes"
-          # Fail the build if the initial bundle goes over 600 KB.
-          # Code-splitting keeps it ~415 KB today; 600 KB gives us headroom
-          # while still catching the kind of regression that drops a heavy
-          # dep onto the eager-loaded path.
-          if [ "$INITIAL" -gt 614400 ]; then
-            echo "::error::Initial bundle exceeded 600 KB ($INITIAL bytes). Code-split a route or remove an eager dep."
-            exit 1
-          fi
+        # Was four lines of inline bash, which meant the check lived only on
+        # the runner and no local command could run it. Now the same script
+        # backs both this step and `npm run verify`, so local and CI cannot
+        # drift. It also rejects a missing or ambiguous bundle rather than
+        # measuring whichever file `ls` happened to sort first.
+        run: npm run check:bundle

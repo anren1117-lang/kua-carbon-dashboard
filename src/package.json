@@ -3,12 +3,19 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "npm run check:nul && vitest run",
+    "test:watch": "vitest",
+    "verify": "npm test && npm run build && npm run check:bundle",
     "check:nul": "cd .. && node scripts/check-no-nul-bytes.mjs",
+    "check:bundle": "cd .. && node scripts/check-bundle-size.mjs",
     "verify:deploy": "cd .. && node scripts/verifyDeploy.mjs"
   },
   "dependencies": {
