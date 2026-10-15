@@ -72,7 +72,13 @@ async function extractPdfText(file) {
   // Fix: point workerSrc at the version-pinned CDN copy of the worker.
   // It only loads if pdfjs decides it needs one (it usually does for
   // sandbox isolation), and the version match avoids API drift.
-  const workerVersion = pdfjs.version || '5.7.284';
+  // The fallback only applies if pdfjs stops exporting `version`. It must
+  // track the installed major or the CDN would serve a worker from a
+  // different release than the library — Phase 528 moved pdfjs 5 -> 6 and
+  // this literal still said 5.7.284, which would have paired a v6 library
+  // with a v5 worker in exactly the case the fallback exists to cover.
+  // extractFileText.test.js asserts this equals the installed version.
+  const workerVersion = pdfjs.version || '6.4.299';
   pdfjs.GlobalWorkerOptions.workerSrc =
     `https://unpkg.com/pdfjs-dist@${workerVersion}/legacy/build/pdf.worker.min.mjs`;
   const arrayBuf = await file.arrayBuffer();

@@ -21,7 +21,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
     "katex": "^0.17.0",
-    "pdfjs-dist": "^5.7.284",
+    "pdfjs-dist": "^6.4.299",
     "pigeon-maps": "^0.22.1",
     "pptxgenjs": "^4.0.1",
     "qrcode-generator": "^2.0.4",

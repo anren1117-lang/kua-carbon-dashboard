@@ -8,6 +8,8 @@
 // not exercised here.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { extractFileText, FILE_LIMITS } from '../utils/extractFileText.js';
 
 // jsdom's Blob in this version doesn't implement .text(); the browser
@@ -96,5 +98,44 @@ describe('extractFileText — text extraction', () => {
   it('falls back to "upload" when the file has no name', async () => {
     const out = await extractFileText(new File(['data'], '', { type: 'text/plain' }));
     expect(out.sourceFileName).toBe('upload');
+  });
+});
+
+// The PDF branch itself still is not exercised here — it needs a real PDF
+// byte stream and a pdfjs worker, which jsdom does not provide. These two
+// assertions cover the parts that CAN go wrong silently without it, and both
+// would have caught a real defect in the pdfjs 5 -> 6 migration (Phase 528).
+describe('extractFileText — pdfjs integration surface', () => {
+  it('uses the API the installed pdfjs actually exports', async () => {
+    // A major bump that renamed or moved any of these would otherwise fail at
+    // runtime, on a user uploading a PDF, with no test having objected.
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    expect(typeof pdfjs.getDocument).toBe('function');
+    expect(pdfjs.GlobalWorkerOptions).toBeTruthy();
+    expect(typeof pdfjs.version).toBe('string');
+  });
+
+  it('the hardcoded worker-version fallback matches the installed pdfjs', async () => {
+    // extractPdfText points GlobalWorkerOptions.workerSrc at a CDN copy of
+    // the worker pinned to `pdfjs.version || '<literal>'`. If that literal
+    // drifts from the installed version, the fallback path pairs a library
+    // with a mismatched worker — which is precisely what it exists to avoid.
+    // It said 5.7.284 while pdfjs 6 was installed.
+    // Resolved from process.cwd(), which is src/ for every path that runs
+    // this suite (npm test, npm run verify, and the CI Vitest step all invoke
+    // vitest from src/). import.meta.url is NOT usable here: under vitest's
+    // jsdom environment it is an http: URL, so readFileSync rejects it
+    // outright, and `new URL('./', ...).pathname` collapses to '/'.
+    const root = process.cwd();
+    const srcPath = resolve(root, 'utils/extractFileText.js');
+    expect(existsSync(srcPath), `expected to run from src/, cwd is ${root}`).toBe(true);
+    const src = readFileSync(srcPath, 'utf8');
+    const literal = src.match(/pdfjs\.version \|\| '([^']+)'/)?.[1];
+    expect(literal, 'could not find the fallback literal — update this test').toBeTruthy();
+
+    const installed = JSON.parse(
+      readFileSync(resolve(root, 'node_modules/pdfjs-dist/package.json'), 'utf8'),
+    ).version;
+    expect(literal).toBe(installed);
   });
 });
