@@ -21,22 +21,26 @@ import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ROUTER_FUTURE } from './routerFuture.js';
 
-// THIS HARNESS WAS FLAKY, and a flake in a guard suite is corrosive: it trains
-// you to re-run instead of investigate, which is how a real failure gets
-// waved through. Reported as "failed once in a full run, passed in isolation"
-// — and it passed 6/6 in isolation here, so the cause was cross-test, not this
-// file's logic.
+// A LATENT RACE IN THE HARNESS — fixed, and NOT the cause of the reported
+// flake. Read the timeout note further down for that; this block was written
+// claiming it was the cause, and the claim was wrong.
 //
-// `responses` is module-level mutable state that the ORIGINAL harness read
-// inside `then()`, i.e. whenever the awaited promise happened to settle. The
-// next test's `beforeEach` resets it to `{}`, so a promise that settled a tick
-// late read the FOLLOWING test's data and resolved with no error — and the
-// `waitFor` for "Live data unavailable" then timed out on a page that was
-// never going to show it.
+// What is real: `responses` is module-level mutable state that the ORIGINAL
+// harness read inside `then()`, i.e. whenever the awaited promise happened to
+// settle. The next test's `beforeEach` resets it to `{}`, so a promise settling
+// a tick late read the FOLLOWING test's data and resolved with no error. A
+// control below reproduces exactly that on demand, so it was a genuine bug
+// worth closing.
 //
-// Captured at `from(table)` time instead, so each query is bound to the
-// responses in force when the component actually issued it. Settling late can
-// no longer change the answer.
+// What was overclaimed: that this explained the observed failure. It never
+// reproduced — four further full runs stayed green — and the actual signature
+// (fails only in full runs, passes 6/6 in isolation) is explained by the
+// waitFor budget equalling the whole test budget, which is a different bug in
+// a different place. Demonstrating A mechanism is not the same as demonstrating
+// THE mechanism, and "diagnosed" was the wrong word for it.
+//
+// Fixed anyway: captured at `from(table)` time, so each query is bound to the
+// responses in force when the component actually issued it.
 const { setNextResponses, makeQueryHarness } = vi.hoisted(() => {
   let responses = {};
   const setNextResponses = (next) => { responses = next; };
@@ -105,8 +109,9 @@ describe('every composer-reading public page reports a failed fetch', () => {
     mount(C);
     // Explicit, generous timeout. The default is 1000ms, and these five pages
     // mount a lot of chart components under a parallel test runner — a timing
-    // budget that is adequate on an idle machine and marginal on a loaded one
-    // is the other half of the flake.
+    // budget adequate on an idle machine and marginal on a loaded one.
+    //
+    // This is the one that actually explains the reported flake.
     //
     // AND THE TEST BUDGET HAS TO EXCEED THE waitFor BUDGET. This read
     // `{ timeout: 5000 }` while vite.config.js sets no `test` block, so
