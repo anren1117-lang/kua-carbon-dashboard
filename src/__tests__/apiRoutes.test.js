@@ -902,9 +902,14 @@ describe('/api/admin/audit-log auth + validation', () => {
   });
 
   it('503s when Supabase env not configured', async () => {
-    const saved = { url: process.env.SUPABASE_URL, key: process.env.SUPABASE_ANON_KEY };
+    const saved = {
+      url: process.env.SUPABASE_URL,
+      key: process.env.SUPABASE_ANON_KEY,
+      service: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    };
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_ANON_KEY;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
     delete process.env.VITE_SUPABASE_URL;
     delete process.env.VITE_SUPABASE_ANON_KEY;
     const r = await call(adminAuditLogHandler, { method: 'GET', query: {}, headers: adminAuthHeaders() });
@@ -912,11 +917,16 @@ describe('/api/admin/audit-log auth + validation', () => {
     expect(r.body.error).toMatch(/supabase/i);
     if (saved.url) process.env.SUPABASE_URL = saved.url;
     if (saved.key) process.env.SUPABASE_ANON_KEY = saved.key;
+    if (saved.service) process.env.SUPABASE_SERVICE_ROLE_KEY = saved.service;
   });
 
   it('400s POST with bad action', async () => {
     process.env.SUPABASE_URL = 'https://fake.supabase.co';
-    process.env.SUPABASE_ANON_KEY = 'fake_key';
+    // Service role, not anon: api/admin/audit-log.js now connects via
+    // api/_lib/supabaseAdmin.js so the anon insert policy on
+    // admin_audit_log could be dropped (an audit trail anyone can forge
+    // is not a trail). Setting only the anon key now yields 503.
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'fake_service_role_key';
     const r = await call(adminAuditLogHandler, {
       method: 'POST',
       body: { action: 'wat', table: 'fuel_bills' },
@@ -928,7 +938,11 @@ describe('/api/admin/audit-log auth + validation', () => {
 
   it('400s POST with missing table', async () => {
     process.env.SUPABASE_URL = 'https://fake.supabase.co';
-    process.env.SUPABASE_ANON_KEY = 'fake_key';
+    // Service role, not anon: api/admin/audit-log.js now connects via
+    // api/_lib/supabaseAdmin.js so the anon insert policy on
+    // admin_audit_log could be dropped (an audit trail anyone can forge
+    // is not a trail). Setting only the anon key now yields 503.
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'fake_service_role_key';
     const r = await call(adminAuditLogHandler, {
       method: 'POST',
       body: { action: 'insert' },
@@ -940,7 +954,11 @@ describe('/api/admin/audit-log auth + validation', () => {
 
   it('400s POST with overlong note', async () => {
     process.env.SUPABASE_URL = 'https://fake.supabase.co';
-    process.env.SUPABASE_ANON_KEY = 'fake_key';
+    // Service role, not anon: api/admin/audit-log.js now connects via
+    // api/_lib/supabaseAdmin.js so the anon insert policy on
+    // admin_audit_log could be dropped (an audit trail anyone can forge
+    // is not a trail). Setting only the anon key now yields 503.
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'fake_service_role_key';
     const r = await call(adminAuditLogHandler, {
       method: 'POST',
       body: { action: 'insert', table: 'fuel_bills', note: 'x'.repeat(501) },

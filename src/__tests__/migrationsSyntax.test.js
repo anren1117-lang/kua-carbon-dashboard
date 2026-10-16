@@ -53,15 +53,32 @@ describe('migrations are syntactically applicable', () => {
     expect(offenders, offenders.join('\n')).toEqual([]);
   });
 
-  it('every CREATE POLICY is preceded by a DROP POLICY IF EXISTS', () => {
-    // the idempotent form, so re-running a migration is safe
+  it('every CREATE POLICY is preceded by a DROP POLICY IF EXISTS of the same name', () => {
+    // The idempotent form, so re-running a migration is safe.
+    //
+    // This counted drops and creates and required them to be EQUAL, which
+    // encoded two things at once and got one of them wrong. Equality bans a
+    // revoke-only migration — 20261016120000_revoke_anon_writes.sql drops
+    // eleven anon write policies and creates nothing — even though removing
+    // a policy is exactly as idempotent as replacing one.
+    //
+    // Matching by NAME is both stricter and permissive in the right place: it
+    // catches a create whose drop is missing OR misspelled (which counting
+    // never could, since the totals still balanced), and it says nothing
+    // about drops that have no create.
+    const offenders = [];
     for (const f of files) {
       const src = read(f);
-      const creates = (src.match(/^\s*create\s+policy\b/gim) || []).length;
-      const drops = (src.match(/^\s*drop\s+policy\s+if\s+exists\b/gim) || []).length;
-      expect(drops, `${f}: ${creates} CREATE POLICY vs ${drops} DROP POLICY IF EXISTS`)
-        .toBe(creates);
+      const dropped = new Set(
+        [...src.matchAll(/^\s*drop\s+policy\s+if\s+exists\s+"([^"]+)"/gim)].map((m) => m[1]),
+      );
+      for (const m of src.matchAll(/^\s*create\s+policy\s+"([^"]+)"/gim)) {
+        if (!dropped.has(m[1])) {
+          offenders.push(`${f}: create policy "${m[1]}" has no matching drop policy if exists`);
+        }
+      }
     }
+    expect(offenders, offenders.join('\n')).toEqual([]);
   });
 
   it('the consolidated apply-file matches the migrations it is built from', () => {

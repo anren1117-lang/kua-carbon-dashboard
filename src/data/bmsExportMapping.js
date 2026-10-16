@@ -20,6 +20,8 @@
 // hydrateBmsMeterMap() fills.
 
 const MAP_KEY = 'kua_bms_meter_to_building_map';
+import { adminFetch } from '../utils/adminFetch.js';
+
 const TABLE = 'bms_meter_map';
 
 // Best-guess defaults from the meter device names. These ship as the
@@ -110,15 +112,34 @@ export async function hydrateBmsMeterMap(injectedClient) {
   }
 }
 
-async function shareMapping(meterId, buildingId, injectedClient) {
+// WRITES GO THROUGH THE ADMIN API; READS STAY DIRECT.
+//
+// These were supabase.from(TABLE).upsert(...) / .delete() using the
+// publishable anon key, which only worked because the migration granted
+// `anon` insert/update/delete. That key ships in the client bundle, so it
+// gave anyone write access to the mapping that decides which buildings show
+// measured electricity. Writes now go to /api/admin/bms-meter-map, which
+// verifies the admin bearer server-side and connects with the service-role
+// key — which is what lets the table be locked to `for select to anon`.
+//
+// The catch stays silent by design: localStorage remains this browser's
+// source of truth, and the table may legitimately be absent (it is unapplied
+// on the configured project today — PGRST205). A failed share must not lose
+// the admin's edit.
+async function shareMapping(meterId, buildingId) {
   try {
-    const supabase = await client(injectedClient);
     if (buildingId) {
-      await supabase.from(TABLE).upsert({ meter_id: meterId, building_id: buildingId, updated_at: new Date().toISOString() });
+      await adminFetch('/api/admin/bms-meter-map', {
+        method: 'PUT',
+        body: JSON.stringify({ entries: [{ meterId, buildingId }] }),
+      });
     } else {
-      await supabase.from(TABLE).delete().eq('meter_id', meterId);
+      await adminFetch('/api/admin/bms-meter-map', {
+        method: 'DELETE',
+        body: JSON.stringify({ meterId }),
+      });
     }
-  } catch { /* table missing or offline — the localStorage copy still holds it */ }
+  } catch { /* missing table, offline, or not signed in — localStorage holds it */ }
 }
 
 export function setBmsMeterMapping(meterId, buildingId, injectedClient) {
@@ -135,7 +156,7 @@ export function setBmsMeterMapping(meterId, buildingId, injectedClient) {
   sharedMap = nextShared;
   lastLocalWriteAt = Date.now();
   bumpVersion();
-  void shareMapping(meterId, buildingId, injectedClient);
+  void shareMapping(meterId, buildingId);
 }
 
 export function clearBmsMeterMappings(injectedClient) {
@@ -144,9 +165,14 @@ export function clearBmsMeterMappings(injectedClient) {
   bumpVersion();
   (async () => {
     try {
-      const supabase = await client(injectedClient);
-      await supabase.from(TABLE).delete().neq('meter_id', '');
-    } catch { /* table missing or offline */ }
+      // Explicit { all: true } rather than a filter that happens to match
+      // everything: the endpoint refuses to read a malformed body as
+      // "delete the table". This replaced .delete().neq('meter_id','').
+      await adminFetch('/api/admin/bms-meter-map', {
+        method: 'DELETE',
+        body: JSON.stringify({ all: true }),
+      });
+    } catch { /* missing table, offline, or not signed in */ }
   })();
 }
 

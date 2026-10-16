@@ -5,7 +5,21 @@
 // the localStorage merge semantics (defaults under stored overrides)
 // and the reverse lookup need to be exactly right.
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// The shared-write path moved from a direct supabase.from(TABLE).upsert()
+// with the publishable anon key to /api/admin/bms-meter-map, which verifies
+// an admin bearer server-side. The anon key ships in the bundle, so the old
+// path let anyone rewrite the meter->building mapping. These tests therefore
+// assert at the new boundary: that the module issues the right authenticated
+// request, not that it calls a supabase client it no longer uses.
+const adminFetchCalls = [];
+vi.mock('../utils/adminFetch.js', () => ({
+  adminFetch: (url, init) => {
+    adminFetchCalls.push({ url, method: init?.method, body: JSON.parse(init?.body || '{}') });
+    return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) });
+  },
+}));
 import {
   DEFAULT_MAPPING, getBmsMeterMap, setBmsMeterMapping,
   clearBmsMeterMappings, metersForBuilding,
@@ -111,29 +125,45 @@ describe('shared mapping (bms_meter_map)', () => {
   // round-trip — let the microtasks run before asserting on it.
   const flush = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-  it('writes a new mapping through to the shared table', async () => {
-    const c = fakeClient([]);
-    setBmsMeterMapping('PM_50_Lab', 'b_lab', c);
+  it('writes a new mapping through the authenticated admin route', async () => {
+    adminFetchCalls.length = 0;
+    setBmsMeterMapping('PM_50_Lab', 'b_lab');
     // Visible immediately, without waiting for the round-trip.
     expect(getBmsMeterMap().PM_50_Lab).toBe('b_lab');
     await flush();
-    expect(c.calls).toEqual([['upsert', expect.objectContaining({ meter_id: 'PM_50_Lab', building_id: 'b_lab' })]]);
+    expect(adminFetchCalls).toEqual([{
+      url: '/api/admin/bms-meter-map',
+      method: 'PUT',
+      body: { entries: [{ meterId: 'PM_50_Lab', buildingId: 'b_lab' }] },
+    }]);
   });
 
-  it('removes a mapping from the shared table too', async () => {
-    const c = fakeClient([]);
+  it('removes a mapping through the authenticated admin route too', async () => {
+    adminFetchCalls.length = 0;
     __setSharedMeterMap({ PM_50_Lab: 'b_lab' });
-    setBmsMeterMapping('PM_50_Lab', '', c);
+    setBmsMeterMapping('PM_50_Lab', '');
     expect(getBmsMeterMap().PM_50_Lab).toBeUndefined();
     await flush();
-    expect(c.calls).toEqual([['delete', 'PM_50_Lab']]);
+    expect(adminFetchCalls).toEqual([{
+      url: '/api/admin/bms-meter-map',
+      method: 'DELETE',
+      body: { meterId: 'PM_50_Lab' },
+    }]);
   });
 
-  it('clears shared rows as well as local ones', () => {
-    const c = fakeClient([]);
+  it('clears shared rows as well as local ones, with an explicit all flag', async () => {
+    adminFetchCalls.length = 0;
     __setSharedMeterMap({ PM_03_MainFeed: 'b_miller' });
-    clearBmsMeterMappings(c);
+    clearBmsMeterMappings();
     expect(getBmsMeterMap()).toEqual(DEFAULT_MAPPING);
+    await flush();
+    // { all: true }, not a filter that happens to match every row. The
+    // endpoint refuses to read a malformed body as "delete the table".
+    expect(adminFetchCalls).toEqual([{
+      url: '/api/admin/bms-meter-map',
+      method: 'DELETE',
+      body: { all: true },
+    }]);
   });
 });
 

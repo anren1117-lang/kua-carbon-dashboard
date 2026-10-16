@@ -13,8 +13,8 @@
 // after each Supabase insert/delete so a logging failure never
 // blocks the actual data write.
 
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminRequest } from '../../src/utils/adminToken.js';
+import { getSupabaseAdmin } from '../_lib/supabaseAdmin.js';
 
 // Server-side Supabase client. Uses the same publishable anon key as
 // the browser — the audit_log table's RLS allows anon writes, and
@@ -32,13 +32,30 @@ function readEnv(key) {
 // dev / tests) take effect on the next request without a server
 // restart. Supabase client construction is cheap (no I/O until you
 // actually call a query method) so the per-request cost is negligible.
+// SERVICE ROLE, not the anon key.
+//
+// This read `SUPABASE_ANON_KEY`, and the table's migration justified its
+// `for insert to anon` policy on exactly that basis: "the API endpoint passes
+// through to the same anon Supabase client the rest of the dashboard uses
+// (no service-role key required to ship this)."
+//
+// The cost of that shortcut is specific to an audit log. This table exists as
+// a "verifiable data-entry trail" for AASHE STARS accreditation, and with
+// anon insert anyone holding the bundled publishable key could forge entries
+// into it — the one record you would consult after an incident. verifyAdmin
+// on this route never helped, because the database could be written directly.
+//
+// Connecting as service_role gives Postgres an identity it can distinguish,
+// which is what allows the anon write policy to be dropped.
 function getSupabase() {
-  const url = readEnv('SUPABASE_URL') || readEnv('VITE_SUPABASE_URL');
-  const key = readEnv('SUPABASE_ANON_KEY') || readEnv('VITE_SUPABASE_ANON_KEY');
-  if (!url || !key) return null;
-  return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  try {
+    return getSupabaseAdmin();
+  } catch {
+    // Unconfigured: callers already translate null into a 503 naming the
+    // missing variables, so fail closed rather than silently downgrading to
+    // the public anon key.
+    return null;
+  }
 }
 
 const ALLOWED_ACTIONS = ['insert', 'update', 'delete'];
@@ -57,7 +74,7 @@ export default async function handler(req, res) {
 
   const sb = getSupabase();
   if (!sb) {
-    res.status(503).json({ error: 'Supabase not configured (SUPABASE_URL + SUPABASE_ANON_KEY env vars missing)' });
+    res.status(503).json({ error: 'Supabase not configured (set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the server environment)' });
     return;
   }
 

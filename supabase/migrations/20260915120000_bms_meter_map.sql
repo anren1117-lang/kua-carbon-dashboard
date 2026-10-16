@@ -38,12 +38,10 @@
 -- on these policies yet, and src/data/bmsExportMapping.js already falls back
 -- to localStorage while the table is absent.
 --
--- DO NOT apply this file as-is. The write path needs to move behind an
--- authenticated API route first (verifyAdminRequest, as
--- api/meters/readings/import.js now does), after which the three anon write
--- policies below should be dropped and only `for select to anon` kept.
--- Applying it unchanged trades a localStorage-only feature for a
--- publicly-writable one.
+-- RESOLVED: the three anon write policies were removed from this file and the
+-- write path now lives behind /api/admin/bms-meter-map (verifyAdminRequest +
+-- service-role key). This file is safe to apply as written — see the
+-- migration order in CLAUDE.md > Supabase.
 -- ============================================================================
 
 create table if not exists bms_meter_map (
@@ -58,14 +56,22 @@ drop policy if exists "allow anon select on bms_meter_map" on bms_meter_map;
 create policy "allow anon select on bms_meter_map"
   on bms_meter_map for select to anon using (true);
 
+-- NO ANON WRITE POLICIES. Public SELECT only.
+--
+-- This file previously granted anon insert, update and delete. Those are
+-- removed rather than fixed in a later migration because the table is not yet
+-- applied anywhere: correcting it here means it is never created in the
+-- permissive state, and there is no window in which the table exists and is
+-- publicly writable.
+--
+-- Writes now go through POST/PUT/DELETE /api/admin/bms-meter-map, which
+-- verifies the admin bearer token (verifyAdminRequest) and connects with the
+-- service-role key. service_role bypasses RLS, so it needs no policy here.
+--
+-- src/data/bmsExportMapping.js still SELECTs this table directly with the
+-- anon key — the mapping is not secret and every visitor's charts depend on
+-- it, so the public read below is intentional.
+
 drop policy if exists "allow anon insert on bms_meter_map" on bms_meter_map;
-create policy "allow anon insert on bms_meter_map"
-  on bms_meter_map for insert to anon with check (true);
-
 drop policy if exists "allow anon update on bms_meter_map" on bms_meter_map;
-create policy "allow anon update on bms_meter_map"
-  on bms_meter_map for update to anon using (true) with check (true);
-
 drop policy if exists "allow anon delete on bms_meter_map" on bms_meter_map;
-create policy "allow anon delete on bms_meter_map"
-  on bms_meter_map for delete to anon using (true);

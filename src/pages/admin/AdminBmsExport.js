@@ -12,6 +12,7 @@ import { supabase } from '../../supabaseClient.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { getBmsMeterMap, setBmsMeterMapping, clearBmsMeterMappings, hydrateBmsMeterMap } from '../../data/bmsExportMapping.js';
 import { getEffectiveBuildings } from '../../data/assetInventory.js';
+import { adminFetch } from '../../utils/adminFetch.js';
 
 // /admin/bms-export — read-only view of the parsed BMS Meter Trends
 // CSV plus a meter→building mapping form. Once a meter is mapped, the
@@ -103,8 +104,15 @@ export default function AdminBmsExport() {
         meter_count: upload.meta.meterCount,
         summary: upload.meters,
       };
-      const { error } = await supabase.from(BMS_EXPORT_TABLE).insert([row]);
-      if (error) throw error;
+      // Through the admin API, not the anon-key client: this insert used to
+      // run in the browser and only worked because RLS granted `anon` insert.
+      // The newest stored window wins, so an open insert meant anyone could
+      // make the dashboard report a fabricated export.
+      const resp = await adminFetch('/api/admin/bms-export-summaries', {
+        method: 'POST',
+        body: JSON.stringify({ row }),
+      });
+      if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || `HTTP ${resp.status}`);
       logAdminWrite({ action: 'insert', table: BMS_EXPORT_TABLE, payload: { source_file: row.source_file, window_end: row.window_end, meter_count: row.meter_count } });
       setUploadMsg({ ok: true, text: `Saved ${upload.meta.sourceFile}. Reload to draw the operational views from it.` });
       setUpload(null);
@@ -123,8 +131,11 @@ export default function AdminBmsExport() {
     savingRef.current = true;
     setBusy(true);
     try {
-      const { error } = await supabase.from(BMS_EXPORT_TABLE).delete().eq('id', row.id);
-      if (error) throw error;
+      const resp = await adminFetch('/api/admin/bms-export-summaries', {
+        method: 'DELETE',
+        body: JSON.stringify({ id: row.id }),
+      });
+      if (!resp.ok) throw new Error((await resp.json().catch(() => ({}))).error || `HTTP ${resp.status}`);
       logAdminWrite({ action: 'delete', table: BMS_EXPORT_TABLE, payload: { id: row.id, source_file: row.source_file } });
       await refreshUploads();
       setUploadMsg({ ok: true, text: `Deleted ${row.source_file}. Reload to see the change.` });
