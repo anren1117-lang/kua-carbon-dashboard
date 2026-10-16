@@ -124,6 +124,7 @@ describe('POST /api/meters/readings/import', () => {
   it('accepts a readings array', async () => {
     const r = await call(readingsImportHandler, {
       method: 'POST',
+      headers: adminAuthHeaders(),
       body: { readings: [{ id: 'x', meterId: 'm_elec_b_miller', timestamp: '2026-04-01T00:00:00.000Z', value: 1 }] },
     });
     expect(r.statusCode).toBe(200);
@@ -131,7 +132,9 @@ describe('POST /api/meters/readings/import', () => {
   });
 
   it('rejects bad bodies', async () => {
-    const r = await call(readingsImportHandler, { method: 'POST', body: { foo: 'bar' } });
+    const r = await call(readingsImportHandler, {
+      method: 'POST', headers: adminAuthHeaders(), body: { foo: 'bar' },
+    });
     expect(r.statusCode).toBe(400);
   });
 
@@ -141,6 +144,7 @@ describe('POST /api/meters/readings/import', () => {
     // in the readings store as a row of nulls.
     const r = await call(readingsImportHandler, {
       method: 'POST',
+      headers: adminAuthHeaders(),
       body: { readings: [{ id: 'x', meterId: 'm_elec_b_miller' }] },
     });
     expect(r.statusCode).toBe(400);
@@ -152,8 +156,53 @@ describe('POST /api/meters/readings/import', () => {
       id: `r${i}`, meterId: 'm_elec_b_miller',
       timestamp: '2026-04-01T00:00:00.000Z', value: 1,
     }));
-    const r = await call(readingsImportHandler, { method: 'POST', body: { readings: big } });
+    const r = await call(readingsImportHandler, {
+      method: 'POST', headers: adminAuthHeaders(), body: { readings: big },
+    });
     expect(r.statusCode).toBe(413);
+  });
+
+  // ACCESS CONTROL. This endpoint shipped with no authorization check at
+  // all: any unauthenticated caller could POST up to 10,000 readings and,
+  // on a Supabase-configured deploy, have them persisted. Meter readings
+  // feed the emission totals every page reports, so it was an open write
+  // path into the dashboard's headline numbers. The shape validation above
+  // was never a substitute — it rejects malformed rows, not unauthorized
+  // ones, and all four tests above passed while the hole was open.
+  const oneReading = () => ({
+    readings: [{ id: 'x', meterId: 'm_elec_b_miller', timestamp: '2026-04-01T00:00:00.000Z', value: 1 }],
+  });
+
+  it('rejects an unauthenticated import with 401', async () => {
+    const r = await call(readingsImportHandler, { method: 'POST', body: oneReading() });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('rejects a forged bearer token', async () => {
+    const r = await call(readingsImportHandler, {
+      method: 'POST',
+      headers: { authorization: 'Bearer not.a.real.token' },
+      body: oneReading(),
+    });
+    expect(r.statusCode).toBe(401);
+  });
+
+  it('rejects an expired admin token', async () => {
+    const expired = signAdminToken({ ttlSeconds: -60 }).token;
+    const r = await call(readingsImportHandler, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${expired}` },
+      body: oneReading(),
+    });
+    expect(r.statusCode).toBe(401);
+    expect(r.body.error).toMatch(/expired/i);
+  });
+
+  it('checks authorization BEFORE validating the body', async () => {
+    // An unauthorized caller should not get validation feedback on a large
+    // payload — that is both an information leak and free CPU.
+    const r = await call(readingsImportHandler, { method: 'POST', body: { foo: 'bar' } });
+    expect(r.statusCode).toBe(401);
   });
 });
 

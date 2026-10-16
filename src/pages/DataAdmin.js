@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ModulePage, ModuleSection, MetricGrid, Pill } from '../components/ModuleShell.js';
 import { PasswordGate } from '../components/PasswordGate.js';
+import { adminFetch } from '../utils/adminFetch.js';
 import { meters } from '../data/meters.js';
 import { emissionFactors } from '../data/emissionFactors.js';
 import { buildings } from '../data/buildings.js';
@@ -308,9 +309,13 @@ function CsvUploadPanel() {
   function onUpload() {
     if (!preview || preview.errors.length || preview.readings.length === 0) return;
     setBusy(true);
-    fetch('/api/meters/readings/import', {
+    // adminFetch, not bare fetch: the import endpoint now requires an admin
+    // bearer token (it previously had no authorization at all). adminFetch
+    // attaches the token from the admin session and clears it on a 401, so an
+    // expired session surfaces as the re-login banner instead of a bare HTTP
+    // error here.
+    adminFetch('/api/meters/readings/import', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ readings: preview.readings }),
     })
       .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))

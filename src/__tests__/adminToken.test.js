@@ -144,3 +144,54 @@ describe('verifyAdminRequest', () => {
     expect(verifyAdminRequest({ headers: { authorization: 'Basic abc' } }).reason).toMatch(/missing bearer/);
   });
 });
+
+// FAIL CLOSED WITH NO SECRET CONFIGURED.
+//
+// This module used to fall back to a hardcoded 68-character DEFAULT_SECRET
+// when ADMIN_TOKEN_SECRET was unset, so that login worked on a fresh deploy.
+// That constant lived in a PUBLIC repository alongside an exported
+// signAdminToken, which made minting a valid admin token a five-line script
+// — no password, login endpoint bypassed — and every /api/admin/* route
+// verifies against this same secret.
+//
+// An access control that silently opens when an env var is missing is worse
+// than one that visibly breaks. These assert there is no fallback left.
+describe('no fallback secret', () => {
+  let saved;
+  beforeEach(() => {
+    saved = process.env.ADMIN_TOKEN_SECRET;
+    delete process.env.ADMIN_TOKEN_SECRET;
+  });
+  afterEach(() => {
+    if (saved === undefined) delete process.env.ADMIN_TOKEN_SECRET;
+    else process.env.ADMIN_TOKEN_SECRET = saved;
+  });
+
+  it('signing throws instead of using a built-in default', () => {
+    expect(() => signAdminToken()).toThrow(/ADMIN_TOKEN_SECRET is not configured/);
+  });
+
+  it('the error names the variable and says why there is no default', () => {
+    try {
+      signAdminToken();
+      throw new Error('expected signAdminToken to throw');
+    } catch (err) {
+      expect(err.code).toBe('ADMIN_SECRET_MISSING');
+      expect(err.message).toMatch(/ADMIN_TOKEN_SECRET/);
+      expect(err.message).toMatch(/public repo/);
+    }
+  });
+
+  it('verification fails closed rather than accepting anything', () => {
+    // Shape-valid, signature-shaped, and still rejected: with no secret
+    // there is nothing to verify against, so nothing can be valid.
+    const res = verifyAdminToken('eyJyb2xlIjoiYWRtaW4ifQ.c2ln');
+    expect(res.valid).toBe(false);
+    expect(res.reason).toMatch(/ADMIN_TOKEN_SECRET is not configured/);
+  });
+
+  it('rejects a secret that is too short to be useful', () => {
+    process.env.ADMIN_TOKEN_SECRET = 'short';
+    expect(() => signAdminToken()).toThrow(/only 5 chars, need 32/);
+  });
+});

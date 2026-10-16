@@ -9,7 +9,14 @@ on:
 jobs:
   build-and-test:
     name: Build + test (Vite)
-    runs-on: ubuntu-latest
+    # PINNED to the image the green runs actually used (Runner Image:
+    # ubuntu-24.04). `ubuntu-latest` migrates to Ubuntu 26 on 2026-10-19,
+    # and an unpinned runtime is what put this repo on end-of-life Node 20
+    # for six months (Phase 526). Same lesson, one layer down.
+    #
+    # A commitment to revisit, not to sit on 24.04 forever: bump it
+    # deliberately and watch CI, rather than being bumped by a calendar.
+    runs-on: ubuntu-24.04
 
     defaults:
       run:

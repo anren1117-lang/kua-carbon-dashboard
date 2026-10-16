@@ -3,6 +3,7 @@
 // Mock adapter ignores; real adapter persists to Supabase.
 
 import { getMeterAdapter } from '../../../src/adapters/meter/index.js';
+import { verifyAdminRequest } from '../../../src/utils/adminToken.js';
 
 const MAX_READINGS = 10_000;
 
@@ -23,6 +24,24 @@ function validateReading(r, i) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+  // ADMIN ONLY. This endpoint had NO authorization check at all: any
+  // unauthenticated caller could POST up to 10,000 meter readings and, on a
+  // Supabase-configured deploy, have the adapter persist them. Meter readings
+  // drive the emission totals every page on this site reports, so that was a
+  // write path into the dashboard's headline numbers.
+  //
+  // The validation below is shape-only and was never a substitute: it stops
+  // malformed rows, not unauthorized ones. The sole legitimate caller is the
+  // CSV upload on /data-admin, which sits behind the admin gate, so it has a
+  // bearer token to send — it just wasn't sending it (fixed in DataAdmin.js).
+  //
+  // Checked BEFORE reading the body: an unauthorized caller should not get
+  // validation feedback on a 10,000-row payload.
+  const auth = verifyAdminRequest(req);
+  if (!auth.valid) {
+    res.status(401).json({ error: auth.reason || 'unauthorized' });
     return;
   }
   try {

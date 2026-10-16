@@ -31,14 +31,56 @@ import crypto from 'node:crypto';
 const ALGO = 'sha256';
 const DEFAULT_TTL_SECONDS = 8 * 3600; // 8h — typical admin work session
 
-// 64-hex-char fallback. Anyone wanting hardened security should set
-// ADMIN_TOKEN_SECRET in their Vercel project env to override it.
-const DEFAULT_SECRET = 'kua-carbon-dashboard-fallback-secret-replace-in-vercel-env-32chars+';
+// THERE IS NO FALLBACK SECRET ANY MORE, and this is the important change in
+// this file.
+//
+// It used to fall back to a hardcoded 68-character constant when
+// ADMIN_TOKEN_SECRET was unset, so that "login Just Works on a fresh deploy".
+// The comment above acknowledged the cost — "The fallback IS published in the
+// public repo, so a sufficiently motivated attacker could mint forged tokens"
+// — but understated it in two ways:
+//
+//   1. It is not a motivated-attacker problem. The secret is three lines of a
+//      public repository, and signAdminToken is exported, so minting a valid
+//      admin token is a five-line script. No password is involved: the login
+//      endpoint is bypassed entirely.
+//   2. Every /api/admin/* route verifies with this same secret, so one
+//      published constant is the whole admin surface — plan edits, the audit
+//      log, AI ingestion, alert history.
+//
+// An access control that is wide open whenever an env var is missing, and
+// silent about it, is worse than one that is visibly broken: nobody notices
+// the first. So this now FAILS CLOSED. With ADMIN_TOKEN_SECRET unset,
+// signing and verification both throw, admin login returns a 500 naming the
+// cause, and no token validates.
+//
+// DEPLOYMENT NOTE: set ADMIN_TOKEN_SECRET (32+ chars) in the Vercel project
+// env. Until it is set, the admin surface is unavailable rather than
+// impersonatable. Rotating it invalidates existing sessions, which is the
+// correct behaviour and the reason tokens carry an 8h exp.
+export const SECRET_ENV_VAR = 'ADMIN_TOKEN_SECRET';
+const MIN_SECRET_LENGTH = 32;
+
+export class AdminSecretMissingError extends Error {
+  constructor(detail) {
+    super(
+      `${SECRET_ENV_VAR} is not configured${detail ? ` (${detail})` : ''}. ` +
+      `Admin authentication is disabled until it is set to a ${MIN_SECRET_LENGTH}+ character secret. ` +
+      `There is deliberately no built-in default: the previous fallback was published in this public repo, ` +
+      `which let anyone mint a valid admin token.`,
+    );
+    this.name = 'AdminSecretMissingError';
+    this.code = 'ADMIN_SECRET_MISSING';
+  }
+}
 
 function readSecret() {
-  const s = process.env.ADMIN_TOKEN_SECRET;
-  if (s && s.length >= 32) return s;
-  return DEFAULT_SECRET;
+  const s = process.env[SECRET_ENV_VAR];
+  if (typeof s !== 'string' || s.length === 0) throw new AdminSecretMissingError('unset');
+  if (s.length < MIN_SECRET_LENGTH) {
+    throw new AdminSecretMissingError(`only ${s.length} chars, need ${MIN_SECRET_LENGTH}+`);
+  }
+  return s;
 }
 
 function b64urlEncode(buf) {

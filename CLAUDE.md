@@ -61,6 +61,29 @@ runner — until it was extracted to `scripts/check-bundle-size.mjs`.
 
 If you add a check to CI, add it to `verify`. If you can't, it isn't a gate.
 
+### Real-browser checks (`scripts/browser/verify-browser.mjs`)
+
+`npm run verify` cannot reach three paths: PDF extraction needs a pdfjs
+worker, PowerPoint export needs a real download, and KaTeX needs layout.
+`scripts/browser/verify-browser.mjs` drives the production build in Chrome
+and covers them. Not wired into `verify` — it needs a running server and a
+browser. Its header has the commands.
+
+Two assertion mistakes are written into it as comments, because both looked
+like app bugs and were not:
+
+- **PDF upload** was asserted against `document.body.innerText`. Extracted
+  text lands in the "Paste source material" **textarea value**, which is not
+  in `innerText`. Same family as asserting `textContent` on an SVG chart.
+- **Math** was asserted on `/teacher/ap/apphys2` and `/carbon-math`.
+  `apphys2-unit-1.js` has zero `$` delimiters and `CarbonMath.js` never
+  imports `MathText`. Demanding math where the content has none measures the
+  test, not the app.
+
+The teacher gate password (`kua-teach`) is in the bundle and in this repo by
+design — it is a speed bump, not a secret — so the script uses it to reach
+gated pages.
+
 ### Node and npm versions
 
 `.nvmrc` pins **Node 24.13.0**, and `src/package.json` records the same floor
