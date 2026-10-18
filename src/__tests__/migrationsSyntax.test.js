@@ -69,12 +69,23 @@ describe('migrations are syntactically applicable', () => {
     const offenders = [];
     for (const f of files) {
       const src = read(f);
-      const dropped = new Set(
-        [...src.matchAll(/^\s*drop\s+policy\s+if\s+exists\s+"([^"]+)"/gim)].map((m) => m[1]),
-      );
-      for (const m of src.matchAll(/^\s*create\s+policy\s+"([^"]+)"/gim)) {
-        if (!dropped.has(m[1])) {
-          offenders.push(`${f}: create policy "${m[1]}" has no matching drop policy if exists`);
+      // QUOTED OR BARE. The first version matched only "quoted" names, which
+      // silently skipped every policy in the alert_* migrations — they use
+      // bare identifiers (alert_subscribers_anon_read). A guard that ignores
+      // a whole dialect is worse than none, because the file looks checked.
+      const NAME = /^\s*(?:drop|create)\s+policy\s+(?:if\s+exists\s+)?(?:"([^"]+)"|([a-z0-9_]+))/i;
+      const dropped = new Set();
+      const creates = [];
+      for (const line of src.split('\n')) {
+        const m = NAME.exec(line);
+        if (!m) continue;
+        const name = m[1] || m[2];
+        if (/drop\s+policy/i.test(line)) dropped.add(name);
+        else creates.push(name);
+      }
+      for (const name of creates) {
+        if (!dropped.has(name)) {
+          offenders.push(`${f}: create policy ${name} has no matching drop policy if exists`);
         }
       }
     }

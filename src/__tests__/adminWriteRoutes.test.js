@@ -270,6 +270,22 @@ describe('server-only credential', () => {
     }
   });
 
+  it('accepts the legacy SUPABASE_SERVICE_KEY name on its own', async () => {
+    // The repo used this name before SUPABASE_SERVICE_ROLE_KEY was introduced
+    // here. A deployer who set only the old one must not get a half-working
+    // server, so either name has to be sufficient.
+    const { isSupabaseAdminConfigured } = await vi.importActual('../../api/_lib/supabaseAdmin.js');
+    const saved = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    process.env.SUPABASE_SERVICE_KEY = 'legacy-name-service-key';
+    try {
+      expect(isSupabaseAdminConfigured()).toBe(true);
+    } finally {
+      delete process.env.SUPABASE_SERVICE_KEY;
+      process.env.SUPABASE_SERVICE_ROLE_KEY = saved;
+    }
+  });
+
   it('names the variable and warns against a VITE_ prefix', async () => {
     // The error message is the only place a deployer is told why the obvious
     // "just add VITE_ to it" fix would be catastrophic: Vite inlines VITE_*
@@ -285,7 +301,11 @@ describe('server-only credential', () => {
       try { getSupabaseAdmin(); } catch (e) { caught = e; }
       expect(caught, 'expected getSupabaseAdmin to throw').toBeTruthy();
       expect(caught.code).toBe('SUPABASE_ADMIN_UNCONFIGURED');
-      expect(caught.missing).toContain('SUPABASE_SERVICE_ROLE_KEY');
+      // Both names are accepted (src/storage/supabaseServer.js already used
+      // SUPABASE_SERVICE_KEY), so the entry names the canonical one and the
+      // legacy alternative rather than being an exact string.
+      expect(caught.missing.join(' ')).toMatch(/SUPABASE_SERVICE_ROLE_KEY/);
+      expect(caught.missing.join(' ')).toMatch(/SUPABASE_SERVICE_KEY/);
       expect(caught.message).toMatch(/VITE_/);
       expect(caught.message).toMatch(/row-level security/i);
     } finally {
