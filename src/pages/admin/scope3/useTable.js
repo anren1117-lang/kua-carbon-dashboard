@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../supabaseClient';
 import { logAdminWrite } from '../../../utils/adminAudit.js';
+import { adminInsert, adminUpdate, adminDelete } from '../../../utils/adminRecords.js';
 
 export function useTable(table, orderBy = 'created_at', { ascending = false } = {}) {
   const [rows, setRows] = useState([]);
@@ -40,20 +41,25 @@ export function useTable(table, orderBy = 'created_at', { ascending = false } = 
     return () => { requestSeq.current++; };
   }, [refresh]);
 
+  // READS STAY DIRECT; WRITES GO THROUGH /api/admin/records. These three
+  // used to call supabase.from(table).insert/update/delete with the anon key
+  // that ships in the bundle, which only worked while the database granted
+  // anon writes — i.e. while anyone could write. See api/admin/records.js.
+  //
   // Every insert/update/delete fires logAdminWrite() so the
   // /admin/audit-log surface captures EVERY admin write, not just
   // ones routed through AdminPortal.js. Fire-and-forget — a logging
   // failure must not block the admin's save click. Same posture
   // logAdminWrite already takes for invalidating the live-data cache.
   const insert = async (record) => {
-    const { error } = await supabase.from(table).insert([record]);
+    const { error } = await adminInsert(table, [record]);
     if (error) throw error;
     logAdminWrite({ action: 'insert', table, payload: record });
     await refresh();
   };
 
   const update = async (id, record) => {
-    const { error } = await supabase.from(table).update(record).eq('id', id);
+    const { error } = await adminUpdate(table, id, record);
     if (error) throw error;
     logAdminWrite({ action: 'update', table, payload: { id, ...record } });
     await refresh();
@@ -62,7 +68,7 @@ export function useTable(table, orderBy = 'created_at', { ascending = false } = 
   // `meta` carries identifying fields of the deleted row into the audit log —
   // without it a delete+insert replacement is unreadable after the fact.
   const remove = async (id, meta) => {
-    const { error } = await supabase.from(table).delete().eq('id', id);
+    const { error } = await adminDelete(table, id);
     if (error) throw error;
     logAdminWrite({ action: 'delete', table, payload: { id, ...(meta || {}) } });
     await refresh();

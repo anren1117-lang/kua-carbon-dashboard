@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import { adminFetch } from '../../utils/adminFetch.js';
+import { adminInsert } from '../../utils/adminRecords.js';
 import { extractFileText } from '../../utils/extractFileText.js';
 import { logAdminWrite } from '../../utils/adminAudit.js';
 import { AIError, formatUsage } from './AdminPlanAgent.js';
@@ -503,11 +504,11 @@ function AdminAIIngestion() {
           for (let i = 0; i < rows.length; i++) {
             if (rows[i].confidence !== 'high') continue;
             // Use the row's own fields (no edits possible yet) — we
-            // call the same Supabase insert path as acceptRow but
+            // call the same insert path as acceptRow but
             // inline since acceptRow reads from rowFields state.
             try {
               setRowStates((s) => ({ ...s, [i]: 'sending' }));
-              const { error: insErr } = await supabase.from(rows[i].table).insert(rows[i].fields);
+              const { error: insErr } = await adminInsert(rows[i].table, rows[i].fields);
               if (insErr) throw new Error(insErr.message);
               logAdminWrite({
                 action: 'insert',
@@ -577,7 +578,7 @@ function AdminAIIngestion() {
     try {
       const fields = activeFields(i, row);
       const targetTable = activeTable(i, row);
-      const { error: insErr } = await supabase.from(targetTable).insert(fields);
+      const { error: insErr } = await adminInsert(targetTable, fields);
       if (insErr) throw new Error(insErr.message);
       const reclassified = targetTable !== row.table;
       logAdminWrite({
@@ -618,7 +619,7 @@ function AdminAIIngestion() {
         source: sourcePrefix,
         notes: row.sourceQuote || null,
       };
-      const { error: insErr } = await supabase.from('framework_drafts').insert(draft);
+      const { error: insErr } = await adminInsert('framework_drafts', draft);
       if (insErr) throw new Error(insErr.message);
       setRowStates((s) => ({ ...s, [i]: 'drafted' }));
       setEditMode((m) => ({ ...m, [i]: false }));

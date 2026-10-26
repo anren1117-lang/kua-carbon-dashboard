@@ -40,7 +40,7 @@ const created = new Set(
   [...sql.matchAll(/create\s+table\s+if\s+not\s+exists\s+([a-z0-9_]+)/gi)].map((m) => m[1].toLowerCase()),
 );
 const rlsEnabled = new Set(
-  [...sql.matchAll(/alter\s+table\s+([a-z0-9_]+)\s+enable\s+row\s+level\s+security/gi)].map((m) => m[1].toLowerCase()),
+  [...sql.matchAll(/alter\s+table\s+(?:if\s+exists\s+)?(?:public\.)?([a-z0-9_]+)\s+enable\s+row\s+level\s+security/gi)].map((m) => m[1].toLowerCase()),
 );
 
 /**
@@ -48,40 +48,40 @@ const rlsEnabled = new Set(
  * the work needed. This is a DEBT REGISTER, not an allowlist to grow by
  * reflex: adding an entry should feel like filing a ticket.
  *
- * `browserWrites: true` marks the ones where simply enabling RLS would break
- * a working admin form — those need their writes moved behind an
- * authenticated API route first, exactly as bms_meter_map and
- * bms_export_summaries were in Phase 531.
+ * EMPTY since Phase 533. Phase 532 listed fifteen tables here, and its
+ * `browserWrites` flags were wrong for most of them: it marked
+ * scope1_heating_oil, scope2_meter_readings, sinks_trees and others as having
+ * no browser write path, when every admin form wrote to them through the
+ * shared useTable hook. Phase 533 moved those writes to /api/admin/records
+ * and 20261025120000_lock_admin_tables.sql enables RLS on all fifteen. The
+ * guard at the bottom of this file now checks the browser side directly
+ * rather than trusting a hand-set flag.
  */
-const KNOWN_WITHOUT_RLS = {
-  // --- written from the browser today. Enabling RLS here without first
-  //     moving the write behind an authenticated API route would break a
-  //     working admin form, which is the ordering trap Phase 531 avoided.
-  purchased_goods:        { browserWrites: true,  via: 'pages/admin/scope3/useTable.js' },
-  commuting:              { browserWrites: true,  via: 'pages/admin/scope3/useTable.js' },
-  framework_drafts:       { browserWrites: true,  via: 'useTable.js + AdminAIIngestion.js' },
+const KNOWN_WITHOUT_RLS = {};
 
-  // --- inventory source data. No browser write path found by scanning src/
-  //     for Supabase writes, so with RLS off the deployed grants decide.
-  //     Highest priority to confirm against the live database and lock down.
-  scope2_utility_bills:   { browserWrites: false, note: 'inventory source data' },
-  scope2_meter_readings:  { browserWrites: false, note: 'inventory source data' },
-  scope1_heating_oil:     { browserWrites: false, note: 'inventory source data' },
-  scope1_propane:         { browserWrites: false, note: 'inventory source data' },
-  sinks_trees:            { browserWrites: false, note: 'inventory source data' },
-  sinks_soil_samples:     { browserWrites: false, note: 'inventory source data' },
+const SRC = resolve(process.cwd());
+function walk(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
+    if (['node_modules', 'dist', '__tests__'].includes(d.name)) return [];
+    const full = resolve(dir, d.name);
+    if (d.isDirectory()) return walk(full);
+    return /\.(js|jsx)$/.test(d.name) && !/\.test\./.test(d.name) ? [full] : [];
+  });
+}
+const SRC_FILES = walk(SRC).map((f) => [f.slice(SRC.length + 1), readFileSync(f, 'utf8')]);
 
-  // --- superseded by the *_records / admin_audit_log tables, which do have
-  //     RLS. Candidates for dropping outright rather than protecting.
-  scope1_fleet:           { browserWrites: false, note: 'superseded by scope1_fleet_records' },
-  scope1_refrigerants:    { browserWrites: false, note: 'superseded by scope1_refrigerant_logs' },
-  audit_log:              { browserWrites: false, note: 'superseded by admin_audit_log' },
-
-  // --- scenario inputs for the renewables modelling pages.
-  renewables_solar:       { browserWrites: false, note: 'scenario inputs' },
-  renewables_wind:        { browserWrites: false, note: 'scenario inputs' },
-  renewables_geothermal:  { browserWrites: false, note: 'scenario inputs' },
-};
+/** Files that import the anon client and chain a write on it. */
+function browserWriteSites(files) {
+  return files
+    .filter(([, text]) => /from\s+['"][./]*(?:\.\.\/)*supabaseClient(?:\.js)?['"]/.test(text))
+    .filter(([, text]) => {
+      // Comments explain history and quote the old calls; they are not code.
+      const code = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+      return /\.from\([^)]*\)\s*\.(insert|upsert|update|delete)\s*\(/.test(code);
+    })
+    .map(([name]) => name)
+    .sort();
+}
 
 describe('RLS coverage across the migrations', () => {
   it('finds the migrations at all — a zero-length scan proves nothing', () => {
@@ -137,20 +137,38 @@ describe('RLS coverage across the migrations', () => {
     // down (good — shrink it) or added an unprotected one (investigate).
     const withoutRls = [...created].filter((t) => !rlsEnabled.has(t));
     expect(withoutRls.length).toBe(Object.keys(KNOWN_WITHOUT_RLS).length);
-    expect(withoutRls.length).toBe(15);
-    expect(rlsEnabled.size).toBe(12);
+    expect(withoutRls.length).toBe(0);
+    // rlsEnabled is LARGER than created: the Phase 533 lockdown also covers
+    // seven admin tables (fuel_bills, waste, day_students, …) that were made
+    // in the dashboard rather than by a migration in this repo.
+    expect([...created].filter((t) => !rlsEnabled.has(t))).toEqual([]);
   });
 
-  it('no table is written from the browser AND locked down in the same change', () => {
-    // The ordering trap that Phase 531 had to avoid: revoking anon writes
-    // before the write path moves server-side breaks a working admin form.
-    const brokenByLockdown = Object.entries(KNOWN_WITHOUT_RLS)
-      .filter(([t, meta]) => meta.browserWrites && rlsEnabled.has(t))
-      .map(([t]) => t);
+  it('no browser module writes to Supabase with the anon client', () => {
+    // The ordering trap Phase 531 had to avoid — locking a table that the
+    // browser still writes breaks a working form — is now checked at the
+    // source instead of through a hand-set flag. Phase 531's migration called
+    // forest_stand_actuals browser-write-free while ForestStands.js wrote to
+    // it; a flag is a claim, a scan is evidence.
+    //
+    // The rule: a module importing the anon client (supabaseClient) may read,
+    // never insert/upsert/update/delete. Server modules under storage/ use
+    // getSupabaseServer() and the service key, and are not matched.
+    const offenders = browserWriteSites(SRC_FILES);
     expect(
-      brokenByLockdown,
-      `RLS was enabled on tables still written from the browser. Move those ` +
-      `writes behind an authenticated API route first:\n  ${brokenByLockdown.join('\n  ')}`,
+      offenders,
+      `These modules write with the publishable anon key. Route the write ` +
+      `through /api/admin/records (src/utils/adminRecords.js) instead:\n  ${offenders.join('\n  ')}`,
     ).toEqual([]);
+  });
+
+  it('the browser-write scan can fail — a scan that never fires proves nothing', () => {
+    expect(SRC_FILES.length).toBeGreaterThan(100);
+    const chained = `import { supabase } from '../supabaseClient';\n` +
+      `await supabase\n  .from('fuel_bills')\n  .insert(row);`;
+    const readOnly = `import { supabase } from '../supabaseClient';\n` +
+      `// was supabase.from(t).insert(r)\nawait supabase.from('fuel_bills').select('*');`;
+    expect(browserWriteSites([['chained.js', chained]])).toEqual(['chained.js']);
+    expect(browserWriteSites([['readOnly.js', readOnly]])).toEqual([]);
   });
 });

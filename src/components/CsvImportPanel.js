@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { adminInsert } from '../utils/adminRecords.js';
 import { parseCsv } from '../utils/csv.js';
 import { logAdminWrite } from '../utils/adminAudit.js';
 // A CSV row with no school_year used to be stamped with a frozen '2025-2026'.
@@ -66,7 +66,7 @@ export default function CsvImportPanel({
     if (!preview || preview.valid.length === 0) return;
     setBusy(true);
     try {
-      const { error } = await supabase.from(tableName).insert(preview.valid);
+      const { error } = await adminInsert(tableName, preview.valid);
       if (error) throw error;
       logAdminWrite({
         action: 'insert',
@@ -156,7 +156,7 @@ export default function CsvImportPanel({
 //
 // Convention: return { ok: true, row: { ...sanitized... } } for
 // valid rows so the commit step can pass them straight to
-// supabase.insert(). Return { ok: false, message } for invalid rows.
+// adminInsert(). Return { ok: false, message } for invalid rows.
 
 const date = (raw, key = 'date') => (raw[key] || '').trim();
 const dateOk = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s);
