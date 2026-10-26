@@ -83,6 +83,22 @@ function readSecret() {
   return s;
 }
 
+/**
+ * Whether admin auth can work, without throwing and without revealing the
+ * secret. For /api/health, so a deployer can confirm the variable took
+ * effect without having to sign in — which is the very thing that fails
+ * when it is missing.
+ * @returns {{ configured: boolean, reason: string | null }}
+ */
+export function adminSecretStatus() {
+  try {
+    readSecret();
+    return { configured: true, reason: null };
+  } catch (err) {
+    return { configured: false, reason: err.message };
+  }
+}
+
 function b64urlEncode(buf) {
   return Buffer.from(buf).toString('base64url');
 }
