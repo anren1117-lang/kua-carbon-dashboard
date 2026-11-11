@@ -104,7 +104,7 @@ run, which also meant npm 10.x resolving a lockfile written by npm 11.x. Node
 
 There are **two `package.json` files** with different toolchains. Only one is live:
 
-- `/package.json` — **stale** Create-React-App scaffolding. Does not host the dev server or build pipeline anymore. The one durable role it plays: `"type": "module"` so the `api/*.js` Vercel functions parse as ESM. Don't add new deps here.
+- `/package.json` — **not** the app's package. Does not host the dev server or build pipeline. Two durable roles, both for the `api/*.js` Vercel functions: `"type": "module"` so they parse as ESM, and **`dependencies` holding exactly the npm packages they import** (today only `@supabase/supabase-js`, pinned to `src/package-lock.json`'s version). Node resolving from `api/` never reaches `src/node_modules`, and `vercel.json` installs both (`npm ci && cd src && npm install`). Phase 535: with the package only in `src/`, every route importing `api/_lib/supabaseAdmin.js` crashed in production while tests passed — this machine had a stale root `node_modules` from the CRA era. `apiDependencies.test.js` checks the declarations, not what's installed locally. Don't add app (browser) deps here.
 - `/src/package.json` — **active**. Vite + React 18 + Vitest. This is the one to install against and run. `src/index.html` is the Vite entry, `src/public/` is the static-asset dir Vite copies through (favicon, manifest, logos), and Vite treats `src/` as the project root.
 
 If `npm start` is requested, redirect to `npm run dev` from `src/`. If changing React or build tooling, update `src/package.json`, not the root.

@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "_note": "No scripts live here. All development runs from src/ — `cd src && npm <script>`, and `npm run verify` before pushing. See CLAUDE.md > Commands."
+    "_note": "No scripts live here. All development runs from src/ \u2014 `cd src && npm <script>`, and `npm run verify` before pushing. See CLAUDE.md > Commands."
+  },
+  "_note_dependencies": "Only what the api/*.js serverless functions import. Vercel installs root AND src (vercel.json installCommand); api/ cannot resolve src/node_modules. Pinned to src/package-lock.json's version. Guarded by src/__tests__/apiDependencies.test.js.",
+  "dependencies": {
+    "@supabase/supabase-js": "2.104.1"
   }
 }
